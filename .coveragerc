@@ -1,0 +1,7 @@
+[run]
+source = valhalla
+
+[report]
+omit =
+    */migrations/*
+    *settings.py
