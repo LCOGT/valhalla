@@ -1,0 +1,4 @@
+LOCAL_INSTALLED_APPS = [
+    'django_extensions'
+]
+LOCAL_ALLOWED_HOSTS = ['*']
