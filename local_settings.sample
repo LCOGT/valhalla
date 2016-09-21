@@ -1,4 +1,3 @@
-SECRET_KEY = '*j6j4auodqdo=nab#3je9mn6hkzxyxc%5#=ndj6np4o#g--=rw'
 LOCAL_INSTALLED_APPS = [
     'django_extensions'
 ]
