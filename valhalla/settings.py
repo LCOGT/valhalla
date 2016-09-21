@@ -18,6 +18,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
+SECRET_KEY = os.getenv('SECRET_KEY', '*j6j4auodqdo=nab#3je9mn6hkzxyxc%5#=ndj6np4o#g--=rw')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -122,5 +123,5 @@ except ImportError:
 try:
     INSTALLED_APPS += LOCAL_INSTALLED_APPS # noqa
     ALLOWED_HOSTS += LOCAL_ALLOWED_HOSTS # noqa
-except:
+except NameError:
     pass
