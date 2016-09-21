@@ -2,8 +2,8 @@ language: python
 python:
   - "3.5"
 install:
-  pip install -r requirements.txt
-  pip install coverage coveralls
+  - pip install -r requirements.txt
+  - pip install coverage coveralls
 script:
   coverage run python manage.py test
 after_success:
