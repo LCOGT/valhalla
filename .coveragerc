@@ -5,3 +5,4 @@ source = valhalla
 omit =
     */migrations/*
     *settings.py
+    *wsgi.py
