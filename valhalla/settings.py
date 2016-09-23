@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'crispy_forms',
     'valhalla.accounts',
+    'valhalla.sciapplications',
 ]
 
 MIDDLEWARE = [
@@ -121,6 +122,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+MEDIA_ROOT = 'media/'
 
 ACCOUNT_ACTIVATION_DAYS = 7
 LOGIN_REDIRECT_URL = '/'

@@ -1,3 +1,6 @@
+# File uploads
+media/
+
 # Development database
 *.sqlite3
 
