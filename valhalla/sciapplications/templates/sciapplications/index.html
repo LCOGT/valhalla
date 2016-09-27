@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+{% for sciapp in user.scienceapplication_set.all %}
+<ul>
+    <li>
+        <a href="{% url 'sciapplications:update' pk=sciapp.id %}">
+            {{ sciapp }}
+        </a>
+    </li>
+</ul>
+{% endfor %}
+{% endblock %}

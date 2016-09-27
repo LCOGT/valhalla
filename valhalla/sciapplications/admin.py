@@ -11,25 +11,25 @@ admin.site.register(Instrument, InstrumentAdmin)
 
 class CallAdmin(admin.ModelAdmin):
     list_display = (
-        'semestercode',
+        'semester',
         'start',
         'end',
-        'callsent',
+        'call_sent',
         'deadline',
-        'ptype',
+        'proposal_type',
         'active',
     )
-    list_filter = ('start', 'end', 'callsent', 'deadline', 'active')
+    list_filter = ('start', 'end', 'call_sent', 'deadline', 'active')
 admin.site.register(Call, CallAdmin)
 
 
 class ScienceApplicationAdmin(admin.ModelAdmin):
     list_display = (
-        'app_type',
+        'call',
         'title',
-        'semester',
+        'call',
         'pi',
         'status',
     )
-    list_filter = ('semester', 'status', 'app_type')
+    list_filter = ('call', 'status', 'call__proposal_type')
 admin.site.register(ScienceApplication, ScienceApplicationAdmin)
