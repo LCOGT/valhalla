@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
     'crispy_forms',
+    'rest_framework',
     'valhalla.accounts',
     'valhalla.userrequests',
 ]
