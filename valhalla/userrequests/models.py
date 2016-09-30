@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.functional import cached_property
+from django.core.validators import MinValueValidator
 import requests
 
 from valhalla.proposals.models import Proposal
@@ -27,7 +28,7 @@ class UserRequest(models.Model):
     proposal = models.ForeignKey(Proposal)
     group_id = models.CharField(max_length=50, default='', blank=True)
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
-    ipp_value = models.FloatField(default=1.0)
+    ipp_value = models.FloatField(default=1.0, validators=[MinValueValidator(0.5)])
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
     modified = models.DateTimeField(auto_now=True, db_index=True)

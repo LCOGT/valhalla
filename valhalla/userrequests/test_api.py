@@ -112,6 +112,12 @@ class TestUserPostRequestApi(APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_userrequest_bad_ipp(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['ipp_value'] = 0.0
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
 
 class TestGetRequestApi(APITestCase):
     def setUp(self):
