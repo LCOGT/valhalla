@@ -137,6 +137,13 @@ DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
 try:
     from local_settings import * # noqa
 except ImportError:
