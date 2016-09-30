@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'crispy_forms',
     'valhalla.accounts',
+    'valhalla.proposals',
     'valhalla.sciapplications',
 ]
 
