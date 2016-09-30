@@ -10,7 +10,7 @@ class UserRequestFilter(filters.FilterSet):
     class Meta:
         model = UserRequest
         fields = (
-            'id', 'submitter', 'group_id', 'operator', 'ipp_value',
+            'id', 'submitter', 'proposal', 'group_id', 'operator', 'ipp_value',
             'state', 'created_after', 'created_before'
         )
 

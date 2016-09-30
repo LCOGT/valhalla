@@ -62,7 +62,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request_data = validated_data.pop('request_set')
 
-        user_request = UserRequest.objects.create(**validated_data, submitter=self.context['request'].user)
+        user_request = UserRequest.objects.create(submitter=self.context['request'].user, **validated_data)
 
         for r in request_data:
             target_data = r.pop('target')
@@ -73,13 +73,13 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
             request = Request.objects.create(user_request=user_request, **r)
 
-            Location.objects.create(**location_data, request=request)
-            Target.objects.create(**target_data, request=request)
-            Constraints.objects.create(**constraints_data, request=request)
+            Location.objects.create(request=request, **location_data)
+            Target.objects.create(request=request, **target_data)
+            Constraints.objects.create(request=request, **constraints_data)
 
             for _ in window_data:
-                Window.objects.create(**_, request=request)
+                Window.objects.create(request=request, **_)
             for _ in molecule_data:
-                Molecule.objects.create(**_, request=request)
+                Molecule.objects.create(request=request, **_)
 
         return user_request

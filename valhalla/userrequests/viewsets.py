@@ -16,13 +16,16 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter
     )
     ordering = ('-id',)
-    queryset = UserRequest.objects.all()
 
-    @detail_route()
-    def requests(self, request, pk=None):
-        userrequest = self.get_object()
-        us = RequestSerializer(userrequest.requests, many=True)
-        return Response(us.data)
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return UserRequest.objects.all()
+        elif self.request.user.is_authenticated():
+            return UserRequest.objects.filter(
+                proposal__in=self.request.user.proposal_set.all()
+            )
+        else:
+            return UserRequest.objects.none()
 
     @list_route(methods=['post'])
     def validate(self, request):
@@ -42,4 +45,13 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
         filters.OrderingFilter
     )
     ordering = ('-id',)
-    queryset = Request.objects.all()
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Request.objects.all()
+        elif self.request.user.is_authenticated():
+            return Request.objects.filter(
+                user_request__proposal__in=self.request.user.proposal_set.all()
+            )
+        else:
+            return Request.objects.none()

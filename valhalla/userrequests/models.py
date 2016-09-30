@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 import requests
 
+from valhalla.proposals.models import Proposal
+
 
 class UserRequest(models.Model):
     STATE_CHOICES = (
@@ -22,6 +24,7 @@ class UserRequest(models.Model):
     )
 
     submitter = models.ForeignKey(User)
+    proposal = models.ForeignKey(Proposal)
     group_id = models.CharField(max_length=50, default='', blank=True)
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
     ipp_value = models.FloatField(default=1.0)

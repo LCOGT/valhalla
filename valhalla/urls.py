@@ -13,6 +13,6 @@ router.register(r'user_requests', UserRequestViewSet, 'user_requests')
 urlpatterns = [
     url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
     url(r'^accounts/', include(accounts_urls)),
-    url(r'^api/', include(router.urls)),
+    url(r'^api/', include(router.urls, namespace='api')),
     url(r'^admin/', admin.site.urls),
 ]

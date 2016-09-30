@@ -8,6 +8,7 @@ class UserRequestAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'submitter',
+        'proposal',
         'group_id',
         'operator',
         'ipp_value',
@@ -15,7 +16,7 @@ class UserRequestAdmin(admin.ModelAdmin):
         'state',
         'modified',
     )
-    list_filter = ('submitter', 'created', 'modified')
+    list_filter = ('submitter', 'proposal', 'created', 'modified')
 admin.site.register(UserRequest, UserRequestAdmin)
 
 
