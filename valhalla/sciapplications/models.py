@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from valhalla.proposals.models import Semester, TimeAllocation
+
 
 class Instrument(models.Model):
     code = models.CharField(max_length=50)
@@ -22,7 +24,7 @@ class Call(models.Model):
         (NOAC_PROPOSAL, 'NOAC proposal')
     )
 
-    semester = models.CharField(max_length=6)
+    semester = models.ForeignKey(Semester)
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
     call_sent = models.DateTimeField(blank=True, null=True)
@@ -84,3 +86,10 @@ class ScienceApplication(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TimeRequest(models.Model):
+    science_application = models.ForeignKey(ScienceApplication)
+    telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
+    std_time = models.PositiveIntegerField(default=0)
+    too_time = models.PositiveIntegerField(default=0)

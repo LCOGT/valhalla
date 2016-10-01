@@ -1,19 +1,37 @@
 {% extends "base.html" %}
-{% load i18n crispy_forms_tags %}
+{% load i18n static crispy_forms_tags %}
 
 {% block title %}{% trans "Submit Application" %}{% endblock %}
 
 {% block content %}
-<form method="post" action="" enctype="multipart/form-data">
+<form method="post" action="" enctype="multipart/form-data" id="app_form">
     {% csrf_token %}
     {{ form|crispy }}
+    <table class="table table-striped">
+        <tbody>
+        {% for form in timerequest_form.forms %}
+        {{ form.id }}
+        <tr>
+            <td>{{ form.telescope_class }}</td>
+            <td>{{ form.std_time }}</td>
+            <td>{{ form.too_time }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        {{ timerequest_form.management_form }}
+    </table>
     <input type="submit" name="save" value="{% trans 'Save' %}" class="btn btn-default" />
     <input type="submit" name="submit" value="{% trans 'Submit' %}" class="btn btn-default" />
 </form>
 {% endblock %}
 {% block extra_javascript %}
+<script src="{% static 'js/vendor/jquery.formset.js' %}"></script>
 <script type="text/javascript">
+    $(document).ready(function(){
+        $('#app_form tbody tr').formset();
+    })
     $('input[name="submit"]').click(function(){
+        console.log('wut')
         $('#id_status').val('SUBMITTED')
     })
     $('input[name="save"]').click(function(){

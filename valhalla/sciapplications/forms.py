@@ -1,9 +1,11 @@
 from django import forms
 from django.forms import ModelForm
 from django.utils import timezone
+from django.forms.models import inlineformset_factory
+from crispy_forms.helper import FormHelper
 from django.utils.translation import ugettext as _
 
-from valhalla.sciapplications.models import ScienceApplication, Call
+from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
 
 
 class BaseProposalAppForm(ModelForm):
@@ -52,3 +54,16 @@ class KeyProjectAppForm(BaseProposalAppForm):
             'experimental_design', 'management', 'relevance', 'contribution',
             'attachment', 'final'
         ]
+
+
+class TimeRequestForm(ModelForm):
+    class Meta:
+        model = TimeRequest
+        fields = '__all__'
+
+
+TimeRequestFormset = inlineformset_factory(
+    ScienceApplication, TimeRequest, form=TimeRequestForm, extra=1
+)
+TimeRequestFormset.helper = FormHelper()
+TimeRequestFormset.helper.template = 'bootstrap/table_inline_formset.html'
