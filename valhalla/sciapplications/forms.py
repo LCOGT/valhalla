@@ -2,7 +2,6 @@ from django import forms
 from django.forms import ModelForm
 from django.utils import timezone
 from django.forms.models import inlineformset_factory
-from crispy_forms.helper import FormHelper
 from django.utils.translation import ugettext as _
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
@@ -65,5 +64,3 @@ class TimeRequestForm(ModelForm):
 TimeRequestFormset = inlineformset_factory(
     ScienceApplication, TimeRequest, form=TimeRequestForm, extra=1
 )
-TimeRequestFormset.helper = FormHelper()
-TimeRequestFormset.helper.template = 'bootstrap/table_inline_formset.html'
