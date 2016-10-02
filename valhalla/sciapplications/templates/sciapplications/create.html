@@ -1,18 +1,22 @@
 {% extends "base.html" %}
-{% load i18n static crispy_forms_tags %}
+{% load i18n static bootstrap3 %}
 
 {% block title %}{% trans "Submit Application" %}{% endblock %}
 
 {% block content %}
 <form method="post" action="" enctype="multipart/form-data" id="app_form">
     {% csrf_token %}
-    {{ form|crispy }}
+    {% bootstrap_form form %}
     <table class="table table-striped">
+        <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Target of Opportunity</td></tr></thead>
         <tbody>
         {% for form in timerequest_form.forms %}
         {{ form.id }}
         <tr>
-            <td>{{ form.telescope_class }}</td>
+            <td>
+            {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+            {{ form.telescope_class }}
+            </td>
             <td>{{ form.std_time }}</td>
             <td>{{ form.too_time }}</td>
         </tr>
@@ -28,7 +32,11 @@
 <script src="{% static 'js/vendor/jquery.formset.js' %}"></script>
 <script type="text/javascript">
     $(document).ready(function(){
-        $('#app_form tbody tr').formset();
+        $('#app_form tbody tr').formset({
+            prefix: '{{ timerequest_form.prefix }}',
+            deleteCssClass: 'fa fa-times',
+            deleteText: '',
+        });
     })
     $('input[name="submit"]').click(function(){
         console.log('wut')
