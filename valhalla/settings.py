@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
-    'crispy_forms',
+    'bootstrap3',
     'valhalla.accounts',
     'valhalla.proposals',
     'valhalla.sciapplications',
@@ -135,7 +135,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 try:
     from local_settings import * # noqa
