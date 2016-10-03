@@ -42,12 +42,18 @@ class Call(models.Model):
 
 
 class ScienceApplication(models.Model):
+    DRAFT = 'DRAFT'
+    SUBMITTED = 'SUBMITTED'
+    ACCEPTED = 'ACCEPTED'
+    REJECTED = 'REJECTED'
+    PORTED = 'PORTED'
+
     STATUS_CHOICES = (
-        ('DRAFT', 'Draft'),
-        ('SUBMITTED', 'Submitted'),
-        ('ACCEPTED', 'Accepted'),
-        ('REJECTED', 'Rejected'),
-        ('PORTED', 'Ported')
+        (DRAFT, 'Draft'),
+        (SUBMITTED, 'Submitted'),
+        (ACCEPTED, 'Accepted'),
+        (REJECTED, 'Rejected'),
+        (PORTED, 'Ported')
     )
 
     MOON_CHOICES = (
@@ -60,7 +66,7 @@ class ScienceApplication(models.Model):
     call = models.ForeignKey(Call)
     submitter = models.ForeignKey(User)
     abstract = models.TextField(blank=True, default='')
-    pi = models.TextField(blank=True, default='')
+    pi = models.EmailField(blank=True, default='')
     coi = models.TextField(blank=True, default='')
     budget_details = models.TextField(blank=True, default='')
     instruments = models.ManyToManyField(Instrument, blank=True)

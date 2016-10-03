@@ -6,10 +6,9 @@ from django.http import HttpResponseRedirect
 
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.proposals.models import Semester
-from valhalla.sciapplications.forms import (ScienceProposalAppForm,
-                                            DDTProposalAppForm,
-                                            KeyProjectAppForm,
-                                            TimeRequestFormset)
+from valhalla.sciapplications.forms import (
+    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, TimeRequestFormset
+)
 
 FORM_CLASSES = {
     'SCI': ScienceProposalAppForm,
@@ -19,31 +18,35 @@ FORM_CLASSES = {
 
 
 class SciApplicationCreateView(LoginRequiredMixin, CreateView):
+    """Create a new science application
+
+    Depending on the key kwarg (from url) we will return one of 3 classes defined in FORM_CLASSES
+    The timerequest_from is an inline formset for a TimeRequest object.
+    """
     template_name = 'sciapplications/create.html'
     success_url = '/apply/'
     model = ScienceApplication
 
     def get_form_class(self):
-        proposal_type = self.request.GET.get('type')
         try:
-            return FORM_CLASSES[proposal_type]
+            return FORM_CLASSES[self.call.proposal_type]
         except KeyError:
             raise Http404
 
     def get_initial(self):
-        call = get_object_or_404(
-            Call,
-            proposal_type=self.request.GET.get('type'),
-            semester=Semester.objects.get(code=self.request.GET.get('semester'))
-        )
-        return {'call': call}
+        return {'call': self.call}
 
     def get(self, request, *args, **kwargs):
         self.object = None
+        self.call = get_object_or_404(
+            Call,
+            proposal_type=kwargs['type'],
+            semester=Semester.objects.get(code=kwargs['semester'])
+        )
         form = self.get_form()
         timerequest_form = TimeRequestFormset()
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form)
+            self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call)
         )
 
     def post(self, request, *args, **kwargs):
@@ -51,24 +54,29 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         timerequest_form = TimeRequestFormset(self.request.POST)
         if form.is_valid() and timerequest_form.is_valid():
-            return self.form_valid(form, timerequest_form)
+            return self.forms_valid({'main': form, 'tr': timerequest_form})
         else:
-            return self.form_invalid(form, timerequest_form)
+            return self.forms_invalid({'main': form, 'tr': timerequest_form})
 
-    def form_valid(self, form, timerequest_form):
-        form.instance.submitter = self.request.user
-        self.object = form.save()
-        timerequest_form.instance = self.object
-        timerequest_form.save()
+    def forms_valid(self, forms):
+        forms['main'].instance.submitter = self.request.user
+        self.object = forms['main'].save()
+        forms['tr'].instance = self.object
+        forms['tr'].save()
         return HttpResponseRedirect(self.get_success_url())
 
-    def form_invalid(self, form, timerequest_form):
+    def forms_invalid(self, forms):
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form)
+            self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.call)
         )
 
 
 class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
+    """Update an existing science application
+
+    Shares most logic with the CreateView, except that we have more information
+    because we already have the ScienceApplication object
+    """
     template_name = 'sciapplications/create.html'
     success_url = '/apply/'
     model = ScienceApplication
@@ -81,7 +89,7 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         form = self.get_form()
         timerequest_form = TimeRequestFormset(instance=self.object)
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form)
+            self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.object.call)
         )
 
     def post(self, request, *args, **kwargs):
@@ -89,17 +97,17 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         form = self.get_form()
         timerequest_form = TimeRequestFormset(self.request.POST, instance=self.object)
         if form.is_valid() and timerequest_form.is_valid():
-            return self.form_valid(form, timerequest_form)
+            return self.forms_valid({'main': form, 'tr': timerequest_form})
         else:
-            return self.form_invalid(form, timerequest_form)
+            return self.forms_invalid({'main': form, 'tr': timerequest_form})
 
-    def form_valid(self, form, timerequest_form):
-        self.object = form.save()
-        timerequest_form.instance = self.object
-        timerequest_form.save()
+    def forms_valid(self, forms):
+        self.object = forms['main'].save()
+        forms['tr'].instance = self.object
+        forms['tr'].save()
         return HttpResponseRedirect(self.get_success_url())
 
-    def form_invalid(self, form, timerequest_form):
+    def forms_invalid(self, forms):
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form)
+            self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.object.call)
         )

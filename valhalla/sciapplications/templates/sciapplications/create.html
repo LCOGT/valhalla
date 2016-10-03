@@ -4,6 +4,10 @@
 {% block title %}{% trans "Submit Application" %}{% endblock %}
 
 {% block content %}
+<p>
+{% blocktrans with semester=call.semester deadline=call.deadline %}
+You are creating a proposal for {{ semester }}. The deadline for all proposals to be submitted is {{ deadline }}.
+{% endblocktrans %}
 <form method="post" action="" enctype="multipart/form-data" id="app_form">
     {% csrf_token %}
     {% bootstrap_form form %}
@@ -24,8 +28,8 @@
         </tbody>
         {{ timerequest_form.management_form }}
     </table>
-    <input type="submit" name="save" value="{% trans 'Save' %}" class="btn btn-default" />
-    <input type="submit" name="submit" value="{% trans 'Submit' %}" class="btn btn-default" />
+    <input type="submit" name="SAVE" value="{% trans 'Save' %}" class="btn btn-default" />
+    <input type="submit" name="SUBMIT" value="{% trans 'Submit' %}" class="btn btn-default" />
 </form>
 {% endblock %}
 {% block extra_javascript %}
@@ -38,11 +42,10 @@
             deleteText: '',
         });
     })
-    $('input[name="submit"]').click(function(){
-        console.log('wut')
+    $('input[name="SUBMIT"]').click(function(){
         $('#id_status').val('SUBMITTED')
     })
-    $('input[name="save"]').click(function(){
+    $('input[name="SAVE"]').click(function(){
         $('#id_status').val('DRAFT')
     })
 </script>
