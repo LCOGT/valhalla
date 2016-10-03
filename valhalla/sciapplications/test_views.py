@@ -312,10 +312,7 @@ class TestPostUpdateSciApp(TestCase):
         data = self.sci_data.copy()
         data['title'] = 'updated'
         self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': self.call.proposal_type}
-            ),
+            reverse('sciapplications:update', kwargs={'pk': app.id}),
             data=data,
             follow=True
         )
