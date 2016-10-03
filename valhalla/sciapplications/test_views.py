@@ -301,7 +301,7 @@ class TestPostUpdateSciApp(TestCase):
         )
         mixer.blend(Instrument, call=self.call)
 
-    def can_update_draft(self):
+    def test_can_update_draft(self):
         app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,
@@ -309,11 +309,19 @@ class TestPostUpdateSciApp(TestCase):
             call=self.call
         )
 
-        data = self.sci_data.copy()
-        data['title'] = 'updated'
+        data = {
+            'call': 1,
+            'title': 'updates',
+            'status': 'DRAFT',
+            'timerequest_set-TOTAL_FORMS': 0,
+            'timerequest_set-INITIAL_FORMS': 0,
+            'timerequest_set-MIN_NUM_FORMS': 0,
+            'timerequest_set-MAX_NUM_FORMS': 1000,
+
+        }
         self.client.post(
             reverse('sciapplications:update', kwargs={'pk': app.id}),
             data=data,
             follow=True
         )
-        self.assertEqual(ScienceApplication.objects.get(pk=app.id)['title'], data['title'])
+        self.assertEqual(ScienceApplication.objects.get(pk=app.id).title, data['title'])
