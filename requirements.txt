@@ -1,3 +1,4 @@
 django>=1.10,<1.11
 django-registration-redux>=1.4,<1.5
 django-bootstrap3>=7.1,<7.2
+mixer

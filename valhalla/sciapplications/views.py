@@ -41,7 +41,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.call = get_object_or_404(
             Call,
             proposal_type=kwargs['type'],
-            semester=Semester.objects.get(code=kwargs['semester'])
+            semester=get_object_or_404(Semester, code=kwargs['semester'])
         )
         form = self.get_form()
         timerequest_form = TimeRequestFormset()
@@ -51,6 +51,11 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
+        self.call = get_object_or_404(
+            Call,
+            proposal_type=kwargs['type'],
+            semester=get_object_or_404(Semester, code=kwargs['semester'])
+        )
         form = self.get_form()
         timerequest_form = TimeRequestFormset(self.request.POST)
         if form.is_valid() and timerequest_form.is_valid():
@@ -79,7 +84,9 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
     """
     template_name = 'sciapplications/create.html'
     success_url = '/apply/'
-    model = ScienceApplication
+
+    def get_queryset(self):
+        return ScienceApplication.objects.filter(submitter=self.request.user)
 
     def get_form_class(self):
         return FORM_CLASSES[self.object.call.proposal_type]
