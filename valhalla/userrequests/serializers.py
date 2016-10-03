@@ -30,9 +30,91 @@ class WindowSerializer(serializers.ModelSerializer):
 
 
 class TargetSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        # Don't pass the 'fields' arg up to the superclass
+        fields = kwargs.pop('fields', None)
+
+        # Instantiate the superclass normally
+        super().__init__(*args, **kwargs)
+        if fields is not None:
+            allowed = ('name', 'type', 'coordinate_system', 'equinox', 'epoch')
+            if fields['type'] == 'SIDEREAL' or fields['type'] == 'STATIC':
+                allowed += (
+                    'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax'
+                )
+            elif fields['type'] == 'NON_SIDEREAL':
+                allowed += ('epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme')
+                if fields['scheme'] == 'ASA_MAJOR_PLANET':
+                    allowed += ('longofperih', 'meandist', 'meanlong', 'dailymot')
+                elif fields['scheme'] == 'ASA_MINOR_PLANET':
+                    allowed += ('argofperih', 'meandist', 'meananom')
+                elif fields['scheme'] == 'ASA_COMET':
+                    allowed += ('argofperih', 'perihdist', 'epochofperih')
+                elif fields['scheme'] == 'JPL_MAJOR_PLANET':
+                    allowed += ('argofperih', 'meandist', 'meananom', 'dailymot')
+                elif fields['scheme'] == 'JPL_MINOR_PLANET':
+                    allowed += ('argofperih', 'perihdist', 'epochofperih')
+                elif fields['scheme'] == 'MPC_MINOR_PLANET':
+                    allowed += ('argofperih', 'meandist', 'meananom')
+                elif fields['scheme'] == 'MPC_COMET':
+                    allowed += ('argofperih', 'perihdist', 'epochofperih')
+            elif fields['type'] == 'SATELLITE':
+                allowed += (
+                    'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate', 'diff_epoch_rate',
+                    'diff_pitch_acceleration', 'diff_roll_acceleration'
+                )
+
+            # Drop any fields that are not specified in the `fields` argument.
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
     class Meta:
         model = Target
         exclude = ('request', 'id')
+
+    def validate(self, data):
+        if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
+            data = self._validate_sidereal_target(data)
+        elif data['type'] == 'NON_SIDEREAL':
+            data = self._validate_nonsidereal_target(data)
+        return data
+
+    def _validate_sidereal_target(self, data):
+        # check that sidereal specific defaults are filled in
+        data.setdefault('coordinate_system', default='ICRS')
+        data.setdefault('equinox', default='J2000')
+
+        # Complain if proper motion has been provided, and there is no explicit epoch
+        if ( ( 'proper_motion_ra' in data ) or
+             ( 'proper_motion_dec' in data ) ):
+            if 'epoch' not in data:
+                msg = 'Epoch required, since proper motion has been specified.'
+                raise serializers.ValidationError(msg)
+        # Otherwise, set epoch to 2000
+        elif 'epoch' not in data:
+            data['epoch'] = 2000.0
+
+        data.setdefault('proper_motion_ra', 0.0)
+        data.setdefault('proper_motion_dec', 0.0)
+        data.setdefault('parallax', 0.0)
+
+        # now check that if 'ra' exists 'dec' also exists
+        if 'ra' not in data or 'dec' not in data:
+            raise serializers.ValidationError('A Sidereal target must specify an `ra` and `dec`')
+        return data
+
+
+    def _validate_nonsidereal_target(self, data):
+        # Tim wanted an eccentricity limit of 0.9 for non-comet targets
+        eccentricity_limit = 0.9
+        scheme = data['scheme']
+        if not 'COMET' in scheme.upper() and data['eccentricity'] > eccentricity_limit:
+            msg = "Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ".format(scheme, eccentricity_limit)
+            msg += "Submit with scheme MPC_COMET to use your eccentricity of {}.".format(data['eccentricity'])
+            raise serializers.ValidationError(msg)
+        return data
 
 
 class RequestSerializer(serializers.ModelSerializer):
@@ -48,6 +130,19 @@ class RequestSerializer(serializers.ModelSerializer):
             'id', 'fail_count', 'scheduled_count', 'created', 'completed'
         )
         exclude = ('user_request',)
+
+    def validate_molecules(self, value):
+        if not value:
+            raise serializers.ValidationError('You must specify at least 1 molecule')
+        return value
+
+    def validate(self, data):
+        # Target special validation
+        if data['molecule_set'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
+            if not 'acquire_mode' in data['target']:
+                # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
+                data['target']['acquire_mode'] = 'ON'
+        return data
 
 
 class UserRequestSerializer(serializers.ModelSerializer):

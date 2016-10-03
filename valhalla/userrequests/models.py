@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.functional import cached_property
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 import requests
 
 from valhalla.proposals.models import Proposal
@@ -167,10 +167,10 @@ class Target(models.Model):
     roll = models.FloatField(null=True, blank=True)
     pitch = models.FloatField(null=True, blank=True)
     hour_angle = models.FloatField(null=True, blank=True)
-    ra = models.FloatField(null=True, blank=True)
-    dec = models.FloatField(null=True, blank=True)
-    altitude = models.FloatField(null=True, blank=True)
-    azimuth = models.FloatField(null=True, blank=True)
+    ra = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
+    dec = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-90.0), MaxValueValidator(90.0)])
+    altitude = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(90.0)])
+    azimuth = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
 
     # Pointing details
     coordinate_system = models.CharField(max_length=255, default='', blank=True)
@@ -195,23 +195,31 @@ class Target(models.Model):
     # Orbital elements
     scheme = models.CharField(verbose_name='Orbital Element Scheme', max_length=50, choices=ORBITAL_ELEMENT_SCHEMES,
                               default='', blank=True)
-    epochofel = models.FloatField(verbose_name='Epoch of elements (MJD)', null=True, blank=True)
-    orbinc = models.FloatField(verbose_name='Orbital inclination (deg)', null=True, blank=True)
-    longascnode = models.FloatField(verbose_name='Longitude of ascending node (deg)', null=True, blank=True)
-    longofperih = models.FloatField(verbose_name='Longitude of perihelion (deg)', null=True, blank=True)
-    argofperih = models.FloatField(verbose_name='Argument of perihelion (deg)', null=True, blank=True)
+    epochofel = models.FloatField(verbose_name='Epoch of elements (MJD)', null=True, blank=True,
+                                  validators=[MinValueValidator(10000), MaxValueValidator(100000)])
+    orbinc = models.FloatField(verbose_name='Orbital inclination (deg)', null=True, blank=True,
+                               validators=[MinValueValidator(0.0), MaxValueValidator(180.0)])
+    longascnode = models.FloatField(verbose_name='Longitude of ascending node (deg)', null=True, blank=True,
+                                    validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
+    longofperih = models.FloatField(verbose_name='Longitude of perihelion (deg)', null=True, blank=True,
+                                    validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
+    argofperih = models.FloatField(verbose_name='Argument of perihelion (deg)', null=True, blank=True,
+                                   validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
     meandist = models.FloatField(verbose_name='Mean distance (AU)', null=True, blank=True)
     perihdist = models.FloatField(verbose_name='Perihelion distance (AU)', null=True, blank=True)
-    eccentricity = models.FloatField(verbose_name='Eccentricity', null=True, blank=True)
+    eccentricity = models.FloatField(verbose_name='Eccentricity', null=True, blank=True,
+                                     validators=[MinValueValidator(0.0),])
     meanlong = models.FloatField(verbose_name='Mean longitude (deg)', null=True, blank=True)
-    meananom = models.FloatField(verbose_name='Mean anomoly (deg)', null=True, blank=True)
+    meananom = models.FloatField(verbose_name='Mean anomoly (deg)', null=True, blank=True,
+                                 validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
     dailymot = models.FloatField(verbose_name='Daily motion (deg)', null=True, blank=True)
-    epochofperih = models.FloatField(verbose_name='Epoch of perihelion (MJD)', null=True, blank=True)
+    epochofperih = models.FloatField(verbose_name='Epoch of perihelion (MJD)', null=True, blank=True,
+                                     validators=[MinValueValidator(10000), MaxValueValidator(100000)])
 
     # Spectrograph parameters
     acquire_mode = models.CharField(max_length=50, choices=ACQUIRE_MODES, default=ACQUIRE_MODES[0][0])
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
-    rot_angle = models.FloatField(null=True, blank=True)
+    rot_angle = models.FloatField(default=0.0, blank=True)
 
 
 class Window(models.Model):
