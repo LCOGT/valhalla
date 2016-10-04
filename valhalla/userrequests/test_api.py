@@ -67,6 +67,21 @@ configdb_data = [
             },
         ]
     },
+        {
+        'code': 'non',
+        'enclosure_set': [
+            {
+                'code': 'doma',
+                'telescope_set': [
+                    {
+                        'code': '1m0a',
+                        'instrument_set': [
+                        ]
+                    },
+                ]
+            },
+        ]
+    },
 ]
 
 
@@ -595,6 +610,135 @@ class TestLocationApi(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
+class TestMoleculeApi(APITestCase):
+    def setUp(self):
+        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
+        self.mock_configdb = self.configdb_patcher.start()
+        self.mock_configdb.return_value = configdb_data
+
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.generic_payload = {
+            'proposal': self.proposal.id,
+            'group_id': 'test group',
+            'operator': 'AND',
+            'ipp_value': 1.0,
+            'requests': [{
+                'target': {
+                    'name': 'fake target',
+                    'type': 'SIDEREAL',
+                    'dec': 34.4,
+                    'ra': 20,
+                },
+                'molecules': [{
+                    'type': 'EXPOSE',
+                    'instrument_name': '1M0-SCICAM-SBIG',
+                    'filter': 'air',
+                    'exposure_time': 100,
+                    'exposure_count': 1,
+                    'bin_x': 1,
+                    'bin_y': 1,
+                }],
+                'windows': [{
+                    'start': '2016-09-29T21:12:18Z',
+                    'end': '2016-10-29T21:12:19Z'
+                }],
+                'location': {
+                    'telescope_class': '1m0',
+                },
+                'constraints': {
+                    'max_airmass': 2.0,
+                    'min_lunar_distance': 30.0,
+                }
+            }]
+        }
+
+    def tearDown(self):
+        self.configdb_patcher.stop()
+
+    def test_default_ag_mode_for_spectrograph(self):
+        good_data = self.generic_payload.copy()
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        molecule = response.json()['requests'][0]['molecules'][0]
+        # check that without spectral instrument, these defaults are different
+        self.assertEqual(molecule['ag_mode'], 'OPTIONAL')
+        self.assertEqual(molecule['spectra_slit'], '')
+
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        molecule = response.json()['requests'][0]['molecules'][0]
+        # now with spectral instrument, defaults have changed
+        self.assertEqual(molecule['ag_mode'], 'ON')
+        self.assertEqual(molecule['spectra_slit'], 'floyds_slit_default')
+
+    def test_invalid_filter_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['filter'] = 'magic'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid filter', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_filter_not_necessary_for_type(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['type'] = 'ARC'
+        del good_data['requests'][0]['molecules'][0]['filter']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_invalid_spectra_slit_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        del bad_data['requests'][0]['molecules'][0]['filter']
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_really_small'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid spectra slit', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_binning_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['bin_x'] = 5
+        bad_data['requests'][0]['molecules'][0]['bin_y'] = 5
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid binning', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_default_binning_for_instrument(self):
+        good_data = self.generic_payload.copy()
+        del good_data['requests'][0]['molecules'][0]['bin_x']
+        del good_data['requests'][0]['molecules'][0]['bin_y']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        molecule = response.json()['requests'][0]['molecules'][0]
+        self.assertEqual(molecule['bin_x'], 2)
+        self.assertEqual(molecule['bin_y'], 2)
+
+    def test_must_set_both_binnings(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['molecules'][0]['bin_x']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Missing one of bin_x or bin_y', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_request_invalid_instrument_name(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = 'FAKE-INSTRUMENT'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid instrument name', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_request_invalid_instrument_name_for_location(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['site'] = 'non'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn("Invalid instrument name \\\'1M0-SCICAM-SBIG\\\' at site", str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+
 class TestGetRequestApi(APITestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
@@ -637,3 +781,5 @@ class TestGetRequestApi(APITestCase):
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
+
+

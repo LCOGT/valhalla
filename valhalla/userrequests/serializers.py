@@ -26,8 +26,13 @@ class MoleculeSerializer(serializers.ModelSerializer):
                 data['spectra_slit'] = 'floyds_slit_default'
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
-        types_that_require_exp_time = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'dark',
-                                                           'spectrum', 'arc', 'lamp_flat']
+
+        # check if instrument is schedulable at all (will check if it is at the location in the molecule validation)
+        if data['instrument_name'] not in configdb.get_active_instrument_types({}):
+            raise serializers.ValidationError(_("Invalid instrument name {}. Valid instruments may include: {}").format(
+                                                data['instrument_name'],
+                                                ', '.join(configdb.get_active_instrument_types({}))))
+
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):
@@ -35,8 +40,12 @@ class MoleculeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(_("Invalid spectra slit {} for instrument {}. Valid slits are: {}")
                                                   .format(data['spectra_slit'], data['instrument_name'],
                                                           ", ".join(available_filters)))
-        elif data['type'].lower() in types_that_require_filter and data['filter'] not in available_filters:
-            raise serializers.ValidationError(_("Invalid filter {} for instrument {}. Valid filters are: {}")
+        elif data['type'].lower() in types_that_require_filter:
+            if 'filter' not in data:
+                raise serializers.ValidationError(_("Molecule type {} with instrument {} must specify a filter.")
+                                                  .format(data['type'], data['instrument_name']))
+            elif data['filter'] not in available_filters:
+                raise serializers.ValidationError(_("Invalid filter {} for instrument {}. Valid filters are: {}")
                                                   .format(data['filter'], data['instrument_name'],
                                                           ", ".join(available_filters)))
 
@@ -48,7 +57,9 @@ class MoleculeSerializer(serializers.ModelSerializer):
             available_binnings = configdb.get_binnings(data['instrument_name'])
             if data['bin_x'] not in available_binnings:
                 msg = _("Invalid binning of {} for instrument {}. Valid binnings are: {}").format(
-                    data['bin_x'], data['instrument_name'].upper(), ", ".join(available_binnings))
+                    data['bin_x'],
+                    data['instrument_name'].upper(),
+                    ", ".join([str(binning) for binning in available_binnings]))
                 raise serializers.ValidationError(msg)
         else:
             raise serializers.ValidationError(_("Missing one of bin_x or bin_y. Specify both or neither."))
@@ -226,7 +237,7 @@ class RequestSerializer(serializers.ModelSerializer):
                 msg = _("Invalid instrument name '{}' at site={}, obs={}, tel={}. \n").format(
                     molecule['instrument_name'], data['location'].get('site', 'Any'),
                     data['location'].get('observatory', 'Any'), data['location'].get('telescope', 'Any'))
-                msg += _("Valid instruments are: ")
+                msg += _("Valid instruments include: ")
                 for inst_name in valid_instruments:
                     msg += inst_name + ', '
                 raise serializers.ValidationError(msg)
