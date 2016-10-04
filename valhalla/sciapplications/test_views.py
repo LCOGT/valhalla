@@ -92,14 +92,12 @@ class TestPostCreateSciApp(TestCase):
             'related_programs': 'related progams value',
             'past_use': 'past use value',
             'publications': 'publications value',
-            'final': SimpleUploadedFile('final', b'final content'),
             'save': 'SAVE',
             'science_justification': 'Test science justification',
             'ddt_justification': 'Test ddt justification',
             'management': 'test management',
             'relevance': 'test relevance',
             'contribution': 'test contribution',
-            'attachment': SimpleUploadedFile('attachment', b'attachment content'),
         }
 
         timerequest_data = {

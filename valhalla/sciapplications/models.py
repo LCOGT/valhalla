@@ -67,8 +67,8 @@ class ScienceApplication(models.Model):
     submitter = models.ForeignKey(User)
     abstract = models.TextField(blank=True, default='')
     pi = models.EmailField(blank=True, default='')
-    coi = models.TextField(blank=True, default='')
-    budget_details = models.TextField(blank=True, default='')
+    coi = models.CharField(max_length=2000, blank=True, default='')
+    budget_details = models.TextField(blank=True, default='', help_text='')
     instruments = models.ManyToManyField(Instrument, blank=True)
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
@@ -78,8 +78,6 @@ class ScienceApplication(models.Model):
     related_programs = models.TextField(blank=True, default='')
     past_use = models.TextField(blank=True, default='')
     publications = models.TextField(blank=True, default='')
-    final = models.FileField(upload_to='sciapp/final/', blank=True, null=True)
-    attachment = models.FileField(upload_to='sciapp/attachment/', blank=True, null=True)
 
     # DDT Only fields
     science_justification = models.TextField(blank=True, default='')

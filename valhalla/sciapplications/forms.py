@@ -2,9 +2,22 @@ from django import forms
 from django.forms import ModelForm
 from django.utils import timezone
 from django.forms.models import inlineformset_factory
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
+from django.core.validators import validate_email
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
+
+
+class MultiEmailField(forms.Field):
+    def to_python(self, value):
+        if not value:
+            return []
+        return value.replace(' ', '').split(',')
+
+    def validate(self, value):
+        super(MultiEmailField, self).validate(value)
+        for email in value:
+            validate_email(email)
 
 
 class BaseProposalAppForm(ModelForm):
@@ -16,6 +29,7 @@ class BaseProposalAppForm(ModelForm):
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
+    coi = MultiEmailField(required=False)
 
     def clean(self):
         super().clean()
@@ -31,7 +45,7 @@ class ScienceProposalAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
             'abstract', 'moon', 'science_case', 'experimental_design',
             'experimental_design_file', 'related_programs', 'past_use',
-            'publications', 'final'
+            'publications'
         ]
 
 
@@ -49,9 +63,9 @@ class KeyProjectAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = [
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
-            'abstract', 'moon', 'related_programs', 'past_use', 'publications',
-            'experimental_design', 'management', 'relevance', 'contribution',
-            'attachment', 'final'
+            'abstract', 'moon', 'science_case', 'related_programs', 'past_use', 'publications',
+            'experimental_design', 'experimental_design_file', 'management', 'relevance',
+            'contribution'
         ]
 
 

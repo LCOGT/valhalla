@@ -17,7 +17,8 @@ from valhalla.sciapplications.forms import (
 FORM_CLASSES = {
     'SCI': ScienceProposalAppForm,
     'DDT': DDTProposalAppForm,
-    'KEY': KeyProjectAppForm
+    'KEY': KeyProjectAppForm,
+    'NOAC': ScienceApplication,
 }
 
 

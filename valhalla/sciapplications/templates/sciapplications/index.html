@@ -37,9 +37,11 @@
             <div class="col-md-12">
                 <h3>{% trans 'Open Calls' %}</h3>
                 {% for call in calls %}
-                <strong>{{ call }}</strong>
-                <p>{{ call.eligibility_short }}</p>
-                <a class="btn btn-primary" href="{% url 'sciapplications:create' call=call.id %}">Apply</a>
+                <div class="call-block">
+                    <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small></p>
+                    <p>{{ call.eligibility_short }}</p>
+                    <p><a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
+                </div>
                 {% endfor %}
             </div>
         </div>
