@@ -22,9 +22,9 @@ class LocationSerializer(serializers.ModelSerializer):
         exclude = ('request', 'id')
 
     def validate(self, data):
-        if 'observatory' in data and not 'site' in data:
+        if 'observatory' in data and 'site' not in data:
             raise serializers.ValidationError("Must specify a site with an observatory.")
-        if 'telescope' in data and not 'observatory' in data:
+        if 'telescope' in data and 'observatory' not in data:
             raise serializers.ValidationError("Must specify an observatory with a telescope.")
 
         site_json = get_configdb_data()
@@ -37,7 +37,8 @@ class LocationSerializer(serializers.ModelSerializer):
             obs_dict = {obs['code']:obs for obs in obs_set}
             if 'observatory' in data:
                 if data['observatory'] not in obs_dict:
-                    msg = 'Observatory {} not valid. Valid choices: {}'.format(data['observatory'], ', '.join(obs_dict.keys()))
+                    msg = 'Observatory {} not valid. Valid choices: {}'.format(data['observatory'],
+                                                                               ', '.join(obs_dict.keys()))
                     raise serializers.ValidationError(msg)
 
                 tel_set = obs_dict[data['observatory']]['telescope_set']

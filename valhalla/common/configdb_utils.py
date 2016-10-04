@@ -17,7 +17,7 @@ CONFIGDB_ERROR_MSG = "ConfigDB connection is currently down, please wait a few m
 
 CONFIGDB_URL = getenv('CONFIGDB_URL', 'http://configdb.lco.gtn/')
 if not CONFIGDB_URL.endswith('/'):
-    CONFIGDB_URL + "/"
+    CONFIGDB_URL += "/"
 
 default_cache = caches['default']
 
@@ -37,7 +37,7 @@ def get_configdb_data():
         if not r.status_code == 200:
             raise ConfigDBException(CONFIGDB_ERROR_MSG)
         json_results = r.json()
-        if not 'results' in json_results:
+        if 'results' not in json_results:
             raise ConfigDBException(CONFIGDB_ERROR_MSG)
         json_results = json_results['results']
         # cache the results for 15 minutes
