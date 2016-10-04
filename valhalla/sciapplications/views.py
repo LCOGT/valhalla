@@ -3,9 +3,11 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
+from django.views.generic import TemplateView
+from django.utils import timezone
+
 
 from valhalla.sciapplications.models import Call, ScienceApplication
-from valhalla.proposals.models import Semester
 from valhalla.sciapplications.forms import (
     ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, TimeRequestFormset
 )
@@ -38,11 +40,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def get(self, request, *args, **kwargs):
         self.object = None
-        self.call = get_object_or_404(
-            Call,
-            proposal_type=kwargs['type'],
-            semester=get_object_or_404(Semester, code=kwargs['semester'])
-        )
+        self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
         timerequest_form = TimeRequestFormset()
         return self.render_to_response(
@@ -51,11 +49,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        self.call = get_object_or_404(
-            Call,
-            proposal_type=kwargs['type'],
-            semester=get_object_or_404(Semester, code=kwargs['semester'])
-        )
+        self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
         timerequest_form = TimeRequestFormset(self.request.POST)
         if form.is_valid() and timerequest_form.is_valid():
@@ -118,3 +112,11 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         return self.render_to_response(
             self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.object.call)
         )
+
+
+class SciApplicationIndexView(TemplateView):
+    template_name = 'sciapplications/index.html'
+
+    def get_context_data(self):
+        calls = Call.objects.filter(active=True, deadline__gte=timezone.now())
+        return {'calls': calls}

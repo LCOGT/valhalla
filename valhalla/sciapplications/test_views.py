@@ -18,28 +18,9 @@ class TestGetCreateSciApp(TestCase):
         user = mixer.blend(User)
         self.client.force_login(user)
 
-    def test_no_semester(self):
+    def test_no_call(self):
         response = self.client.get(
-            reverse('sciapplications:create', kwargs={
-                'semester': 'notasemester',
-                'type': 'SCI'}
-            )
-        )
-        self.assertEqual(response.status_code, 404)
-
-    def test_wrong_type(self):
-
-        mixer.blend(
-            Call, semester=self.semester,
-            deadline=timezone.now() + timedelta(days=7),
-            proposal_type=Call.SCI_PROPOSAL
-        )
-
-        response = self.client.get(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': 'KEY'}  # wrong type
-            )
+            reverse('sciapplications:create', kwargs={'call': 66})
         )
         self.assertEqual(response.status_code, 404)
 
@@ -51,10 +32,7 @@ class TestGetCreateSciApp(TestCase):
         )
 
         response = self.client.get(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': call.proposal_type}
-            )
+            reverse('sciapplications:create', kwargs={'call': call.id})
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['call'].id, call.id)
@@ -67,10 +45,7 @@ class TestGetCreateSciApp(TestCase):
         )
 
         response = self.client.get(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': call.proposal_type}
-            )
+            reverse('sciapplications:create', kwargs={'call': call.id})
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['call'].id, call.id)
@@ -83,10 +58,7 @@ class TestGetCreateSciApp(TestCase):
         )
 
         response = self.client.get(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': call.proposal_type}
-            )
+            reverse('sciapplications:create', kwargs={'call': call.id})
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['call'].id, call.id)
@@ -158,10 +130,7 @@ class TestPostCreateSciApp(TestCase):
     def test_post_sci_form(self):
         num_apps = ScienceApplication.objects.count()
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': self.call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=self.sci_data,
             follow=True
         )
@@ -177,10 +146,7 @@ class TestPostCreateSciApp(TestCase):
         mixer.blend(Instrument, call=call)
         num_apps = ScienceApplication.objects.count()
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': call.id}),
             data=self.key_data,
             follow=True
         )
@@ -196,10 +162,7 @@ class TestPostCreateSciApp(TestCase):
         mixer.blend(Instrument, call=call)
         num_apps = ScienceApplication.objects.count()
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': call.id}),
             data=self.ddt_data,
             follow=True
         )
@@ -210,10 +173,7 @@ class TestPostCreateSciApp(TestCase):
         data = self.sci_data.copy()
         del data['abstract']
         self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': self.call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
             follow=True
         )
@@ -225,10 +185,7 @@ class TestPostCreateSciApp(TestCase):
         del data['abstract']
         data['status'] = 'SUBMITTED'
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': self.call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
             follow=True
         )
@@ -245,10 +202,7 @@ class TestPostCreateSciApp(TestCase):
             'timerequest_set-TOTAL_FORMS': 2,
         })
         self.client.post(
-            reverse('sciapplications:create', kwargs={
-                'semester': self.semester.code,
-                'type': self.call.proposal_type}
-            ),
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
             follow=True
         )
