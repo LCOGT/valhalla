@@ -1,3 +1,4 @@
+from django.utils.translation import ugettext as _
 from django.views.generic.edit import CreateView, UpdateView
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -5,6 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils import timezone
+from django.contrib import messages
 
 
 from valhalla.sciapplications.models import Call, ScienceApplication
@@ -62,6 +64,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
+        messages.add_message(self.request, messages.SUCCESS, _('Application saved'))
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
@@ -87,6 +90,8 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
+        if not self.object.status == ScienceApplication.DRAFT:
+            raise Http404
         form = self.get_form()
         timerequest_form = TimeRequestFormset(instance=self.object)
         return self.render_to_response(
@@ -106,6 +111,7 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
+        messages.add_message(self.request, messages.SUCCESS, _('Application updated'))
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
@@ -114,7 +120,7 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         )
 
 
-class SciApplicationIndexView(TemplateView):
+class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'sciapplications/index.html'
 
     def get_context_data(self):

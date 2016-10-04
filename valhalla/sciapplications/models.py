@@ -38,7 +38,7 @@ class Call(models.Model):
     eligibility_short = models.TextField(blank=True, default='')
 
     def __str__(self):
-        return '{0} call for {1}'.format(self.proposal_type, self.semester)
+        return '{0} call for {1}'.format(self.get_proposal_type_display(), self.semester)
 
 
 class ScienceApplication(models.Model):
@@ -89,6 +89,9 @@ class ScienceApplication(models.Model):
     management = models.TextField(blank=True, default='')
     relevance = models.TextField(blank=True, default='')
     contribution = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ('-id',)
 
     def __str__(self):
         return self.title

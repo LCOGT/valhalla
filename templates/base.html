@@ -1,5 +1,5 @@
 <!doctype html>
-{% load static %}
+{% load static bootstrap3 %}
 <html class="no-js" lang="">
     <head>
         <meta charset="utf-8">
@@ -48,8 +48,15 @@
         </nav>
 
         <div class="container">
-        {% block content %}
-        {% endblock %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="messages">
+                        {% bootstrap_messages %}
+                    </div>
+                </div>
+            </div>
+            {% block content %}
+            {% endblock %}
         </div>
     </body>
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>

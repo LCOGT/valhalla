@@ -242,6 +242,16 @@ class TestGetUpdateSciApp(TestCase):
         response = self.client.get(reverse('sciapplications:update', kwargs={'pk': app.id}))
         self.assertEqual(response.status_code, 404)
 
+    def test_cannot_edit_submitted(self):
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.SUBMITTED,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:update', kwargs={'pk': app.id}))
+        self.assertEqual(response.status_code, 404)
+
 
 class TestPostUpdateSciApp(TestCase):
     def setUp(self):
@@ -279,3 +289,33 @@ class TestPostUpdateSciApp(TestCase):
             follow=True
         )
         self.assertEqual(ScienceApplication.objects.get(pk=app.id).title, data['title'])
+
+
+class TestSciAppIndex(TestCase):
+    def setUp(self):
+        self.semester = mixer.blend(Semester)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+        self.call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            active=True,
+            proposal_type=Call.SCI_PROPOSAL
+        )
+        mixer.blend(Instrument, call=self.call)
+
+    def test_unauthorized(self):
+        self.client.logout()
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_index(self):
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, self.call.eligibility_short)
+        self.assertContains(response, app.title)

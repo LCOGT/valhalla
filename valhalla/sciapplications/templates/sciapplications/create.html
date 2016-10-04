@@ -4,33 +4,38 @@
 {% block title %}{% trans "Submit Application" %}{% endblock %}
 
 {% block content %}
-<p>
-{% blocktrans with semester=call.semester deadline=call.deadline %}
-You are creating a proposal for {{ semester }}. The deadline for all proposals to be submitted is {{ deadline }}.
-{% endblocktrans %}
-<form method="post" action="" enctype="multipart/form-data" id="app_form">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    <table class="table table-striped">
-        <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Target of Opportunity</td></tr></thead>
-        <tbody>
-        {% for form in timerequest_form.forms %}
-        {{ form.id }}
-        <tr>
-            <td>
-            {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
-            {{ form.telescope_class }}
-            </td>
-            <td>{{ form.std_time }}</td>
-            <td>{{ form.too_time }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-        {{ timerequest_form.management_form }}
-    </table>
-    <input type="submit" name="SAVE" value="{% trans 'Save' %}" class="btn btn-default" />
-    <input type="submit" name="SUBMIT" value="{% trans 'Submit' %}" class="btn btn-default" />
-</form>
+<div class="row">
+    <div class="col-md-12">
+        <p>
+        {% blocktrans with semester=call.semester deadline=call.deadline %}
+        You are creating a proposal for {{ semester }}. The deadline for all proposals to be submitted is {{ deadline }}.
+        {% endblocktrans %}
+        </p>
+        <form method="post" action="" enctype="multipart/form-data" id="app_form">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <table class="table table-striped">
+                <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Target of Opportunity</td></tr></thead>
+                <tbody>
+                {% for form in timerequest_form.forms %}
+                {{ form.id }}
+                <tr>
+                    <td>
+                    {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                    {{ form.telescope_class }}
+                    </td>
+                    <td>{{ form.std_time }}</td>
+                    <td>{{ form.too_time }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+                {{ timerequest_form.management_form }}
+            </table>
+            <input type="submit" name="SAVE" value="{% trans 'Save' %}" class="btn btn-default" />
+            <input type="submit" name="SUBMIT" value="{% trans 'Submit' %}" class="btn btn-default" />
+        </form>
+    </div>
+</div>
 {% endblock %}
 {% block extra_javascript %}
 <script src="{% static 'js/vendor/jquery.formset.js' %}"></script>
