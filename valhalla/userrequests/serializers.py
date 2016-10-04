@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
-
+from valhalla.common.configdb_utils import get_configdb_data
 
 class ConstraintsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,8 +19,34 @@ class MoleculeSerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        read_only_fields = ('site', 'observatory', 'telescope')
         exclude = ('request', 'id')
+
+    def validate(self, data):
+        if 'observatory' in data and not 'site' in data:
+            raise serializers.ValidationError("Must specify a site with an observatory.")
+        if 'telescope' in data and not 'observatory' in data:
+            raise serializers.ValidationError("Must specify an observatory with a telescope.")
+
+        site_json = get_configdb_data()
+        site_data_dict = {site['code']: site for site in site_json}
+        if 'site' in data:
+            if data['site'] not in site_data_dict:
+                msg = 'Site {} not valid. Valid choices: {}'.format(data['site'], ', '.join(site_data_dict.keys()))
+                raise serializers.ValidationError(msg)
+            obs_set = site_data_dict[data['site']]['enclosure_set']
+            obs_dict = {obs['code']:obs for obs in obs_set}
+            if 'observatory' in data:
+                if data['observatory'] not in obs_dict:
+                    msg = 'Observatory {} not valid. Valid choices: {}'.format(data['observatory'], ', '.join(obs_dict.keys()))
+                    raise serializers.ValidationError(msg)
+
+                tel_set = obs_dict[data['observatory']]['telescope_set']
+                tel_list = [tel['code'] for tel in tel_set]
+                if 'telescope' in data and data['telescope'] not in tel_list:
+                    msg = 'Telescope {} not valid. Valid choices: {}'.format(data['telescope'], ', '.join(tel_list))
+                    raise serializers.ValidationError(msg)
+
+        return data
 
 
 class WindowSerializer(serializers.ModelSerializer):

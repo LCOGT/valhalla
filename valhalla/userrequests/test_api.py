@@ -2,9 +2,11 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.proposals.models import Proposal, Membership
+from valhalla.common.configdb_utils import get_configdb_data
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
+from mock import patch, MagicMock
 
 
 class TestUserGetRequestApi(APITestCase):
@@ -329,6 +331,124 @@ class TestSatelliteTarget(APITestCase):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
+
+
+class TestLocationApi(APITestCase):
+    def setUp(self):
+        # patch the method for getting configdb data
+        self.configdb_data = [
+            {
+                'code': 'tst',
+                'enclosure_set': [
+                    {
+                        'code': 'doma',
+                        'telescope_set': [
+                            {
+                                'code': '1m0a',
+                            },
+                        ]
+                    },
+                ]
+            },
+        ]
+
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.generic_payload = {
+            'proposal': self.proposal.id,
+            'group_id': 'test group',
+            'operator': 'AND',
+            'ipp_value': 1.0,
+            'requests': [{
+                'target': {
+                    'name': 'fake target',
+                    'type': 'SIDEREAL',
+                    'dec': 34.4,
+                    'ra': 20,
+                },
+                'molecules': [{
+                    'type': 'EXPOSE',
+                    'instrument_name': '1M0SciCam',
+                    'filter': 'air',
+                    'exposure_time': 100,
+                    'exposure_count': 1,
+                    'bin_x': 1,
+                    'bin_y': 1,
+                }],
+                'windows': [{
+                    'start': '2016-09-29T21:12:18Z',
+                    'end': '2016-10-29T21:12:19Z'
+                }],
+                'location': {
+                    'telescope_class': '1m0',
+                },
+                'constraints': {
+                    'max_airmass': 2.0,
+                    'min_lunar_distance': 30.0,
+                }
+            }]
+        }
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_all_location_info(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['site'] = 'tst'
+        good_data['requests'][0]['location']['observatory'] = 'doma'
+        good_data['requests'][0]['location']['telescope'] = '1m0a'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_observatory_no_site(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['observatory'] = 'doma'
+        good_data['requests'][0]['location']['telescope'] = '1m0a'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 400)
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_observatory_no_observatory(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['site'] = 'tst'
+        good_data['requests'][0]['location']['telescope'] = '1m0a'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 400)
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_observatory_bad_observatory(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['site'] = 'tst'
+        bad_data['requests'][0]['location']['observatory'] = 'domb'
+        bad_data['requests'][0]['location']['telescope'] = '1m0a'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_observatory_bad_site(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['site'] = 'bpl'
+        bad_data['requests'][0]['location']['observatory'] = 'doma'
+        bad_data['requests'][0]['location']['telescope'] = '1m0a'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+    @patch('valhalla.userrequests.serializers.get_configdb_data')
+    def test_post_userrequest_observatory_bad_telescope(self, get_cfg_data):
+        get_cfg_data.return_value = self.configdb_data
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['site'] = 'tst'
+        bad_data['requests'][0]['location']['observatory'] = 'doma'
+        bad_data['requests'][0]['location']['telescope'] = '1m0b'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
 
 
 class TestGetRequestApi(APITestCase):
