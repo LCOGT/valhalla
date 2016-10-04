@@ -1,5 +1,6 @@
 from django.utils.translation import ugettext as _
 from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.detail import DetailView
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -119,6 +120,13 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         return self.render_to_response(
             self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.object.call)
         )
+
+
+class SciApplicationDetailView(LoginRequiredMixin, DetailView):
+    model = ScienceApplication
+
+    def get_queryset(self):
+        return ScienceApplication.objects.filter(submitter=self.request.user)
 
 
 class SciApplicationIndexView(LoginRequiredMixin, TemplateView):

@@ -307,6 +307,10 @@ class TestSciAppIndex(TestCase):
         response = self.client.get(reverse('sciapplications:index'))
         self.assertEqual(response.status_code, 302)
 
+    def test_index_no_applications(self):
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, 'You have not submitted any applications')
+
     def test_index(self):
         app = mixer.blend(
             ScienceApplication,
@@ -317,3 +321,38 @@ class TestSciAppIndex(TestCase):
         response = self.client.get(reverse('sciapplications:index'))
         self.assertContains(response, self.call.eligibility_short)
         self.assertContains(response, app.title)
+
+
+class TestSciAppDetail(TestCase):
+    def setUp(self):
+        self.semester = mixer.blend(Semester)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+        self.call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            active=True,
+            proposal_type=Call.SCI_PROPOSAL
+        )
+        mixer.blend(Instrument, call=self.call)
+
+    def test_can_view_details(self):
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
+        self.assertContains(response, app.title)
+
+    def test_cannot_view_others_details(self):
+        other_user = mixer.blend(User)
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=other_user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
+        self.assertEqual(response.status_code, 404)

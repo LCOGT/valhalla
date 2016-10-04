@@ -6,29 +6,37 @@
     <div class="col-md-8">
         <div class="row">
             <div class="col-md-12">
+                <h3>{% trans 'Proposal Applications' %}</h3>
                 {% blocktrans %}
                 <p>This page contains links to submission forms for standard science and Key Project proposal calls. After submitting your proposal it will be submitted for review and you will be notified if/when your application has been successful. You will also be able to check on the status on this page.</p>
                 <p>Information about the <a href="http://lcogt.net/observatory/telescopes">telescopes</a>, <a href="http://lcogt.net/observatory/instruments">intruments</a>, <a href="http://lcogt.net/observatory/data">data handling and quality</a>, <a href="http://lcogt.net/observatory/scheduling">scheduling</a> and other technical aspects of the network is available on the <a href="http://lcogt.net/observatory/capabilities">observatory capabilities</a> pages.</p>
                 <p>Full details of our proposal and network time allocation policies are available <a href="http://lcogt.net/observatory/proposal/policies">on our website.</a></p>
                 {% endblocktrans %}
                 <h3>Submitted Applications</h3>
-                <table class="table">
-                    <thead><tr><td>Title</td><td>Call</td><td>Status</td><td>Edit</td></tr></thead>
-                    <tbody>
-                        {% for app in user.scienceapplication_set.all %}
-                        <tr>
-                            <td>{{ app.title }}</td>
-                            <td>{{ app.call }}</td>
-                            <td>{{ app.status }}</td>
-                            <td>
-                                {% if app.status == 'DRAFT' %}
-                                <a  href="{% url 'sciapplications:update' pk=app.id %}"><i class="fa fa-pencil-square-o"></i></a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                {% if user.scienceapplication_set.all %}
+                    <table class="table">
+                        <thead><tr><td>Title</td><td>Call</td><td>Deadline</td><td>Status</td><td>Edit/View</td></tr></thead>
+                        <tbody>
+                            {% for app in user.scienceapplication_set.all %}
+                            <tr>
+                                <td>{{ app.title }}</td>
+                                <td>{{ app.call }}</td>
+                                <td>{{ app.call.deadline }}</td>
+                                <td>{{ app.status }}</td>
+                                <td>
+                                    {% if app.status == 'DRAFT' %}
+                                    <a  href="{% url 'sciapplications:update' pk=app.id %}"><i class="fa fa-pencil-square-o"></i></a>
+                                    {% else %}
+                                    <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    {% trans 'You have not submitted any applications' %}
+                {% endif %}
             </div>
         </div>
     </div>

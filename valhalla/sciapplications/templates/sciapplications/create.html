@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-9">
         <p>
         {% blocktrans with semester=call.semester deadline=call.deadline eligibility=call.eligibility %}
         <p>You are creating a proposal for {{ semester }}. The deadline for all proposals to be submitted is {{ deadline }}.</p>
@@ -174,9 +174,18 @@
                 {% bootstrap_label 'Justification of discrentionary time' label_for=id_ddt_justification %}
                 {% bootstrap_field form.ddt_justification show_label=False %}
             {% endif %}
-            <input type="submit" name="SAVE" value="{% trans 'Save' %}" class="btn btn-default" />
-            <input type="submit" name="SUBMIT" value="{% trans 'Submit' %}" class="btn btn-default" />
         </form>
+    </div>
+    <div class="col-md-3">
+        <h4>{% trans 'Application status' %}: {{ form.status.value }}</h4>
+        {% blocktrans %}
+        <p>You may save your application and work on it later.</p>
+        <p>Once you submit your application, you will no longer be able to edit it.</p>
+        {% endblocktrans %}
+        {% buttons %}
+        <a href="#" class="btn btn-default" id="save">Save</a>
+        <a href="#" class="btn btn-primary" id="submit">Submit</a>
+        {% endbuttons %}
     </div>
 </div>
 {% endblock %}
@@ -188,13 +197,20 @@
             prefix: '{{ timerequest_form.prefix }}',
             deleteCssClass: 'fa fa-times delete-timeallocation',
             deleteText: '',
+            added: function(row){
+               row.find('input[type=number]').val(0)
+            }
         });
     })
-    $('input[name="SUBMIT"]').click(function(){
+    $('#submit').click(function(){
         $('#id_status').val('SUBMITTED')
+        if(window.confirm('Submit this application? You will no longer be able to edit it')){
+            $('#app_form').submit()
+        }
     })
-    $('input[name="SAVE"]').click(function(){
+    $('#save').click(function(){
         $('#id_status').val('DRAFT')
+        $('#app_form').submit()
     })
 </script>
 {% endblock %}
