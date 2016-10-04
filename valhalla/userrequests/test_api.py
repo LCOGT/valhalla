@@ -12,9 +12,10 @@ from mock import patch, MagicMock
 class TestUserGetRequestApi(APITestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
-        self.user = mixer.blend(User)
-        self.other_user = mixer.blend(User)
+        self.user = mixer.blend(User, is_staff=False, is_superuser=False)
+        self.other_user = mixer.blend(User, is_staff=False, is_superuser=False)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.staff_user = mixer.blend(User, is_staff=True)
 
     def test_get_user_request_detail_unauthenticated(self):
         self.client.force_login(self.other_user)
@@ -38,6 +39,12 @@ class TestUserGetRequestApi(APITestCase):
     def test_get_user_request_list_authenticated(self):
         user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
         self.client.force_login(self.user)
+        result = self.client.get(reverse('api:user_requests-list'))
+        self.assertContains(result, user_request.group_id)
+
+    def test_get_user_request_list_staff(self):
+        user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup2")
+        self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:user_requests-list'))
         self.assertContains(result, user_request.group_id)
 
@@ -105,6 +112,12 @@ class TestUserPostRequestApi(APITestCase):
     def test_post_userrequest_missing_data(self):
         bad_data = self.generic_payload.copy()
         del bad_data['requests']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_userrequest_no_molecules(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'] = []
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
@@ -454,7 +467,8 @@ class TestLocationApi(APITestCase):
 class TestGetRequestApi(APITestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
-        self.user = mixer.blend(User)
+        self.user = mixer.blend(User, is_staff=False, is_superuser=False)
+        self.staff_user = mixer.blend(User, is_staff=True)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal)
 
@@ -479,3 +493,9 @@ class TestGetRequestApi(APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEqual(result.status_code, 403)
+
+    def test_get_request_list_staff(self):
+        request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
+        self.client.force_login(self.staff_user)
+        result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
+        self.assertEquals(result.json()['observation_note'], request.observation_note)
