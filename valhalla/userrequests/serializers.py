@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
-from valhalla.common.configdb_utils import get_configdb_data
+from valhalla.common.configdb import ConfigDB
 
 class ConstraintsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,6 +16,44 @@ class MoleculeSerializer(serializers.ModelSerializer):
         model = Molecule
         exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
 
+    def validate(self, data):
+        # set special defaults if it is a spectrograph
+        configdb = ConfigDB()
+        if configdb.is_spectrograph(data['instrument_name']):
+            if 'ag_mode' not in data:
+                data['ag_mode'] = 'ON'
+            if 'spectra_slit' not in data:
+                data['spectra_slit'] = 'floyds_slit_default'
+
+        types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
+        types_that_require_exp_time = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'dark',
+                                                           'spectrum', 'arc', 'lamp_flat']
+        # check that the filter is available in the instrument type specified
+        available_filters = configdb.get_filters(data['instrument_name'])
+        if configdb.is_spectrograph(data['instrument_name']):
+            if data['spectra_slit'] not in available_filters:
+                raise serializers.ValidationError(_("Invalid spectra slit {} for instrument {}. Valid slits are: {}")
+                                                  .format(data['spectra_slit'], data['instrument_name'],
+                                                          ", ".join(available_filters)))
+        elif data['type'].lower() in types_that_require_filter and data['filter'] not in available_filters:
+            raise serializers.ValidationError(_("Invalid filter {} for instrument {}. Valid filters are: {}")
+                                                  .format(data['filter'], data['instrument_name'],
+                                                          ", ".join(available_filters)))
+
+        # check that the binning is available for the instrument type specified
+        if 'bin_x' not in data and 'bin_y' not in data:
+            data['bin_x'] = configdb.get_default_binning(data['instrument_name'])
+            data['bin_y'] = data['bin_x']
+        elif 'bin_x' in data and 'bin_y' in data:
+            available_binnings = configdb.get_binnings(data['instrument_name'])
+            if data['bin_x'] not in available_binnings:
+                msg = _("Invalid binning of {} for instrument {}. Valid binnings are: {}").format(
+                    data['bin_x'], data['instrument_name'].upper(), ", ".join(available_binnings))
+                raise serializers.ValidationError(msg)
+        else:
+            raise serializers.ValidationError(_("Missing one of bin_x or bin_y. Specify both or neither."))
+
+        return data
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,7 +66,8 @@ class LocationSerializer(serializers.ModelSerializer):
         if 'telescope' in data and 'observatory' not in data:
             raise serializers.ValidationError(_("Must specify an observatory with a telescope."))
 
-        site_json = get_configdb_data()
+        configdb = ConfigDB()
+        site_json = configdb.get_site_data()
         site_data_dict = {site['code']: site for site in site_json}
         if 'site' in data:
             if data['site'] not in site_data_dict:
@@ -177,6 +216,21 @@ class RequestSerializer(serializers.ModelSerializer):
             if 'acquire_mode' not in data['target']:
                 # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
                 data['target']['acquire_mode'] = 'ON'
+
+        configdb = ConfigDB()
+
+        # check if the instrument specified is allowed
+        valid_instruments = configdb.get_active_instrument_types(data['location'])
+        for molecule in data['molecule_set']:
+            if molecule['instrument_name'] not in valid_instruments:
+                msg = _("Invalid instrument name '{}' at site={}, obs={}, tel={}. \n").format(
+                    molecule['instrument_name'], data['location'].get('site', 'Any'),
+                    data['location'].get('observatory', 'Any'), data['location'].get('telescope', 'Any'))
+                msg += _("Valid instruments are: ")
+                for inst_name in valid_instruments:
+                    msg += inst_name + ', '
+                raise serializers.ValidationError(msg)
+
         return data
 
 

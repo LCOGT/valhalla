@@ -258,7 +258,7 @@ class Molecule(models.Model):
     # The type of molecule being requested.
     # Valid types are: DARK, BIAS, EXPOSE, SKY_FLAT, HARTMANN, STANDARD,
     #                  ARC, LAMP_FLAT, SPECTRUM, AUTO_FOCUS, ZERO_POINTING
-    type = models.CharField(max_length=50, choices=MOLECULE_TYPES)
+    type = models.CharField(max_length=50, choices=MOLECULE_TYPES, default=MOLECULE_TYPES[0][0])
 
     # Place-holder for future functionality, allowing arguments to be
     # passed along with a molecule
@@ -270,7 +270,7 @@ class Molecule(models.Model):
     ag_name = models.CharField(max_length=50, default='', blank=True)
     ag_mode = models.CharField(max_length=50, choices=AG_MODES, default=AG_MODES[0][0])
     ag_filter = models.CharField(max_length=50, default='', blank=True)
-    ag_exp_time = models.FloatField(null=True, blank=True)
+    ag_exp_time = models.FloatField(default=10.0, blank=True)
 
     # Instrument
     instrument_name = models.CharField(max_length=255)
@@ -285,7 +285,7 @@ class Molecule(models.Model):
 
     # Exposure
     exposure_time = models.FloatField()
-    exposure_count = models.PositiveIntegerField()
+    exposure_count = models.PositiveIntegerField(validators=[MinValueValidator(1),])
 
     # Binning
     bin_x = models.PositiveSmallIntegerField(default=1, blank=True)
@@ -298,7 +298,7 @@ class Molecule(models.Model):
     sub_y2 = models.PositiveIntegerField(null=True, blank=True)  # Sub Frame Y end pixel
 
     # Other options
-    defocus = models.FloatField(null=True, blank=True)
+    defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-10.0), MaxValueValidator(40.0)])
 
 
 class Constraints(models.Model):
