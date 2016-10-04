@@ -56,6 +56,11 @@ class WindowSerializer(serializers.ModelSerializer):
         model = Window
         exclude = ('request', 'id')
 
+    def validate(self, data):
+        if data['end'] <= data['start']:
+            msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
+            raise serializers.ValidationError(msg)
+        return data
 
 class TargetSerializer(serializers.ModelSerializer):
 

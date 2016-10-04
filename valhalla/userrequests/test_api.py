@@ -147,6 +147,56 @@ class TestUserPostRequestApi(APITestCase):
         self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'ON')
 
 
+class TestWindowApi(APITestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.generic_payload = {
+            'proposal': self.proposal.id,
+            'group_id': 'test group',
+            'operator': 'AND',
+            'ipp_value': 1.0,
+            'requests': [{
+                'target': {
+                    'name': 'fake target',
+                    'type': 'SIDEREAL',
+                    'dec': 34.4,
+                    'ra': 20,
+                    'epoch': 2000,
+                },
+                'molecules': [{
+                    'type': 'EXPOSE',
+                    'instrument_name': '1M0SciCam',
+                    'filter': 'air',
+                    'exposure_time': 100,
+                    'exposure_count': 1,
+                    'bin_x': 1,
+                    'bin_y': 1,
+                }],
+                'windows': [{
+                    'start': '2016-09-29T21:12:18Z',
+                    'end': '2016-10-29T21:12:19Z'
+                }],
+                'location': {
+                    'telescope_class': '1m0',
+                },
+                'constraints': {
+                    'max_airmass': 2.0,
+                    'min_lunar_distance': 30.0,
+                }
+            }]
+        }
+
+    def test_post_userrequest_window_end_before_start(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'][0]['end'] = '2016-09-28T21:12:18Z'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+
 class TestSiderealTarget(APITestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
