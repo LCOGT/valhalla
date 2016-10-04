@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext as _
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.common.configdb_utils import get_configdb_data
@@ -23,28 +24,28 @@ class LocationSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if 'observatory' in data and 'site' not in data:
-            raise serializers.ValidationError("Must specify a site with an observatory.")
+            raise serializers.ValidationError(_("Must specify a site with an observatory."))
         if 'telescope' in data and 'observatory' not in data:
-            raise serializers.ValidationError("Must specify an observatory with a telescope.")
+            raise serializers.ValidationError(_("Must specify an observatory with a telescope."))
 
         site_json = get_configdb_data()
         site_data_dict = {site['code']: site for site in site_json}
         if 'site' in data:
             if data['site'] not in site_data_dict:
-                msg = 'Site {} not valid. Valid choices: {}'.format(data['site'], ', '.join(site_data_dict.keys()))
+                msg = _('Site {} not valid. Valid choices: {}').format(data['site'], ', '.join(site_data_dict.keys()))
                 raise serializers.ValidationError(msg)
             obs_set = site_data_dict[data['site']]['enclosure_set']
             obs_dict = {obs['code']:obs for obs in obs_set}
             if 'observatory' in data:
                 if data['observatory'] not in obs_dict:
-                    msg = 'Observatory {} not valid. Valid choices: {}'.format(data['observatory'],
+                    msg = _('Observatory {} not valid. Valid choices: {}').format(data['observatory'],
                                                                                ', '.join(obs_dict.keys()))
                     raise serializers.ValidationError(msg)
 
                 tel_set = obs_dict[data['observatory']]['telescope_set']
                 tel_list = [tel['code'] for tel in tel_set]
                 if 'telescope' in data and data['telescope'] not in tel_list:
-                    msg = 'Telescope {} not valid. Valid choices: {}'.format(data['telescope'], ', '.join(tel_list))
+                    msg = _('Telescope {} not valid. Valid choices: {}').format(data['telescope'], ', '.join(tel_list))
                     raise serializers.ValidationError(msg)
 
         return data
@@ -117,7 +118,7 @@ class TargetSerializer(serializers.ModelSerializer):
         if ( ( 'proper_motion_ra' in data ) or
              ( 'proper_motion_dec' in data ) ):
             if 'epoch' not in data:
-                msg = 'Epoch required, since proper motion has been specified.'
+                msg = _('Epoch required, since proper motion has been specified.')
                 raise serializers.ValidationError(msg)
         # Otherwise, set epoch to 2000
         elif 'epoch' not in data:
@@ -129,7 +130,7 @@ class TargetSerializer(serializers.ModelSerializer):
 
         # now check that if 'ra' exists 'dec' also exists
         if 'ra' not in data or 'dec' not in data:
-            raise serializers.ValidationError('A Sidereal target must specify an `ra` and `dec`')
+            raise serializers.ValidationError(_('A Sidereal target must specify an `ra` and `dec`'))
         return data
 
 
@@ -137,9 +138,11 @@ class TargetSerializer(serializers.ModelSerializer):
         # Tim wanted an eccentricity limit of 0.9 for non-comet targets
         eccentricity_limit = 0.9
         scheme = data['scheme']
-        if not 'COMET' in scheme.upper() and data['eccentricity'] > eccentricity_limit:
-            msg = "Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ".format(scheme, eccentricity_limit)
-            msg += "Submit with scheme MPC_COMET to use your eccentricity of {}.".format(data['eccentricity'])
+        if 'COMET' not in scheme.upper() and data['eccentricity'] > eccentricity_limit:
+            msg = _("Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ").format(
+                scheme, eccentricity_limit
+            )
+            msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(data['eccentricity'])
             raise serializers.ValidationError(msg)
         return data
 
@@ -160,13 +163,13 @@ class RequestSerializer(serializers.ModelSerializer):
 
     def validate_molecules(self, value):
         if not value:
-            raise serializers.ValidationError('You must specify at least 1 molecule')
+            raise serializers.ValidationError(_('You must specify at least 1 molecule'))
         return value
 
     def validate(self, data):
         # Target special validation
         if data['molecule_set'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
-            if not 'acquire_mode' in data['target']:
+            if 'acquire_mode' not in data['target']:
                 # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
                 data['target']['acquire_mode'] = 'ON'
         return data
@@ -212,12 +215,12 @@ class UserRequestSerializer(serializers.ModelSerializer):
         user = User.objects.get(username=data['submitter'])
         if not user.proposal_set.filter(id=data['proposal']):
             raise serializers.ValidationError(
-                'You do not belong to the proposal you are trying to submit'
+                _('You do not belong to the proposal you are trying to submit')
             )
 
         return data
 
     def validate_requests(self, value):
         if not value:
-            raise serializers.ValidationError('You must specify at least 1 request')
+            raise serializers.ValidationError(_('You must specify at least 1 request'))
         return value
