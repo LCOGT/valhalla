@@ -273,10 +273,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
             Target.objects.create(request=request, **target_data)
             Constraints.objects.create(request=request, **constraints_data)
 
-            for _ in window_data:
-                Window.objects.create(request=request, **_)
-            for _ in molecule_data:
-                Molecule.objects.create(request=request, **_)
+            for data in window_data:
+                Window.objects.create(request=request, **data)
+            for data in molecule_data:
+                Molecule.objects.create(request=request, **data)
 
         return user_request
 

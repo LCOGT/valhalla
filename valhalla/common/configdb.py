@@ -120,8 +120,8 @@ class ConfigDB():
         for instrument in instruments:
             split_string = instrument['__str__'].lower().split('.')
             if (location.get('site', '').lower() in split_string[0]
-                and location.get('observatory', '').lower() in split_string[1]
-                and location.get('telescope', '').lower() in split_string[2]):
+                    and location.get('observatory', '').lower() in split_string[1]
+                    and location.get('telescope', '').lower() in split_string[2]):
                 instrument_types.add(instrument['science_camera']['camera_type']['code'].upper())
         return instrument_types
 
