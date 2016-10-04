@@ -2,22 +2,16 @@ from django import forms
 from django.forms import ModelForm
 from django.utils import timezone
 from django.forms.models import inlineformset_factory
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 from django.core.validators import validate_email
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
 
 
-class MultiEmailField(forms.Field):
-    def to_python(self, value):
-        if not value:
-            return []
-        return value.replace(' ', '').split(',')
-
-    def validate(self, value):
-        super(MultiEmailField, self).validate(value)
-        for email in value:
-            validate_email(email)
+def validate_multiemails(value):
+    values = value.replace(' ', '').split(',')
+    for email in values:
+        validate_email(email)
 
 
 class BaseProposalAppForm(ModelForm):
@@ -29,44 +23,52 @@ class BaseProposalAppForm(ModelForm):
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
-    coi = MultiEmailField(required=False)
+    coi = forms.CharField(validators=[validate_multiemails], required=False)
 
     def clean(self):
         super().clean()
-        all_filled = all(v for v in self.cleaned_data.values())
-        if self.cleaned_data.get('status') == 'SUBMITTED' and not all_filled:
-            raise forms.ValidationError(_('Please fill out all required fields'))
+        for field in self.Meta.required_fields:
+            if not self.cleaned_data.get(field) and self.cleaned_data.get('status') == 'SUBMITTED':
+                self.add_error(field, _('This field is required'))
+        if self.errors:
+            self.add_error(None, _('There was an error with your submission.'))
 
 
 class ScienceProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
-        fields = [
+        fields = (
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
             'abstract', 'moon', 'science_case', 'experimental_design',
             'experimental_design_file', 'related_programs', 'past_use',
             'publications'
-        ]
+        )
+
+        required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
-        fields = [
+        fields = (
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
             'science_justification', 'ddt_justification'
-        ]
+        )
+
+        required_fields = set(fields) - set(('pi', 'coi'))
 
 
 class KeyProjectAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
-        fields = [
+        fields = (
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
             'abstract', 'moon', 'science_case', 'related_programs', 'past_use', 'publications',
             'experimental_design', 'experimental_design_file', 'management', 'relevance',
             'contribution'
-        ]
+        )
+
+        required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
 
 
 class TimeRequestForm(ModelForm):

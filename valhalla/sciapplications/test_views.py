@@ -188,7 +188,7 @@ class TestPostCreateSciApp(TestCase):
             follow=True
         )
         self.assertFalse(self.user.scienceapplication_set.all())
-        self.assertContains(response, 'Please fill out all required fields')
+        self.assertContains(response, 'There was an error with your submission')
 
     def test_multiple_time_requests(self):
         data = self.sci_data.copy()
