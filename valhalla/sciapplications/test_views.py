@@ -78,7 +78,7 @@ class TestPostCreateSciApp(TestCase):
         mixer.blend(Instrument, call=self.call)
         data = {
             'call': 1,
-            'status': 'DRAFT',
+            'status': 'SUBMITTED',
             'title': 'Test Title',
             'pi': 'test@example.com',
             'coi': 'test2@example.com, test3@example.com',
@@ -87,8 +87,8 @@ class TestPostCreateSciApp(TestCase):
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'science_case': SimpleUploadedFile('sci', b'science_case'),
-            'experimental_desgin': 'exp desgin value',
-            'experimental_desgin_file': SimpleUploadedFile('exp', b'exp_file'),
+            'experimental_design': 'exp desgin value',
+            'experimental_design_file': SimpleUploadedFile('exp', b'exp_file'),
             'related_programs': 'related progams value',
             'past_use': 'past use value',
             'publications': 'publications value',
@@ -169,6 +169,7 @@ class TestPostCreateSciApp(TestCase):
 
     def test_can_save_incomplete(self):
         data = self.sci_data.copy()
+        data['status'] = 'DRAFT'
         del data['abstract']
         self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
@@ -181,7 +182,6 @@ class TestPostCreateSciApp(TestCase):
     def test_cannot_submit_incomplete(self):
         data = self.sci_data.copy()
         del data['abstract']
-        data['status'] = 'SUBMITTED'
         response = self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
