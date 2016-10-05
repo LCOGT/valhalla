@@ -356,3 +356,64 @@ class TestSciAppDetail(TestCase):
         )
         response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
         self.assertEqual(response.status_code, 404)
+
+
+class TestSciAppDelete(TestCase):
+    def setUp(self):
+        self.semester = mixer.blend(Semester)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+        self.call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            active=True,
+            proposal_type=Call.DDT_PROPOSAL
+        )
+        mixer.blend(Instrument, call=self.call)
+
+    def test_can_delete_draft(self):
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.post(
+            reverse('sciapplications:delete', kwargs={'pk': app.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, app.title)
+        self.assertFalse(ScienceApplication.objects.filter(pk=app.id).exists())
+
+    def test_cannot_delete_non_draft(self):
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.SUBMITTED,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.post(
+            reverse('sciapplications:delete', kwargs={'pk': app.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(ScienceApplication.objects.filter(pk=app.id).exists())
+
+    def test_cannot_delete_others(self):
+        other_user = mixer.blend(User)
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=other_user,
+            call=self.call
+        )
+        response = self.client.post(
+            reverse('sciapplications:delete', kwargs={'pk': app.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(ScienceApplication.objects.filter(pk=app.id).exists())

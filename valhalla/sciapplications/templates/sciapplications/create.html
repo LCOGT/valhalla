@@ -175,17 +175,29 @@
                 {% bootstrap_field form.ddt_justification show_label=False %}
             {% endif %}
         </form>
+        <a href="#">Back to top</a>
     </div>
     <div class="col-md-3">
-        <h4>{% trans 'Application status' %}: {{ form.status.value }}</h4>
+        <h4>{% trans 'Application status' %}:
+            {% if form.instance.id %}
+                {{ form.status.value }}
+            {% else %}
+                {% trans 'UNSAVED' %}
+            {% endif %}
+        </h4>
         {% blocktrans %}
         <p>You may save your application and work on it later.</p>
         <p>Once you submit your application, you will no longer be able to edit it.</p>
         {% endblocktrans %}
         {% buttons %}
-        <a href="#" class="btn btn-default" id="save">Save</a>
-        <a href="#" class="btn btn-primary" id="submit">Submit</a>
+        <a href="#" class="btn btn-default" id="save">{% trans 'Save' %}</a>
+        <a href="#" class="btn btn-success" id="submit">{% trans 'Submit' %}</a>
         {% endbuttons %}
+        {% if form.instance.id %}
+        <p>{% trans 'Deleting a draft is an irreversible action' %}.</p>
+        <p><a href="{% url 'sciapplications:delete' pk=form.instance.id %}" class="btn btn-danger">{% trans 'Delete' %}</a></p>
+        {% endif %}
+        <!-- <p><a href="{% url 'sciapplications:index' %}">{% trans 'Back to application list' %}</a></p> -->
     </div>
 </div>
 {% endblock %}
@@ -203,8 +215,8 @@
         });
     })
     $('#submit').click(function(){
-        $('#id_status').val('SUBMITTED')
         if(window.confirm('Submit this application? You will no longer be able to edit it')){
+            $('#id_status').val('SUBMITTED')
             $('#app_form').submit()
         }
     })

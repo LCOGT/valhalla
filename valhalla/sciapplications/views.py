@@ -1,5 +1,5 @@
 from django.utils.translation import ugettext as _
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils import timezone
 from django.contrib import messages
+from django.urls import reverse, reverse_lazy
 
 
 from valhalla.sciapplications.models import Call, ScienceApplication
@@ -24,13 +25,7 @@ FORM_CLASSES = {
 
 
 class SciApplicationCreateView(LoginRequiredMixin, CreateView):
-    """Create a new science application
-
-    Depending on the key kwarg (from url) we will return one of 3 classes defined in FORM_CLASSES
-    The timerequest_from is an inline formset for a TimeRequest object.
-    """
     template_name = 'sciapplications/create.html'
-    success_url = '/apply/'
     model = ScienceApplication
 
     def get_form_class(self):
@@ -38,6 +33,14 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
             return FORM_CLASSES[self.call.proposal_type]
         except KeyError:
             raise Http404
+
+    def get_success_url(self):
+        if self.object.status == ScienceApplication.DRAFT:
+            messages.add_message(self.request, messages.SUCCESS, _('Application created'))
+            return reverse('sciapplications:update', kwargs={'pk': self.object.id})
+        else:
+            messages.add_message(self.request, messages.SUCCESS, _('Application successfully submitted'))
+            return reverse('sciapplications:index')
 
     def get_initial(self):
         return {'call': self.call}
@@ -66,7 +69,6 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
-        messages.add_message(self.request, messages.SUCCESS, _('Application saved'))
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
@@ -76,16 +78,18 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
 
 class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
-    """Update an existing science application
-
-    Shares most logic with the CreateView, except that we have more information
-    because we already have the ScienceApplication object
-    """
     template_name = 'sciapplications/create.html'
-    success_url = '/apply/'
 
     def get_queryset(self):
         return ScienceApplication.objects.filter(submitter=self.request.user)
+
+    def get_success_url(self):
+        if self.object.status == ScienceApplication.DRAFT:
+            messages.add_message(self.request, messages.SUCCESS, _('Application saved'))
+            return reverse('sciapplications:update', kwargs={'pk': self.object.id})
+        else:
+            messages.add_message(self.request, messages.SUCCESS, _('Application successfully submitted'))
+            return reverse('sciapplications:index')
 
     def get_form_class(self):
         return FORM_CLASSES[self.object.call.proposal_type]
@@ -113,7 +117,6 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
-        messages.add_message(self.request, messages.SUCCESS, _('Application updated'))
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
@@ -127,6 +130,14 @@ class SciApplicationDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return ScienceApplication.objects.filter(submitter=self.request.user)
+
+
+class SciApplicationDeleteView(LoginRequiredMixin, DeleteView):
+    model = ScienceApplication
+    success_url = reverse_lazy('sciapplications:index')
+
+    def get_queryset(self):
+        return ScienceApplication.objects.filter(submitter=self.request.user, status=ScienceApplication.DRAFT)
 
 
 class SciApplicationIndexView(LoginRequiredMixin, TemplateView):

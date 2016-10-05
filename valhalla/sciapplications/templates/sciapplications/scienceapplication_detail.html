@@ -6,7 +6,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <p><a href="#" onclick="window.print()">Print this page</a></p>
+        <p class="pull-right"><a href="#" onclick="window.print()">Print this page</a></p>
         <p>{% trans 'This applications was created for' %}: {{ object.call }}</p>
         <p>{% trans 'The application status is' %}: {{ object.status }}</p>
 
@@ -66,7 +66,7 @@
         {% if object.science_case %}
             <dl>
                 <dt>{% trans 'Science Case' %}</dt>
-                <dd>{{ object.science_case }}</dd>
+                <dd><a href="{{ object.science_case.url }}">Download</a></dd>
             </dl>
         {% endif %}
 
@@ -75,7 +75,7 @@
                 <dt>{% trans 'Experimental Design' %}</dt>
                 <dd>{{ object.experimental_design }}</dd>
                 {% if object.experimental_design_file %}
-                <dd>{{ object.experimental_design_file }}</dd>
+                <dd><a href="{{ object.experimental_design_file.url }}">Download</a></dd>
                 {% endif %}
             </dl>
         {% endif %}
