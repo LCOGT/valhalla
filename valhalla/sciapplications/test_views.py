@@ -206,6 +206,30 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(self.user.scienceapplication_set.last().timerequest_set.count(), 2)
 
+    def test_cannot_post_own_email(self):
+        data = self.sci_data.copy()
+        data['pi'] = self.user.email
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertContains(response, 'There was an error with your submission')
+        self.assertContains(response, 'if you are the PI')
+
+    def test_can_leave_out_email(self):
+        data = self.sci_data.copy()
+        del data['pi']
+        del data['coi']
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.user.scienceapplication_set.last().pi, '')
+        self.assertEqual(self.user.scienceapplication_set.last().coi, '')
+
 
 class TestGetUpdateSciApp(TestCase):
     def setUp(self):

@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from valhalla.proposals.models import Semester, TimeAllocation
+from valhalla.proposals.models import (
+    Semester, TimeAllocation, Proposal, TimeAllocationGroup, ProposalInvite, Membership
+)
 
 
 class Instrument(models.Model):
@@ -78,6 +80,7 @@ class ScienceApplication(models.Model):
     related_programs = models.TextField(blank=True, default='')
     past_use = models.TextField(blank=True, default='')
     publications = models.TextField(blank=True, default='')
+    proposal = models.ForeignKey(Proposal, null=True, blank=True)
 
     # DDT Only fields
     science_justification = models.TextField(blank=True, default='')
@@ -94,9 +97,66 @@ class ScienceApplication(models.Model):
     def __str__(self):
         return self.title
 
+    def convert_to_proposal(self):
+        # Create the objects we need
+        proposal = Proposal.objects.create(
+            title=self.title,
+            abstract=self.abstract,
+            tac_priority=0,
+            tag=TimeAllocationGroup.objects.get_or_create(id='LCOGT')[0],
+        )
+
+        for tr in self.timerequest_set.filter(approved=True):
+            TimeAllocation.objects.create(
+                std_allocation=tr.std_time,
+                too_allocation=tr.too_time,
+                telescope_class=tr.telescope_class,
+                semester=self.call.semester,
+                proposal=proposal
+            )
+
+        # Send invitations if necessary
+        if self.pi and not User.objects.filter(email=self.pi).exists():
+            proposal_invite = ProposalInvite.objects.create(
+                proposal=proposal,
+                role=Membership.PI,
+            )
+            proposal_invite.send_invitation(self.pi)
+        elif self.pi and User.objects.filter(email=self.pi).exists():
+            Membership.objects.create(
+                proposal=proposal,
+                user=User.objects.get(email=self.pi),
+                role=Membership.PI
+            )
+        else:
+            Membership.objects.create(
+                proposal=proposal,
+                user=self.submitter,
+                role=Membership.PI
+            )
+
+        for ci in [c for c in self.coi.replace(' ', '').split(',') if c]:
+            if User.objects.filter(email=ci).exists():
+                Membership.objects.create(
+                    proposal=proposal,
+                    user=User.objects.get(email=ci),
+                    role=Membership.CI
+                )
+            else:
+                proposal_invite = ProposalInvite.objects.create(
+                    proposal=proposal,
+                    role=Membership.CI
+                )
+                proposal_invite.send_invitation(ci)
+
+        self.proposal = proposal
+        self.save()
+        return proposal
+
 
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication)
     telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
     std_time = models.PositiveIntegerField(default=0)
     too_time = models.PositiveIntegerField(default=0)
+    approved = models.BooleanField(default=False)

@@ -5,14 +5,14 @@ from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Mem
 
 
 class SemesterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'code', 'start', 'end')
+    list_display = ('id', 'start', 'end')
     list_filter = ('start', 'end')
     raw_id_fields = ('proposals',)
 admin.site.register(Semester, SemesterAdmin)
 
 
 class TimeAllocationGroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'tag_id')
+    list_display = ('id',)
 admin.site.register(TimeAllocationGroup, TimeAllocationGroupAdmin)
 
 

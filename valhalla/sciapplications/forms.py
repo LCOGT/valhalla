@@ -33,6 +33,12 @@ class BaseProposalAppForm(ModelForm):
         if self.errors:
             self.add_error(None, _('There was an error with your submission.'))
 
+    def clean_pi(self):
+        email = self.cleaned_data.get('pi')
+        if email and email.strip() == self.instance.submitter.email:
+            raise forms.ValidationError(_('Leave this field blank if you are the PI'))
+        return email
+
 
 class ScienceProposalAppForm(BaseProposalAppForm):
     class Meta:
@@ -43,7 +49,6 @@ class ScienceProposalAppForm(BaseProposalAppForm):
             'experimental_design_file', 'related_programs', 'past_use',
             'publications'
         )
-
         required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
 
 
@@ -54,7 +59,6 @@ class DDTProposalAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
             'science_justification', 'ddt_justification'
         )
-
         required_fields = set(fields) - set(('pi', 'coi'))
 
 
@@ -67,14 +71,13 @@ class KeyProjectAppForm(BaseProposalAppForm):
             'experimental_design', 'experimental_design_file', 'management', 'relevance',
             'contribution'
         )
-
         required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
 
 
 class TimeRequestForm(ModelForm):
     class Meta:
         model = TimeRequest
-        fields = '__all__'
+        exclude = ('approved',)
 
 
 TimeRequestFormset = inlineformset_factory(

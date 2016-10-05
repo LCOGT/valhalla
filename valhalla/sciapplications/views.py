@@ -20,7 +20,7 @@ FORM_CLASSES = {
     'SCI': ScienceProposalAppForm,
     'DDT': DDTProposalAppForm,
     'KEY': KeyProjectAppForm,
-    'NOAC': ScienceApplication,
+    'NOAC': ScienceProposalAppForm,
 }
 
 
@@ -58,6 +58,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.object = None
         self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
+        form.instance.submitter = request.user
         timerequest_form = TimeRequestFormset(self.request.POST)
         if form.is_valid() and timerequest_form.is_valid():
             return self.forms_valid({'main': form, 'tr': timerequest_form})
@@ -65,7 +66,6 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
             return self.forms_invalid({'main': form, 'tr': timerequest_form})
 
     def forms_valid(self, forms):
-        forms['main'].instance.submitter = self.request.user
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
