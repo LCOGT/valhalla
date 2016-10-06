@@ -31,7 +31,7 @@ class Call(models.Model):
     end = models.DateTimeField(blank=True, null=True)
     call_sent = models.DateTimeField(blank=True, null=True)
     deadline = models.DateTimeField(blank=True, null=True)
-    call_url = models.URLField(blank=True, null=True)
+    call_url = models.URLField(blank=True, default='')
     instruments = models.ManyToManyField(Instrument)
     proposal_type = models.CharField(max_length=5, choices=PROPOSAL_TYPE_CHOICES)
     active = models.BooleanField(default=True)
@@ -100,9 +100,11 @@ class ScienceApplication(models.Model):
     def convert_to_proposal(self):
         # Create the objects we need
         proposal = Proposal.objects.create(
+            code='NAMEME-{}'.format(self.id),
             title=self.title,
             abstract=self.abstract,
             tac_priority=0,
+            active=False,
             tag=TimeAllocationGroup.objects.get_or_create(id='LCOGT')[0],
         )
 
@@ -150,6 +152,7 @@ class ScienceApplication(models.Model):
                 proposal_invite.send_invitation(ci)
 
         self.proposal = proposal
+        self.status = ScienceApplication.PORTED
         self.save()
         return proposal
 
@@ -160,3 +163,6 @@ class TimeRequest(models.Model):
     std_time = models.PositiveIntegerField(default=0)
     too_time = models.PositiveIntegerField(default=0)
     approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{} {} TimeRequest'.format(self.science_application, self.telescope_class)

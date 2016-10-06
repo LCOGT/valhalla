@@ -30,10 +30,8 @@ class TimeRequestAdminInline(admin.TabularInline):
 class ScienceApplicationAdmin(admin.ModelAdmin):
     inlines = [TimeRequestAdminInline]
     list_display = (
-        'call',
         'title',
         'call',
-        'pi',
         'status',
     )
     list_filter = ('call', 'status', 'call__proposal_type')
@@ -41,14 +39,16 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
 
     def accept(self, request, queryset):
         rows = queryset.filter(status=ScienceApplication.SUBMITTED).update(status=ScienceApplication.ACCEPTED)
-        self.message_user(request, '{} applications were successfully accepted'.format(rows))
+        self.message_user(request, '{} application(s) were successfully accepted'.format(rows))
 
     def reject(self, request, queryset):
         rows = queryset.filter(status=ScienceApplication.SUBMITTED).update(status=ScienceApplication.REJECTED)
-        self.message_user(request, '{} applications were successfully rejected'.format(rows))
+        self.message_user(request, '{} application(s) were successfully rejected'.format(rows))
 
     def port(self, request, queryset):
-        for app in queryset.filter(status=ScienceApplication.ACCEPTED):
+        apps = queryset.filter(status=ScienceApplication.ACCEPTED)
+        for app in apps:
             app.convert_to_proposal()
+        self.message_user(request, '{} application(s) were converted to proposals'.format(len(apps)))
 
 admin.site.register(ScienceApplication, ScienceApplicationAdmin)

@@ -13,7 +13,7 @@ from django.urls import reverse, reverse_lazy
 
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.sciapplications.forms import (
-    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, TimeRequestFormset
+    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, timerequest_formset
 )
 
 FORM_CLASSES = {
@@ -49,7 +49,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.object = None
         self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
-        timerequest_form = TimeRequestFormset()
+        timerequest_form = timerequest_formset()
         return self.render_to_response(
             self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call)
         )
@@ -59,7 +59,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
         form.instance.submitter = request.user
-        timerequest_form = TimeRequestFormset(self.request.POST)
+        timerequest_form = timerequest_formset(self.request.POST)
         if form.is_valid() and timerequest_form.is_valid():
             return self.forms_valid({'main': form, 'tr': timerequest_form})
         else:
@@ -99,7 +99,7 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         if not self.object.status == ScienceApplication.DRAFT:
             raise Http404
         form = self.get_form()
-        timerequest_form = TimeRequestFormset(instance=self.object)
+        timerequest_form = timerequest_formset(instance=self.object)
         return self.render_to_response(
             self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.object.call)
         )
@@ -107,7 +107,7 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
-        timerequest_form = TimeRequestFormset(self.request.POST, instance=self.object)
+        timerequest_form = timerequest_formset(self.request.POST, instance=self.object)
         if form.is_valid() and timerequest_form.is_valid():
             return self.forms_valid({'main': form, 'tr': timerequest_form})
         else:
@@ -143,6 +143,7 @@ class SciApplicationDeleteView(LoginRequiredMixin, DeleteView):
 class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'sciapplications/index.html'
 
-    def get_context_data(self):
+    @staticmethod
+    def get_context_data():
         calls = Call.objects.filter(active=True, deadline__gte=timezone.now())
         return {'calls': calls}

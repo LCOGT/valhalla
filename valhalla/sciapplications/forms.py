@@ -80,6 +80,6 @@ class TimeRequestForm(ModelForm):
         exclude = ('approved',)
 
 
-TimeRequestFormset = inlineformset_factory(
+timerequest_formset = inlineformset_factory(
     ScienceApplication, TimeRequest, form=TimeRequestForm, extra=1
 )

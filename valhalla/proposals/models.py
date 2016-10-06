@@ -26,7 +26,7 @@ class TimeAllocationGroup(models.Model):
 
 
 class Proposal(models.Model):
-    id = models.CharField(primary_key=True, max_length=255)
+    code = models.CharField(max_length=255, unique=True)
     active = models.BooleanField(default=True)
     title = models.CharField(max_length=255, default='', blank=True)
     abstract = models.TextField(default='', blank=True)
@@ -36,7 +36,7 @@ class Proposal(models.Model):
     users = models.ManyToManyField(User, through='Membership')
 
     def __str__(self):
-        return self.id
+        return self.code
 
 
 class TimeAllocation(models.Model):
@@ -84,14 +84,16 @@ class ProposalInvite(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     used = models.DateTimeField(null=True)
 
+    def __str__(self):
+        return 'Invitation for {} token {}'.format(self.proposal, self.token)
+
     def accept(self, user):
-        membership = Membership.objects.create(
+        Membership.objects.create(
             proposal=self.proposal,
             role=self.role,
             user=user,
         )
         self.used = timezone.now()
-        self.membership = membership
         self.save()
 
     def send_invitation(self, email):

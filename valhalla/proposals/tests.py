@@ -11,7 +11,7 @@ class TestProposalInvitation(TestCase):
         invitation = mixer.blend(ProposalInvite)
         invitation.send_invitation('test@example.com')
         self.assertIn(str(invitation.token), str(mail.outbox[0].message()))
-        self.assertIn(invitation.proposal.id, str(mail.outbox[0].message()))
+        self.assertIn(invitation.proposal.code, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['test@example.com'])
 

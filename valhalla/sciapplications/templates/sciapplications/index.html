@@ -44,13 +44,17 @@
         <div class="row">
             <div class="col-md-12">
                 <h3>{% trans 'Open Calls' %}</h3>
-                {% for call in calls %}
-                <div class="call-block">
-                    <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small></p>
-                    <p>{{ call.eligibility_short }}</p>
-                    <p><a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
-                </div>
-                {% endfor %}
+                {% if calls %}
+                    {% for call in calls %}
+                    <div class="call-block">
+                        <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small></p>
+                        <p>{{ call.eligibility_short }}</p>
+                        <p><a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>{% trans 'There are no open calls at this time' %}</p>
+                {% endif %}
             </div>
         </div>
     </div>
