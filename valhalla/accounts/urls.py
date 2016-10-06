@@ -1,7 +1,8 @@
 from django.conf.urls import url, include
-from valhalla.accounts.views import CustomRegistrationView
+from valhalla.accounts.forms import CustomRegistrationForm
+from registration.backends.default.views import RegistrationView
 
 urlpatterns = [
-    url(r'^register/$', CustomRegistrationView.as_view(), name='registration_register'),
+    url(r'^register/$', RegistrationView.as_view(form_class=CustomRegistrationForm), name='registration_register'),
     url(r'', include('registration.backends.default.urls')),
 ]

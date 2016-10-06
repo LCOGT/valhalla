@@ -1,4 +1,3 @@
-import uuid
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -46,9 +45,10 @@ class Proposal(models.Model):
             else:
                 proposal_invite = ProposalInvite.objects.create(
                     proposal=self,
-                    role=role
+                    role=role,
+                    email=email
                 )
-                proposal_invite.send_invitation(email)
+                proposal_invite.send_invitation()
 
     def __str__(self):
         return self.code
@@ -95,12 +95,12 @@ class Membership(models.Model):
 class ProposalInvite(models.Model):
     proposal = models.ForeignKey(Proposal)
     role = models.CharField(max_length=5, choices=Membership.ROLE_CHOICES)
-    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    email = models.EmailField()
     created = models.DateTimeField(auto_now_add=True)
     used = models.DateTimeField(null=True)
 
     def __str__(self):
-        return 'Invitation for {} token {}'.format(self.proposal, self.token)
+        return 'Invitation for {} token {}'.format(self.proposal, self.email)
 
     def accept(self, user):
         Membership.objects.create(
@@ -111,14 +111,14 @@ class ProposalInvite(models.Model):
         self.used = timezone.now()
         self.save()
 
-    def send_invitation(self, email):
+    def send_invitation(self):
         subject = _('You have been added to a proposal for observing at LCO.global')
         message = render_to_string(
             'proposals/invitation.txt',
             {
                 'proposal': self.proposal,
-                'url': '{}?ptoken={}'.format(reverse('registration_register'), self.token)
+                'url': reverse('registration_register')
             }
         )
 
-        send_mail(subject, message, 'portal@lco.glboal', [email])
+        send_mail(subject, message, 'portal@lco.glboal', [self.email])
