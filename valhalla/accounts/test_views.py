@@ -79,3 +79,13 @@ class TestRegistration(TestCase):
         invitation = ProposalInvite.objects.get(pk=invitation.id)
         self.assertTrue(invitation.used)
         self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
+
+    def test_registration_with_multiple_invites(self):
+        invitations = mixer.cycle(2).blend(ProposalInvite, email=self.reg_data['email'], membership=None, used=None)
+        self.client.post(reverse('registration_register'), self.reg_data, follow=True)
+        invitation = ProposalInvite.objects.get(pk=invitations[0].id)
+        self.assertTrue(invitation.used)
+        self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
+        invitation = ProposalInvite.objects.get(pk=invitations[1].id)
+        self.assertTrue(invitation.used)
+        self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())

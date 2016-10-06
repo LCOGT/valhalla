@@ -3,7 +3,17 @@ from django.core import mail
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
-from valhalla.proposals.models import ProposalInvite
+from valhalla.proposals.models import ProposalInvite, Proposal, Membership
+
+
+class TestProposal(TestCase):
+    def test_add_users(self):
+        proposal = mixer.blend(Proposal)
+        user = mixer.blend(User, email='email1@lcogt.net')
+        emails = ['email1@lcogt.net', 'notexist@lcogt.net']
+        proposal.add_users(emails, Membership.CI)
+        self.assertIn(proposal, user.proposal_set.all())
+        self.assertTrue(ProposalInvite.objects.filter(email='notexist@lcogt.net').exists())
 
 
 class TestProposalInvitation(TestCase):

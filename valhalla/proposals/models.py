@@ -45,7 +45,8 @@ class Proposal(models.Model):
             else:
                 proposal_invite = ProposalInvite.objects.create(
                     proposal=self,
-                    role=role
+                    role=role,
+                    email=email
                 )
                 proposal_invite.send_invitation()
 
