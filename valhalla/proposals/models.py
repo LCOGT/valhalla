@@ -35,6 +35,21 @@ class Proposal(models.Model):
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
+    def add_users(self, emails, role):
+        for email in emails:
+            if User.objects.filter(email=email).exists():
+                    Membership.objects.create(
+                        proposal=self,
+                        user=User.objects.get(email=email),
+                        role=role
+                    )
+            else:
+                proposal_invite = ProposalInvite.objects.create(
+                    proposal=self,
+                    role=role
+                )
+                proposal_invite.send_invitation(email)
+
     def __str__(self):
         return self.code
 

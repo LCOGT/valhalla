@@ -118,38 +118,13 @@ class ScienceApplication(models.Model):
             )
 
         # Send invitations if necessary
-        if self.pi and not User.objects.filter(email=self.pi).exists():
-            proposal_invite = ProposalInvite.objects.create(
-                proposal=proposal,
-                role=Membership.PI,
-            )
-            proposal_invite.send_invitation(self.pi)
-        elif self.pi and User.objects.filter(email=self.pi).exists():
-            Membership.objects.create(
-                proposal=proposal,
-                user=User.objects.get(email=self.pi),
-                role=Membership.PI
-            )
+        if self.pi:
+            proposal.add_users([self.pi], Membership.PI)
         else:
-            Membership.objects.create(
-                proposal=proposal,
-                user=self.submitter,
-                role=Membership.PI
-            )
+            Membership.objects.create(proposal=proposal, user=self.submitter, role=Membership.PI)
 
-        for ci in [c for c in self.coi.replace(' ', '').split(',') if c]:
-            if User.objects.filter(email=ci).exists():
-                Membership.objects.create(
-                    proposal=proposal,
-                    user=User.objects.get(email=ci),
-                    role=Membership.CI
-                )
-            else:
-                proposal_invite = ProposalInvite.objects.create(
-                    proposal=proposal,
-                    role=Membership.CI
-                )
-                proposal_invite.send_invitation(ci)
+        cis = [c for c in self.coi.replace(' ', '').split(',') if c]
+        proposal.add_users(cis, Membership.CI)
 
         self.proposal = proposal
         self.status = ScienceApplication.PORTED
