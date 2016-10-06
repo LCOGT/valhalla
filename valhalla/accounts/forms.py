@@ -8,10 +8,11 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
     last_name = forms.CharField(max_length=200)
     institution = forms.CharField(max_length=200)
     title = forms.CharField(max_length=200)
+    ptoken = forms.CharField(max_length=64, widget=forms.HiddenInput, required=False)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name')
+        fields = ('username', 'email', 'first_name', 'last_name', 'ptoken')
         help_texts = {
             'username': 'Will be present under the USERID fits header.'
         }

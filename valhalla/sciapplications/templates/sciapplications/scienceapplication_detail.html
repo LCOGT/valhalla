@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load i18n static bootstrap3 %}
+
+{% block title %}{{ object.title}} {% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <p class="pull-right"><a href="#" onclick="window.print()">Print this page</a></p>
+        <p>{% trans 'This applications was created for' %}: {{ object.call }}</p>
+        <p>{% trans 'The application status is' %}: {{ object.status }}</p>
+
+        {% if object.title %}
+            <dl>
+                <dt>{% trans 'Title' %}</dt>
+                <dd>{{ object.title }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.abstract %}
+            <dl>
+                <dt>{% trans 'Abstract' %}</dt>
+                <dd>{{ object.abstract }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.pi %}
+            <dl>
+                <dt>{% trans 'Prinicipal Investigator' %}</dt>
+                <dd>{{ object.pi }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.coi %}
+            <dl>
+                <dt>{% trans 'Co Investigators' %}</dt>
+                <dd>{{ object.coi }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.budget_details %}
+            <strong>{% trans 'Observing Budget' %}</strong>
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-striped">
+                        <thead><tr><td>{% trans 'Telescope Class' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
+                        <tbody>
+                        {% for timerequest in object.timerequest_set.all %}
+                        <tr>
+                            <td>{{ timerequest.telescope_class }}</td>
+                            <td>{{ timerequest.std_time }}</td>
+                            <td>{{ timerequest.too_time }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <dl>
+                <dt>{% trans 'Observing budget explanation' %}</dt>
+                <dd>{{ object.budget_details }}</dd>
+            </dl>
+        {% endif %}
+
+
+        {% if object.science_case %}
+            <dl>
+                <dt>{% trans 'Science Case' %}</dt>
+                <dd><a href="{{ object.science_case.url }}">Download</a></dd>
+            </dl>
+        {% endif %}
+
+        {% if object.experimental_design %}
+            <dl>
+                <dt>{% trans 'Experimental Design' %}</dt>
+                <dd>{{ object.experimental_design }}</dd>
+                {% if object.experimental_design_file %}
+                <dd><a href="{{ object.experimental_design_file.url }}">Download</a></dd>
+                {% endif %}
+            </dl>
+        {% endif %}
+
+        {% if object.instruments %}
+            <strong>{% trans 'Instruments' %}</strong>
+            <ul>
+                {% for instrument in object.instruments.all %}
+                <li>{{ instrument }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if object.moon %}
+            <dl>
+                <dt>{% trans 'Moon' %}</dt>
+                <dd>{{ object.moon }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.related_programs %}
+            <dl>
+                <dt>{% trans 'Related Programs' %}</dt>
+                <dd>{{ object.related_programs }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.past_use %}
+            <dl>
+                <dt>{% trans 'Past Use' %}</dt>
+                <dd>{{ object.past_use }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.publications %}
+            <dl>
+                <dt>{% trans 'Applicant&#39s related publications' %}</dt>
+                <dd>{{ object.publications }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.management %}
+            <dl>
+                <dt>{% trans 'Plan for management of entire scientific investigation' %}</dt>
+                <dd>{{ object.management }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.relevance %}
+            <dl>
+                <dt>{% trans 'Relevance to uniqe capabilities of the LCOGT netowork' %}</dt>
+                <dd>{{ object.relevance }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.contribution %}
+            <dl>
+                <dt>{% trans 'Contribution brought by non-LCOGT pariticipants' %}</dt>
+                <dd>{{ object.contribution }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.science_justification %}
+            <dl>
+                <dt>{% trans 'Science Justification' %}</dt>
+                <dd>{{ object.science_justification }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.ddt_justification %}
+            <dl>
+                <dt>{% trans 'DDT Justification' %}</dt>
+                <dd>{{ object.ddt_justification }}</dd>
+            </dl>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
