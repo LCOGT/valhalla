@@ -47,3 +47,13 @@ class TestSciAppAdmin(TestCase):
         )
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.REJECTED)
+
+    def test_port(self):
+        ScienceApplication.objects.update(status=ScienceApplication.ACCEPTED)
+        self.client.post(
+            reverse('admin:sciapplications_scienceapplication_changelist'),
+            data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
+            follow=True
+        )
+        for app in self.apps:
+            self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.PORTED)
