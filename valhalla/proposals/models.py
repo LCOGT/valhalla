@@ -38,11 +38,11 @@ class Proposal(models.Model):
     def add_users(self, emails, role):
         for email in emails:
             if User.objects.filter(email=email).exists():
-                    Membership.objects.create(
-                        proposal=self,
-                        user=User.objects.get(email=email),
-                        role=role
-                    )
+                Membership.objects.create(
+                    proposal=self,
+                    user=User.objects.get(email=email),
+                    role=role
+                )
             else:
                 proposal_invite = ProposalInvite.objects.create(
                     proposal=self,

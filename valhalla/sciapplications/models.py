@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from valhalla.proposals.models import (
-    Semester, TimeAllocation, Proposal, TimeAllocationGroup, ProposalInvite, Membership
+    Semester, TimeAllocation, Proposal, TimeAllocationGroup, Membership
 )
 
 
