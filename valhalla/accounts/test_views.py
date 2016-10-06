@@ -71,25 +71,11 @@ class TestRegistration(TestCase):
         self.assertEqual(user.profile.title, self.reg_data['title'])
         self.assertEqual(user.profile.institution, self.reg_data['institution'])
 
-    def test_form_sets_ptoken(self):
-        invitation = mixer.blend(ProposalInvite, membership=None, used=None)
-        response = self.client.get(
-            '{}?ptoken={}'.format(reverse('registration_register'), invitation.token)
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, invitation.token)
-
-    def test_registration_with_ptoken(self):
-        invitation = mixer.blend(ProposalInvite, membership=None, used=None)
-        data = self.reg_data.copy()
-        data['ptoken'] = invitation.token
-        response = self.client.post(
-            reverse('registration_register'),
-            data,
-            follow=True
-        )
+    def test_registration_with_invite(self):
+        invitation = mixer.blend(ProposalInvite, email=self.reg_data['email'], membership=None, used=None)
+        response = self.client.post(reverse('registration_register'), self.reg_data, follow=True)
         self.assertEquals(response.status_code, 200)
         self.assertContains(response, 'check your email')
         invitation = ProposalInvite.objects.get(pk=invitation.id)
         self.assertTrue(invitation.used)
-        self.assertTrue(Membership.objects.filter(user__username=data['username']).exists())
+        self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
