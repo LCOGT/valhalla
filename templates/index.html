@@ -1,4 +1,65 @@
 {% extends 'base.html' %}
+{% load i18n %}
+{% block title %}Home{% endblock %}
 {% block content %}
-Valhalla
+<div class="row">
+    <div class="col-md-9">
+        {% if user.is_authenticated %}
+        {% else %}
+        <h3>{% trans 'LCO.global Observation Portal' %}</h3>
+        {% url 'auth_login' as login_url %}
+        {% url 'registration_register' as register_url %}
+        {% blocktrans %}
+        <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
+        <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
+        {% endblocktrans %}
+        {% endif %}
+    </div>
+    <div class="col-md-3">
+        {% if user.is_authenticated %}
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Active Proposals</h4>
+                {% for proposal in user.proposal_set.all %}
+                {{ proposal.title }}
+                {% empty %}
+                <p>{% trans 'You have no proposals' %}</p>
+                <p>
+                    <a href="{% url 'sciapplications:index' %}">
+                    {% trans 'Apply for time' %}
+                    </a>
+                </p>
+                {% endfor %}
+        {% endif %}
+        <div class="row">
+            <div class="col-md-12">
+                <h4>News</h4>
+                <div id="news">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_javascript %}
+<script type="text/javascript">
+$(document).ready(function(){
+    $.ajax({
+        url: '//ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
+        dataType: 'json',
+        success: function (data) {
+            rss = '<ul class="list-unstyled">'
+            if (data.responseData.feed && data.responseData.feed.entries) {
+                $.each(data.responseData.feed.entries, function (i, e) {
+                    time = new Date(e.publishedDate)
+                    str_time = time.getDate() + '/' + (time.getMonth()+1) + '/' + time.getFullYear()
+                    rss = rss + '<li><a href="' + e.link + '">' + e.title + '</a><small> ' + str_time + '</small></li>'
+                });
+            }
+            rss = rss + '</ul>'
+            $('#news').html(rss)
+        }
+    });
+});
+</script>
 {% endblock %}
