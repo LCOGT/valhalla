@@ -283,7 +283,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # check that the user belongs to the supplied proposal
         user = User.objects.get(username=data['submitter'])
-        if not user.proposal_set.filter(code=data['proposal']):
+        if not user.proposal_set.filter(id=data['proposal']):
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
