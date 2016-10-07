@@ -6,7 +6,12 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <p class="pull-right"><a href="#" onclick="window.print()">Print this page</a></p>
+        {% if not pdf %}
+        <ul class="pull-right">
+        <li><a href="#" onclick="window.print()">Print this page</a></li>
+        <li><a href="{% url 'sciapplications:pdf' pk=object.id %}">View Pdf</a></li>
+        </ul>
+        {% endif %}
         <p>{% trans 'This applications was created for' %}: {{ object.call }}</p>
         <p>{% trans 'The application status is' %}: {{ object.status }}</p>
 
@@ -73,7 +78,11 @@
         {% if object.science_case_file %}
             <dl>
                 <dt>{% trans 'Science Case File' %}</dt>
-                <dd><a href="{{ object.science_case_file.url }}">Download</a></dd>
+                {% if pdf %}
+                    <dd>{% trans 'See Attached' %}</dd>
+                {% else %}
+                    <dd><a href="{{ object.science_case_file.url }}">Download</a></dd>
+                {% endif %}
             </dl>
         {% endif %}
 
@@ -87,7 +96,11 @@
         {% if object.experimental_design_file %}
             <dl>
                 <dt>{% trans 'Experimental Design File' %}</dt>
-                <dd><a href="{{ object.experimental_design_file.url }}">Download</a></dd>
+                {% if pdf %}
+                    <dd>{% trans 'See attached' %}</dd>
+                {% else %}
+                    <dd><a href="{{ object.experimental_design_file.url }}">Download</a></dd>
+                {% endif %}
             </dl>
         {% endif %}
 
