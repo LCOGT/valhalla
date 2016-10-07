@@ -9,7 +9,9 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
-
+from weasyprint import HTML
+from PyPDF2 import PdfFileMerger
+import io
 
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.sciapplications.forms import (
@@ -143,7 +145,38 @@ class SciApplicationDeleteView(LoginRequiredMixin, DeleteView):
 class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'sciapplications/index.html'
 
-    @staticmethod
-    def get_context_data():
+    def get_context_data(self):
         calls = Call.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
-        return {'calls': calls}
+        draft_proposals = ScienceApplication.objects.filter(
+            submitter=self.request.user, status=ScienceApplication.DRAFT
+        )
+        submitted_proposals = ScienceApplication.objects.filter(
+            submitter=self.request.user).exclude(status=ScienceApplication.DRAFT)
+
+        return {'calls': calls, 'draft_proposals': draft_proposals, 'submitted_proposals': submitted_proposals}
+
+
+class SciApplicationPDFView(LoginRequiredMixin, DetailView):
+    """Generate a pdf from the detailview, and append and file attachments to the end
+    """
+    model = ScienceApplication
+    content_type = 'application/pdf'
+
+    def get_queryset(self):
+        return ScienceApplication.objects.filter(submitter=self.request.user)
+
+    def render_to_response(self, context, **kwargs):
+        context['pdf'] = True
+        response = super().render_to_response(context, **kwargs)
+        response.render()
+        html = HTML(string=response.content)
+        fileobj = io.BytesIO()
+        html.write_pdf(fileobj)
+        merger = PdfFileMerger()
+        merger.append(fileobj)
+        if self.object.science_case_file:
+            merger.append(self.object.science_case_file.file)
+        if self.object.experimental_design_file:
+            merger.append(self.object.experimental_design_file.file)
+        merger.write(response)
+        return response

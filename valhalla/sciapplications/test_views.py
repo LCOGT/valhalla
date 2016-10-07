@@ -5,6 +5,9 @@ from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import timedelta
 from mixer.backend.django import mixer
+from PyPDF2 import PdfFileMerger
+from weasyprint import HTML
+from unittest.mock import MagicMock
 
 
 from valhalla.proposals.models import Semester
@@ -334,7 +337,7 @@ class TestSciAppIndex(TestCase):
 
     def test_index_no_applications(self):
         response = self.client.get(reverse('sciapplications:index'))
-        self.assertContains(response, 'You have not submitted any applications')
+        self.assertContains(response, 'You have not started any proposals')
 
     def test_index(self):
         app = mixer.blend(
@@ -381,6 +384,21 @@ class TestSciAppDetail(TestCase):
         )
         response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
         self.assertEqual(response.status_code, 404)
+
+    def test_pdf_view(self):
+        # Just test the view here, actual pdf rendering is slow and loud
+        PdfFileMerger.merge = MagicMock
+        HTML.write_pdf = MagicMock
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:pdf', kwargs={'pk': app.id}))
+        self.assertTrue(PdfFileMerger.merge.called)
+        self.assertTrue(HTML.write_pdf.called)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestSciAppDelete(TestCase):
