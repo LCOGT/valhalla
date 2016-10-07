@@ -25,11 +25,12 @@ class TimeAllocationGroup(models.Model):
 
 
 class Proposal(models.Model):
-    code = models.CharField(max_length=255, unique=True)
+    id = models.CharField(max_length=255, primary_key=True)
     active = models.BooleanField(default=True)
     title = models.CharField(max_length=255, default='', blank=True)
     abstract = models.TextField(default='', blank=True)
-    tac_priority = models.PositiveIntegerField()
+    tac_priority = models.PositiveIntegerField(default=0)
+    tac_rank = models.PositiveIntegerField(default=0)
     tag = models.ForeignKey(TimeAllocationGroup)
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
@@ -51,7 +52,7 @@ class Proposal(models.Model):
                 proposal_invite.send_invitation()
 
     def __str__(self):
-        return self.code
+        return self.id
 
 
 class TimeAllocation(models.Model):

@@ -22,7 +22,7 @@ class TimeAllocationAdminInline(admin.TabularInline):
 
 class ProposalAdmin(admin.ModelAdmin):
     list_display = (
-        'code',
+        'id',
         'active',
         'title',
         'abstract',
