@@ -4,8 +4,11 @@ from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 import requests
+from math import ceil
 
 from valhalla.proposals.models import Proposal
+from valhalla.common.configdb import ConfigDB
+from valhalla.common.instruments import get_num_filter_changes, get_num_mol_changes
 
 
 class UserRequest(models.Model):
@@ -59,7 +62,6 @@ class Request(models.Model):
         ('PENDING', 'PENDING'),
         ('SCHEDULED', 'SCHEDULED'),
         ('COMPLETED', 'COMPLETED'),
-        ('FAILED', 'FAILED'),
         ('PARTIALLY_COMPLETE', 'PARTIALLY COMPLETE'),
         ('NOT_ATTEMPTED', 'NOT ATTEMPTED'),
     )
@@ -109,6 +111,30 @@ class Request(models.Model):
         )
         response.raise_for_status()
         return response.json()['results']
+
+    @cached_property
+    def duration(self):
+        # calculate the total time needed by the request, based on its instrument and exposures
+        configdb = ConfigDB()
+        instrument_type = self.molecule_set.first().instrument_name
+        request_overheads = configdb.get_request_overheads(instrument_type)
+        duration = sum([m.duration for m in self.molecule_set.all()])
+        if configdb.is_spectrograph(instrument_type):
+            duration += get_num_mol_changes(self.molecule_set.all()) * request_overheads['config_change_time']
+
+            if self.target.acquire_mode.upper() != 'OFF':
+                mol_types = [mol.type.upper() for mol in self.molecule_set.all()]
+                # Only add the overhead if we have on-sky targets to acquire
+                if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
+                    duration += request_overheads['acquire_exposure_time'] + request_overheads['acquire_processing_time']
+
+        else:
+            duration += get_num_filter_changes(self.molecule_set.all()) * request_overheads['filter_change_time']
+
+        duration += request_overheads['front_padding']
+        duration = ceil(duration)
+
+        return duration
 
 
 class Location(models.Model):
@@ -229,6 +255,8 @@ class Window(models.Model):
 
 
 class Molecule(models.Model):
+    PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
+    PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
     # These are filled in from the molecule types possible in requestdb.
     # There are more molecule types that the pond will accept but scheduler will not.
     MOLECULE_TYPES = (
@@ -284,8 +312,8 @@ class Molecule(models.Model):
     acquire_radius_arcsec = models.FloatField(default=0.0, blank=True)
 
     # Exposure
-    exposure_time = models.FloatField()
-    exposure_count = models.PositiveIntegerField(validators=[MinValueValidator(1),])
+    exposure_time = models.FloatField(validators=[MinValueValidator(0)])
+    exposure_count = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     # Binning
     bin_x = models.PositiveSmallIntegerField(default=1, blank=True)
@@ -299,6 +327,15 @@ class Molecule(models.Model):
 
     # Other options
     defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-10.0), MaxValueValidator(40.0)])
+
+    @cached_property
+    def duration(self):
+        configdb = ConfigDB()
+        total_overhead_per_exp = configdb.get_exposure_overhead(self.instrument_name, self.bin_x)
+        mol_duration = self.exposure_count * (self.exposure_time + total_overhead_per_exp)
+        duration = mol_duration + self.PER_MOLECULE_GAP + self.PER_MOLECULE_STARTUP_TIME
+
+        return duration
 
 
 class Constraints(models.Model):

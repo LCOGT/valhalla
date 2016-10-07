@@ -21,7 +21,8 @@ if not CONFIGDB_URL.endswith('/'):
 
 default_cache = caches['default']
 
-class ConfigDB():
+
+class ConfigDB(object):
 
     def __init__(self):
         self.site_data = self._get_configdb_data()
@@ -95,7 +96,6 @@ class ConfigDB():
                 break
         return available_binnings
 
-
     def get_default_binning(self, instrument_type):
         '''
             Function returns the default binning for the instrument type specified
@@ -107,7 +107,6 @@ class ConfigDB():
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
         return None
-
 
     def get_active_instrument_types(self, location):
         '''
@@ -125,7 +124,34 @@ class ConfigDB():
                 instrument_types.add(instrument['science_camera']['camera_type']['code'].upper())
         return instrument_types
 
-    def is_spectrograph(self, instrument_type):
+    def get_exposure_overhead(self, instrument_type, binning):
+        # using the instrument type, build an instrument with the correct configdb parameters
+        instruments = self.get_schedulable_instruments()
+        for instrument in instruments:
+            camera_type = instrument['science_camera']['camera_type']
+            if camera_type['code'].upper() == instrument_type.upper():
+                # get the binnings and put them into a dictionary
+                for mode in camera_type['mode_set']:
+                    if mode['binning'] == binning:
+                        return mode['readout'] + camera_type['fixed_overhead_per_exposure']
+
+        raise ConfigDBException("Instrument type {} not found in configdb.".format(instrument_type))
+
+    def get_request_overheads(self, instrument_type):
+        instruments = self.get_schedulable_instruments()
+        for instrument in instruments:
+            camera_type = instrument['science_camera']['camera_type']
+            if camera_type['code'].upper() == instrument_type.upper():
+                return {'config_change_time': camera_type['config_change_time'],
+                        'acquire_processing_time': camera_type['acquire_processing_time'],
+                        'acquire_exposure_time': camera_type['acquire_exposure_time'],
+                        'front_padding': camera_type['front_padding'],
+                        'filter_change_time': camera_type['filter_change_time']}
+
+        raise ConfigDBException("Instrument type {} not found in configdb.".format(instrument_type))
+
+    @staticmethod
+    def is_spectrograph(instrument_type):
         return instrument_type.upper() in ['2M0-FLOYDS-SCICAM', '0M8-NRES-SCICAM']
 
 

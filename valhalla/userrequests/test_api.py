@@ -5,7 +5,7 @@ from valhalla.proposals.models import Proposal, Membership
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
-from mock import patch
+from unittest.mock import patch
 
 
 configdb_data = [
