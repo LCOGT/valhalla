@@ -87,10 +87,12 @@
                 this project should be discussed.</p>
 
                 <p>You may upload a single file with a maximum of 1 page of justification and 2 pages containing
-                figures to support your case. We can only accept PDF formatted files.</p>
+                figures to support your case. We can only accept PDF formatted files. If uploading a file
+                is not necessary, please use the following text field.</p>
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.science_case show_label=False %}
+                {% bootstrap_field form.science_case_file show_label=False %}
             {% endif %}
 
             {% if form.experimental_design %}

@@ -19,7 +19,7 @@ class TestSciAppAdmin(TestCase):
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
-            active=True,
+            opens=timezone.now(),
             proposal_type=Call.SCI_PROPOSAL
         )
         mixer.blend(Instrument, call=self.call)
@@ -27,7 +27,8 @@ class TestSciAppAdmin(TestCase):
             ScienceApplication,
             status=ScienceApplication.SUBMITTED,
             submitter=self.user,
-            call=self.call
+            call=self.call,
+            tac_rank=(x for x in range(3))
         )
 
     def test_accept(self):
@@ -57,3 +58,12 @@ class TestSciAppAdmin(TestCase):
         )
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.PORTED)
+
+    def test_port_duplicate_tac_rank(self):
+        ScienceApplication.objects.update(status=ScienceApplication.ACCEPTED, tac_rank=0)
+        response = self.client.post(
+            reverse('admin:sciapplications_scienceapplication_changelist'),
+            data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
+            follow=True
+        )
+        self.assertContains(response, 'A proposal named LCOGT{}-000 already exists.'.format(self.semester))

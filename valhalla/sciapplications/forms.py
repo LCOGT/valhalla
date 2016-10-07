@@ -16,10 +16,7 @@ def validate_multiemails(value):
 
 class BaseProposalAppForm(ModelForm):
     call = forms.ModelChoiceField(
-        queryset=Call.objects.filter(
-            start__lt=timezone.now(),
-            deadline__gte=timezone.now()
-        ),
+        queryset=Call.objects.filter(deadline__gte=timezone.now(), opens__lte=timezone.now()),
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
@@ -45,11 +42,13 @@ class ScienceProposalAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
-            'abstract', 'moon', 'science_case', 'experimental_design',
+            'abstract', 'moon', 'science_case', 'science_case_file', 'experimental_design',
             'experimental_design_file', 'related_programs', 'past_use',
             'publications'
         )
-        required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
+        required_fields = set(fields) - set(
+            ('pi', 'coi', 'experimental_design_file', 'science_case_file')
+        )
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
@@ -67,11 +66,13 @@ class KeyProjectAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
-            'abstract', 'moon', 'science_case', 'related_programs', 'past_use', 'publications',
-            'experimental_design', 'experimental_design_file', 'management', 'relevance',
-            'contribution'
+            'abstract', 'moon', 'science_case', 'science_case_file', 'related_programs',
+            'past_use', 'publications', 'experimental_design', 'experimental_design_file',
+            'management', 'relevance', 'contribution'
         )
-        required_fields = set(fields) - set(('pi', 'coi', 'experimental_design_file'))
+        required_fields = set(fields) - set(
+            ('pi', 'coi', 'experimental_design_file', 'science_case_file')
+        )
 
 
 class TimeRequestForm(ModelForm):
