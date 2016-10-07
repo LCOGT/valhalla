@@ -36,11 +36,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
-    'crispy_forms',
     'rest_framework',
+    'bootstrap3',
     'valhalla.accounts',
     'valhalla.userrequests',
     'valhalla.proposals',
+    'valhalla.sciapplications',
 ]
 
 MIDDLEWARE = [
@@ -124,6 +125,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 ACCOUNT_ACTIVATION_DAYS = 7
 LOGIN_REDIRECT_URL = '/'
@@ -135,7 +138,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
