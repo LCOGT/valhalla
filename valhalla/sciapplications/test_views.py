@@ -90,9 +90,9 @@ class TestPostCreateSciApp(TestCase):
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci', b'science_case'),
+            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
             'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp', b'exp_file'),
+            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
             'related_programs': 'related progams value',
             'past_use': 'past use value',
             'publications': 'publications value',
@@ -233,6 +233,17 @@ class TestPostCreateSciApp(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.user.scienceapplication_set.last().pi, '')
         self.assertEqual(self.user.scienceapplication_set.last().coi, '')
+
+    def test_cannot_upload_silly_files(self):
+        data = self.sci_data.copy()
+        data['science_case_file'] = SimpleUploadedFile('notpdf.png', b'apngfile')
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'We can only accept PDF files')
 
 
 class TestGetUpdateSciApp(TestCase):
