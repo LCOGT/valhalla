@@ -16,9 +16,9 @@ def validate_multiemails(value):
 
 
 def validate_pdf_file(value):
-        filename, extension = os.path.splitext(value.name)
-        if extension != '.pdf' and extension != '.PDF':
-            raise forms.ValidationError(_('We can only accept PDF files.'))
+    extension = os.path.splitext(value.name)[1]
+    if extension != '.pdf' and extension != '.PDF':
+        raise forms.ValidationError(_('We can only accept PDF files.'))
 
 
 class BaseProposalAppForm(ModelForm):
