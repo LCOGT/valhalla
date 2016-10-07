@@ -66,7 +66,14 @@
         {% if object.science_case %}
             <dl>
                 <dt>{% trans 'Science Case' %}</dt>
-                <dd><a href="{{ object.science_case.url }}">Download</a></dd>
+                <dd>{{ object.science_case }}</dd>
+            </dl>
+        {% endif %}
+
+        {% if object.science_case_file %}
+            <dl>
+                <dt>{% trans 'Science Case File' %}</dt>
+                <dd><a href="{{ object.science_case_file.url }}">Download</a></dd>
             </dl>
         {% endif %}
 
@@ -74,9 +81,13 @@
             <dl>
                 <dt>{% trans 'Experimental Design' %}</dt>
                 <dd>{{ object.experimental_design }}</dd>
-                {% if object.experimental_design_file %}
+            </dl>
+        {% endif %}
+
+        {% if object.experimental_design_file %}
+            <dl>
+                <dt>{% trans 'Experimental Design File' %}</dt>
                 <dd><a href="{{ object.experimental_design_file.url }}">Download</a></dd>
-                {% endif %}
             </dl>
         {% endif %}
 

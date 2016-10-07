@@ -86,7 +86,8 @@ class TestPostCreateSciApp(TestCase):
             'instruments': 1,
             'abstract': 'test abstract value',
             'moon': 'EITHER',
-            'science_case': SimpleUploadedFile('sci', b'science_case'),
+            'science_case': 'science case',
+            'science_case_file': SimpleUploadedFile('sci', b'science_case'),
             'experimental_design': 'exp desgin value',
             'experimental_design_file': SimpleUploadedFile('exp', b'exp_file'),
             'related_programs': 'related progams value',
@@ -321,7 +322,7 @@ class TestSciAppIndex(TestCase):
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
-            active=True,
+            opens=timezone.now(),
             proposal_type=Call.SCI_PROPOSAL
         )
         mixer.blend(Instrument, call=self.call)
@@ -355,7 +356,7 @@ class TestSciAppDetail(TestCase):
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
-            active=True,
+            opens=timezone.now(),
             proposal_type=Call.SCI_PROPOSAL
         )
         mixer.blend(Instrument, call=self.call)
@@ -390,7 +391,7 @@ class TestSciAppDelete(TestCase):
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
-            active=True,
+            opens=timezone.now(),
             proposal_type=Call.DDT_PROPOSAL
         )
         mixer.blend(Instrument, call=self.call)

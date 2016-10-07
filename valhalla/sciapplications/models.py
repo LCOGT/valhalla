@@ -17,25 +17,21 @@ class Call(models.Model):
     SCI_PROPOSAL = 'SCI'
     DDT_PROPOSAL = 'DDT'
     KEY_PROPOSAL = 'KEY'
-    NOAC_PROPOSAL = 'NOAC'
+    NAOC_PROPOSAL = 'NAOC'
 
     PROPOSAL_TYPE_CHOICES = (
         (SCI_PROPOSAL, 'Science'),
         (DDT_PROPOSAL, 'Director\'s Discretionary Time'),
         (KEY_PROPOSAL, 'Key Project'),
-        (NOAC_PROPOSAL, 'NOAC proposal')
+        (NAOC_PROPOSAL, 'NAOC proposal')
     )
 
     semester = models.ForeignKey(Semester)
-    start = models.DateTimeField()
-    end = models.DateTimeField(blank=True, null=True)
-    call_sent = models.DateTimeField(blank=True, null=True)
-    deadline = models.DateTimeField(blank=True, null=True)
+    opens = models.DateTimeField()
+    deadline = models.DateTimeField()
     call_url = models.URLField(blank=True, default='')
     instruments = models.ManyToManyField(Instrument)
     proposal_type = models.CharField(max_length=5, choices=PROPOSAL_TYPE_CHOICES)
-    active = models.BooleanField(default=True)
-    proposal_file = models.FileField(upload_to='sciapp/call/', blank=True, null=True)
     eligibility = models.TextField(blank=True, default='')
     eligibility_short = models.TextField(blank=True, default='')
 
@@ -74,13 +70,16 @@ class ScienceApplication(models.Model):
     instruments = models.ManyToManyField(Instrument, blank=True)
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
-    science_case = models.FileField(upload_to='sciapp/sci_case/', blank=True, null=True)
+    science_case = models.TextField(blank=True, default='')
+    science_case_file = models.FileField(upload_to='sciapp/sci_case/', blank=True, null=True)
     experimental_design = models.TextField(blank=True, default='')
     experimental_design_file = models.FileField(upload_to='sciapp/tech/', blank=True, null=True)
     related_programs = models.TextField(blank=True, default='')
     past_use = models.TextField(blank=True, default='')
     publications = models.TextField(blank=True, default='')
     proposal = models.ForeignKey(Proposal, null=True, blank=True)
+    tac_rank = models.PositiveIntegerField(default=0)
+    tac_priority = models.PositiveIntegerField(default=0)
 
     # DDT Only fields
     science_justification = models.TextField(blank=True, default='')
@@ -97,13 +96,26 @@ class ScienceApplication(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def proposal_code(self):
+        proposal_type_to_name = {
+            'SCI': 'LCOGT',
+            'KEY': 'KEY',
+            'DDT': 'DDT',
+            'NAOC': 'NAOC'
+        }
+        return '{0}{1}-{2}'.format(
+            proposal_type_to_name[self.call.proposal_type], self.call.semester, str(self.tac_rank).zfill(3)
+        )
+
     def convert_to_proposal(self):
         # Create the objects we need
         proposal = Proposal.objects.create(
-            code='NAMEME-{}'.format(self.id),
+            id=self.proposal_code,
             title=self.title,
             abstract=self.abstract,
-            tac_priority=0,
+            tac_priority=self.tac_priority,
+            tac_rank=self.tac_rank,
             active=False,
             tag=TimeAllocationGroup.objects.get_or_create(id='LCOGT')[0],
         )

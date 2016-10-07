@@ -20,7 +20,7 @@ FORM_CLASSES = {
     'SCI': ScienceProposalAppForm,
     'DDT': DDTProposalAppForm,
     'KEY': KeyProjectAppForm,
-    'NOAC': ScienceProposalAppForm,
+    'NAOC': ScienceProposalAppForm,
 }
 
 
@@ -145,5 +145,5 @@ class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
 
     @staticmethod
     def get_context_data():
-        calls = Call.objects.filter(active=True, deadline__gte=timezone.now())
+        calls = Call.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
         return {'calls': calls}

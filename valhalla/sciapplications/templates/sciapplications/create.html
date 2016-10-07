@@ -87,10 +87,12 @@
                 this project should be discussed.</p>
 
                 <p>You may upload a single file with a maximum of 1 page of justification and 2 pages containing
-                figures to support your case. We can only accept PDF formatted files.</p>
+                figures to support your case. We can only accept PDF formatted files. If uploading a file
+                is not necessary, please use the following text field.</p>
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.science_case show_label=False %}
+                {% bootstrap_field form.science_case_file show_label=False %}
             {% endif %}
 
             {% if form.experimental_design %}
@@ -213,16 +215,26 @@
                row.find('input[type=number]').val(0)
             }
         });
-    })
+    });
     $('#submit').click(function(){
         if(window.confirm('Submit this application? You will no longer be able to edit it')){
             $('#id_status').val('SUBMITTED')
             $('#app_form').submit()
         }
-    })
+    });
     $('#save').click(function(){
         $('#id_status').val('DRAFT')
         $('#app_form').submit()
-    })
+    });
+    $("#id_science_case_file").change(function(){
+        if(!$("#id_science_case").val()){
+            $("#id_science_case").val('Attached')
+        }
+    });
+    $("#id_experimental_design_file").change(function(){
+        if(!$("#id_experimental_design").val()){
+            $("#id_experimental_design").val('Attached')
+        }
+    });
 </script>
 {% endblock %}

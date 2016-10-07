@@ -2,6 +2,7 @@
 from django.contrib import admin
 
 from .models import Instrument, Call, ScienceApplication, TimeRequest
+from valhalla.proposals.models import Proposal
 
 
 class InstrumentAdmin(admin.ModelAdmin):
@@ -12,14 +13,11 @@ admin.site.register(Instrument, InstrumentAdmin)
 class CallAdmin(admin.ModelAdmin):
     list_display = (
         'semester',
-        'start',
-        'end',
-        'call_sent',
+        'opens',
         'deadline',
         'proposal_type',
-        'active',
     )
-    list_filter = ('start', 'end', 'call_sent', 'deadline', 'active')
+    list_filter = ('opens', 'deadline', 'proposal_type')
 admin.site.register(Call, CallAdmin)
 
 
@@ -33,6 +31,8 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
         'title',
         'call',
         'status',
+        'submitter',
+        'tac_rank'
     )
     list_filter = ('call', 'status', 'call__proposal_type')
     actions = ['accept', 'reject', 'port']
@@ -48,7 +48,14 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
     def port(self, request, queryset):
         apps = queryset.filter(status=ScienceApplication.ACCEPTED)
         for app in apps:
-            app.convert_to_proposal()
-        self.message_user(request, '{} application(s) were converted to proposals'.format(len(apps)))
+            if Proposal.objects.filter(id=app.proposal_code).exists():
+                self.message_user(
+                    request,
+                    'A proposal named {} already exists. Check your tac rank?'.format(app.proposal_code),
+                    level='ERROR'
+                )
+            else:
+                app.convert_to_proposal()
+                self.message_user(request, 'Proposal {} successfully created.'.format(app.proposal))
 
 admin.site.register(ScienceApplication, ScienceApplicationAdmin)
