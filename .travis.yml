@@ -3,8 +3,7 @@ python:
   - "3.4"
   - "3.5"
 install:
-  - pip install -U setuptools
-  - pip install -r requirements.txt
+  - pip install --upgrade -r requirements.txt
   - pip install coverage coveralls
 script:
   coverage run manage.py test
