@@ -5,6 +5,9 @@ from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import timedelta
 from mixer.backend.django import mixer
+from PyPDF2 import PdfFileMerger
+from weasyprint import HTML
+from unittest.mock import MagicMock
 
 
 from valhalla.proposals.models import Semester
@@ -87,9 +90,9 @@ class TestPostCreateSciApp(TestCase):
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci', b'science_case'),
+            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
             'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp', b'exp_file'),
+            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
             'related_programs': 'related progams value',
             'past_use': 'past use value',
             'publications': 'publications value',
@@ -231,6 +234,17 @@ class TestPostCreateSciApp(TestCase):
         self.assertEqual(self.user.scienceapplication_set.last().pi, '')
         self.assertEqual(self.user.scienceapplication_set.last().coi, '')
 
+    def test_cannot_upload_silly_files(self):
+        data = self.sci_data.copy()
+        data['science_case_file'] = SimpleUploadedFile('notpdf.png', b'apngfile')
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'We can only accept PDF files')
+
 
 class TestGetUpdateSciApp(TestCase):
     def setUp(self):
@@ -334,7 +348,7 @@ class TestSciAppIndex(TestCase):
 
     def test_index_no_applications(self):
         response = self.client.get(reverse('sciapplications:index'))
-        self.assertContains(response, 'You have not submitted any applications')
+        self.assertContains(response, 'You have not started any proposals')
 
     def test_index(self):
         app = mixer.blend(
@@ -381,6 +395,21 @@ class TestSciAppDetail(TestCase):
         )
         response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
         self.assertEqual(response.status_code, 404)
+
+    def test_pdf_view(self):
+        # Just test the view here, actual pdf rendering is slow and loud
+        PdfFileMerger.merge = MagicMock
+        HTML.write_pdf = MagicMock
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:pdf', kwargs={'pk': app.id}))
+        self.assertTrue(PdfFileMerger.merge.called)
+        self.assertTrue(HTML.write_pdf.called)
+        self.assertEqual(response.status_code, 200)
 
 
 class TestSciAppDelete(TestCase):

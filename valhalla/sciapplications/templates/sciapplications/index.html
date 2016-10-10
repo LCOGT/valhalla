@@ -12,31 +12,62 @@
                 <p>Information about the <a href="http://lcogt.net/observatory/telescopes">telescopes</a>, <a href="http://lcogt.net/observatory/instruments">intruments</a>, <a href="http://lcogt.net/observatory/data">data handling and quality</a>, <a href="http://lcogt.net/observatory/scheduling">scheduling</a> and other technical aspects of the network is available on the <a href="http://lcogt.net/observatory/capabilities">observatory capabilities</a> pages.</p>
                 <p>Full details of our proposal and network time allocation policies are available <a href="http://lcogt.net/observatory/proposal/policies">on our website.</a></p>
                 {% endblocktrans %}
-                <h3>Submitted Applications</h3>
-                {% if user.scienceapplication_set.all %}
-                    <table class="table">
-                        <thead><tr><td>Title</td><td>Call</td><td>Deadline</td><td>Status</td><td>Edit/View</td></tr></thead>
-                        <tbody>
-                            {% for app in user.scienceapplication_set.all %}
-                            <tr>
-                                <td>{{ app.title }}</td>
-                                <td>{{ app.call }}</td>
-                                <td>{{ app.call.deadline }}</td>
-                                <td>{{ app.status }}</td>
-                                <td>
-                                    {% if app.status == 'DRAFT' %}
-                                    <a  href="{% url 'sciapplications:update' pk=app.id %}"><i class="fa fa-pencil-square-o"></i></a>
-                                    {% else %}
-                                    <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    {% trans 'You have not submitted any applications' %}
-                {% endif %}
+                <h4>Draft Proposals</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td>{% trans 'Title' %}</td>
+                            <td>{% trans 'Call' %}</td>
+                            <td>{% trans 'Deadline' %}</td>
+                            <td>{% trans 'Status' %}</td>
+                            <td>{% trans 'Preview' %}</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in draft_proposals %}
+                        <tr>
+                            <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
+                            <td>{{ app.call }}</td>
+                            <td>{{ app.call.deadline }}</td>
+                            <td>{{ app.status }}</td>
+                            <td>
+                                <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                                <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan=5>{% trans 'You have not started any proposals.' %}</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <h4>Submitted Proposals</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td>{% trans 'Title' %}</td>
+                            <td>{% trans 'Call' %}</td>
+                            <td>{% trans 'Deadline' %}</td>
+                            <td>{% trans 'Status' %}</td>
+                            <td>{% trans 'View' %}</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in submitted_proposals %}
+                        <tr>
+                            <td>{{ app.title }}</td>
+                            <td>{{ app.call }}</td>
+                            <td>{{ app.call.deadline }}</td>
+                            <td>{{ app.status }}</td>
+                            <td>
+                                <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                                <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <td colspan="5">{% trans 'You have not submitted any proposals.' %}</td>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

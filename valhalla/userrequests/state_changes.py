@@ -75,11 +75,7 @@ def modify_ipp_time(ur, modification='debit', specific_requests=None):
     if modification != 'debit' and modification != 'credit':
         raise TimeAllocationError(_("modification '{}' is not one of 'debit' or 'credit'").format(modification))
 
-    time_allocations = TimeAllocation.objects.filter(
-        semester__start__lte=ur.min_window_time(),
-        semester__end__gte=ur.max_window_time(),
-        proposal=ur.proposal
-    )
+    time_allocations = ur.timeallocations
 
     time_allocations_dict = {(ta.semester.id, ta.telescope_class): ta for ta in time_allocations.all()}
     # Ipp time debits and credits all requests within the UR at once for submitting and cancelling

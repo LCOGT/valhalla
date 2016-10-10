@@ -7,6 +7,7 @@ from valhalla.userrequests.models import Request, Target, Window, UserRequest, L
 from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
 from valhalla.common.configdb import ConfigDB
 
+
 class ConstraintsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Constraints
@@ -17,6 +18,16 @@ class MoleculeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Molecule
         exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
+
+    def validate_instrument_name(self, value):
+        configdb = ConfigDB()
+        if value and value not in configdb.get_active_instrument_types({}):
+            raise serializers.ValidationError(
+                _("Invalid instrument name {}. Valid instruments may include: {}").format(
+                    value, ', '.join(configdb.get_active_instrument_types({}))
+                )
+            )
+        return value
 
     def validate(self, data):
         # set special defaults if it is a spectrograph
@@ -29,27 +40,28 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
 
-        # check if instrument is schedulable at all (will check if it is at the location in the molecule validation)
-        if data['instrument_name'] not in configdb.get_active_instrument_types({}):
-            raise serializers.ValidationError(_("Invalid instrument name {}. Valid instruments may include: {}").format(
-                                                data['instrument_name'],
-                                                ', '.join(configdb.get_active_instrument_types({}))))
-
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):
             if data['spectra_slit'] not in available_filters:
-                raise serializers.ValidationError(_("Invalid spectra slit {} for instrument {}. Valid slits are: {}")
-                                                  .format(data['spectra_slit'], data['instrument_name'],
-                                                          ", ".join(available_filters)))
+                raise serializers.ValidationError(
+                    _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
+                        data['spectra_slit'], data['instrument_name'], ", ".join(available_filters)
+                    )
+                )
         elif data['type'].lower() in types_that_require_filter:
             if 'filter' not in data:
-                raise serializers.ValidationError(_("Molecule type {} with instrument {} must specify a filter.")
-                                                  .format(data['type'], data['instrument_name']))
+                raise serializers.ValidationError(
+                    _("Molecule type {} with instrument {} must specify a filter.").format(
+                        data['type'], data['instrument_name']
+                    )
+                )
             elif data['filter'] not in available_filters:
-                raise serializers.ValidationError(_("Invalid filter {} for instrument {}. Valid filters are: {}")
-                                                  .format(data['filter'], data['instrument_name'],
-                                                          ", ".join(available_filters)))
+                raise serializers.ValidationError(
+                    _("Invalid filter {} for instrument {}. Valid filters are: {}").format(
+                        data['filter'], data['instrument_name'], ", ".join(available_filters)
+                    )
+                )
 
         # check that the binning is available for the instrument type specified
         if 'bin_x' not in data and 'bin_y' not in data:
@@ -59,14 +71,14 @@ class MoleculeSerializer(serializers.ModelSerializer):
             available_binnings = configdb.get_binnings(data['instrument_name'])
             if data['bin_x'] not in available_binnings:
                 msg = _("Invalid binning of {} for instrument {}. Valid binnings are: {}").format(
-                    data['bin_x'],
-                    data['instrument_name'].upper(),
-                    ", ".join([str(binning) for binning in available_binnings]))
+                    data['bin_x'], data['instrument_name'].upper(), ", ".join([str(b) for b in available_binnings])
+                )
                 raise serializers.ValidationError(msg)
         else:
             raise serializers.ValidationError(_("Missing one of bin_x or bin_y. Specify both or neither."))
 
         return data
+
 
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,11 +99,13 @@ class LocationSerializer(serializers.ModelSerializer):
                 msg = _('Site {} not valid. Valid choices: {}').format(data['site'], ', '.join(site_data_dict.keys()))
                 raise serializers.ValidationError(msg)
             obs_set = site_data_dict[data['site']]['enclosure_set']
-            obs_dict = {obs['code']:obs for obs in obs_set}
+            obs_dict = {obs['code']: obs for obs in obs_set}
             if 'observatory' in data:
                 if data['observatory'] not in obs_dict:
-                    msg = _('Observatory {} not valid. Valid choices: {}').format(data['observatory'],
-                                                                               ', '.join(obs_dict.keys()))
+                    msg = _('Observatory {} not valid. Valid choices: {}').format(
+                        data['observatory'],
+                        ', '.join(obs_dict.keys())
+                    )
                     raise serializers.ValidationError(msg)
 
                 tel_set = obs_dict[data['observatory']]['telescope_set']
@@ -113,6 +127,7 @@ class WindowSerializer(serializers.ModelSerializer):
             msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
             raise serializers.ValidationError(msg)
         return data
+
 
 class TargetSerializer(serializers.ModelSerializer):
 
@@ -164,6 +179,11 @@ class TargetSerializer(serializers.ModelSerializer):
             data = self._validate_sidereal_target(data)
         elif data['type'] == 'NON_SIDEREAL':
             data = self._validate_nonsidereal_target(data)
+        elif data['type'] == 'SATELLITE':
+            pass  # TODO implement this
+        else:
+            print('here')
+            raise serializers.ValidationError(_('Invalid target type {}'.format(data['type'])))
         return data
 
     def _validate_sidereal_target(self, data):
@@ -172,11 +192,8 @@ class TargetSerializer(serializers.ModelSerializer):
         data.setdefault('equinox', default='J2000')
 
         # Complain if proper motion has been provided, and there is no explicit epoch
-        if ( ( 'proper_motion_ra' in data ) or
-             ( 'proper_motion_dec' in data ) ):
-            if 'epoch' not in data:
-                msg = _('Epoch required, since proper motion has been specified.')
-                raise serializers.ValidationError(msg)
+        if ('proper_motion_ra' in data or 'proper_motion_dec' in data) and 'epoch' not in data:
+                raise serializers.ValidationError(_('Epoch is required when proper motion is specified.'))
         # Otherwise, set epoch to 2000
         elif 'epoch' not in data:
             data['epoch'] = 2000.0
@@ -189,7 +206,6 @@ class TargetSerializer(serializers.ModelSerializer):
         if 'ra' not in data or 'dec' not in data:
             raise serializers.ValidationError(_('A Sidereal target must specify an `ra` and `dec`'))
         return data
-
 
     def _validate_nonsidereal_target(self, data):
         # Tim wanted an eccentricity limit of 0.9 for non-comet targets
@@ -281,6 +297,27 @@ class UserRequestSerializer(serializers.ModelSerializer):
             for data in molecule_data:
                 Molecule.objects.create(request=request, **data)
 
+        # check the proposal has a time allocation with enough time for all requests depending on operator
+        try:
+            total_duration = user_request.total_duration()
+            time_allocations = user_request.timeallocations
+            for tak, duration in total_duration.items():
+                time_allocation = time_allocations.get(semester=tak.semester, telescope_class=tak.telescope_class)
+                enough_time = False
+                if (user_request.observation_type == UserRequest.NORMAL and
+                    (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                elif (user_request.observation_type == UserRequest.TOO and
+                    (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                if not enough_time:
+                    raise serializers.ValidationError(
+                        _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
+                            user_request.proposal.id, tak.semester, tak.telescope_class)
+                    )
+        except Exception as e:
+            raise serializers.ValidationError(_("Time Allocation not found."))
+
         if user_request.ipp_value > 1.0:
             try:
                 modify_ipp_time(user_request, 'debit')
@@ -296,6 +333,18 @@ class UserRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
+
+        # for request in data['requests']:
+        #     time_allocations = TimeAllocation.objects.filter(
+        #         telescope_class=request['location']['telescope_class'],
+        #         start__lte=min([win['start'] for win in request['windows']]),
+        #         end__gte=max([win['end'] for win in request['windows']]),
+        #         proposal=data['proposal']
+        #     )
+        #     if data['observation_type'] == UserRequest.NORMAL:
+        #         exists = time_allocations.filter(std_time_avalilable__gt=0).exists()
+        #     elif data['observation_type'] == UserRequest.TOO:
+        #         exists = time_allocations.filter(too_time_available__gt=0).exists()
 
         return data
 

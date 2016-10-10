@@ -6,12 +6,15 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import requests
 from math import ceil
 
-from valhalla.proposals.models import Proposal
+from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.common.configdb import ConfigDB
 from valhalla.common.instruments import get_num_filter_changes, get_num_mol_changes
 
 
 class UserRequest(models.Model):
+    NORMAL = 'NORMAL'
+    TOO = 'TARGET_OF_OPPORTUNITY'
+
     STATE_CHOICES = (
         ('PENDING', 'PENDING'),
         ('SCHEDULED', 'SCHEDULED'),
@@ -27,8 +30,8 @@ class UserRequest(models.Model):
     )
 
     OBSERVATION_TYPES = (
-        ('NORMAL', 'NORMAL'),
-        ('TARGET_OF_OPPORTUNITY', 'TARGET_OF_OPPORTUNITY'),
+        ('NORMAL', NORMAL),
+        ('TARGET_OF_OPPORTUNITY', TOO),
     )
 
     submitter = models.ForeignKey(User)
@@ -66,6 +69,33 @@ class UserRequest(models.Model):
 
     def max_window_time(self):
         return max([request.max_window_time() for request in self.request_set.all()])
+
+    @property
+    def timeallocations(self):
+        return self.proposal.timeallocation_set.filter(
+            semester__start__lte=self.min_window_time(),
+            semester__end__gte=self.max_window_time()
+        )
+
+    def total_duration(self):
+        total_duration = {}
+        if self.operator == 'SINGLE':
+            request = self.request_set.first()
+            total_duration[request.time_allocation_key] = request.duration
+
+        elif self.operator == 'MANY' or self.operator == 'ONEOF':
+            for request in self.request_set.all():
+                total_duration[request.time_allocation_key] = max(
+                    total_duration.get(request.time_allocation_key, 0.0),
+                    request.duration
+                )
+        elif self.operator == 'AND':
+            for request in self.request_set.all():
+                if not request.time_allocation_key in total_duration:
+                    total_duration[request.time_allocation_key] = 0
+                total_duration[request.time_allocation_key] += request.duration
+
+        return total_duration
 
 
 class Request(models.Model):
@@ -146,6 +176,17 @@ class Request(models.Model):
 
     def max_window_time(self):
         return max([window.end for window in self.window_set.all()])
+
+    @property
+    def time_allocation_key(self):
+        return TimeAllocationKey(self.timeallocation.semester.id, self.location.telescope_class)
+
+    @property
+    def timeallocation(self):
+        return self.user_request.proposal.timeallocation_set.get(
+            semester__start__lte=self.min_window_time(),
+            semester__end__gte=self.max_window_time()
+        )
 
 
 class Location(models.Model):
