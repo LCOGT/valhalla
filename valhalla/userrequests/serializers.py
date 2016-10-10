@@ -193,7 +193,7 @@ class TargetSerializer(serializers.ModelSerializer):
 
         # Complain if proper motion has been provided, and there is no explicit epoch
         if ('proper_motion_ra' in data or 'proper_motion_dec' in data) and 'epoch' not in data:
-                raise serializers.ValidationError(_('Epoch is required when proper motion is specified.'))
+            raise serializers.ValidationError(_('Epoch is required when proper motion is specified.'))
         # Otherwise, set epoch to 2000
         elif 'epoch' not in data:
             data['epoch'] = 2000.0
@@ -274,7 +274,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             'id', 'submitter', 'created', 'state', 'modified'
         )
 
-    @transaction.atomic()
+    @transaction.atomic
     def create(self, validated_data):
         request_data = validated_data.pop('request_set')
 
@@ -306,16 +306,16 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 enough_time = False
                 if (user_request.observation_type == UserRequest.NORMAL and
                         (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                            enough_time = True
+                    enough_time = True
                 elif (user_request.observation_type == UserRequest.TOO and
                         (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                            enough_time = True
+                    enough_time = True
                 if not enough_time:
                     raise serializers.ValidationError(
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
                             user_request.proposal.id, tak.semester, tak.telescope_class)
                     )
-        except Exception as e:
+        except Exception:
             raise serializers.ValidationError(_("Time Allocation not found."))
 
         if user_request.ipp_value > 1.0:
