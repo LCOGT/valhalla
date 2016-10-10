@@ -1,9 +1,7 @@
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
-import requests
 from math import ceil
 
 from valhalla.proposals.models import Proposal, TimeAllocationKey
@@ -50,20 +48,6 @@ class UserRequest(models.Model):
     def get_id_display(self):
         return str(self.id).zfill(10)
 
-    @property
-    def blocks(self):
-        blocks = []
-        for request in self.requests_set.all():
-            blocks += request.blocks
-        return blocks
-
-    @property
-    def frames(self):
-        frames = []
-        for request in self.requests_set.all():
-            frames += request.frames
-        return frames
-
     def min_window_time(self):
         return min([request.min_window_time() for request in self.request_set.all()])
 
@@ -91,7 +75,7 @@ class UserRequest(models.Model):
                 )
         elif self.operator == 'AND':
             for request in self.request_set.all():
-                if not request.time_allocation_key in total_duration:
+                if request.time_allocation_key not in total_duration:
                     total_duration[request.time_allocation_key] = 0
                 total_duration[request.time_allocation_key] += request.duration
 
@@ -128,26 +112,6 @@ class Request(models.Model):
         return str(self.id).zfill(10)
 
     @cached_property
-    def blocks(self):
-        response = requests.get(
-            'http://{0}:12000/pond/pond/block/request/{1}.json'.format(
-                settings.POND_HOST, self.id
-            )
-        )
-        response.raise_for_status()
-        return response.json()
-
-    @cached_property
-    def frames(self):
-        headers = {'Authorization': 'Token {}'.format(settings.ARCHIVE_API_TOKEN)}
-        response = requests.get(
-            '{0}frames/?REQNUM={1}&limit=1000'.format(settings.ARCHIVE_API, self.id),
-            headers=headers
-        )
-        response.raise_for_status()
-        return response.json()['results']
-
-    @cached_property
     def duration(self):
         # calculate the total time needed by the request, based on its instrument and exposures
         configdb = ConfigDB()
@@ -161,7 +125,8 @@ class Request(models.Model):
                 mol_types = [mol.type.upper() for mol in self.molecule_set.all()]
                 # Only add the overhead if we have on-sky targets to acquire
                 if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
-                    duration += request_overheads['acquire_exposure_time'] + request_overheads['acquire_processing_time']
+                    duration += request_overheads['acquire_exposure_time'] + \
+                        request_overheads['acquire_processing_time']
 
         else:
             duration += get_num_filter_changes(self.molecule_set.all()) * request_overheads['filter_change_time']
@@ -286,7 +251,7 @@ class Target(models.Model):
     meandist = models.FloatField(verbose_name='Mean distance (AU)', null=True, blank=True)
     perihdist = models.FloatField(verbose_name='Perihelion distance (AU)', null=True, blank=True)
     eccentricity = models.FloatField(verbose_name='Eccentricity', null=True, blank=True,
-                                     validators=[MinValueValidator(0.0),])
+                                     validators=[MinValueValidator(0.0)])
     meanlong = models.FloatField(verbose_name='Mean longitude (deg)', null=True, blank=True)
     meananom = models.FloatField(verbose_name='Mean anomoly (deg)', null=True, blank=True,
                                  validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])

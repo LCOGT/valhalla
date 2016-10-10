@@ -1,10 +1,10 @@
-__author__ = 'jnation'
-
 import requests
 from django.core.cache import caches
 from django.utils.translation import ugettext as _
 from os import getenv
 import logging
+
+__author__ = 'jnation'
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 class ConfigDBException(Exception):
     pass
 
-CONFIGDB_ERROR_MSG = _("ConfigDB connection is currently down, please wait a few minutes and try again." \
-                       " If this problem persists then please contact support.")
+CONFIGDB_ERROR_MSG = _(("ConfigDB connection is currently down, please wait a few minutes and try again."
+                       " If this problem persists then please contact support."))
 
 CONFIGDB_URL = getenv('CONFIGDB_URL', 'http://configdb.lco.gtn/')
 if not CONFIGDB_URL.endswith('/'):

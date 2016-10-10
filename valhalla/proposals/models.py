@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from collections import namedtuple
 
+
 class Semester(models.Model):
     id = models.CharField(primary_key=True, max_length=20)
     start = models.DateTimeField()
@@ -55,6 +56,7 @@ class Proposal(models.Model):
         return self.id
 
 TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class'])
+
 
 class TimeAllocation(models.Model):
     TELESCOPE_CLASSES = (

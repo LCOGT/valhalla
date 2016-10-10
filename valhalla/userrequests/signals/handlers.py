@@ -1,8 +1,8 @@
-__author__ = 'jnation'
 from django.dispatch import receiver
 from django.db.models.signals import pre_save
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.userrequests.state_changes import on_request_state_change, on_userrequest_state_change, modify_ipp_time
+from valhalla.userrequests.state_changes import on_request_state_change, on_userrequest_state_change
+
 
 @receiver(pre_save, sender=UserRequest)
 def userrequest_pre_save(sender, instance, *args, **kwargs):

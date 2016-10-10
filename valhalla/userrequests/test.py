@@ -1,5 +1,3 @@
-__author__ = 'jnation'
-
 from valhalla.userrequests.models import Request, Molecule, Target
 from valhalla.common.configdb import ConfigDBException
 

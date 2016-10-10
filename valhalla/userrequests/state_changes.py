@@ -1,10 +1,9 @@
-__author__ = 'jnation'
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
 
-from valhalla.proposals.models import TimeAllocation, Semester, Proposal
+from valhalla.proposals.models import Semester
 
 import logging
 
@@ -12,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 REQUEST_STATE_MAP = {
-                  'PENDING'        : ['SCHEDULED', 'FAILED', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED'],
-                  'COMPLETED'      : [],
-                  'SCHEDULED'      : ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED'],
-                  'WINDOW_EXPIRED' : ['COMPLETED'],
-                  'CANCELED'       : ['COMPLETED'],
-                }
+    'PENDING': ['SCHEDULED', 'FAILED', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED'],
+    'COMPLETED': [],
+    'SCHEDULED': ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED'],
+    'WINDOW_EXPIRED': ['COMPLETED'],
+    'CANCELED': ['COMPLETED'],
+}
 
 TERMINAL_STATES = ['COMPLETED', 'CANCELED', 'WINDOW_EXPIRED']
 
@@ -107,8 +106,8 @@ def modify_ipp_time(ur, modification='debit', specific_requests=None):
             if modification == 'debit':
                 if modified_ipp_values_dict[tak] < request.duration*ipp_value:
                     max_ipp_allowable = (modified_ipp_values_dict[tak] / request.duration) + 1.0
-                    msg = _("{} '{}' ipp_value of {} requires more ipp_time then is available. " \
-                        "Please lower your ipp_value to <= {:.3f} and submit again.").format(
+                    msg = _(("{} '{}' ipp_value of {} requires more ipp_time then is available. "
+                            "Please lower your ipp_value to <= {:.3f} and submit again.")).format(
                             request.location.telescope_class,
                             ur.observation_type,
                             (ipp_value + 1),

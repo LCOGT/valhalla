@@ -10,7 +10,7 @@ from django.utils import timezone
 from datetime import datetime
 import copy
 
-import valhalla.userrequests.signals.handlers
+import valhalla.userrequests.signals.handlers # noqa
 
 
 configdb_data = [
@@ -280,12 +280,19 @@ class TestUserPostRequestIPPApi(APITestCase):
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
 
-        semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc), end=datetime(2016, 12, 31, tzinfo=timezone.utc))
+        semester = mixer.blend(
+            Semester,
+            id='2016B',
+            start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
 
-        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
-                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0)
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
 
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['ipp_value'] = 1.5
@@ -309,7 +316,7 @@ class TestUserPostRequestIPPApi(APITestCase):
         self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
 
         ur = self.generic_payload.copy()
-        #ipp value that is too high, will be rejected
+        # ipp value that is too high, will be rejected
         ur['ipp_value'] = 100.0
         ur['group_id'] = 'failipp'
         response = self.client.post(reverse('api:user_requests-list'), data=ur)
@@ -430,15 +437,15 @@ class TestNonSiderealTarget(APITestCase):
         self.generic_payload['requests'][0]['target'] = {
             'name': 'fake target',
             'type': 'NON_SIDEREAL',
-            'scheme'              : 'ASA_COMET',
+            'scheme': 'ASA_COMET',
             # Non sidereal param
-            'epochofel'         : 57400.0,
-            'orbinc'            : 2.0,
-            'longascnode'       : 3.0,
-            'argofperih'        : 4.0,
-            'perihdist'         : 5.0,
-            'eccentricity'      : 0.99,
-            'epochofperih'      : 57400.0,
+            'epochofel': 57400.0,
+            'orbinc': 2.0,
+            'longascnode': 3.0,
+            'argofperih': 4.0,
+            'perihdist': 5.0,
+            'eccentricity': 0.99,
+            'epochofperih': 57400.0,
         }
 
     def tearDown(self):

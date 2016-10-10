@@ -305,11 +305,11 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 time_allocation = time_allocations.get(semester=tak.semester, telescope_class=tak.telescope_class)
                 enough_time = False
                 if (user_request.observation_type == UserRequest.NORMAL and
-                    (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                    enough_time = True
+                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
+                            enough_time = True
                 elif (user_request.observation_type == UserRequest.TOO and
-                    (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                    enough_time = True
+                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
+                            enough_time = True
                 if not enough_time:
                     raise serializers.ValidationError(
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
@@ -333,18 +333,6 @@ class UserRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
-
-        # for request in data['requests']:
-        #     time_allocations = TimeAllocation.objects.filter(
-        #         telescope_class=request['location']['telescope_class'],
-        #         start__lte=min([win['start'] for win in request['windows']]),
-        #         end__gte=max([win['end'] for win in request['windows']]),
-        #         proposal=data['proposal']
-        #     )
-        #     if data['observation_type'] == UserRequest.NORMAL:
-        #         exists = time_allocations.filter(std_time_avalilable__gt=0).exists()
-        #     elif data['observation_type'] == UserRequest.TOO:
-        #         exists = time_allocations.filter(too_time_available__gt=0).exists()
 
         return data
 
