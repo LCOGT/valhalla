@@ -84,7 +84,7 @@ configdb_data = [
             },
         ]
     },
-        {
+    {
         'code': 'non',
         'enclosure_set': [
             {
@@ -101,6 +101,7 @@ configdb_data = [
     },
 ]
 
+
 class TestRequestDuration(TestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
@@ -111,26 +112,40 @@ class TestRequestDuration(TestCase):
 
         self.target_acquire_off = mixer.blend(Target, acquire_mode='OFF')
 
-        self.molecule_expose = mixer.blend(Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-                                      exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah')
+        self.molecule_expose = mixer.blend(
+            Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah'
+        )
 
-        self.molecule_expose_1 = mixer.blend(Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-                                      exposure_time=1000, exposure_count=1, type='EXPOSE', filter='uv')
+        self.molecule_expose_1 = mixer.blend(
+            Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=1000, exposure_count=1, type='EXPOSE', filter='uv'
+        )
 
-        self.molecule_expose_2 = mixer.blend(Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-                                      exposure_time=10, exposure_count=5, type='EXPOSE', filter='uv')
+        self.molecule_expose_2 = mixer.blend(
+            Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=10, exposure_count=5, type='EXPOSE', filter='uv'
+        )
 
-        self.molecule_expose_3 = mixer.blend(Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-                                      exposure_time=3, exposure_count=3, type='EXPOSE', filter='ir')
+        self.molecule_expose_3 = mixer.blend(
+            Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=3, exposure_count=3, type='EXPOSE', filter='ir'
+        )
 
-        self.molecule_spectrum = mixer.blend(Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
-                                                   exposure_time=1800, exposure_count=1, type='SPECTRUM')
+        self.molecule_spectrum = mixer.blend(
+            Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
+            exposure_time=1800, exposure_count=1, type='SPECTRUM'
+        )
 
-        self.molecule_arc = mixer.blend(Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
-                                                exposure_time=30, exposure_count=2, type='ARC')
+        self.molecule_arc = mixer.blend(
+            Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
+            exposure_time=30, exposure_count=2, type='ARC'
+        )
 
-        self.molecule_lampflat = mixer.blend(Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
-                                                   exposure_time=60, exposure_count=1, type='LAMPFLAT')
+        self.molecule_lampflat = mixer.blend(
+            Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
+            exposure_time=60, exposure_count=1, type='LAMPFLAT'
+        )
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -227,6 +242,5 @@ class TestRequestDuration(TestCase):
         bad_molecule = mixer.blend(Molecule, instrument_name='FAKE_INSTRUMENT', bin_x=1, bin_y=1)
 
         with self.assertRaises(ConfigDBException) as context:
-            duration = bad_molecule.duration
+            bad_molecule.duration
             self.assertTrue('not found in configdb' in context.exception)
-

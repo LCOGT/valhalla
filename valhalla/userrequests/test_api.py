@@ -67,7 +67,7 @@ configdb_data = [
             },
         ]
     },
-        {
+    {
         'code': 'non',
         'enclosure_set': [
             {
@@ -400,15 +400,15 @@ class TestNonSiderealTarget(APITestCase):
                 'target': {
                     'name': 'fake target',
                     'type': 'NON_SIDEREAL',
-                    'scheme'              : 'ASA_COMET',
+                    'scheme': 'ASA_COMET',
                     # Non sidereal param
-                    'epochofel'         : 57400.0,
-                    'orbinc'            : 2.0,
-                    'longascnode'       : 3.0,
-                    'argofperih'        : 4.0,
-                    'perihdist'         : 5.0,
-                    'eccentricity'      : 0.99,
-                    'epochofperih'      : 57400.0,
+                    'epochofel': 57400.0,
+                    'orbinc': 2.0,
+                    'longascnode': 3.0,
+                    'argofperih': 4.0,
+                    'perihdist': 5.0,
+                    'eccentricity': 0.99,
+                    'epochofperih': 57400.0,
                 },
                 'molecules': [{
                     'type': 'EXPOSE',
@@ -435,6 +435,12 @@ class TestNonSiderealTarget(APITestCase):
 
     def tearDown(self):
         self.configdb_patcher.stop()
+
+    def test_post_userrequest_invalid_target_type(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['type'] = 'NOTATYPE'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
 
     def test_post_userrequest_non_sidereal_target(self):
         good_data = self.generic_payload.copy()
@@ -473,14 +479,14 @@ class TestSatelliteTarget(APITestCase):
                     'name': 'fake target',
                     'type': 'SATELLITE',
                     # satellite
-                    'altitude'                  : 33.0,
-                    'azimuth'                   : 2.0,
-                    'diff_pitch_rate'           : 3.0,
-                    'diff_roll_rate'            : 4.0,
-                    'diff_pitch_acceleration'   : 5.0,
-                    'diff_roll_acceleration'    : 0.99,
-                    'diff_epoch_rate'           : 22.0,
-                    'epoch'                     : 2000.0,
+                    'altitude': 33.0,
+                    'azimuth': 2.0,
+                    'diff_pitch_rate': 3.0,
+                    'diff_roll_rate': 4.0,
+                    'diff_pitch_acceleration': 5.0,
+                    'diff_roll_acceleration': 0.99,
+                    'diff_epoch_rate': 22.0,
+                    'epoch': 2000.0,
                 },
                 'molecules': [{
                     'type': 'EXPOSE',
@@ -781,5 +787,3 @@ class TestGetRequestApi(APITestCase):
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
-
-
