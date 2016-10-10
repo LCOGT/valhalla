@@ -36,8 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
+    'rest_framework',
     'bootstrap3',
     'valhalla.accounts',
+    'valhalla.userrequests',
     'valhalla.proposals',
     'valhalla.sciapplications',
 ]
@@ -136,6 +138,13 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
+
+REST_FRAMEWORK = {
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
 
 try:
     from local_settings import * # noqa
