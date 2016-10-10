@@ -1,11 +1,16 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.proposals.models import Proposal, Membership
+from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
 from unittest.mock import patch
+from django.utils import timezone
+from datetime import datetime
+import copy
+
+import valhalla.userrequests.signals.handlers
 
 
 configdb_data = [
@@ -27,13 +32,22 @@ configdb_data = [
                                         'name': '1M0-SCICAM-SBIG',
                                         'default_mode': {
                                             'binning': 2,
+                                            'readout': 14,
                                         },
+                                        'config_change_time': 30,
+                                        'acquire_processing_time': 30,
+                                        'acquire_exposure_time': 30,
+                                        'front_padding': 90,
+                                        'filter_change_time': 2,
+                                        'fixed_overhead_per_exposure': 1,
                                         'mode_set': [
                                             {
                                                 'binning': 1,
+                                                'readout': 33,
                                             },
                                             {
                                                 'binning': 2,
+                                                'readout': 14,
                                             },
                                         ]
                                     },
@@ -48,12 +62,20 @@ configdb_data = [
                                     'camera_type': {
                                         'code': '2M0-FLOYDS-SCICAM',
                                         'name': '2M0-FLOYDS-SCICAM',
+                                        'config_change_time': 30,
+                                        'acquire_processing_time': 30,
+                                        'acquire_exposure_time': 30,
+                                        'front_padding': 90,
+                                        'filter_change_time': 2,
+                                        'fixed_overhead_per_exposure': 1,
                                         'default_mode': {
                                             'binning': 1,
+                                            'readout': 33,
                                         },
                                         'mode_set': [
                                             {
                                                 'binning': 1,
+                                                'readout': 33,
                                             },
                                         ]
                                     },
@@ -83,6 +105,41 @@ configdb_data = [
         ]
     },
 ]
+
+generic_payload = {
+    'proposal': 'temp',
+    'group_id': 'test group',
+    'operator': 'AND',
+    'ipp_value': 1.0,
+    'requests': [{
+        'target': {
+            'name': 'fake target',
+            'type': 'SIDEREAL',
+            'dec': 34.4,
+            'ra': 20,
+        },
+        'molecules': [{
+            'type': 'EXPOSE',
+            'instrument_name': '1M0-SCICAM-SBIG',
+            'filter': 'air',
+            'exposure_time': 100,
+            'exposure_count': 1,
+            'bin_x': 1,
+            'bin_y': 1,
+        }],
+        'windows': [{
+            'start': '2016-09-29T21:12:18Z',
+            'end': '2016-10-29T21:12:19Z'
+        }],
+        'location': {
+            'telescope_class': '1m0',
+        },
+        'constraints': {
+            'max_airmass': 2.0,
+            'min_lunar_distance': 30.0,
+        }
+    }]
+}
 
 
 class TestUserGetRequestApi(APITestCase):
@@ -143,41 +200,8 @@ class TestUserPostRequestApi(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SIDEREAL',
-                    'dec': 34.4,
-                    'ra': 20,
-                    'epoch': 2000,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -237,6 +261,57 @@ class TestUserPostRequestApi(APITestCase):
         self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'ON')
 
 
+class TestUserPostRequestIPPApi(APITestCase):
+    def setUp(self):
+        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
+        self.mock_configdb = self.configdb_patcher.start()
+        self.mock_configdb.return_value = configdb_data
+
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+
+        semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc), end=datetime(2016, 12, 31, tzinfo=timezone.utc))
+
+        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
+                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=5.0)
+
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['ipp_value'] = 1.5
+        self.generic_payload['proposal'] = self.proposal.id
+
+    def tearDown(self):
+        self.configdb_patcher.stop()
+
+    def test_user_request_debit_ipp_on_creation(self):
+        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+
+        ur = self.generic_payload.copy()
+        response = self.client.post(reverse('api:user_requests-list'), data=ur)
+        self.assertEqual(response.status_code, 201)
+
+        # verify that now that the object is saved, ipp has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation.ipp_time_available, 5.0)
+
+    def test_user_request_debit_ipp_on_creation_fail(self):
+        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+
+        ur = self.generic_payload.copy()
+        #ipp value that is too high, will be rejected
+        ur['ipp_value'] = 100.0
+        response = self.client.post(reverse('api:user_requests-list'), data=ur)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('TimeAllocationError', str(response.content))
+
+        # verify that objects were not created by the send
+        self.assertEqual(len(UserRequest.objects.filter(ipp_value=100.0)), 0)
+
+
 class TestWindowApi(APITestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
@@ -248,41 +323,8 @@ class TestWindowApi(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SIDEREAL',
-                    'dec': 34.4,
-                    'ra': 20,
-                    'epoch': 2000,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0SciCam',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -305,40 +347,8 @@ class TestSiderealTarget(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SIDEREAL',
-                    'dec': 34.4,
-                    'ra': 20,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -391,47 +401,21 @@ class TestNonSiderealTarget(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'NON_SIDEREAL',
-                    'scheme'              : 'ASA_COMET',
-                    # Non sidereal param
-                    'epochofel'         : 57400.0,
-                    'orbinc'            : 2.0,
-                    'longascnode'       : 3.0,
-                    'argofperih'        : 4.0,
-                    'perihdist'         : 5.0,
-                    'eccentricity'      : 0.99,
-                    'epochofperih'      : 57400.0,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
+        self.generic_payload['requests'][0]['target'] = {
+                                                            'name': 'fake target',
+                                                            'type': 'NON_SIDEREAL',
+                                                            'scheme'              : 'ASA_COMET',
+                                                            # Non sidereal param
+                                                            'epochofel'         : 57400.0,
+                                                            'orbinc'            : 2.0,
+                                                            'longascnode'       : 3.0,
+                                                            'argofperih'        : 4.0,
+                                                            'perihdist'         : 5.0,
+                                                            'eccentricity'      : 0.99,
+                                                            'epochofperih'      : 57400.0,
+                                                        }
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -463,47 +447,21 @@ class TestSatelliteTarget(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SATELLITE',
-                    # satellite
-                    'altitude'                  : 33.0,
-                    'azimuth'                   : 2.0,
-                    'diff_pitch_rate'           : 3.0,
-                    'diff_roll_rate'            : 4.0,
-                    'diff_pitch_acceleration'   : 5.0,
-                    'diff_roll_acceleration'    : 0.99,
-                    'diff_epoch_rate'           : 22.0,
-                    'epoch'                     : 2000.0,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
+        self.generic_payload['requests'][0]['target'] = {
+                                                            'name': 'fake target',
+                                                            'type': 'SATELLITE',
+                                                            # satellite
+                                                            'altitude'                  : 33.0,
+                                                            'azimuth'                   : 2.0,
+                                                            'diff_pitch_rate'           : 3.0,
+                                                            'diff_roll_rate'            : 4.0,
+                                                            'diff_pitch_acceleration'   : 5.0,
+                                                            'diff_roll_acceleration'    : 0.99,
+                                                            'diff_epoch_rate'           : 22.0,
+                                                            'epoch'                     : 2000.0,
+                                                         }
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -525,40 +483,8 @@ class TestLocationApi(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SIDEREAL',
-                    'dec': 34.4,
-                    'ra': 20,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
 
     def tearDown(self):
         self.configdb_patcher.stop()
@@ -621,40 +547,8 @@ class TestMoleculeApi(APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
-        self.generic_payload = {
-            'proposal': self.proposal.id,
-            'group_id': 'test group',
-            'operator': 'AND',
-            'ipp_value': 1.0,
-            'requests': [{
-                'target': {
-                    'name': 'fake target',
-                    'type': 'SIDEREAL',
-                    'dec': 34.4,
-                    'ra': 20,
-                },
-                'molecules': [{
-                    'type': 'EXPOSE',
-                    'instrument_name': '1M0-SCICAM-SBIG',
-                    'filter': 'air',
-                    'exposure_time': 100,
-                    'exposure_count': 1,
-                    'bin_x': 1,
-                    'bin_y': 1,
-                }],
-                'windows': [{
-                    'start': '2016-09-29T21:12:18Z',
-                    'end': '2016-10-29T21:12:19Z'
-                }],
-                'location': {
-                    'telescope_class': '1m0',
-                },
-                'constraints': {
-                    'max_airmass': 2.0,
-                    'min_lunar_distance': 30.0,
-                }
-            }]
-        }
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
 
     def tearDown(self):
         self.configdb_patcher.stop()

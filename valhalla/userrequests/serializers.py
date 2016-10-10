@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
+from django.db import transaction
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
+from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
 from valhalla.common.configdb import ConfigDB
 
 class ConstraintsSerializer(serializers.ModelSerializer):
@@ -256,6 +258,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             'id', 'submitter', 'created', 'state', 'modified'
         )
 
+    @transaction.atomic()
     def create(self, validated_data):
         request_data = validated_data.pop('request_set')
 
@@ -277,6 +280,12 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 Window.objects.create(request=request, **data)
             for data in molecule_data:
                 Molecule.objects.create(request=request, **data)
+
+        if user_request.ipp_value > 1.0:
+            try:
+                modify_ipp_time(user_request, 'debit')
+            except TimeAllocationError as tae:
+                raise serializers.ValidationError(repr(tae))
 
         return user_request
 

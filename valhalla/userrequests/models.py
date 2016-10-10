@@ -16,8 +16,7 @@ class UserRequest(models.Model):
         ('PENDING', 'PENDING'),
         ('SCHEDULED', 'SCHEDULED'),
         ('COMPLETED', 'COMPLETED'),
-        ('PARTIALLY_COMPLETE', 'PARTIALLY COMPLETE'),
-        ('NOT_ATTEMPTED', 'NOT ATTEMPTED'),
+        ('WINDOW_EXPIRED', 'WINDOW_EXPIRED'),
         ('CANCELED', 'CANCELED'),
     )
 
@@ -27,9 +26,15 @@ class UserRequest(models.Model):
         ('MANY', 'MANY'),
     )
 
+    OBSERVATION_TYPES = (
+        ('NORMAL', 'NORMAL'),
+        ('TARGET_OF_OPPORTUNITY', 'TARGET_OF_OPPORTUNITY'),
+    )
+
     submitter = models.ForeignKey(User)
     proposal = models.ForeignKey(Proposal)
     group_id = models.CharField(max_length=50, default='', blank=True)
+    observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES, default=OBSERVATION_TYPES[0][0])
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
     ipp_value = models.FloatField(default=1.0, validators=[MinValueValidator(0.5)])
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -56,26 +61,26 @@ class UserRequest(models.Model):
             frames += request.frames
         return frames
 
+    def min_window_time(self):
+        return min([request.min_window_time() for request in self.request_set.all()])
+
+    def max_window_time(self):
+        return max([request.max_window_time() for request in self.request_set.all()])
+
 
 class Request(models.Model):
     STATE_CHOICES = (
         ('PENDING', 'PENDING'),
         ('SCHEDULED', 'SCHEDULED'),
         ('COMPLETED', 'COMPLETED'),
-        ('PARTIALLY_COMPLETE', 'PARTIALLY COMPLETE'),
-        ('NOT_ATTEMPTED', 'NOT ATTEMPTED'),
-    )
-
-    OBSERVATION_TYPES = (
-        ('NORMAL', 'NORMAL'),
-        ('TARGET_OF_OPPORTUNITY', 'TARGET_OF_OPPORTUNITY'),
+        ('WINDOW_EXPIRED', 'WINDOW_EXPIRED'),
+        ('CANCELED', 'CANCELED'),
     )
 
     user_request = models.ForeignKey(UserRequest)
     observation_note = models.CharField(max_length=255, default='', blank=True)
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
     modified = models.DateTimeField(auto_now=True, db_index=True)
-    observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES, default=OBSERVATION_TYPES[0][0])
 
     # Counter for number of failed transitions
     fail_count = models.PositiveIntegerField(default=0)
@@ -135,6 +140,12 @@ class Request(models.Model):
         duration = ceil(duration)
 
         return duration
+
+    def min_window_time(self):
+        return min([window.start for window in self.window_set.all()])
+
+    def max_window_time(self):
+        return max([window.end for window in self.window_set.all()])
 
 
 class Location(models.Model):
