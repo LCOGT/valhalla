@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
 from django.core.validators import validate_email
+import os
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
 
@@ -14,6 +15,12 @@ def validate_multiemails(value):
         validate_email(email)
 
 
+def validate_pdf_file(value):
+    extension = os.path.splitext(value.name)[1]
+    if extension not in ['.pdf', '.PDF']:
+        raise forms.ValidationError(_('We can only accept PDF files.'))
+
+
 class BaseProposalAppForm(ModelForm):
     call = forms.ModelChoiceField(
         queryset=Call.objects.filter(deadline__gte=timezone.now(), opens__lte=timezone.now()),
@@ -21,6 +28,8 @@ class BaseProposalAppForm(ModelForm):
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
     coi = forms.CharField(validators=[validate_multiemails], required=False)
+    science_case_file = forms.FileField(validators=[validate_pdf_file], required=False)
+    experimental_design_file = forms.FileField(validators=[validate_pdf_file], required=False)
 
     def clean(self):
         super().clean()

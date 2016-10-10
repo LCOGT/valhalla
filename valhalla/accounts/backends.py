@@ -2,7 +2,8 @@ from django.contrib.auth.models import User
 
 
 class EmailOrUsernameModelBackend(object):
-    def authenticate(self, username=None, password=None):
+    @staticmethod
+    def authenticate(username=None, password=None):
         if '@' in username:
             kwargs = {'email': username}
         else:
@@ -14,7 +15,8 @@ class EmailOrUsernameModelBackend(object):
         except User.DoesNotExist:
             return None
 
-    def get_user(self, user_id):
+    @staticmethod
+    def get_user(user_id):
         try:
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
