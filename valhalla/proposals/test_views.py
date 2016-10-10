@@ -14,12 +14,12 @@ class TestProposalDetail(TestCase):
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 
-    def test_proposal_detail_as_PI(self):
+    def test_proposal_detail_as_pi(self):
         self.client.force_login(self.pi_user)
         response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
         self.assertContains(response, self.proposal.id)
 
-    def test_proposal_detail_as_CI(self):
+    def test_proposal_detail_as_ci(self):
         self.client.force_login(self.ci_user)
         response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
         self.assertContains(response, self.proposal.id)

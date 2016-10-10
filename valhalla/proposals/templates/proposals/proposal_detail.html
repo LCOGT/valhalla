@@ -7,6 +7,31 @@
     <div class="col-md-8">
         <h3>{{ object }} <small>{{ object.title }}</small></h3>
         <p>{{ object.abstract }}</p>
+        <h4>Time Allocation</h4>
+        <table class='table table-striped'>
+            <thead>
+                <tr>
+                    <td>Telescope Class</td>
+                    <td>Standard</td>
+                    <td>Standard Used</td>
+                    <td>Target of Opportunity</td>
+                    <td>Target of Opportunity Used</td>
+                    <td>Semester</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ta in object.timeallocation_set.all %}
+                <tr>
+                    <td>{{ ta.telescope_class }}</td>
+                    <td>{{ ta.std_allocation }}</td>
+                    <td>{{ ta.std_time_used }}</td>
+                    <td>{{ ta.too_allocation }}</td>
+                    <td>{{ ta.too_time_used }}</td>
+                    <td>{{ ta.semester }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <div class="col-md-4">
     <dl>
