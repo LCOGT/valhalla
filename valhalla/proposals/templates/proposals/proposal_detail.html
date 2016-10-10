@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{{ object.id }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h3>{{ object }} <small>{{ object.title }}</small></h3>
+        <p>{{ object.abstract }}</p>
+        <h4>Time Allocation</h4>
+        <table class='table table-striped'>
+            <thead>
+                <tr>
+                    <td>Telescope Class</td>
+                    <td>Standard</td>
+                    <td>Standard Used</td>
+                    <td>Target of Opportunity</td>
+                    <td>Target of Opportunity Used</td>
+                    <td>Semester</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ta in object.timeallocation_set.all %}
+                <tr>
+                    <td>{{ ta.telescope_class }}</td>
+                    <td>{{ ta.std_allocation }}</td>
+                    <td>{{ ta.std_time_used }}</td>
+                    <td>{{ ta.too_allocation }}</td>
+                    <td>{{ ta.too_time_used }}</td>
+                    <td>{{ ta.semester }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+    <dl>
+        <dt>{% trans 'Principal Investigator' %}</dt>
+        <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
+        <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
+    </dl>
+    <dl>
+        <dt>{% trans 'Co-Investigators' %}</dt>
+        {% for ci in object.cis %}
+        <dd>{{ ci.first_name }} {{ ci.last_name }}</dd>
+        <dd><a href="mailto:{{ ci.email }}">{{ ci.email }}</a></dd>
+        {% endfor %}
+    </dl>
+    {% if user == object.pi %}
+    <div class="help-block">
+        {% blocktrans %}
+        Invite co-investigators by entering their email address below and
+        pressing "add". If the user is already registered with LCOGT, they will be added to this proposal.
+        If not, they will be invited.
+        {% endblocktrans %}
+    </div>
+    <form method="POST" action="{% url 'proposals:invite' pk=object.id %}" class="form-inline">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="sr-only" for="email">Invite a Co-Investigator</label>
+            <input name="email" class="form-control" type="email" placeholder="Invite a Co-Investigator"/>
+        </div>
+        <button type="submit" class="btn btn-default">Add</button>
+    </form>
+    <br/>
+    <dl>
+        <dt>{% trans 'Pending Invitataions' %}</dt>
+        {% for invite in object.proposalinvite_set.all %}
+        {% if not invite.used %}
+        <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
+        <dd>Invited: {{ invite.sent }}</dd>
+        {% endif %}
+        {% endfor %}
+    </dl>
+
+    {% endif %}
+    </div>
+</div>
+{% endblock %}
