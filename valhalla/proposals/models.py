@@ -35,6 +35,14 @@ class Proposal(models.Model):
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
+    @property
+    def pi(self):
+        return self.users.filter(membership__role=Membership.PI).first()
+
+    @property
+    def cis(self):
+        return self.users.filter(membership__role=Membership.CI)
+
     def add_users(self, emails, role):
         for email in emails:
             if User.objects.filter(email=email).exists():
@@ -97,7 +105,7 @@ class ProposalInvite(models.Model):
     proposal = models.ForeignKey(Proposal)
     role = models.CharField(max_length=5, choices=Membership.ROLE_CHOICES)
     email = models.EmailField()
-    created = models.DateTimeField(auto_now_add=True)
+    sent = models.DateTimeField(null=True)
     used = models.DateTimeField(null=True)
 
     def __str__(self):
@@ -123,3 +131,5 @@ class ProposalInvite(models.Model):
         )
 
         send_mail(subject, message, 'portal@lco.glboal', [self.email])
+        self.sent = timezone.now()
+        self.save()
