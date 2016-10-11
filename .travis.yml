@@ -2,8 +2,8 @@ language: python
 python:
   - "3.4"
   - "3.5"
-before-install:
-  - sudo apt-get update
+before_install:
+  - sudo apt-get -qq update
   - sudo apt-get install -y gfortran
 install:
   - pip install -U setuptools coverage coveralls numpy
