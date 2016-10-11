@@ -2,6 +2,9 @@ language: python
 python:
   - "3.4"
   - "3.5"
+before-install:
+  - sudo apt-get update
+  - sudo apt-get install -y gfortran
 install:
   - pip install -U setuptools coverage coveralls numpy
   - pip install -r requirements.txt
