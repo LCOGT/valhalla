@@ -32,22 +32,26 @@ configdb_data = [
                                         'name': '1M0-SCICAM-SBIG',
                                         'default_mode': {
                                             'binning': 2,
-                                            'readout': 14,
+                                            'readout': 14.5,
                                         },
-                                        'config_change_time': 30,
-                                        'acquire_processing_time': 30,
-                                        'acquire_exposure_time': 30,
+                                        'config_change_time': 0,
+                                        'acquire_processing_time': 0,
+                                        'acquire_exposure_time': 0,
                                         'front_padding': 90,
                                         'filter_change_time': 2,
                                         'fixed_overhead_per_exposure': 1,
                                         'mode_set': [
                                             {
                                                 'binning': 1,
-                                                'readout': 33,
+                                                'readout': 35.0,
                                             },
                                             {
                                                 'binning': 2,
-                                                'readout': 14,
+                                                'readout': 14.5,
+                                            },
+                                            {
+                                                'binning': 3,
+                                                'readout': 11.5,
                                             },
                                         ]
                                     },
@@ -63,19 +67,19 @@ configdb_data = [
                                         'code': '2M0-FLOYDS-SCICAM',
                                         'name': '2M0-FLOYDS-SCICAM',
                                         'config_change_time': 30,
-                                        'acquire_processing_time': 30,
+                                        'acquire_processing_time': 60,
                                         'acquire_exposure_time': 30,
-                                        'front_padding': 90,
-                                        'filter_change_time': 2,
-                                        'fixed_overhead_per_exposure': 1,
+                                        'front_padding': 240,
+                                        'filter_change_time': 0,
+                                        'fixed_overhead_per_exposure': 0.5,
                                         'default_mode': {
                                             'binning': 1,
-                                            'readout': 33,
+                                            'readout': 25,
                                         },
                                         'mode_set': [
                                             {
                                                 'binning': 1,
-                                                'readout': 33,
+                                                'readout': 25,
                                             },
                                         ]
                                     },
@@ -248,6 +252,22 @@ class TestUserPostRequestApi(APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_userrequest_no_time_allocation_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['telescope_class'] = '2m0'
+        bad_data['requests'][0]['molecules'][0]['telescope_name'] = '2M0-FLOYDS-SCICAM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Time Allocation not found', str(response.content))
+
+    def test_post_userrequest_not_enough_time_allocation_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        self.time_allocation_1m0.std_time_used = 99.99
+        self.time_allocation_1m0.save()
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('does not have enough time allocated', str(response.content))
+
     def test_post_userrequest_bad_ipp(self):
         bad_data = self.generic_payload.copy()
         bad_data['ipp_value'] = 0.0
@@ -268,7 +288,131 @@ class TestUserPostRequestApi(APITestCase):
         self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'ON')
 
 
-class TestUserPostRequestIPPApi(APITestCase):
+class TestUserRequestIPP(APITestCase):
+    def setUp(self):
+        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
+        self.mock_configdb = self.configdb_patcher.start()
+        self.mock_configdb.return_value = configdb_data
+
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+
+        semester = mixer.blend(
+            Semester,
+            id='2016B',
+            start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
+
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        self.time_allocation_2m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='2m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['ipp_value'] = 1.5
+        self.generic_payload['proposal'] = self.proposal.id
+        self.generic_payload['group_id'] = 'ipp_request'
+
+        self.generic_multi_payload = copy.deepcopy(self.generic_payload)
+        self.second_request = copy.deepcopy(generic_payload['requests'][0])
+        self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        self.second_request['location']['telescope_class'] = '2m0'
+        self.generic_multi_payload['requests'].append(self.second_request)
+
+    def tearDown(self):
+        self.configdb_patcher.stop()
+
+    def _build_user_request(self, ur_dict):
+        response = self.client.post(reverse('api:user_requests-list'), data=ur_dict)
+        self.assertEqual(response.status_code, 201)
+
+        return UserRequest.objects.get(group_id=ur_dict['group_id'])
+
+    def test_user_request_debit_ipp_on_creation(self):
+        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+
+        ur = self.generic_payload.copy()
+        response = self.client.post(reverse('api:user_requests-list'), data=ur)
+        self.assertEqual(response.status_code, 201)
+
+        # verify that now that the object is saved, ipp has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation.ipp_time_available, 5.0)
+
+    def test_user_request_credit_ipp_on_cancelation(self):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        # verify that now that the TimeAllocation has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation.ipp_time_available, 5.0)
+        user_request.state = 'CANCELED'
+        user_request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
+        # also verify that the child request state has changed to window_expired as well
+        self.assertEqual(user_request.request_set.first().state, 'CANCELED')
+
+    def test_user_request_credit_ipp_on_expiration(self):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        # verify that now that the TimeAllocation has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation.ipp_time_available, 5.0)
+        user_request.state = 'WINDOW_EXPIRED'
+        user_request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
+        # also verify that the child request state has changed to window_expired as well
+        self.assertEqual(user_request.request_set.first().state, 'WINDOW_EXPIRED')
+
+    def test_user_request_debit_ipp_on_creation_fail(self):
+        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+
+        ur = self.generic_payload.copy()
+        # ipp value that is too high, will be rejected
+        ur['ipp_value'] = 100.0
+        response = self.client.post(reverse('api:user_requests-list'), data=ur)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('TimeAllocationError', str(response.content))
+
+        # verify that objects were not created by the send
+        self.assertFalse(UserRequest.objects.filter(group_id='ipp_request').exists())
+
+    def test_user_request_multi_credit_ipp_back_on_cancelation(self):
+        ur = self.generic_multi_payload
+        ur['operator'] = 'MANY'
+        user_request = self._build_user_request(ur)
+        # verify that now that both the TimeAllocation has been debited
+        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation_1m0.ipp_time_available, 5.0)
+        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
+        self.assertLess(time_allocation_2m0.ipp_time_available, 5.0)
+        # now set one request to completed, then set the user request to unschedulable
+        request = user_request.request_set.first()
+        request.state = 'COMPLETED'
+        request.save()
+        user_request.state = 'WINDOW_EXPIRED'
+        user_request.save()
+        # now verify that time allocation 1 is still debited, but time allocation 2 has been credited back its time
+        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertLess(time_allocation_1m0.ipp_time_available, 5.0)
+        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
+        self.assertEqual(time_allocation_2m0.ipp_time_available, 5.0)
+
+class TestRequestIPP(APITestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
         self.mock_configdb = self.configdb_patcher.start()
@@ -297,34 +441,63 @@ class TestUserPostRequestIPPApi(APITestCase):
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['ipp_value'] = 1.5
         self.generic_payload['proposal'] = self.proposal.id
+        self.generic_payload['group_id'] = 'ipp_request'
 
     def tearDown(self):
         self.configdb_patcher.stop()
 
-    def test_user_request_debit_ipp_on_creation(self):
-        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
-
-        ur = self.generic_payload.copy()
-        response = self.client.post(reverse('api:user_requests-list'), data=ur)
+    def _build_user_request(self, ur_dict):
+        response = self.client.post(reverse('api:user_requests-list'), data=ur_dict)
         self.assertEqual(response.status_code, 201)
 
-        # verify that now that the object is saved, ipp has been debited
+        return UserRequest.objects.get(group_id=ur_dict['group_id'])
+
+    def test_request_debit_on_completion_after_expired(self):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        # verify that now that the TimeAllocation has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        debitted_ipp_value = time_allocation.ipp_time_available
+        self.assertLess(debitted_ipp_value, 5.0)
+        # now change requests state to expired
+        request = user_request.request_set.first()
+        request.state = 'WINDOW_EXPIRED'
+        request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
+        # now set request to completed and see that ipp is debited once more
+        request.state = 'COMPLETED'
+        request.save()
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, debitted_ipp_value)
+
+    def test_request_credit_back_on_cancelation(self):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        # verify that now that the TimeAllocation has been debited
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertLess(time_allocation.ipp_time_available, 5.0)
+        # now change requests state to canceled
+        request = user_request.request_set.first()
+        request.state = 'CANCELED'
+        request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
 
-    def test_user_request_debit_ipp_on_creation_fail(self):
-        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
-
-        ur = self.generic_payload.copy()
-        # ipp value that is too high, will be rejected
-        ur['ipp_value'] = 100.0
-        ur['group_id'] = 'failipp'
-        response = self.client.post(reverse('api:user_requests-list'), data=ur)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('TimeAllocationError', str(response.content))
-
-        # verify that objects were not created by the send
-        self.assertFalse(UserRequest.objects.filter(group_id='failipp').exists())
+    def test_request_credit_on_completion(self):
+        payload = self.generic_payload.copy()
+        payload['ipp_value'] = 0.5
+        user_request = self._build_user_request(payload)
+        # verify that now that the TimeAllocation has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
+        # now change requests state to canceled
+        request = user_request.request_set.first()
+        request.state = 'COMPLETED'
+        request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertGreater(time_allocation.ipp_time_available, 5.0)
 
 
 class TestWindowApi(APITestCase):

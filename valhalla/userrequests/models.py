@@ -150,7 +150,8 @@ class Request(models.Model):
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
             semester__start__lte=self.min_window_time(),
-            semester__end__gte=self.max_window_time()
+            semester__end__gte=self.max_window_time(),
+            telescope_class=self.location.telescope_class
         )
 
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
@@ -315,7 +316,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
                             user_request.proposal.id, tak.semester, tak.telescope_class)
                     )
-        except Exception:
+        except ObjectDoesNotExist:
             raise serializers.ValidationError(_("Time Allocation not found."))
 
         if user_request.ipp_value > 1.0:

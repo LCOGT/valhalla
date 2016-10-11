@@ -34,8 +34,7 @@ def valid_state_change(old_state, new_state, object):
 
 @transaction.atomic
 def on_request_state_change(old_request, new_request):
-    valid_state_change(new_request.state, old_request.state, old_request)
-
+    valid_state_change(old_request.state, new_request.state, old_request)
     # it must be a valid transition, so do time accounting here
     if new_request.state == 'COMPLETED':
         new_request.completed = timezone.now()
@@ -58,8 +57,7 @@ def on_request_state_change(old_request, new_request):
 
 @transaction.atomic
 def on_userrequest_state_change(old_userrequest, new_userrequest):
-    valid_state_change(new_userrequest.state, old_userrequest.state, old_userrequest)
-
+    valid_state_change(old_userrequest.state, new_userrequest.state, old_userrequest)
     if new_userrequest.state == 'COMPLETED':
         if new_userrequest.ipp_value >= 1.0 and new_userrequest.operator == 'oneof':
             requests_to_credit = new_userrequest.requests_set.filter(state__in=['PENDING', 'SCHEDULED'])
@@ -95,10 +93,6 @@ def modify_ipp_time(ur, modification='debit', specific_requests=None):
         semester = Semester.objects.filter(start__lte=request.min_window_time(),
                                            end__gte=request.max_window_time()).first()
         tak = (semester.id, request.location.telescope_class)
-        time_allocation = time_allocations_dict[tak]
-        if not time_allocation:
-            raise TimeAllocationError(_("No {} time has been allocated for proposal '{}' in {}").format(
-                request.location.telescope_class, ur.proposal.id, semester.id))
 
         # Exception: time_remaining > ipp_time_available - request duration * ipp_value
         # This ensures that you cannot go above your max allowable ipp_value
