@@ -28,6 +28,7 @@
                 <h4>Active Proposals</h4>
                 {% for proposal in user.proposal_set.all %}
                 {{ proposal.title }}
+                <a href="{% url 'proposals:detail' pk=proposal.id %}">{{ proposal }}</a>
                 {% empty %}
                 <p>{% trans 'You have no proposals' %}</p>
                 <p>
