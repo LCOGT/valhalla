@@ -1,8 +1,11 @@
-from valhalla.userrequests.models import Request, Molecule, Target
+from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
+from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.configdb import ConfigDBException
 
+from django.utils import timezone
 from unittest.case import TestCase
 from mixer.backend.django import mixer
+from datetime import datetime
 from unittest.mock import patch
 import math
 
@@ -98,6 +101,90 @@ configdb_data = [
         ]
     },
 ]
+
+class TestUserRequestTotalDuration(TestCase):
+    def setUp(self):
+        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
+        self.mock_configdb = self.configdb_patcher.start()
+        self.mock_configdb.return_value = configdb_data
+
+        self.proposal = mixer.blend(Proposal)
+        semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+                               )
+        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
+                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=5.0)
+
+        self.ur_single = mixer.blend(UserRequest, proposal=self.proposal, operator='SINGLE')
+
+        self.request = mixer.blend(Request, user_request=self.ur_single)
+
+        self.ur_many = mixer.blend(UserRequest, proposal=self.proposal)
+
+        self.request_1 = mixer.blend(Request, user_request=self.ur_many)
+        self.request_2 = mixer.blend(Request, user_request=self.ur_many)
+        self.request_3 = mixer.blend(Request, user_request=self.ur_many)
+
+        self.molecule_expose = mixer.blend(
+            Molecule, request=self.request, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah'
+        )
+
+        self.molecule_expose_1 = mixer.blend(
+            Molecule, request=self.request_1, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=1000, exposure_count=1, type='EXPOSE', filter='uv'
+        )
+
+        self.molecule_expose_2 = mixer.blend(
+            Molecule, request=self.request_2, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=10, exposure_count=5, type='EXPOSE', filter='uv'
+        )
+
+        self.molecule_expose_3 = mixer.blend(
+            Molecule, request=self.request_3, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=3, exposure_count=3, type='EXPOSE', filter='ir'
+        )
+        mixer.blend(Window, request=self.request, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
+        mixer.blend(Window, request=self.request_1, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
+        mixer.blend(Window, request=self.request_2, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
+        mixer.blend(Window, request=self.request_3, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
+        mixer.blend(Location, request=self.request, telescope_class='1m0')
+        mixer.blend(Location, request=self.request_1, telescope_class='1m0')
+        mixer.blend(Location, request=self.request_2, telescope_class='1m0')
+        mixer.blend(Location, request=self.request_3, telescope_class='1m0')
+
+    def tearDown(self):
+        self.configdb_patcher.stop()
+
+    def test_single_ur_total_duration(self):
+        request_duration = self.request.duration
+        total_duration = self.ur_single.total_duration
+        tak = self.request.time_allocation_key
+        self.assertEqual(request_duration, total_duration[tak])
+
+    def test_many_ur_takes_highest_duration(self):
+        self.ur_many.operator = 'MANY'
+        self.ur_many.save()
+
+        highest_duration = max(self.request_1.duration, self.request_2.duration, self.request_3.duration)
+        total_duration = self.ur_many.total_duration
+        tak = self.request_1.time_allocation_key
+        self.assertEqual(highest_duration, total_duration[tak])
+
+    def test_and_ur_takes_sum_of_durations(self):
+        self.ur_many.operator = 'AND'
+        self.ur_many.save()
+
+        sum_duration = self.request_1.duration + self.request_2.duration + self.request_3.duration
+        total_duration = self.ur_many.total_duration
+        tak = self.request_1.time_allocation_key
+        self.assertEqual(sum_duration, total_duration[tak])
 
 
 class TestRequestDuration(TestCase):

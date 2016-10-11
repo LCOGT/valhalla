@@ -48,19 +48,22 @@ class UserRequest(models.Model):
     def get_id_display(self):
         return str(self.id).zfill(10)
 
+    @property
     def min_window_time(self):
-        return min([request.min_window_time() for request in self.request_set.all()])
+        return min([request.min_window_time for request in self.request_set.all()])
 
+    @property
     def max_window_time(self):
-        return max([request.max_window_time() for request in self.request_set.all()])
+        return max([request.max_window_time for request in self.request_set.all()])
 
     @property
     def timeallocations(self):
         return self.proposal.timeallocation_set.filter(
-            semester__start__lte=self.min_window_time(),
-            semester__end__gte=self.max_window_time()
+            semester__start__lte=self.min_window_time,
+            semester__end__gte=self.max_window_time
         )
 
+    @property
     def total_duration(self):
         total_duration = {}
         if self.operator == 'SINGLE':
@@ -136,9 +139,11 @@ class Request(models.Model):
 
         return duration
 
+    @property
     def min_window_time(self):
         return min([window.start for window in self.window_set.all()])
 
+    @property
     def max_window_time(self):
         return max([window.end for window in self.window_set.all()])
 
@@ -149,8 +154,8 @@ class Request(models.Model):
     @property
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
-            semester__start__lte=self.min_window_time(),
-            semester__end__gte=self.max_window_time(),
+            semester__start__lte=self.min_window_time,
+            semester__end__gte=self.max_window_time,
             telescope_class=self.location.telescope_class
         )
 

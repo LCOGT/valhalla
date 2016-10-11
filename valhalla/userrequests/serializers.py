@@ -300,7 +300,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         # check the proposal has a time allocation with enough time for all requests depending on operator
         try:
-            total_duration = user_request.total_duration()
+            total_duration = user_request.total_duration
             time_allocations = user_request.timeallocations
             for tak, duration in total_duration.items():
                 time_allocation = time_allocations.get(semester=tak.semester, telescope_class=tak.telescope_class)

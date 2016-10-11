@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from rest_framework.test import APITestCase
 
@@ -412,6 +413,13 @@ class TestUserRequestIPP(APITestCase):
         time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
         self.assertEqual(time_allocation_2m0.ipp_time_available, 5.0)
 
+    def test_ipp_not_credit_or_debit_error(self):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        with self.assertRaises(TimeAllocationError) as context:
+            modify_ipp_time(user_request, 'bad_modification')
+            self.assertTrue("is not one of 'debit' or 'credit'" in context.exception)
+
+
 class TestRequestIPP(APITestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
@@ -470,6 +478,32 @@ class TestRequestIPP(APITestCase):
         request.save()
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertEqual(time_allocation.ipp_time_available, debitted_ipp_value)
+
+    @patch('valhalla.userrequests.state_changes.logger')
+    def test_request_debit_on_completion_after_expired_not_enough_time(self, mock_logger):
+        user_request = self._build_user_request(self.generic_payload.copy())
+        # verify that now that the TimeAllocation has been debited
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        debitted_ipp_value = time_allocation.ipp_time_available
+        self.assertLess(debitted_ipp_value, 5.0)
+        # now change requests state to expired
+        request = user_request.request_set.first()
+        request.state = 'WINDOW_EXPIRED'
+        request.save()
+        # verify that now that the TimeAllocation has its original ipp value
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 5.0)
+        # set the time allocation available to 0.01, then set to completed
+        time_allocation.ipp_time_available = 0.01
+        time_allocation.save()
+        # now set request to completed and see that ipp could not be debited
+        request.state = 'COMPLETED'
+        request.save()
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        self.assertEqual(time_allocation.ipp_time_available, 0.01)
+        # test that the log message was generated
+        self.assertIn('switched from WINDOW_EXPIRED to COMPLETED but did not have enough ipp_time to debit',
+                      mock_logger.warn.call_args[0][0])
 
     def test_request_credit_back_on_cancelation(self):
         user_request = self._build_user_request(self.generic_payload.copy())
