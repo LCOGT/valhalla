@@ -331,10 +331,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 enough_time = False
                 if (user_request.observation_type == UserRequest.NORMAL and
                         (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                        enough_time = True
+                    enough_time = True
                 elif (user_request.observation_type == UserRequest.TOO and
                         (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                        enough_time = True
+                    enough_time = True
                 if not enough_time:
                     raise serializers.ValidationError(
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
