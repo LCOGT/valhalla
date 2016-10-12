@@ -3,8 +3,6 @@ from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
 
-from valhalla.proposals.models import Semester
-
 import logging
 
 logger = logging.getLogger(__name__)

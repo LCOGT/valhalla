@@ -22,7 +22,7 @@ def get_rise_set_intervals(request_model):
                                                                         request_model.location.observatory,
                                                                         request_model.location.telescope)
     intervals = []
-    for site_code, site_detail in site_details.items():
+    for site_detail in site_details.values():
         intervals.extend(_get_rise_set_interval_for_target_and_site(target, site_detail,
                                                                     request_model.window_set.all(),
                                                                     airmass, moon_distance))
