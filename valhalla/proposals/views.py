@@ -19,7 +19,7 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
 
 
 class InviteCreateView(LoginRequiredMixin, View):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, **kwargs):
         try:
             proposal = request.user.membership_set.get(proposal=kwargs.get('pk'), role=Membership.PI).proposal
         except Membership.DoesNotExist:

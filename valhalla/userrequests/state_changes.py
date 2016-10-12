@@ -25,10 +25,10 @@ class InvalidStateChange(Exception):
     pass
 
 
-def valid_state_change(old_state, new_state, object):
+def valid_state_change(old_state, new_state, obj):
     if new_state not in REQUEST_STATE_MAP[old_state]:
         raise InvalidStateChange(_("Cannot transition from request state {} to {} for {}").format(
-            old_state, new_state, object
+            old_state, new_state, obj
         ))
 
 

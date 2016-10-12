@@ -324,17 +324,17 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         # check the proposal has a time allocation with enough time for all requests depending on operator
         try:
-            total_duration = user_request.total_duration
-            time_allocations = user_request.timeallocations
-            for tak, duration in total_duration.items():
-                time_allocation = time_allocations.get(semester=tak.semester, telescope_class=tak.telescope_class)
+            for tak, duration in user_request.total_duration.items():
+                time_allocation = user_request.timeallocations.get(
+                    semester=tak.semester, telescope_class=tak.telescope_class
+                )
                 enough_time = False
                 if (user_request.observation_type == UserRequest.NORMAL and
                         (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                    enough_time = True
+                        enough_time = True
                 elif (user_request.observation_type == UserRequest.TOO and
                         (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                    enough_time = True
+                        enough_time = True
                 if not enough_time:
                     raise serializers.ValidationError(
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
