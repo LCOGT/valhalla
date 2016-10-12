@@ -5,3 +5,9 @@
 .delete-timeallocation {
     margin-left: 10px;
 }
+
+.filter-block {
+    background-color: #f8f8f8;
+    padding: 10px;
+    margin-bottom: 20px;
+}

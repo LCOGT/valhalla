@@ -4,22 +4,8 @@
 {% block content %}
 <div class="row">
     <div class="col-md-9">
-        {% if user.is_authenticated %}
-            {% for request in user.request_set.all %}
-                {{ request }}
-            {% empty %}
-                <p>{% trans 'You have not made any obersvation requests' %}</p>
-                <p><a href="#">{% trans 'Make an observation request' %}</a></p>
-            {% endfor %}
-        {% else %}
-        <h3>{% trans 'LCO.global Observation Portal' %}</h3>
-        {% url 'auth_login' as login_url %}
-        {% url 'registration_register' as register_url %}
-        {% blocktrans %}
-        <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
-        <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
-        {% endblocktrans %}
-        {% endif %}
+    {% block request_list %}
+    {% endblock %}
     </div>
     <div class="col-md-3">
         {% if user.is_authenticated %}

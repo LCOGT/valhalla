@@ -1,0 +1,42 @@
+{% extends 'index.html' %}
+{% load i18n bootstrap3 %}
+{% block title %}Submitted Requests{% endblock %}
+{% block request_list %}
+{% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="filter-block">
+                <form method="get" action="" class="form-inline">
+                <div class="form-group">
+                    {% bootstrap_field filter.form.state show_label=False show_help=False size='small' addon_before='State:' %}
+                </div>
+                <div class="form-group">
+                    {% bootstrap_field filter.form.proposal show_label=False show_help=False size='small' addon_before='Proposal:' %}
+                </div>
+                <div class="form-group">
+                    {% bootstrap_field filter.form.title show_label=False show_help=False size='small' %}
+                </div>
+                <input type="submit" class="btn btn-default btn-sm" value="Filter"/>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+    {% for ur in object_list %}
+        <div class="userrequest-block bg-success">
+        {{ ur.group_id }}
+        </div>
+    {% empty %}
+        {% trans 'You have not submitted any requests.' %} <a href="#">{% trans 'Submit Observation Request' %}</a>
+    {% endfor %}
+    </div>
+{% else %}
+    <h3>{% trans 'LCO.global Observation Portal' %}</h3>
+    {% url 'auth_login' as login_url %}
+    {% url 'registration_register' as register_url %}
+    {% blocktrans %}
+    <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
+    <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
+    {% endblocktrans %}
+{% endif %}
+{% endblock %}
