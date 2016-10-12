@@ -599,12 +599,15 @@ class TestSiderealTarget(APITestCase):
         del bad_data['requests'][0]['target']['ra']
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+        self.assertIn('ra', str(response.content))
 
     def test_post_userrequest_extra_ns_field(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['target']['longascnode'] = 4.0
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
+        target = response.json()['requests'][0]['target']
+        self.assertNotIn('longascnode', target)
 
     def test_post_userrequest_test_defaults(self):
         bad_data = self.generic_payload.copy()
@@ -704,6 +707,16 @@ class TestNonSiderealTarget(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('did not fit into any visible intervals', str(response.content))
 
+    def test_post_userrequest_non_sidereal_missing_fields(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['target']['eccentricity']
+        del bad_data['requests'][0]['target']['meandist']
+
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('eccentricity', str(response.content))
+        self.assertIn('meandist', str(response.content))
+
 
 class TestSatelliteTarget(APITestCase):
     def setUp(self):
@@ -747,6 +760,16 @@ class TestSatelliteTarget(APITestCase):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
+
+    def test_post_userrequest_satellite_missing_fields(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['target']['diff_epoch_rate']
+        del bad_data['requests'][0]['target']['diff_pitch_acceleration']
+
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('diff_epoch_rate', str(response.content))
+        self.assertIn('diff_pitch_acceleration', str(response.content))
 
 
 class TestLocationApi(APITestCase):

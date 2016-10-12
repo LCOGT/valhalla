@@ -199,11 +199,12 @@ class TargetSerializer(serializers.ModelSerializer):
         data.setdefault('parallax', 0.0)
 
         # now check that if 'ra' exists 'dec' also exists
-        if 'ra' not in data or 'dec' not in data:
-            raise serializers.ValidationError(_('A Sidereal target must specify an `ra` and `dec`'))
+        self._validate_require_allowed_fields(data, ['ra','dec'])
         return data
 
     def _validate_nonsidereal_target(self, data):
+        self._validate_require_allowed_fields(data)
+
         # Tim wanted an eccentricity limit of 0.9 for non-comet targets
         eccentricity_limit = 0.9
         scheme = data['scheme']
@@ -214,22 +215,22 @@ class TargetSerializer(serializers.ModelSerializer):
             msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(data['eccentricity'])
             raise serializers.ValidationError(msg)
 
-        self._validate_require_allowed_fields(data)
-
         return data
 
-    def _validate_require_allowed_fields(self, data):
+    def _validate_satellite_target(self, data):
+        self._validate_require_allowed_fields(data)
+        return data
+
+    def _validate_require_allowed_fields(self, data, required_fields=None):
         error_dict = {}
-        for field in self.fields:
+        if not required_fields:
+            required_fields = self.fields
+        for field in required_fields:
             if field not in data:
                 error_dict[field] = ['Missing required field']
 
         if error_dict:
             raise serializers.ValidationError(error_dict)
-
-    def _validate_satellite_target(self, data):
-        self._validate_require_allowed_fields(data)
-        return data
 
 
 class RequestSerializer(serializers.ModelSerializer):
