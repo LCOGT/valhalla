@@ -7,6 +7,7 @@ from math import ceil
 from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.common.configdb import ConfigDB
 from valhalla.common.instruments import get_num_filter_changes, get_num_mol_changes
+from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
 
 
 class UserRequest(models.Model):
@@ -159,6 +160,9 @@ class Request(models.Model):
             telescope_class=self.location.telescope_class
         )
 
+    def rise_set_intervals(self):
+        return get_rise_set_intervals(self)
+
 
 class Location(models.Model):
     TELESCOPE_CLASSES = (
@@ -269,6 +273,9 @@ class Target(models.Model):
     acquire_mode = models.CharField(max_length=50, choices=ACQUIRE_MODES, default=ACQUIRE_MODES[0][0])
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
     rot_angle = models.FloatField(default=0.0, blank=True)
+
+    def rise_set_target(self):
+        return get_rise_set_target(self)
 
 
 class Window(models.Model):

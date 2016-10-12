@@ -23,6 +23,11 @@ configdb_data = [
                 'telescope_set': [
                     {
                         'code': '1m0a',
+                        'lat': -32.3805542,
+                        'lon': 20.8100352,
+                        'horizon': 15.0,
+                        'ha_limit_pos': 4.6,
+                        'ha_limit_neg': -4.6,
                         'instrument_set': [
                             {
                                 'state': 'SCHEDULABLE',
@@ -102,6 +107,11 @@ configdb_data = [
                 'telescope_set': [
                     {
                         'code': '1m0a',
+                        'lat': -32.3805542,
+                        'lon': 20.8100352,
+                        'horizon': 15.0,
+                        'ha_limit_pos': 4.6,
+                        'ha_limit_neg': -4.6,
                         'instrument_set': [
                         ]
                     },
@@ -120,8 +130,8 @@ generic_payload = {
         'target': {
             'name': 'fake target',
             'type': 'SIDEREAL',
-            'dec': 34.4,
-            'ra': 20,
+            'dec': 20,
+            'ra': 34.4,
         },
         'molecules': [{
             'type': 'EXPOSE',
@@ -644,14 +654,16 @@ class TestNonSiderealTarget(APITestCase):
         self.generic_payload['requests'][0]['target'] = {
             'name': 'fake target',
             'type': 'NON_SIDEREAL',
-            'scheme': 'ASA_COMET',
+            'scheme': 'MPC_MINOR_PLANET',
             # Non sidereal param
-            'epochofel': 57400.0,
-            'orbinc': 2.0,
-            'longascnode': 3.0,
-            'argofperih': 4.0,
-            'perihdist': 5.0,
-            'eccentricity': 0.99,
+            'epochofel': 57660.0,
+            'orbinc': 9.7942900,
+            'longascnode': 122.8943400,
+            'argofperih': 78.3278300,
+            'perihdist': 1.0,
+            'meandist': 0.7701170,
+            'meananom': 165.6860400,
+            'eccentricity': 0.5391962,
             'epochofperih': 57400.0,
         }
 
@@ -666,18 +678,31 @@ class TestNonSiderealTarget(APITestCase):
 
     def test_post_userrequest_non_sidereal_target(self):
         good_data = self.generic_payload.copy()
+
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
     def test_post_userrequest_non_comet_eccentricity(self):
         bad_data = self.generic_payload.copy()
-        bad_data['requests'][0]['target']['scheme'] = 'JPL_MINOR_PLANET'
+        bad_data['requests'][0]['target']['eccentricity'] = 0.99
+
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+        self.assertIn('requires eccentricity to be lower', str(response.content))
 
-        bad_data['requests'][0]['target']['eccentricity'] = 0.9
+        bad_data['requests'][0]['target']['scheme'] = 'MPC_COMET'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
+
+    def test_post_userrequest_non_sidereal_not_visible(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['eccentricity'] = 0.99
+        bad_data['requests'][0]['target']['scheme'] = 'MPC_COMET'
+        bad_data['requests'][0]['target']['perihdist'] = 5.0
+
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('did not fit into any visible intervals', str(response.content))
 
 
 class TestSatelliteTarget(APITestCase):

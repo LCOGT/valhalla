@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from datetime import timedelta
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
@@ -131,59 +132,53 @@ class WindowSerializer(serializers.ModelSerializer):
 
 
 class TargetSerializer(serializers.ModelSerializer):
-
-    def __init__(self, *args, **kwargs):
-        # Don't pass the 'fields' arg up to the superclass
-        fields = kwargs.pop('fields', None)
-
-        # Instantiate the superclass normally
-        super().__init__(*args, **kwargs)
-        if fields is not None:
-            allowed = ('name', 'type', 'coordinate_system', 'equinox', 'epoch')
-            if fields['type'] == 'SIDEREAL' or fields['type'] == 'STATIC':
-                allowed += (
-                    'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax'
-                )
-            elif fields['type'] == 'NON_SIDEREAL':
-                allowed += ('epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme')
-                if fields['scheme'] == 'ASA_MAJOR_PLANET':
-                    allowed += ('longofperih', 'meandist', 'meanlong', 'dailymot')
-                elif fields['scheme'] == 'ASA_MINOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom')
-                elif fields['scheme'] == 'ASA_COMET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-                elif fields['scheme'] == 'JPL_MAJOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom', 'dailymot')
-                elif fields['scheme'] == 'JPL_MINOR_PLANET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-                elif fields['scheme'] == 'MPC_MINOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom')
-                elif fields['scheme'] == 'MPC_COMET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-            elif fields['type'] == 'SATELLITE':
-                allowed += (
-                    'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate', 'diff_epoch_rate',
-                    'diff_pitch_acceleration', 'diff_roll_acceleration'
-                )
-
-            # Drop any fields that are not specified in the `fields` argument.
-            existing = set(self.fields.keys())
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
-
     class Meta:
         model = Target
         exclude = ('request', 'id')
 
+    def _cleanup_fields(self, data):
+        allowed = ('name', 'type')
+        if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
+            allowed += (
+                'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax',
+                'coordinate_system', 'equinox', 'epoch', 'acquire_mode', 'rot_mode', 'rot_angle'
+            )
+        elif data['type'] == 'NON_SIDEREAL':
+            allowed += ('epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme')
+            if data['scheme'] == 'ASA_MAJOR_PLANET':
+                allowed += ('longofperih', 'meandist', 'meanlong', 'dailymot')
+            elif data['scheme'] == 'ASA_MINOR_PLANET':
+                allowed += ('argofperih', 'meandist', 'meananom')
+            elif data['scheme'] == 'ASA_COMET':
+                allowed += ('argofperih', 'perihdist', 'epochofperih')
+            elif data['scheme'] == 'JPL_MAJOR_PLANET':
+                allowed += ('argofperih', 'meandist', 'meananom', 'dailymot')
+            elif data['scheme'] == 'JPL_MINOR_PLANET':
+                allowed += ('argofperih', 'perihdist', 'epochofperih')
+            elif data['scheme'] == 'MPC_MINOR_PLANET':
+                allowed += ('argofperih', 'meandist', 'meananom')
+            elif data['scheme'] == 'MPC_COMET':
+                allowed += ('argofperih', 'perihdist', 'epochofperih')
+        elif data['type'] == 'SATELLITE':
+            allowed += (
+                'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate', 'diff_epoch_rate',
+                'diff_pitch_acceleration', 'diff_roll_acceleration'
+            )
+
+        # Drop any fields that are not specified in the `fields` argument.
+        existing = set(self.fields.keys())
+        for field_name in existing - set(allowed):
+            self.fields.pop(field_name)
+
     def validate(self, data):
+        self._cleanup_fields(data)
         if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
             data = self._validate_sidereal_target(data)
         elif data['type'] == 'NON_SIDEREAL':
             data = self._validate_nonsidereal_target(data)
         elif data['type'] == 'SATELLITE':
-            pass  # TODO implement this
+            data = self._validate_satellite_target(data)
         else:
-            print('here')
             raise serializers.ValidationError(_('Invalid target type {}'.format(data['type'])))
         return data
 
@@ -218,6 +213,22 @@ class TargetSerializer(serializers.ModelSerializer):
             )
             msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(data['eccentricity'])
             raise serializers.ValidationError(msg)
+
+        self._validate_require_allowed_fields(data)
+
+        return data
+
+    def _validate_require_allowed_fields(self, data):
+        error_dict = {}
+        for field in self.fields:
+            if field not in data:
+                error_dict[field] = ['Missing required field']
+
+        if error_dict:
+            raise serializers.ValidationError(error_dict)
+
+    def _validate_satellite_target(self, data):
+        self._validate_require_allowed_fields(data)
         return data
 
 
@@ -297,6 +308,18 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 Window.objects.create(request=request, **data)
             for data in molecule_data:
                 Molecule.objects.create(request=request, **data)
+
+            # check that the requests window has enough rise_set visible time to accomodate the requests duration
+            duration = request.duration
+            rise_set_intervals = request.rise_set_intervals()
+            largest_interval = timedelta(seconds=0)
+            for interval in rise_set_intervals:
+                largest_interval = max((interval[1]-interval[0]), largest_interval)
+            if largest_interval.total_seconds() <= duration:
+                raise serializers.ValidationError(
+                    _("The request duration {} did not fit into any visible intervals. "
+                      "The largest visible interval within your window was {}").format(
+                            duration / 3600.0, largest_interval.total_seconds() / 3600.0))
 
         # check the proposal has a time allocation with enough time for all requests depending on operator
         try:

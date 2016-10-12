@@ -18,6 +18,11 @@ configdb_data = [
                 'telescope_set': [
                     {
                         'code': '1m0a',
+                        'lat': -32.3805542,
+                        'lon': 20.8100352,
+                        'horizon': 15.0,
+                        'ha_limit_pos': 4.6,
+                        'ha_limit_neg': -4.6,
                         'instrument_set': [
                             {
                                 'state': 'SCHEDULABLE',
@@ -93,6 +98,11 @@ configdb_data = [
                 'telescope_set': [
                     {
                         'code': '1m0a',
+                        'lat': -32.3805542,
+                        'lon': 20.8100352,
+                        'horizon': 15.0,
+                        'ha_limit_pos': 4.6,
+                        'ha_limit_neg': -4.6,
                         'instrument_set': [
                         ]
                     },
