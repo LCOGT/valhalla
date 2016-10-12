@@ -5,7 +5,7 @@ from valhalla.userrequests.state_changes import on_request_state_change, on_user
 
 
 @receiver(pre_save, sender=UserRequest)
-def userrequest_pre_save(sender, instance, *args, **kwargs):
+def cb_userrequest_pre_save(sender, instance, *args, **kwargs):
     # instance has the new data, query the model for the current data
     if instance.id:
         # This is an update to the model
@@ -14,7 +14,7 @@ def userrequest_pre_save(sender, instance, *args, **kwargs):
 
 
 @receiver(pre_save, sender=Request)
-def request_pre_save(sender, instance, *args, **kwargs):
+def cb_request_pre_save(sender, instance, *args, **kwargs):
     # instance has the new data, query the model for the current data
     if instance.id:
         # This is an update to the model
