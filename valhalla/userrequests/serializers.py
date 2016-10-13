@@ -4,10 +4,11 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
+from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import ConfigDB
 
 
@@ -140,105 +141,30 @@ class WindowSerializer(serializers.ModelSerializer):
 
 
 class TargetSerializer(serializers.ModelSerializer):
+
+    TYPE_HELPER_MAP = {
+        'SIDEREAL': SiderealTargetHelper,
+        'NON_SIDEREAL': NonSiderealTargetHelper,
+        'SATELLITE': SatelliteTargetHelper
+    }
+
     class Meta:
         model = Target
         exclude = ('request', 'id')
 
-    def _cleanup_fields(self, data):
-        allowed = ('name', 'type')
-        if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
-            allowed += (
-                'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax',
-                'coordinate_system', 'equinox', 'epoch', 'acquire_mode', 'rot_mode', 'rot_angle'
-            )
-        elif data['type'] == 'NON_SIDEREAL':
-            allowed += ('epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme')
-            if data['scheme'] == 'ASA_MAJOR_PLANET':
-                allowed += ('longofperih', 'meandist', 'meanlong', 'dailymot')
-            elif data['scheme'] == 'ASA_MINOR_PLANET':
-                allowed += ('argofperih', 'meandist', 'meananom')
-            elif data['scheme'] == 'ASA_COMET':
-                allowed += ('argofperih', 'perihdist', 'epochofperih')
-            elif data['scheme'] == 'JPL_MAJOR_PLANET':
-                allowed += ('argofperih', 'meandist', 'meananom', 'dailymot')
-            elif data['scheme'] == 'JPL_MINOR_PLANET':
-                allowed += ('argofperih', 'perihdist', 'epochofperih')
-            elif data['scheme'] == 'MPC_MINOR_PLANET':
-                allowed += ('argofperih', 'meandist', 'meananom')
-            elif data['scheme'] == 'MPC_COMET':
-                allowed += ('argofperih', 'perihdist', 'epochofperih')
-        elif data['type'] == 'SATELLITE':
-            allowed += (
-                'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate', 'diff_epoch_rate',
-                'diff_pitch_acceleration', 'diff_roll_acceleration'
-            )
-
-        # Drop any fields that are not specified in the `fields` argument.
-        existing = set(self.fields.keys())
-        for field_name in existing - set(allowed):
-            self.fields.pop(field_name)
+    def to_representation(self, instance):
+        # Only return data for the speific target type
+        data = super().to_representation(instance)
+        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        return {k: data.get(k) for k in target_helper.fields}
 
     def validate(self, data):
-        self._cleanup_fields(data)
-        if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
-            data = self._validate_sidereal_target(data)
-        elif data['type'] == 'NON_SIDEREAL':
-            data = self._validate_nonsidereal_target(data)
-        elif data['type'] == 'SATELLITE':
-            data = self._validate_satellite_target(data)
+        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        if target_helper.is_valid():
+            data.update(target_helper.data)
         else:
-            raise serializers.ValidationError(_('Invalid target type {}'.format(data['type'])))
+            raise serializers.ValidationError(target_helper.error_dict)
         return data
-
-    def _validate_sidereal_target(self, data):
-        # check that sidereal specific defaults are filled in
-        data.setdefault('coordinate_system', default='ICRS')
-        data.setdefault('equinox', default='J2000')
-
-        # Complain if proper motion has been provided, and there is no explicit epoch
-        if ('proper_motion_ra' in data or 'proper_motion_dec' in data) and 'epoch' not in data:
-            raise serializers.ValidationError(_('Epoch is required when proper motion is specified.'))
-        # Otherwise, set epoch to 2000
-        elif 'epoch' not in data:
-            data['epoch'] = 2000.0
-
-        data.setdefault('proper_motion_ra', 0.0)
-        data.setdefault('proper_motion_dec', 0.0)
-        data.setdefault('parallax', 0.0)
-
-        # now check that if 'ra' exists 'dec' also exists
-        self._validate_require_allowed_fields(data, ['ra','dec'])
-        return data
-
-    def _validate_nonsidereal_target(self, data):
-        self._validate_require_allowed_fields(data)
-
-        # Tim wanted an eccentricity limit of 0.9 for non-comet targets
-        eccentricity_limit = 0.9
-        scheme = data['scheme']
-        if 'COMET' not in scheme.upper() and data['eccentricity'] > eccentricity_limit:
-            msg = _("Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ").format(
-                scheme, eccentricity_limit
-            )
-            msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(data['eccentricity'])
-            raise serializers.ValidationError(msg)
-
-        return data
-
-    def _validate_satellite_target(self, data):
-        self._validate_require_allowed_fields(data)
-        return data
-
-    def _validate_require_allowed_fields(self, data, required_fields=None):
-        error_dict = {}
-        if not required_fields:
-            required_fields = self.fields
-        for field in required_fields:
-            if field not in data:
-                error_dict[field] = ['Missing required field']
-
-        if error_dict:
-            raise serializers.ValidationError(error_dict)
 
 
 class RequestSerializer(serializers.ModelSerializer):
