@@ -38,5 +38,5 @@ admin.site.register(Proposal, ProposalAdmin)
 
 class MembershipAdmin(admin.ModelAdmin):
     list_display = ('proposal', 'user', 'role')
-    list_filter = ('proposal', 'user')
+    list_filter = ('role',)
 admin.site.register(Membership, MembershipAdmin)
