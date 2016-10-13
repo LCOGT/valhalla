@@ -118,6 +118,10 @@ class TestUserRequestTotalDuration(TestCase):
         self.mock_configdb = self.configdb_patcher.start()
         self.mock_configdb.return_value = configdb_data
 
+        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
+        self.mock_now = self.time_patcher.start()
+        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
+
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
                                end=datetime(2016, 12, 31, tzinfo=timezone.utc)
@@ -171,6 +175,7 @@ class TestUserRequestTotalDuration(TestCase):
 
     def tearDown(self):
         self.configdb_patcher.stop()
+        self.time_patcher.stop()
 
     def test_single_ur_total_duration(self):
         request_duration = self.request.duration
@@ -202,6 +207,10 @@ class TestRequestDuration(TestCase):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
         self.mock_configdb = self.configdb_patcher.start()
         self.mock_configdb.return_value = configdb_data
+
+        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
+        self.mock_now = self.time_patcher.start()
+        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
 
         self.target_acquire_on = mixer.blend(Target, acquire_mode='ON')
 
@@ -244,6 +253,7 @@ class TestRequestDuration(TestCase):
 
     def tearDown(self):
         self.configdb_patcher.stop()
+        self.time_patcher.stop()
 
     def test_ccd_single_molecule_request_duration(self):
         request = mixer.blend(Request)

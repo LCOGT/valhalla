@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
-from datetime import timedelta
+from django.utils import timezone
+from datetime import timedelta, datetime
 
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
@@ -129,6 +130,13 @@ class WindowSerializer(serializers.ModelSerializer):
             msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
             raise serializers.ValidationError(msg)
         return data
+
+    def validate_end(self, value):
+        # if end time is earlier than current time, through windows in future error
+        if value < timezone.now():
+            error_dict = {'end': [_('Window end time must be in the future')]}
+            raise serializers.ValidationError(error_dict)
+        return value
 
 
 class TargetSerializer(serializers.ModelSerializer):
@@ -357,6 +365,17 @@ class UserRequestSerializer(serializers.ModelSerializer):
         if not user.proposal_set.filter(id=data['proposal']):
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
+            )
+
+        # validation on the operator matching the number of requests
+        if data['operator'] == 'SINGLE':
+            if len(data['request_set']) > 1:
+                raise serializers.ValidationError(
+                    _("'Single' type user requests must have exactly one child request.")
+                )
+        elif len(data['request_set']) == 1:
+            raise serializers.ValidationError(
+                _("'{}' type user requests must have more than one child request.".format(data['operator'].title()))
             )
 
         return data
