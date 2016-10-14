@@ -17,7 +17,8 @@ class UserRequestAdmin(admin.ModelAdmin):
         'state',
         'modified',
     )
-    list_filter = ('submitter', 'proposal', 'created', 'modified')
+    list_filter = ('state', 'created', 'modified')
+    search_fields = ('group_id',)
 admin.site.register(UserRequest, UserRequestAdmin)
 
 
@@ -33,7 +34,7 @@ class RequestAdmin(admin.ModelAdmin):
         'created',
         'completed',
     )
-    list_filter = ('user_request', 'modified', 'created', 'completed')
+    list_filter = ('state', 'modified', 'created', 'completed')
 admin.site.register(Request, RequestAdmin)
 
 
@@ -46,7 +47,7 @@ class LocationAdmin(admin.ModelAdmin):
         'observatory',
         'telescope',
     )
-    list_filter = ('request',)
+    list_filter = ('telescope_class',)
 admin.site.register(Location, LocationAdmin)
 
 
@@ -91,14 +92,14 @@ class TargetAdmin(admin.ModelAdmin):
         'rot_mode',
         'rot_angle',
     )
-    list_filter = ('request',)
+    list_filter = ('type',)
     search_fields = ('name',)
 admin.site.register(Target, TargetAdmin)
 
 
 class WindowAdmin(admin.ModelAdmin):
     list_display = ('id', 'request', 'start', 'end')
-    list_filter = ('request', 'start', 'end')
+    list_filter = ('start', 'end')
 admin.site.register(Window, WindowAdmin)
 
 
@@ -130,7 +131,7 @@ class MoleculeAdmin(admin.ModelAdmin):
         'sub_y2',
         'defocus',
     )
-    list_filter = ('request',)
+    list_filter = ('type',)
 admin.site.register(Molecule, MoleculeAdmin)
 
 
@@ -144,5 +145,4 @@ class ConstraintsAdmin(admin.ModelAdmin):
         'max_seeing',
         'min_transparency',
     )
-    list_filter = ('request',)
 admin.site.register(Constraints, ConstraintsAdmin)
