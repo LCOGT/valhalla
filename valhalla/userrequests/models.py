@@ -54,13 +54,14 @@ class UserRequest(models.Model):
     def max_window_time(self):
         return max([request.max_window_time() for request in self.request_set.all()])
 
-    @property
+    @cached_property
     def timeallocations(self):
         return self.proposal.timeallocation_set.filter(
             semester__start__lte=self.min_window_time(),
             semester__end__gte=self.max_window_time()
         )
 
+    @property
     def total_duration(self):
         total_duration = {}
         if self.operator == 'SINGLE':
