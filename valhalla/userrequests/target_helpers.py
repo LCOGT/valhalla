@@ -11,16 +11,17 @@ class BaseTargetHelper(object):
     """
     def __init__(self, target):
         self.error_dict = {}
+        self._data = {}
 
         for field in self.fields:
-            setattr(self, field, target.get(field))
+            self._data[field] = target.get(field)
 
         for field in self.defaults:
             if not target.get(field):
-                setattr(self, field, self.defaults[field])
+                self._data[field] = self.defaults[field]
 
         for field in self.required_fields:
-            if not getattr(self, field):
+            if not self._data.get(field):
                 self.error_dict[field] = ['This field is required']
 
         self.validate()
@@ -33,11 +34,8 @@ class BaseTargetHelper(object):
 
     @property
     def data(self):
-        """
-        Only return data which has a value, the absence of a key
-        will allow the model to fill in a default
-        """
-        return {k: v for k, v in self.__dict__.items() if k in self.fields and v is not None}
+        # Only return data that is not none so model defaults can take effect
+        return {k: v for k, v in self._data.items() if v is not None}
 
 
 class SiderealTargetHelper(BaseTargetHelper):
@@ -61,9 +59,6 @@ class SiderealTargetHelper(BaseTargetHelper):
 
 
 class NonSiderealTargetHelper(BaseTargetHelper):
-
-    ECCENTRICITY_LIMIT = 0.9
-
     def __init__(self, target):
         self.defaults = {}
         self.fields = (
@@ -88,12 +83,13 @@ class NonSiderealTargetHelper(BaseTargetHelper):
         super().__init__(target)
 
     def validate(self):
-        if self.is_valid() and 'COMET' not in self.scheme.upper() and self.eccentricity > self.ECCENTRICITY_LIMIT:
+        ECCENTRICITY_LIMIT = 0.9
+        if self.is_valid() and 'COMET' not in self._data['scheme'] and self._data['eccentricity'] > ECCENTRICITY_LIMIT:
             msg = _("Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ").format(
-                self.scheme, self.ECCENTRICITY_LIMIT
+                self._data['scheme'], ECCENTRICITY_LIMIT
             )
             msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(
-                self.eccentricity
+                self._data['eccentricity']
             )
             self.error_dict['scheme'] = msg
 
