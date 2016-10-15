@@ -6,7 +6,8 @@ from valhalla.userrequests.filters import UserRequestFilter
 
 class UserRequestListView(FilterView):
     filterset_class = UserRequestFilter
-    template_name = 'userrequests/request_list.html'
+    template_name = 'userrequests/userrequest_list.html'
+    paginate_by = 20
 
     def get_queryset(self):
         if self.request.user.is_authenticated:

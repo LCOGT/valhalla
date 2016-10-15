@@ -11,3 +11,63 @@
     padding: 10px;
     margin-bottom: 20px;
 }
+
+.userrequest {
+    margin-bottom: 5px;
+    border: 1px solid #EFF0EC;
+    min-height: 75px;
+
+}
+
+.userrequest-success {
+    background: linear-gradient(to right,#3c763d 0,#3c763d 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-warning {
+    background: linear-gradient(to right,#8a6d3b 0,#8a6d3b 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-danger {
+    background: linear-gradient(to right,#a94442 0,#a94442 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-info {
+    background: linear-gradient(to right,#31708f 0,#31708f 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-block > p {
+    margin: 3px;
+}
+
+.userrequest-block.border-right {
+    border-right: 1px solid #EFF0EC;
+}
+
+.request-block {
+    /*margin: 0px 1px 0px 1px;*/
+    border: 1px solid #ffffff;
+    min-height: 75px;
+}
+
+.request-block > .request-id {
+    margin-left: -5px;
+}
+
+.request-icon {
+    margin-left: 10px;
+    margin-top: 20px;
+
+}
+
+.request-additional {
+    padding-top: 20px;
+    font-size: 1.5em;
+}
+
+.no-requests {
+    font-size: 1.5em;
+}
+
+.no-requests > p {
+    margin-top: 20px;
+}
