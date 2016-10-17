@@ -30,24 +30,24 @@
                             <p><i class="fa fa-user"></i> {{ ur.submitter }} <i class="fa fa-users"></i> {{ ur.proposal }}</p>
                         </div>
                         {% if ur.request_set.all %}
-                            {% for i in 'xxxxxx' %}
-                                {% with req=ur.request_set.all|array_item:forloop.counter %}
-                                {% if req %}
-                                <div class="col-md-1 request-block bg-{{ req.state|state_to_bs }}">
-                                    <i class="fa fa-{{ req.state|state_to_icon }} fa-2x request-icon text-{{ req.state|state_to_bs }}"></i>
-                                    <span class="request-id text-muted">#{{ req.id }}</span>
-                                </div>
-                                {% else %}
-                                    <div class="col-md-1 request-block">
-                                    </div>
-                                {% endif %}
-                                {% endwith %}
-                            {% endfor %}
-                            <div class="col-md-1 request-block">
+                            <div class="col-md-1 request-block pull-right">
                             {% if ur.request_set.count > 6 %}
                                 <p class="request-additional"><a href="#">+{{ ur.request_set.count|add:'-6' }}</a></p>
                             {% endif %}
                             </div>
+                            {% for i in 'xxxxxx' %}
+                                {% with req=ur.request_set.all|array_item:forloop.counter %}
+                                {% if req %}
+                                <div class="col-md-1 request-block bg-{{ req.state|state_to_bs }} pull-right">
+                                    <i class="fa fa-{{ req.state|state_to_icon }} fa-2x request-icon text-{{ req.state|state_to_bs }}"></i>
+                                    <span class="request-id text-muted">#{{ req.id }}</span>
+                                </div>
+                                {% else %}
+                                    <div class="col-md-1 request-block pull-right">
+                                    </div>
+                                {% endif %}
+                                {% endwith %}
+                            {% endfor %}
                         {% else %}
                             <div class="col-md-6 bg-danger no-requests request-block">
                                 <p>No requests attempted.</p>
