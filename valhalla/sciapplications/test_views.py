@@ -396,10 +396,38 @@ class TestSciAppDetail(TestCase):
         response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
         self.assertEqual(response.status_code, 404)
 
+    def test_staff_can_view_details(self):
+        staff_user = mixer.blend(User, is_staff=True)
+        self.client.force_login(staff_user)
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:detail', kwargs={'pk': app.id}))
+        self.assertContains(response, app.title)
+
     def test_pdf_view(self):
         # Just test the view here, actual pdf rendering is slow and loud
         PdfFileMerger.merge = MagicMock
         HTML.write_pdf = MagicMock
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=self.call
+        )
+        response = self.client.get(reverse('sciapplications:pdf', kwargs={'pk': app.id}))
+        self.assertTrue(PdfFileMerger.merge.called)
+        self.assertTrue(HTML.write_pdf.called)
+        self.assertEqual(response.status_code, 200)
+
+    def test_staff_can_view_pdf(self):
+        PdfFileMerger.merge = MagicMock
+        HTML.write_pdf = MagicMock
+        staff_user = mixer.blend(User, is_staff=True)
+        self.client.force_login(staff_user)
         app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,

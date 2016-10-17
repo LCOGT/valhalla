@@ -131,7 +131,10 @@ class SciApplicationDetailView(LoginRequiredMixin, DetailView):
     model = ScienceApplication
 
     def get_queryset(self):
-        return ScienceApplication.objects.filter(submitter=self.request.user)
+        if self.request.user.is_staff:
+            return ScienceApplication.objects.all()
+        else:
+            return ScienceApplication.objects.filter(submitter=self.request.user)
 
 
 class SciApplicationDeleteView(LoginRequiredMixin, DeleteView):
@@ -163,7 +166,10 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
     content_type = 'application/pdf'
 
     def get_queryset(self):
-        return ScienceApplication.objects.filter(submitter=self.request.user)
+        if self.request.user.is_staff:
+            return ScienceApplication.objects.all()
+        else:
+            return ScienceApplication.objects.filter(submitter=self.request.user)
 
     def render_to_response(self, context, **kwargs):
         context['pdf'] = True

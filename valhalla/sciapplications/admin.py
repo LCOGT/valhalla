@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django.utils.html import format_html
+from django.core.urlresolvers import reverse
+
 
 from .models import Instrument, Call, ScienceApplication, TimeRequest
 from valhalla.proposals.models import Proposal
@@ -32,10 +35,18 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
         'call',
         'status',
         'submitter',
-        'tac_rank'
+        'tac_rank',
+        'preview_link',
     )
     list_filter = ('call', 'status', 'call__proposal_type')
     actions = ['accept', 'reject', 'port']
+
+    def preview_link(self, obj):
+        return format_html(
+            '<a href="{}">View PDF</a> <a href="{}">View on site</a>',
+            reverse('sciapplications:pdf', kwargs={'pk': obj.id}),
+            reverse('sciapplications:detail', kwargs={'pk': obj.id})
+        )
 
     def accept(self, request, queryset):
         rows = queryset.filter(status=ScienceApplication.SUBMITTED).update(status=ScienceApplication.ACCEPTED)
