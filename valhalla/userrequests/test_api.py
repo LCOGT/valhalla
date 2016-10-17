@@ -659,14 +659,18 @@ class TestSiderealTarget(APITestCase):
         self.assertEqual(target['equinox'], 'J2000')
         self.assertEqual(target['epoch'], 2000.0)
 
-    def test_post_userrequest_test_proper_motion(self):
+    def test_post_userrequest_test_proper_motion_no_epoch(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['target']['proper_motion_ra'] = 1.0
         bad_data['requests'][0]['target']['proper_motion_dec'] = 1.0
-        # no epoch so it should fail
+        # epoch defaults to 2000 so we should pass
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
 
+    def test_post_userrequest_test_proper_motion_with_epoch(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['proper_motion_ra'] = 1.0
+        bad_data['requests'][0]['target']['proper_motion_dec'] = 1.0
         bad_data['requests'][0]['target']['epoch'] = 2001.0
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
@@ -736,8 +740,11 @@ class TestNonSiderealTarget(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('requires eccentricity to be lower', str(response.content))
 
-        bad_data['requests'][0]['target']['scheme'] = 'MPC_COMET'
-        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+    def test_post_userrequest_non_sidereal_mpc_comet(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['target']['eccentricity'] = 0.99
+        good_data['requests'][0]['target']['scheme'] = 'MPC_COMET'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
     def test_post_userrequest_non_sidereal_not_visible(self):
