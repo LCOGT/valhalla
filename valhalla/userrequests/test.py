@@ -168,6 +168,12 @@ class TestUserRequestTotalDuration(TestCase):
                     end=datetime(2016, 10, 29, tzinfo=timezone.utc))
         mixer.blend(Window, request=self.request_3, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
                     end=datetime(2016, 10, 29, tzinfo=timezone.utc))
+
+        mixer.blend(Target, request=self.request)
+        mixer.blend(Target, request=self.request_1)
+        mixer.blend(Target, request=self.request_2)
+        mixer.blend(Target, request=self.request_3)
+
         mixer.blend(Location, request=self.request, telescope_class='1m0')
         mixer.blend(Location, request=self.request_1, telescope_class='1m0')
         mixer.blend(Location, request=self.request_2, telescope_class='1m0')
@@ -257,6 +263,7 @@ class TestRequestDuration(TestCase):
 
     def test_ccd_single_molecule_request_duration(self):
         request = mixer.blend(Request)
+        mixer.blend(Target, request=request)
         self.molecule_expose.request = request
         self.molecule_expose.save()
         duration = request.duration
@@ -270,6 +277,7 @@ class TestRequestDuration(TestCase):
 
     def test_ccd_multiple_molecule_request_duration(self):
         request = mixer.blend(Request)
+        mixer.blend(Target, request=request)
         self.molecule_expose_1.request = request
         self.molecule_expose_1.save()
         self.molecule_expose_2.request = request

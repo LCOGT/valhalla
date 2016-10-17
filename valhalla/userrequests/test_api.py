@@ -1,7 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from rest_framework.test import APITestCase
 
@@ -126,6 +125,7 @@ generic_payload = {
     'group_id': 'test group',
     'operator': 'SINGLE',
     'ipp_value': 1.0,
+    'observation_type': 'NORMAL',
     'requests': [{
         'target': {
             'name': 'fake target',
@@ -452,12 +452,6 @@ class TestUserRequestIPP(APITestCase):
         time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
         self.assertEqual(time_allocation_2m0.ipp_time_available, 5.0)
 
-    def test_ipp_not_credit_or_debit_error(self):
-        user_request = self._build_user_request(self.generic_payload.copy())
-        with self.assertRaises(TimeAllocationError) as context:
-            modify_ipp_time(user_request, 'bad_modification')
-            self.assertTrue("is not one of 'debit' or 'credit'" in context.exception)
-
 
 class TestRequestIPP(APITestCase):
     def setUp(self):
@@ -540,13 +534,13 @@ class TestRequestIPP(APITestCase):
         # set the time allocation available to 0.01, then set to completed
         time_allocation.ipp_time_available = 0.01
         time_allocation.save()
-        # now set request to completed and see that ipp could not be debited
+        # now set request to completed and see that ipp debitted to 0
         request.state = 'COMPLETED'
         request.save()
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
-        self.assertEqual(time_allocation.ipp_time_available, 0.01)
+        self.assertEqual(time_allocation.ipp_time_available, 0)
         # test that the log message was generated
-        self.assertIn('switched from WINDOW_EXPIRED to COMPLETED but did not have enough ipp_time to debit',
+        self.assertIn('Time available after debiting will be capped at 0',
                       mock_logger.warn.call_args[0][0])
 
     def test_request_credit_back_on_cancelation(self):

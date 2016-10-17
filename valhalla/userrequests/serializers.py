@@ -6,9 +6,13 @@ from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta, datetime
 
+from valhalla.proposals.models import TimeAllocation
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
-from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
+from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.common.configdb import ConfigDB
+from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
+                                                  get_time_allocation_key)
+from valhalla.common.rise_set_utils import get_rise_set_intervals
 
 
 class ConstraintsSerializer(serializers.ModelSerializer):
@@ -281,6 +285,25 @@ class RequestSerializer(serializers.ModelSerializer):
                     msg += inst_name + ', '
                 raise serializers.ValidationError(msg)
 
+        instrument_type = data['molecule_set'][0]['instrument_name'].upper()
+
+         # check that the requests window has enough rise_set visible time to accomodate the requests duration
+        duration = get_request_duration(instrument_type,
+                                        data['molecule_set'], data['target'].get('acquire_mode'))
+        rise_set_intervals = get_rise_set_intervals(instrument_type,
+                                                    data['target'],
+                                                    data['constraints'],
+                                                    data['location'],
+                                                    data['window_set'])
+        largest_interval = timedelta(seconds=0)
+        for interval in rise_set_intervals:
+            largest_interval = max((interval[1]-interval[0]), largest_interval)
+        if largest_interval.total_seconds() <= duration:
+            raise serializers.ValidationError(
+                _("The request duration {} did not fit into any visible intervals. "
+                  "The largest visible interval within your window was {}").format(
+                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
+
         return data
 
 
@@ -318,44 +341,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             for data in molecule_data:
                 Molecule.objects.create(request=request, **data)
 
-            # check that the requests window has enough rise_set visible time to accomodate the requests duration
-            duration = request.duration
-            rise_set_intervals = request.rise_set_intervals()
-            largest_interval = timedelta(seconds=0)
-            for interval in rise_set_intervals:
-                largest_interval = max((interval[1]-interval[0]), largest_interval)
-            if largest_interval.total_seconds() <= duration:
-                raise serializers.ValidationError(
-                    _("The request duration {} did not fit into any visible intervals. "
-                      "The largest visible interval within your window was {}").format(
-                            duration / 3600.0, largest_interval.total_seconds() / 3600.0))
-
-        # check the proposal has a time allocation with enough time for all requests depending on operator
-        try:
-            for tak, duration in user_request.total_duration.items():
-                time_allocation = user_request.timeallocations.get(
-                    semester=tak.semester, telescope_class=tak.telescope_class
-                )
-                enough_time = False
-                if (user_request.observation_type == UserRequest.NORMAL and
-                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                    enough_time = True
-                elif (user_request.observation_type == UserRequest.TOO and
-                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                    enough_time = True
-                if not enough_time:
-                    raise serializers.ValidationError(
-                        _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
-                            user_request.proposal.id, tak.semester, tak.telescope_class)
-                    )
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError(_("Time Allocation not found."))
-
-        if user_request.ipp_value > 1.0:
-            try:
-                modify_ipp_time(user_request, 'debit')
-            except TimeAllocationError as tae:
-                raise serializers.ValidationError(repr(tae))
+        debit_ipp_time(user_request)
 
         return user_request
 
@@ -377,6 +363,49 @@ class UserRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _("'{}' type user requests must have more than one child request.".format(data['operator'].title()))
             )
+
+        try:
+            request_durations = []
+            for request in data['request_set']:
+                min_window_time = min([window['start'] for window in request['window_set']])
+                max_window_time = max([window['end'] for window in request['window_set']])
+                tak = get_time_allocation_key(request['location']['telescope_class'],
+                                              data['proposal'],
+                                              min_window_time,
+                                              max_window_time
+                                              )
+                duration = get_request_duration(request['molecule_set'][0]['instrument_name'],
+                                                request['molecule_set'],
+                                                request['target'].get('acquire_mode')
+                                                )
+                request_durations.append((tak, duration))
+
+            total_duration_dict = get_total_duration_dict(data['operator'], request_durations)
+            # check the proposal has a time allocation with enough time for all requests depending on operator
+            for tak, duration in total_duration_dict.items():
+                time_allocation = TimeAllocation.objects.get(
+                    semester=tak.semester,
+                    telescope_class=tak.telescope_class,
+                    proposal=data['proposal'],
+                )
+                enough_time = False
+                if (data['observation_type'] == UserRequest.NORMAL and
+                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                elif (data['observation_type'] == UserRequest.TOO and
+                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                if not enough_time:
+                    raise serializers.ValidationError(
+                        _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
+                            data['proposal'], tak.semester, tak.telescope_class)
+                    )
+            # validate the ipp debitting that will take place later
+            validate_ipp(data, total_duration_dict)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError(_("Time Allocation not found."))
+        except TimeAllocationError as e:
+            raise serializers.ValidationError(repr(e))
 
         return data
 
