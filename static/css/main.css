@@ -1,3 +1,35 @@
+body {
+    font-size: 16px;
+}
+.downPage ul.nav {
+    width: auto;
+}
+
+.navbar-main {
+    width: 70% !important;
+}
+
+.navbar-right {
+    width: auto;
+}
+
+
+.head.downPage .headNav {
+    width: 65%;
+}
+
+.head {
+    box-shadow: none;
+}
+
+.btn {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.intro {
+    max-height: 20px;
+}
 .call-block {
     margin: 15px 0px 15px 0px;
 }

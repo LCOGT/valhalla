@@ -10,42 +10,57 @@
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link href='https://cdn.lco.global/mainstyle/css/affogato-1.0.0.css' rel="stylesheet">
+        <link href='https://cdn.lco.global/mainstyle/css/lco-1.0.0.css' rel="stylesheet">
         <link href="{% static 'css/main.css' %}" rel="stylesheet">
         {% block extra_css %}
         {% endblock %}
     </head>
     <body>
         <!-- Static navbar -->
-        <nav class="navbar navbar-default navbar-static-top">
-          <div class="container">
-            <div class="navbar-header">
+        <nav class="navbar head downPage">
+          <div class="container-fluid">
+
+            <div class="innerHead">
               <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="/">LCOGT Observation Portal</a>
+              <div class="navbar-header branding branding-logo">
+                <a href="{% url 'index' %}" title="Observation Portal" rel="home" class="navbar-brand"><img src="https://cdn.lco.global/mainstyle/img/LCO-logo-web.jpg" alt="Las Cumbres Observatory" /></a>
+              </div>
+              <div class="navbar-header branding">
+                <div id="lco-name">Observing Portal</div>
+              </div>
+              <div id="navbar" class="navbar-collapse collapse headNav">
+                <ul class="nav navbar-nav navbar-main">
+                <li><a href="{% url 'sciapplications:index' %}">Apply For Time</a></li>
+                <li><a href="#">Schedule Requests</a></li>
+                  <li><a href="#">Manage Proposals</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  {% if user.is_authenticated %}
+                  <li class="dropdown">
+                      <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ user.username }}<span class="caret"></span></a>
+                      <ul class="dropdown-menu">
+                          <li><a href="{% url 'auth_logout' %}">Logout</a></li>
+                      </ul>
+                  </li>
+                  {% else %}
+                  <li><a href="{% url 'auth_login' %}">Login</a></li>
+                  {% endif %}
+                </ul>
+              </div><!--/.nav-collapse -->
             </div>
-            <div id="navbar" class="navbar-collapse collapse">
-              <ul class="nav navbar-nav">
-                  <li><a href="{% url 'sciapplications:index' %}">Apply</a></li>
-              </ul>
-              <ul class="nav navbar-nav navbar-right">
-                {% if user.is_authenticated %}
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">{{ user.username }}<span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'auth_logout' %}">Logout</a></li>
-                    </ul>
-                </li>
-                {% else %}
-                <li><a href="{% url 'auth_login' %}">Login</a></li>
-                {% endif %}
-              </ul>
-            </div><!--/.nav-collapse -->
           </div>
         </nav>
+        <section>
+          <div class="intro downPage blue">
+          &nbsp;
+          </div>
+        </section>
 
         <div class="container">
             <div class="row">
