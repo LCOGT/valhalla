@@ -180,13 +180,13 @@
         <a href="#">Back to top</a>
     </div>
     <div class="col-md-3">
-        <h4>{% trans 'Application status' %}:
+        <h3>{% trans 'Application status' %}:
             {% if form.instance.id %}
                 {{ form.status.value }}
             {% else %}
                 {% trans 'UNSAVED' %}
             {% endif %}
-        </h4>
+        </h3>
         {% blocktrans %}
         <p>You may save your application and work on it later.</p>
         <p>Once you submit your application, you will no longer be able to edit it.</p>

@@ -78,9 +78,9 @@
                 {% if calls %}
                     {% for call in calls %}
                     <div class="call-block">
-                        <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small></p>
-                        <p>{{ call.eligibility_short }}</p>
-                        <p><a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
+                        <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small><br/>
+                        {{ call.eligibility_short }}<br/>
+                        <a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
                     </div>
                     {% endfor %}
                 {% else %}
