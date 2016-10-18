@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.utils import timezone
+from datetime import timedelta
 
+from valhalla.proposals.models import TimeAllocation
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
-from valhalla.userrequests.state_changes import modify_ipp_time, TimeAllocationError
+from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
+from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import ConfigDB
+from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
+                                                  get_time_allocation_key)
+from valhalla.common.rise_set_utils import get_rise_set_intervals
 
 
 class ConstraintsSerializer(serializers.ModelSerializer):
@@ -128,95 +136,38 @@ class WindowSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(msg)
         return data
 
+    def validate_end(self, value):
+        # if end time is earlier than current time, through windows in future error
+        if value < timezone.now():
+            error_dict = {'end': [_('Window end time must be in the future')]}
+            raise serializers.ValidationError(error_dict)
+        return value
+
 
 class TargetSerializer(serializers.ModelSerializer):
 
-    def __init__(self, *args, **kwargs):
-        # Don't pass the 'fields' arg up to the superclass
-        fields = kwargs.pop('fields', None)
-
-        # Instantiate the superclass normally
-        super().__init__(*args, **kwargs)
-        if fields is not None:
-            allowed = ('name', 'type', 'coordinate_system', 'equinox', 'epoch')
-            if fields['type'] == 'SIDEREAL' or fields['type'] == 'STATIC':
-                allowed += (
-                    'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax'
-                )
-            elif fields['type'] == 'NON_SIDEREAL':
-                allowed += ('epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme')
-                if fields['scheme'] == 'ASA_MAJOR_PLANET':
-                    allowed += ('longofperih', 'meandist', 'meanlong', 'dailymot')
-                elif fields['scheme'] == 'ASA_MINOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom')
-                elif fields['scheme'] == 'ASA_COMET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-                elif fields['scheme'] == 'JPL_MAJOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom', 'dailymot')
-                elif fields['scheme'] == 'JPL_MINOR_PLANET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-                elif fields['scheme'] == 'MPC_MINOR_PLANET':
-                    allowed += ('argofperih', 'meandist', 'meananom')
-                elif fields['scheme'] == 'MPC_COMET':
-                    allowed += ('argofperih', 'perihdist', 'epochofperih')
-            elif fields['type'] == 'SATELLITE':
-                allowed += (
-                    'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate', 'diff_epoch_rate',
-                    'diff_pitch_acceleration', 'diff_roll_acceleration'
-                )
-
-            # Drop any fields that are not specified in the `fields` argument.
-            existing = set(self.fields.keys())
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
+    TYPE_HELPER_MAP = {
+        'SIDEREAL': SiderealTargetHelper,
+        'NON_SIDEREAL': NonSiderealTargetHelper,
+        'SATELLITE': SatelliteTargetHelper
+    }
 
     class Meta:
         model = Target
         exclude = ('request', 'id')
 
+    def to_representation(self, instance):
+        # Only return data for the speific target type
+        data = super().to_representation(instance)
+        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        return {k: data.get(k) for k in target_helper.fields}
+
     def validate(self, data):
-        if data['type'] == 'SIDEREAL' or data['type'] == 'STATIC':
-            data = self._validate_sidereal_target(data)
-        elif data['type'] == 'NON_SIDEREAL':
-            data = self._validate_nonsidereal_target(data)
-        elif data['type'] == 'SATELLITE':
-            pass  # TODO implement this
+        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        if target_helper.is_valid():
+            data.update(target_helper.data)
         else:
-            print('here')
-            raise serializers.ValidationError(_('Invalid target type {}'.format(data['type'])))
-        return data
-
-    def _validate_sidereal_target(self, data):
-        # check that sidereal specific defaults are filled in
-        data.setdefault('coordinate_system', default='ICRS')
-        data.setdefault('equinox', default='J2000')
-
-        # Complain if proper motion has been provided, and there is no explicit epoch
-        if ('proper_motion_ra' in data or 'proper_motion_dec' in data) and 'epoch' not in data:
-            raise serializers.ValidationError(_('Epoch is required when proper motion is specified.'))
-        # Otherwise, set epoch to 2000
-        elif 'epoch' not in data:
-            data['epoch'] = 2000.0
-
-        data.setdefault('proper_motion_ra', 0.0)
-        data.setdefault('proper_motion_dec', 0.0)
-        data.setdefault('parallax', 0.0)
-
-        # now check that if 'ra' exists 'dec' also exists
-        if 'ra' not in data or 'dec' not in data:
-            raise serializers.ValidationError(_('A Sidereal target must specify an `ra` and `dec`'))
-        return data
-
-    def _validate_nonsidereal_target(self, data):
-        # Tim wanted an eccentricity limit of 0.9 for non-comet targets
-        eccentricity_limit = 0.9
-        scheme = data['scheme']
-        if 'COMET' not in scheme.upper() and data['eccentricity'] > eccentricity_limit:
-            msg = _("Non sidereal pointing of scheme {} requires eccentricity to be lower than {}. ").format(
-                scheme, eccentricity_limit
-            )
-            msg += _("Submit with scheme MPC_COMET to use your eccentricity of {}.").format(data['eccentricity'])
-            raise serializers.ValidationError(msg)
+            raise serializers.ValidationError(target_helper.error_dict)
         return data
 
 
@@ -260,6 +211,25 @@ class RequestSerializer(serializers.ModelSerializer):
                     msg += inst_name + ', '
                 raise serializers.ValidationError(msg)
 
+        instrument_type = data['molecule_set'][0]['instrument_name'].upper()
+
+        # check that the requests window has enough rise_set visible time to accomodate the requests duration
+        duration = get_request_duration(instrument_type,
+                                        data['molecule_set'], data['target'].get('acquire_mode'))
+        rise_set_intervals = get_rise_set_intervals(instrument_type,
+                                                    data['target'],
+                                                    data['constraints'],
+                                                    data['location'],
+                                                    data['window_set'])
+        largest_interval = timedelta(seconds=0)
+        for interval in rise_set_intervals:
+            largest_interval = max((interval[1]-interval[0]), largest_interval)
+        if largest_interval.total_seconds() <= duration:
+            raise serializers.ValidationError(
+                _("The request duration {} did not fit into any visible intervals. "
+                  "The largest visible interval within your window was {}").format(
+                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
+
         return data
 
 
@@ -274,7 +244,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             'id', 'submitter', 'created', 'state', 'modified'
         )
 
-    @transaction.atomic()
+    @transaction.atomic
     def create(self, validated_data):
         request_data = validated_data.pop('request_set')
 
@@ -297,32 +267,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             for data in molecule_data:
                 Molecule.objects.create(request=request, **data)
 
-        # check the proposal has a time allocation with enough time for all requests depending on operator
-        try:
-            for tak, duration in user_request.total_duration.items():
-                time_allocation = user_request.timeallocations.get(
-                    semester=tak.semester, telescope_class=tak.telescope_class
-                )
-                enough_time = False
-                if (user_request.observation_type == UserRequest.NORMAL and
-                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                        enough_time = True
-                elif (user_request.observation_type == UserRequest.TOO and
-                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                        enough_time = True
-                if not enough_time:
-                    raise serializers.ValidationError(
-                        _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
-                            user_request.proposal.id, tak.semester, tak.telescope_class)
-                    )
-        except Exception:
-            raise serializers.ValidationError(_("Time Allocation not found."))
-
-        if user_request.ipp_value > 1.0:
-            try:
-                modify_ipp_time(user_request, 'debit')
-            except TimeAllocationError as tae:
-                raise serializers.ValidationError(repr(tae))
+        debit_ipp_time(user_request)
 
         return user_request
 
@@ -333,6 +278,60 @@ class UserRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
+
+        # validation on the operator matching the number of requests
+        if data['operator'] == 'SINGLE':
+            if len(data['request_set']) > 1:
+                raise serializers.ValidationError(
+                    _("'Single' type user requests must have exactly one child request.")
+                )
+        elif len(data['request_set']) == 1:
+            raise serializers.ValidationError(
+                _("'{}' type user requests must have more than one child request.".format(data['operator'].title()))
+            )
+
+        try:
+            request_durations = []
+            for request in data['request_set']:
+                min_window_time = min([window['start'] for window in request['window_set']])
+                max_window_time = max([window['end'] for window in request['window_set']])
+                tak = get_time_allocation_key(request['location']['telescope_class'],
+                                              data['proposal'],
+                                              min_window_time,
+                                              max_window_time
+                                              )
+                duration = get_request_duration(request['molecule_set'][0]['instrument_name'],
+                                                request['molecule_set'],
+                                                request['target'].get('acquire_mode')
+                                                )
+                request_durations.append((tak, duration))
+
+            total_duration_dict = get_total_duration_dict(data['operator'], request_durations)
+            # check the proposal has a time allocation with enough time for all requests depending on operator
+            for tak, duration in total_duration_dict.items():
+                time_allocation = TimeAllocation.objects.get(
+                    semester=tak.semester,
+                    telescope_class=tak.telescope_class,
+                    proposal=data['proposal'],
+                )
+                enough_time = False
+                if (data['observation_type'] == UserRequest.NORMAL and
+                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                elif (data['observation_type'] == UserRequest.TOO and
+                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
+                    enough_time = True
+                if not enough_time:
+                    raise serializers.ValidationError(
+                        _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
+                            data['proposal'], tak.semester, tak.telescope_class)
+                    )
+            # validate the ipp debitting that will take place later
+            validate_ipp(data, total_duration_dict)
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError(_("Time Allocation not found."))
+        except TimeAllocationError as e:
+            raise serializers.ValidationError(repr(e))
 
         return data
 

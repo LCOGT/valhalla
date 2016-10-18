@@ -20,6 +20,3 @@ def cb_request_pre_save(sender, instance, *args, **kwargs):
         # This is an update to the model
         current_data = Request.objects.get(pk=instance.pk)
         on_request_state_change(current_data, instance)
-    else:
-        # This means the model is being created now
-        pass

@@ -54,6 +54,29 @@ class ConfigDB(object):
     def get_site_data(self):
         return self.site_data
 
+    def get_sites_with_instrument_type_and_location(self, instrument_type, site_code='',
+                                                    observatory_code='', telescope_code=''):
+        site_data = self.get_site_data()
+        site_details = {}
+        for site in site_data:
+            if not site_code or site_code == site['code']:
+                for enclosure in site['enclosure_set']:
+                    if not observatory_code or observatory_code == enclosure['code']:
+                        for telescope in enclosure['telescope_set']:
+                            if not telescope_code or telescope_code == telescope['code']:
+                                for instrument in telescope['instrument_set']:
+                                    if instrument['state'] == 'SCHEDULABLE':
+                                        camera_type = instrument['science_camera']['camera_type']['code']
+                                        if instrument_type.upper() == camera_type.upper():
+                                            if site['code'] not in site_details:
+                                                site_details[site['code']] = {'latitude': telescope['lat'],
+                                                                              'longitude': telescope['lon'],
+                                                                              'horizon': telescope['horizon'],
+                                                                              'ha_limit_pos': telescope['ha_limit_pos'],
+                                                                              'ha_limit_neg': telescope['ha_limit_neg']}
+
+        return site_details
+
     def get_schedulable_instruments(self):
         schedulable_instruments = []
         for site in self.site_data:
