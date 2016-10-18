@@ -213,7 +213,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
         instrument_type = data['molecule_set'][0]['instrument_name'].upper()
 
-         # check that the requests window has enough rise_set visible time to accomodate the requests duration
+        # check that the requests window has enough rise_set visible time to accomodate the requests duration
         duration = get_request_duration(instrument_type,
                                         data['molecule_set'], data['target'].get('acquire_mode'))
         rise_set_intervals = get_rise_set_intervals(instrument_type,

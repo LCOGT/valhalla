@@ -1,4 +1,3 @@
-from datetime import timedelta
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
@@ -102,7 +101,8 @@ def debit_ipp_time(ur):
         return
     try:
         time_allocations = ur.timeallocations
-        time_allocations_dict = {TimeAllocationKey(ta.semester.id, ta.telescope_class): ta for ta in time_allocations.all()}
+        time_allocations_dict = {TimeAllocationKey(ta.semester.id, ta.telescope_class): ta
+                                 for ta in time_allocations.all()}
 
         total_duration_dict = ur.total_duration
         for tak, duration in total_duration_dict.items():
