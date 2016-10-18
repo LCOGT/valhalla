@@ -42,6 +42,9 @@ class UserRequest(models.Model):
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
     modified = models.DateTimeField(auto_now=True, db_index=True)
 
+    class Meta:
+        ordering = ('-id',)
+
     def __str__(self):
         return self.get_id_display()
 
