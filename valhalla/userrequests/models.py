@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
-from math import ceil
 
 from valhalla.proposals.models import Proposal, TimeAllocationKey
-from valhalla.common.configdb import ConfigDB
-from valhalla.common.instruments import get_num_filter_changes, get_num_mol_changes
+from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration,
+                                                  get_total_duration_dict)
+from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
 
 
 class UserRequest(models.Model):
@@ -48,39 +49,27 @@ class UserRequest(models.Model):
     def get_id_display(self):
         return str(self.id).zfill(10)
 
+    @property
     def min_window_time(self):
-        return min([request.min_window_time() for request in self.request_set.all()])
+        return min([request.min_window_time for request in self.request_set.all()])
 
+    @property
     def max_window_time(self):
-        return max([request.max_window_time() for request in self.request_set.all()])
+        return max([request.max_window_time for request in self.request_set.all()])
 
-    @cached_property
+    @property
     def timeallocations(self):
         return self.proposal.timeallocation_set.filter(
-            semester__start__lte=self.min_window_time(),
-            semester__end__gte=self.max_window_time()
+            semester__start__lte=self.min_window_time,
+            semester__end__gte=self.max_window_time
         )
 
     @property
     def total_duration(self):
-        total_duration = {}
-        if self.operator == 'SINGLE':
-            request = self.request_set.first()
-            total_duration[request.time_allocation_key] = request.duration
-
-        elif self.operator == 'MANY' or self.operator == 'ONEOF':
-            for request in self.request_set.all():
-                total_duration[request.time_allocation_key] = max(
-                    total_duration.get(request.time_allocation_key, 0.0),
-                    request.duration
-                )
-        elif self.operator == 'AND':
-            for request in self.request_set.all():
-                if request.time_allocation_key not in total_duration:
-                    total_duration[request.time_allocation_key] = 0
-                total_duration[request.time_allocation_key] += request.duration
-
-        return total_duration
+        return get_total_duration_dict(
+            self.operator,
+            [(r.time_allocation_key, r.duration) for r in self.request_set.all()]
+        )
 
 
 class Request(models.Model):
@@ -114,32 +103,15 @@ class Request(models.Model):
 
     @cached_property
     def duration(self):
-        # calculate the total time needed by the request, based on its instrument and exposures
-        configdb = ConfigDB()
-        instrument_type = self.molecule_set.first().instrument_name
-        request_overheads = configdb.get_request_overheads(instrument_type)
-        duration = sum([m.duration for m in self.molecule_set.all()])
-        if configdb.is_spectrograph(instrument_type):
-            duration += get_num_mol_changes(self.molecule_set.all()) * request_overheads['config_change_time']
+        return get_request_duration(self.molecule_set.first().instrument_name,
+                                    [model_to_dict(m) for m in self.molecule_set.all()],
+                                    self.target.acquire_mode)
 
-            if self.target.acquire_mode.upper() != 'OFF':
-                mol_types = [mol.type.upper() for mol in self.molecule_set.all()]
-                # Only add the overhead if we have on-sky targets to acquire
-                if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
-                    duration += request_overheads['acquire_exposure_time'] + \
-                        request_overheads['acquire_processing_time']
-
-        else:
-            duration += get_num_filter_changes(self.molecule_set.all()) * request_overheads['filter_change_time']
-
-        duration += request_overheads['front_padding']
-        duration = ceil(duration)
-
-        return duration
-
+    @property
     def min_window_time(self):
         return min([window.start for window in self.window_set.all()])
 
+    @property
     def max_window_time(self):
         return max([window.end for window in self.window_set.all()])
 
@@ -150,9 +122,17 @@ class Request(models.Model):
     @property
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
-            semester__start__lte=self.min_window_time(),
-            semester__end__gte=self.max_window_time()
+            semester__start__lte=self.min_window_time,
+            semester__end__gte=self.max_window_time,
+            telescope_class=self.location.telescope_class
         )
+
+    def rise_set_intervals(self):
+        return get_rise_set_intervals(self.molecule_set.first().instrument_name,
+                                      model_to_dict(self.target),
+                                      model_to_dict(self.constraints),
+                                      model_to_dict(self.location),
+                                      [model_to_dict(window) for window in self.window_set.all()])
 
 
 class Location(models.Model):
@@ -265,6 +245,9 @@ class Target(models.Model):
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
     rot_angle = models.FloatField(default=0.0, blank=True)
 
+    def rise_set_target(self):
+        return get_rise_set_target(self)
+
 
 class Window(models.Model):
     request = models.ForeignKey(Request)
@@ -273,8 +256,6 @@ class Window(models.Model):
 
 
 class Molecule(models.Model):
-    PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
-    PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
     # These are filled in from the molecule types possible in requestdb.
     # There are more molecule types that the pond will accept but scheduler will not.
     MOLECULE_TYPES = (
@@ -348,12 +329,7 @@ class Molecule(models.Model):
 
     @cached_property
     def duration(self):
-        configdb = ConfigDB()
-        total_overhead_per_exp = configdb.get_exposure_overhead(self.instrument_name, self.bin_x)
-        mol_duration = self.exposure_count * (self.exposure_time + total_overhead_per_exp)
-        duration = mol_duration + self.PER_MOLECULE_GAP + self.PER_MOLECULE_STARTUP_TIME
-
-        return duration
+        return get_molecule_duration(self.instrument_name, self.bin_x, self.exposure_time, self.exposure_count)
 
 
 class Constraints(models.Model):
