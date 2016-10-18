@@ -11,7 +11,7 @@
         {% if user.is_authenticated %}
         <div class="row">
             <div class="col-md-12">
-                <h4>Active Proposals</h4>
+                <h3>Active Proposals</h3>
                 {% for proposal in user.proposal_set.all %}
                 <p><a href="{% url 'proposals:detail' pk=proposal.id %}">{{ proposal }}</a>
                 <br/>
@@ -28,7 +28,7 @@
         {% endif %}
         <div class="row">
             <div class="col-md-12">
-                <h4>News</h4>
+                <h3>News</h3>
                 <div id="news">
                 </div>
             </div>

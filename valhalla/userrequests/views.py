@@ -11,6 +11,6 @@ class UserRequestListView(FilterView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return UserRequest.objects.filter(submitter=self.request.user)
+            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
         else:
             return UserRequest.objects.none()
