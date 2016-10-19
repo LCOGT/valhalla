@@ -2,6 +2,7 @@ body {
     font-size: 16px;
     font-family: 'Affogato-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
 .downPage ul.nav {
     width: auto;
 }
@@ -40,7 +41,7 @@ body {
 }
 
 .filter-block {
-    background-color: #f8f8f8;
+    background-color: #eee;
     padding: 10px;
     margin-bottom: 20px;
 }

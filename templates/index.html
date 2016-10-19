@@ -40,7 +40,7 @@
 <script type="text/javascript">
 $(document).ready(function(){
     $.ajax({
-        url: '//ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
+        url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
         dataType: 'json',
         success: function (data) {
             rss = '<ul class="list-unstyled">'
