@@ -1,13 +1,14 @@
 language: python
 python:
-  - "3.4"
-  - "3.5"
+  - '3.4'
+  - '3.5'
 before_install:
   - sudo apt-get -qq update && sudo apt-get install -y gfortran
 install:
   - pip install -U setuptools coverage coveralls
   - pip install -r requirements.txt
-script:
-  coverage run manage.py test
-after_success:
-  coveralls
+script: coverage run manage.py test
+after_success: coveralls
+notifications:
+  slack:
+    secure: ef6vn1YXK2jwmCdbHyJ/SoP+1ydaNo72UY/E3sw2GQqgqQ7qH5VD8MEOuKPMnuXaC+C8qI6cN7xLdbk7s54e9oxGmLbhIynywEqfMLseVcwNqG1xDs8PBvTAtjZMOOnJAro4mRIERVFi8T9vAJEg/XQ1gewX2yQkngLrIGZx+QFnRklSvaekhxXJHq+MkUnW032WIcgI9JCYHKKvrBMolVzu86snkwKbFE01OPhz4/9rpdpvQTkMr9b3llBoED8Hy2eh+Io/NHoyRuflDYlC57D+VRAtL4d+X7ZXGZJIV1WEwEtxCrk2bzp9UOeYB96i/EuTijPQA8XBZ1U9/KHWlJm0bQDxo6mzmzq5LFmdeHCrAkUwUA95rm6sIiFGutL2bNuntGkSJ8TvnbB757LTYn92FINPirDQXstpL1ap6alEFCw3G2mHulX89bwnt40ihY1Ge27SSwqZqQxYabHN4vlrRASpUuoF+EdNB0+VeAs9thWnEPOQNG9PR/3Hl54K3fXpvB1MIA1A16s/1DC8qf3LW7UAT8lqO60+C0jH7z3dX4gn8u6NtjBoIQdv/lDx5QgEYA24cpWHeWOVjhs7qVMMBUoII2tOWwDtTTTnoyX2N7RRwUDOkXvXGTDWaXkGZqz1qSjOTvQUypfVKIlnHFXRh+6lIEKxduacsC2zrAY=
