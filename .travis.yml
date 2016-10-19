@@ -5,7 +5,8 @@ python:
 before_install:
   - sudo apt-get -qq update && sudo apt-get install -y gfortran
 install:
-  - pip install -U setuptools coverage coveralls -r requirements.txt
+  - pip install -U setuptools coverage coveralls
+  - pip install -r requirements.txt
 script:
   coverage run manage.py test
 after_success:
