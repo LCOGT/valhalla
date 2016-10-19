@@ -3,10 +3,9 @@ python:
   - "3.4"
   - "3.5"
 before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y gfortran
+  - sudo apt-get -qq update && sudo apt-get install -y gfortran
 install:
-  - pip install -U setuptools coverage coveralls numpy
+  - pip install -U setuptools coverage coveralls
   - pip install -r requirements.txt
 script:
   coverage run manage.py test
