@@ -23,7 +23,7 @@
                     <span class="input-group-addon">Proposal:</span>
                     <select class="form-control input-sm" id="id_proposal" name="proposal" title="">
                         <option value="">---------</option>
-                        {% for proposal in user.proposal_set.all.distinct %}
+                        {% for proposal in user.proposal_set.all %}
                         <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>{{ proposal }}</option>
                         {% endfor %}
                     </select>

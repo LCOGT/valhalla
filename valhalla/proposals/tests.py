@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.core import mail
 from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
 from mixer.backend.django import mixer
 
 from valhalla.proposals.models import ProposalInvite, Proposal, Membership
@@ -14,6 +15,13 @@ class TestProposal(TestCase):
         proposal.add_users(emails, Membership.CI)
         self.assertIn(proposal, user.proposal_set.all())
         self.assertTrue(ProposalInvite.objects.filter(email='notexist@lcogt.net').exists())
+
+    def test_no_dual_membership(self):
+        proposal = mixer.blend(Proposal)
+        user = mixer.blend(User)
+        Membership.objects.create(user=user, proposal=proposal, role=Membership.PI)
+        with self.assertRaises(IntegrityError):
+            Membership.objects.create(user=user, proposal=proposal, role=Membership.CI)
 
 
 class TestProposalInvitation(TestCase):
