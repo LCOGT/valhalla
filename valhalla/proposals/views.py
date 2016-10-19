@@ -15,7 +15,7 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
     model = Proposal
 
     def get_queryset(self):
-        return self.request.user.proposal_set.all()
+        return self.request.user.proposal_set.all().distinct()
 
 
 class InviteCreateView(LoginRequiredMixin, View):

@@ -12,7 +12,7 @@
         <div class="row">
             <div class="col-md-12">
                 <h3>Active Proposals</h3>
-                {% for proposal in user.proposal_set.all %}
+                {% for proposal in user.proposal_set.all.distinct %}
                 <p><a href="{% url 'proposals:detail' pk=proposal.id %}">{{ proposal }}</a>
                 <br/>
                 <small>{{ proposal.title }}</small>
