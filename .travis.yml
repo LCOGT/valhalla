@@ -1,14 +1,14 @@
 language: python
 python:
-  - '3.4'
-  - '3.5'
+- '3.4'
+- '3.5'
 before_install:
-  - sudo apt-get -qq update && sudo apt-get install -y gfortran
+- sudo apt-get -qq update && sudo apt-get install -y gfortran
 install:
-  - pip install -U setuptools coverage coveralls
-  - pip install -r requirements.txt
+- pip install -U setuptools coverage coveralls
+- pip install -r requirements.txt
 script: coverage run manage.py test
 after_success: coveralls
 notifications:
   slack:
-    secure: ef6vn1YXK2jwmCdbHyJ/SoP+1ydaNo72UY/E3sw2GQqgqQ7qH5VD8MEOuKPMnuXaC+C8qI6cN7xLdbk7s54e9oxGmLbhIynywEqfMLseVcwNqG1xDs8PBvTAtjZMOOnJAro4mRIERVFi8T9vAJEg/XQ1gewX2yQkngLrIGZx+QFnRklSvaekhxXJHq+MkUnW032WIcgI9JCYHKKvrBMolVzu86snkwKbFE01OPhz4/9rpdpvQTkMr9b3llBoED8Hy2eh+Io/NHoyRuflDYlC57D+VRAtL4d+X7ZXGZJIV1WEwEtxCrk2bzp9UOeYB96i/EuTijPQA8XBZ1U9/KHWlJm0bQDxo6mzmzq5LFmdeHCrAkUwUA95rm6sIiFGutL2bNuntGkSJ8TvnbB757LTYn92FINPirDQXstpL1ap6alEFCw3G2mHulX89bwnt40ihY1Ge27SSwqZqQxYabHN4vlrRASpUuoF+EdNB0+VeAs9thWnEPOQNG9PR/3Hl54K3fXpvB1MIA1A16s/1DC8qf3LW7UAT8lqO60+C0jH7z3dX4gn8u6NtjBoIQdv/lDx5QgEYA24cpWHeWOVjhs7qVMMBUoII2tOWwDtTTTnoyX2N7RRwUDOkXvXGTDWaXkGZqz1qSjOTvQUypfVKIlnHFXRh+6lIEKxduacsC2zrAY=
+    secure: SCIJduzXH4wie0XpXeNFyAOIdvEHwAYmFm+AyRFmDwKPeakSU/fvUVt02UwWgACSbbD3LQ1zRYvs8J2VbtYluRVX0Jtbfx7S6+gw+Rhn9pQ+en5VLvvkhlC/8yNxbJvxUpQhpUnrht9ZcacmT7anFL5Op4jtuiJguK7E2rmnwXpva40jVBzUIYgA/usQZ3CIQ+S6+FmphQK33YRNml5M5ye1sMUSDE7NE78nxnLh46BIasTtO3strabhQo6pkQhh5KbhfTASGVQG1E0vrsz1QZ2ZF8QMu2ubEH2hmLDmzsOLDPbwd77IIVM2C8A989cYR8Xm3NTINIt93TMzd0ZZb+ynaQ/96RWHL4j3a9XBgQQcc/mJuXM9YGd38lXU81Etj6SWtIagw6myWHdzUj6i/iBJz2pbLHOj2cw/rmH7N7Cy7x+8l4IE782tdmSC5VTxkHwImbSIVx2j2EZBxw+OPMrQbcRA92KaGt8X1SFUGIpXe2gcspXweX7eqO70fUdPvCzryka3augXuQhZfCG3ZF476e6RyIjQbtk3wv055gkyN11yhBB9zzEQh1+pTWleOukkW3m9Yd2Yidl7dMo125YGdpBcQ+uoa3kIlM20nWk9B3a/FRq7g8x62KOSVj/+RZBPviimFAOs4hDR+ff4d82ecitHOcfZbAfV12Qg3Qg=
