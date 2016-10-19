@@ -37,7 +37,7 @@
                         <div class="col-md-7">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <strong><a class="text-{{ ur.state|state_to_bs }}" href="{{ ur.id }}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
+                                    <strong><a class="text-{{ ur.state|state_to_bs }} userrequest-title" href="{{ ur.id }}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
                                 </div>
                             </div>
                             <div class="row">
@@ -55,28 +55,35 @@
                             </div>
                         </div>
                         {% if ur.request_set.all %}
-                            <div class="col-md-1 request-block pull-right">
-                            {% if ur.request_set.count > 4 %}
-                                <p class="request-additional"><a href="#">+{{ ur.request_set.count|add:'-4' }}</a></p>
-                            {% endif %}
+                            <div class="col-xs-1 request-block">
+                                <div class="row">
+                                    <div class="col-md-12 request-count">
+                                        <a href="#"><center>{{ ur.request_set.count }}</center></a></span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <small><p class="text-muted text-center request-id child-requests">Child Request{{ ur.request_set.count|pluralize }}</p></small>
+                                    </div>
+                                </div>
                             </div>
                             {% for i in 'xxxx' %}
                                 {% with req=ur.request_set.all|array_item:forloop.counter %}
                                 {% if req %}
-                                <div class="col-xs-1 request-block bg-{{ req.state|state_to_bs }} pull-right">
+                                <div class="col-xs-1 bg-{{ req.state|state_to_bs }} request-block">
                                     <div class="row">
                                         <div class="col-md-12">
-                                    <i class="fa fa-{{ req.state|state_to_icon }} fa-2x request-icon text-{{ req.state|state_to_bs }} text-center"></i>
-                                    </div>
+                                           <i class="fa fa-{{ req.state|state_to_icon }} fa-2x request-icon text-{{ req.state|state_to_bs }} text-center"></i>
+                                        </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12">
-                                        <span class="text-muted request-id text-center"><small>#{{ req.id }}</small></span>
-                                    </div>
+                                            <span class="text-muted request-id text-center"><small>#{{ req.id }}</small></span>
+                                        </div>
                                     </div>
                                 </div>
                                 {% else %}
-                                    <div class="col-md-1 request-block pull-right">
+                                    <div class="col-md-1 request-block">
                                     </div>
                                 {% endif %}
                                 {% endwith %}

@@ -52,6 +52,10 @@ body {
 
 }
 
+.userrequest-title {
+    font-size: 1.2em;
+}
+
 .userrequest-success {
     background: linear-gradient(to right,#3c763d 0,#3c763d 10px,#fff 10px,#fff 100%) no-repeat;
 }
@@ -77,9 +81,9 @@ body {
 }
 
 .request-block {
-    /*margin: 0px 1px 0px 1px;*/
     border: 1px solid #ffffff;
     min-height: 75px;
+    background-color: #eee;
 }
 
 .request-id {
@@ -89,9 +93,13 @@ body {
 .request-icon {
     margin-left: 5px;
     margin-top: 10px;
-
 }
 
+.request-count {
+    font-size: 1.7em;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
 .request-additional {
     padding-top: 20px;
     font-size: 1.5em;
@@ -103,4 +111,9 @@ body {
 
 .no-requests > p {
     margin-top: 20px;
+}
+
+.child-requests {
+    line-height: 0.9;
+    margin-bottom: 0px;
 }
