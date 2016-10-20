@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load bootstrap3 i18n %}
+{% block title %}{% trans 'Profile' %}{% endblock %}
+{% block content %}
+<form class="form" method="post" action="">
+{% csrf_token %}
+{% bootstrap_form form %}
+{% buttons submit='OK' reset="Cancel" %}
+<a href="{% url 'auth_password_change' %}" class="btn btn-danger pull-right">Change Passwod</a>
+{% endbuttons %}
+</form>
+{% endblock %}
