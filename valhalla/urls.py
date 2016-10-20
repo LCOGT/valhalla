@@ -9,6 +9,7 @@ from valhalla.userrequests.views import UserRequestListView
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
 import valhalla.proposals.urls as proposals_urls
+import valhalla.userrequests.urls as userrequest_urls
 
 router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
@@ -20,6 +21,7 @@ urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
+    url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
     url(r'^admin/', admin.site.urls),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled

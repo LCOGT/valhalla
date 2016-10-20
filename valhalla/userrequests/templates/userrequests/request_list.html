@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %} Request Details {% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>{{ userrequest.group_id }} <small>#{{ userrequest.id }}</small></h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <dl>
+            <dt>State</dt>
+            <dd>{{ userrequest.state }}</dd>
+        </dl>
+        <dl>
+            <dt>Last Update</dt>
+            <dd>{{ userrequest.modified }}</dd>
+        </dl>
+        <dl>
+            <dt>Created</dt>
+            <dd>{{ userrequest.created }}</dd>
+        </dl>
+        <dl>
+            <dt>Proposal</dt>
+            <dd>
+                <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
+            </dd>
+        </dl>
+        <dl>
+            <dt>Submitter</dt>
+            <dd>{{ userrequest.submitter }}</dd>
+        </dl>
+        <dl>
+            <dt>Observation Type</dt>
+            <dd>{{ userrequest.observation_type }}</dd>
+        </dl>
+        <dl>
+            <dt>IPP Value</dt>
+            <dd>{{ userrequest.ipp_value }}</dd>
+        </dl>
+    </div>
+    <div class="col-md-10">
+        {% for request in object_list %}
+        #{{ request.id }}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
