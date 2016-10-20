@@ -22,8 +22,7 @@ class UserRequestListView(FilterView):
 
 @api_view(['GET',])
 def telescope_states(request):
-    '''
-
+    ''' Retrieves the telescope states for all telescopes between the start and end times
     :param request:
     :return:
     '''
@@ -37,8 +36,7 @@ def telescope_states(request):
 
 @api_view(['GET',])
 def telescope_availability(request):
-    '''
-
+    ''' Retrieves the nightly % availability of each telescope between the start and end times
     :param request:
     :return:
     '''
