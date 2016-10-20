@@ -1,6 +1,8 @@
 body {
     font-size: 16px;
+    font-family: 'Affogato-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+
 .downPage ul.nav {
     width: auto;
 }
@@ -28,7 +30,7 @@ body {
 }
 
 .intro {
-    max-height: 20px;
+    max-height: 10px;
 }
 .call-block {
     margin: 15px 0px 15px 0px;
@@ -36,4 +38,83 @@ body {
 
 .delete-timeallocation {
     margin-left: 10px;
+}
+
+.filter-block {
+    background-color: #eee;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.userrequest {
+    margin-bottom: 5px;
+    border: 1px solid #EFF0EC;
+    min-height: 75px;
+
+}
+
+.userrequest-title {
+    font-size: 1.2em;
+}
+
+.userrequest-success {
+    background: linear-gradient(to right,#3c763d 0,#3c763d 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-warning {
+    background: linear-gradient(to right,#8a6d3b 0,#8a6d3b 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-danger {
+    background: linear-gradient(to right,#a94442 0,#a94442 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-info {
+    background: linear-gradient(to right,#31708f 0,#31708f 10px,#fff 10px,#fff 100%) no-repeat;
+}
+
+.userrequest-block > p {
+    margin: 3px;
+}
+
+.userrequest-block.border-right {
+    border-right: 1px solid #EFF0EC;
+}
+
+.request-block {
+    border: 1px solid #ffffff;
+    min-height: 75px;
+    background-color: #eee;
+}
+
+.request-id {
+    margin-left: -5px;
+}
+
+.request-icon {
+    margin-left: 5px;
+    margin-top: 10px;
+}
+
+.request-count {
+    font-size: 1.7em;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+.request-additional {
+    padding-top: 20px;
+    font-size: 1.5em;
+}
+
+.no-requests {
+    font-size: 1.5em;
+}
+
+.no-requests > p {
+    margin-top: 20px;
+}
+
+.child-requests {
+    line-height: 0.9;
+    margin-bottom: 0px;
 }

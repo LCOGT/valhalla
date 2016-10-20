@@ -34,10 +34,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
     'rest_framework',
     'bootstrap3',
+    'oauth2_provider',
+    'corsheaders',
     'valhalla.accounts',
     'valhalla.userrequests',
     'valhalla.proposals',
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,8 +110,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = [
     'valhalla.accounts.backends.EmailOrUsernameModelBackend',
-    'django.contrib.auth.backends.ModelBackend'
+    'django.contrib.auth.backends.ModelBackend',
+    'oauth2_provider.backends.OAuth2Backend',
 ]
+
+OAUTH2_PROVIDER = {
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 36000,
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_URLS_REGEX = r'^/api/.*$|^/o/.*'
 
 
 # Internationalization

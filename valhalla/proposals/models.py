@@ -100,6 +100,9 @@ class Membership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES)
 
+    class Meta:
+        unique_together = ('user', 'proposal')
+
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
 
