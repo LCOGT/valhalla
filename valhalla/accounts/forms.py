@@ -11,7 +11,6 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
     last_name = forms.CharField(max_length=200)
     institution = forms.CharField(max_length=200)
     title = forms.CharField(max_length=200)
-    ptoken = forms.CharField(max_length=64, widget=forms.HiddenInput, required=False)
 
     field_order = [
         'first_name', 'last_name', 'institution', 'title',
@@ -20,7 +19,7 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'ptoken')
+        fields = ('username', 'email', 'first_name', 'last_name')
         help_texts = {
             'username': 'Will be present under the USERID fits header.'
         }
@@ -36,3 +35,36 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
             invite.accept(new_user_instance)
 
         return new_user_instance
+
+
+class UserForm(forms.ModelForm):
+    institution = forms.CharField(max_length=200)
+    title = forms.CharField(max_length=200)
+    notifications_enabled = forms.BooleanField()
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name', 'last_name', 'username', 'email',
+            'institution', 'title', 'notifications_enabled',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for k in self.fields:
+            self.fields[k].required = True
+        self.fields['institution'].initial = self.instance.profile.institution
+        self.fields['title'].initial = self.instance.profile.title
+        self.fields['notifications_enabled'].initial = self.instance.profile.notifications_enabled
+
+    def clean_email(self):
+        if User.objects.filter(email=self.cleaned_data['email']).exists():
+            raise forms.ValidationError('User with this email already exists.')
+        return self.cleaned_data['email']
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.instance.profile.institution = self.cleaned_data.get('institution')
+        self.instance.profile.last_name = self.cleaned_data.get('title')
+        self.instance.profile.username = self.cleaned_data.get('notifications_enabled')
+        self.instance.profile.save()
