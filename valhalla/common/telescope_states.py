@@ -137,8 +137,8 @@ def filter_telescope_states_by_intervals(telescope_states, sites_intervals):
     return filtered_states
 
 
-def get_telescope_availability_per_day(start, end, telescope_classes=None, sites=None, instrument_types=None):
-    telescope_states = get_telescope_states(start, end, telescope_classes, sites, instrument_types)
+def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, instrument_types=None):
+    telescope_states = get_telescope_states(start, end, telescopes, sites, instrument_types)
     # go through each telescopes list of states, grouping it up by observing night at the site
     rise_set_intervals = {}
     for telescope_key, events in telescope_states.items():
