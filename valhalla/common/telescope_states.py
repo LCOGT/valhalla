@@ -112,21 +112,21 @@ def filter_telescope_states_by_intervals(telescope_states, sites_intervals):
 
         for event in events:
             for interval in site_intervals:
-                if event['start'] > interval[0] and event['end'] < interval[1]:
+                if event['start'] >= interval[0] and event['end'] <= interval[1]:
                     # the event is fully contained to add it and break out
                     filtered_events.append(deepcopy(event))
                 elif event['start'] < interval[0] and event['end'] > interval[1]:
-                    # start is before interval and end is after, so it spans the inerval
+                    # start is before interval and end is after, so it spans the interval
                     extra_event = deepcopy(event)
                     extra_event['start'] = interval[0]
                     extra_event['end'] = interval[1]
                     filtered_events.append(deepcopy(extra_event))
-                elif event['start'] < interval[0] and event['end'] > interval[0] and event['end'] < interval[1]:
+                elif event['start'] < interval[0] and event['end'] > interval[0] and event['end'] <= interval[1]:
                     # start is before interval and end is in interval, so truncate start
                     extra_event = deepcopy(event)
                     extra_event['start'] = interval[0]
                     filtered_events.append(deepcopy(extra_event))
-                elif event['start'] > interval[0] and event['start'] < interval[1] and event['end'] > interval[1]:
+                elif event['start'] >= interval[0] and event['start'] < interval[1] and event['end'] > interval[1]:
                     # start is within interval and end is after, so truncate end
                     extra_event = deepcopy(event)
                     extra_event['end'] = interval[1]
@@ -164,7 +164,7 @@ def get_telescope_availability_per_day(start, end, telescope_classes=None, sites
                 time_total = timedelta(seconds=0)
                 current_day = event['start'].date()
 
-            if 'AVAILABLE' in event['event_type'].upper():
+            if 'AVAILABLE' == event['event_type'].upper():
                 time_available += event['end'] - event['start']
             time_total += event['end'] - event['start']
             current_end = event['end']

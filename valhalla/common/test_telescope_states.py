@@ -100,6 +100,9 @@ class TestTelescopeStates(TestCase):
             }
         }
 
+        self.tk1 = TelescopeKey('tst', 'doma', '1m0a')
+        self.tk2 = TelescopeKey('tst', 'domb', '1m0a')
+
         self.es_patcher = patch('valhalla.common.telescope_states.Elasticsearch')
         self.mock_es = self.es_patcher.start()
         self.mock_es_search = MagicMock(search=MagicMock(return_value=self.es_output_1))
@@ -114,11 +117,8 @@ class TestTelescopeStates(TestCase):
         end = datetime(2016, 10, 2)
         telescope_states = get_telescope_states(start, end)
 
-        tk1 = TelescopeKey('tst', 'doma', '1m0a')
-        tk2 = TelescopeKey('tst', 'domb', '1m0a')
-
-        self.assertIn(tk1, telescope_states)
-        self.assertIn(tk2, telescope_states)
+        self.assertIn(self.tk1, telescope_states)
+        self.assertIn(self.tk2, telescope_states)
 
         doma_expected_available_state = {'telescope': 'tst.doma.1m0a',
                                          'event_type': 'AVAILABLE',
@@ -127,5 +127,46 @@ class TestTelescopeStates(TestCase):
                                          'end': datetime(2016, 10, 1, 17, 44, 58)
                                          }
 
-        self.assertIn(doma_expected_available_state, telescope_states[tk1])
+        self.assertIn(doma_expected_available_state, telescope_states[self.tk1])
 
+        domb_expected_available_state1 = {'telescope': 'tst.domb.1m0a',
+                                          'event_type': 'AVAILABLE',
+                                          'event_reason': 'Available for scheduling',
+                                          'start': datetime(2016, 10, 1, 15, 30, 0),
+                                          'end': datetime(2016, 10, 1, 16, 24, 59)
+                                          }
+
+        self.assertIn(domb_expected_available_state1, telescope_states[self.tk2])
+
+        domb_expected_available_state2 = {'telescope': 'tst.domb.1m0a',
+                                          'event_type': 'AVAILABLE',
+                                          'event_reason': 'Available for scheduling',
+                                          'start': datetime(2016, 10, 1, 17, 24, 59),
+                                          'end': datetime(2016, 10, 1, 17, 44, 58)
+                                          }
+        self.assertIn(domb_expected_available_state2, telescope_states[self.tk2])
+
+    @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
+    def test_telescope_availability(self, mock_intervals):
+        mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0), datetime(2016, 9, 30, 18, 0, 0)),
+                                       (datetime(2016, 10, 1, 15, 30, 0), datetime(2016, 10, 1, 18, 0, 0)),
+                                       (datetime(2016, 10, 2, 15, 30, 0), datetime(2016, 10, 2, 18, 0, 0))]
+        start = datetime(2016, 9, 30)
+        end = datetime(2016, 10, 2)
+        telescope_availability = get_telescope_availability_per_day(start, end)
+
+        self.assertIn(self.tk1, telescope_availability)
+        self.assertIn(self.tk2, telescope_availability)
+
+        doma_available_time = (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        doma_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+
+        doma_expected_availability = doma_available_time / doma_total_time
+        self.assertAlmostEqual(doma_expected_availability, telescope_availability[self.tk1][0][1])
+
+        domb_available_time = (datetime(2016, 10, 1, 16, 24, 59) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        domb_available_time += (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 17, 24, 59)).total_seconds()
+        domb_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+
+        domb_expected_availability = domb_available_time / domb_total_time
+        self.assertAlmostEqual(domb_expected_availability, telescope_availability[self.tk2][0][1])
