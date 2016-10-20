@@ -161,9 +161,29 @@ class TestTelescopeStates(TestCase):
         end = datetime(2016, 10, 2)
         telescope_states = get_telescope_states(start, end)
 
-        self.assertIn(self.tk1, telescope_states)
-        self.assertIn(self.tk2, telescope_states)
         self.assertNotIn("ENCLOSURE_INTERLOCK", telescope_states)
+
+    def test_aggregate_states_end_time_after_start(self):
+        start = datetime(2016, 10, 1)
+        end = datetime(2016, 10, 2)
+        telescope_states = get_telescope_states(start, end)
+
+        for tk, events in telescope_states.items():
+            for event in events:
+                self.assertTrue(event['start'] < event['end'])
+
+    def test_aggregate_states_no_duplicate_consecutive_states(self):
+        start = datetime(2016, 10, 1)
+        end = datetime(2016, 10, 2)
+        telescope_states = get_telescope_states(start, end)
+
+        previous_event = None
+        for tk, events in telescope_states.items():
+            for event in events:
+                if previous_event:
+                    self.assertTrue(previous_event['event_type'] != event['event_type'] or
+                                    previous_event['event_reason'] != event['event_reason'])
+                previous_event = event
 
     @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
     def test_telescope_availability(self, mock_intervals):
