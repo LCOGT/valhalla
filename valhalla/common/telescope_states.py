@@ -12,6 +12,25 @@ logger = logging.getLogger(__name__)
 ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
 
 
+def get_es_data(query):
+    es = Elasticsearch([settings.ELASTICSEARCH_URL])
+    event_data = []
+    query_size = 10000
+    data = es.search(index="telescope_events", body=query, size=query_size, scroll='1m',
+                     _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'], sort=['timestamp'])
+    event_data.extend(data['hits']['hits'])
+    total_events = data['hits']['total']
+    events_read = min(query_size, total_events)
+    scroll_id = data.get('_scroll_id', 0)
+    while events_read < total_events:
+        data = es.scroll(scroll_id=scroll_id, scroll='1m')
+        scroll_id = data.get('_scroll_id', 0)
+        event_data.extend(data['hits']['hits'])
+        events_read += len(data['hits']['hits'])
+
+    return event_data
+
+
 def get_telescope_states(start, end, telescopes=None, sites=None, instrument_types=None):
     configdb = ConfigDB()
     telescope_to_instruments = configdb.get_instrument_types_per_telescope()
@@ -26,8 +45,6 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
 
     if not telescopes:
         telescopes = list(set([tk.telescope for tk in available_telescopes if tk.site in sites]))
-
-    es = Elasticsearch([settings.ELASTICSEARCH_URL])
 
     date_range_query = {
         "query": {
@@ -59,13 +76,11 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
         }
     }
 
-    data = es.search(index="telescope_events", body=date_range_query, size=10000,
-                     _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'], sort=['timestamp'])
-
+    event_data = get_es_data(date_range_query)
     telescope_status = {}
     last_event = {}
 
-    for events in data['hits']['hits']:
+    for events in event_data:
         # ignore the enclosure_interlock state as it is redundant
         if events['_source']['type'].upper() == 'ENCLOSURE_INTERLOCK':
             continue
