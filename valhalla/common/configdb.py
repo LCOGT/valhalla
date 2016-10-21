@@ -2,6 +2,7 @@ import requests
 from django.core.cache import caches
 from django.utils.translation import ugettext as _
 from os import getenv
+from collections import namedtuple
 import logging
 
 __author__ = 'jnation'
@@ -20,6 +21,13 @@ if not CONFIGDB_URL.endswith('/'):
     CONFIGDB_URL += "/"
 
 default_cache = caches['default']
+
+
+class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope'])):
+    __slots__ = ()
+
+    def __str__(self):
+        return "{}.{}.{}".format(self.site, self.observatory, self.telescope)
 
 
 class ConfigDB(object):
@@ -54,7 +62,7 @@ class ConfigDB(object):
     def get_site_data(self):
         return self.site_data
 
-    def get_sites_with_instrument_type_and_location(self, instrument_type, site_code='',
+    def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
         site_data = self.get_site_data()
         site_details = {}
@@ -67,10 +75,10 @@ class ConfigDB(object):
                                 for instrument in telescope['instrument_set']:
                                     if instrument['state'] == 'SCHEDULABLE':
                                         camera_type = instrument['science_camera']['camera_type']['code']
-                                        if instrument_type.upper() == camera_type.upper():
+                                        if not instrument_type or instrument_type.upper() == camera_type.upper():
                                             if site['code'] not in site_details:
                                                 site_details[site['code']] = {'latitude': telescope['lat'],
-                                                                              'longitude': telescope['lon'],
+                                                                              'longitude': telescope['long'],
                                                                               'horizon': telescope['horizon'],
                                                                               'ha_limit_pos': telescope['ha_limit_pos'],
                                                                               'ha_limit_neg': telescope['ha_limit_neg']}
@@ -79,7 +87,8 @@ class ConfigDB(object):
 
     def get_schedulable_instruments(self):
         schedulable_instruments = []
-        for site in self.site_data:
+        site_data = self.get_site_data()
+        for site in site_data:
             for enclosure in site['enclosure_set']:
                 for telescope in enclosure['telescope_set']:
                     for instrument in telescope['instrument_set']:
@@ -87,6 +96,29 @@ class ConfigDB(object):
                             schedulable_instruments.append(instrument)
 
         return schedulable_instruments
+
+    def get_instrument_types_per_telescope(self):
+        '''
+            Function uses the configdb to get a set of available instrument types per telescope
+        :return: set of available instrument types per TelescopeKey
+        '''
+        site_data = self.get_site_data()
+        telescope_instrument_types = {}
+        for site in site_data:
+            for enclosure in site['enclosure_set']:
+                for telescope in enclosure['telescope_set']:
+                    telescope_key = TelescopeKey(site=site['code'],
+                                                 observatory=enclosure['code'],
+                                                 telescope=telescope['code'])
+                    for instrument in telescope['instrument_set']:
+                        if instrument['state'] == 'SCHEDULABLE':
+                            if telescope_key not in telescope_instrument_types:
+                                telescope_instrument_types[telescope_key] = []
+                            instrument_type = instrument['science_camera']['camera_type']['code'].upper()
+                            if instrument_type not in telescope_instrument_types[telescope_key]:
+                                telescope_instrument_types[telescope_key].append(instrument_type)
+
+        return telescope_instrument_types
 
     def get_filters(self, instrument_type):
         '''

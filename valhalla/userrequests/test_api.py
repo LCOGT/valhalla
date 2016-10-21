@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
+from valhalla.common.test_configdb import configdb_data
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
@@ -12,113 +13,6 @@ import copy
 
 import valhalla.userrequests.signals.handlers # noqa
 
-
-configdb_data = [
-    {
-        'code': 'tst',
-        'enclosure_set': [
-            {
-                'code': 'doma',
-                'telescope_set': [
-                    {
-                        'code': '1m0a',
-                        'lat': -32.3805542,
-                        'lon': 20.8100352,
-                        'horizon': 15.0,
-                        'ha_limit_pos': 4.6,
-                        'ha_limit_neg': -4.6,
-                        'instrument_set': [
-                            {
-                                'state': 'SCHEDULABLE',
-                                'code': 'xx01',
-                                'science_camera': {
-                                    'camera_type': {
-                                        'code': '1M0-SCICAM-SBIG',
-                                        'name': '1M0-SCICAM-SBIG',
-                                        'default_mode': {
-                                            'binning': 2,
-                                            'readout': 14.5,
-                                        },
-                                        'config_change_time': 0,
-                                        'acquire_processing_time': 0,
-                                        'acquire_exposure_time': 0,
-                                        'front_padding': 90,
-                                        'filter_change_time': 2,
-                                        'fixed_overhead_per_exposure': 1,
-                                        'mode_set': [
-                                            {
-                                                'binning': 1,
-                                                'readout': 35.0,
-                                            },
-                                            {
-                                                'binning': 2,
-                                                'readout': 14.5,
-                                            },
-                                            {
-                                                'binning': 3,
-                                                'readout': 11.5,
-                                            },
-                                        ]
-                                    },
-                                    'filters': 'air',
-                                },
-                                '__str__': 'tst.doma.1m0a.xx01-xx01',
-                            },
-                            {
-                                'state': 'SCHEDULABLE',
-                                'code': 'xx02',
-                                'science_camera': {
-                                    'camera_type': {
-                                        'code': '2M0-FLOYDS-SCICAM',
-                                        'name': '2M0-FLOYDS-SCICAM',
-                                        'config_change_time': 30,
-                                        'acquire_processing_time': 60,
-                                        'acquire_exposure_time': 30,
-                                        'front_padding': 240,
-                                        'filter_change_time': 0,
-                                        'fixed_overhead_per_exposure': 0.5,
-                                        'default_mode': {
-                                            'binning': 1,
-                                            'readout': 25,
-                                        },
-                                        'mode_set': [
-                                            {
-                                                'binning': 1,
-                                                'readout': 25,
-                                            },
-                                        ]
-                                    },
-                                    'filters': 'slit_1.2as,floyds_slit_default',
-                                },
-                                '__str__': 'tst.doma.1m0a.xx02-xx02',
-                            },
-                        ]
-                    },
-                ]
-            },
-        ]
-    },
-    {
-        'code': 'non',
-        'enclosure_set': [
-            {
-                'code': 'doma',
-                'telescope_set': [
-                    {
-                        'code': '1m0a',
-                        'lat': -32.3805542,
-                        'lon': 20.8100352,
-                        'horizon': 15.0,
-                        'ha_limit_pos': 4.6,
-                        'ha_limit_neg': -4.6,
-                        'instrument_set': [
-                        ]
-                    },
-                ]
-            },
-        ]
-    },
-]
 
 generic_payload = {
     'proposal': 'temp',
@@ -882,7 +776,7 @@ class TestLocationApi(APITestCase):
     def test_post_userrequest_observatory_bad_observatory(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['location']['site'] = 'tst'
-        bad_data['requests'][0]['location']['observatory'] = 'domb'
+        bad_data['requests'][0]['location']['observatory'] = 'domx'
         bad_data['requests'][0]['location']['telescope'] = '1m0a'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)

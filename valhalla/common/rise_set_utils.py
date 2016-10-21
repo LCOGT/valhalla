@@ -93,3 +93,31 @@ def get_rise_set_target(target_dict):
                                      eccentricity=target_dict['eccentricity'],
                                      )
 
+
+def get_site_rise_set_intervals(start, end, site_code):
+    configdb = ConfigDB()
+    site_details = configdb.get_sites_with_instrument_type_and_location(site_code=site_code)
+    if site_code in site_details:
+        site_detail = site_details[site_code]
+        rise_set_site = {'latitude': Angle(degrees=site_detail['latitude']),
+                     'longitude': Angle(degrees=site_detail['longitude']),
+                     'horizon': Angle(degrees=site_detail['horizon']),
+                     'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
+                     'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)}
+
+        v = Visibility(site=rise_set_site,
+                       start_date=start,
+                       end_date=end,
+                       horizon=site_detail['horizon'],
+                       ha_limit_neg=site_detail['ha_limit_neg'],
+                       ha_limit_pos=site_detail['ha_limit_pos'],
+                       twilight='nautical'
+                       )
+
+        return v.get_dark_intervals()
+
+    return []
+
+
+
+
