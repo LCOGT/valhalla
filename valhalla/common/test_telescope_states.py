@@ -5,6 +5,7 @@ from valhalla.common.configdb import TelescopeKey
 from unittest.case import TestCase
 from datetime import datetime
 from unittest.mock import patch, MagicMock
+import json
 
 
 class TestTelescopeStates(TestCase):
@@ -223,7 +224,7 @@ class TestTelescopeStatesFromFile(TestCase):
                                                                              '0M8-NRES-SCICAM']}
 
         with open('valhalla/common/test_data/es_telescope_states_data.txt', 'r') as input_file:
-            self.es_output = eval(input_file.read())
+            self.es_output = json.loads(input_file.read())
 
         self.start = datetime(2016, 10, 1)
         self.end = datetime(2016, 10, 10)
