@@ -202,6 +202,9 @@ class TestTelescopeStates(TestCase):
 
 class TestTelescopeStatesFromFile(TestCase):
     def setUp(self):
+        self.configdb_null_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
+        mock_configdb_null = self.configdb_null_patcher.start()
+        mock_configdb_null.return_value = {}
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB.get_instrument_types_per_telescope')
         self.mock_configdb = self.configdb_patcher.start()
         self.mock_configdb.return_value = {
@@ -232,6 +235,7 @@ class TestTelescopeStatesFromFile(TestCase):
 
     def tearDown(self):
         self.configdb_patcher.stop()
+        self.configdb_null_patcher.stop()
         self.es_patcher.stop()
 
     def test_one_telescope_correctness(self):

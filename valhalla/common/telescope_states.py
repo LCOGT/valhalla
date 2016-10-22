@@ -41,10 +41,10 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
                                 any(inst in insts for inst in instrument_types)]
 
     if not sites:
-        sites = list(set([telescope_key.site for telescope_key in available_telescopes]))
+        sites = list({telescope_key.site for telescope_key in available_telescopes})
 
     if not telescopes:
-        telescopes = list(set([tk.telescope for tk in available_telescopes if tk.site in sites]))
+        telescopes = list({tk.telescope for tk in available_telescopes if tk.site in sites})
 
     date_range_query = {
         "query": {
