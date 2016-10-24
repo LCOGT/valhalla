@@ -1,7 +1,8 @@
 from django_filters.views import FilterView
 from rest_framework.response import Response
 from django.http import HttpResponseBadRequest
-from datetime import datetime, timedelta
+from datetime import timedelta
+from dateutil.parser import parse
 from rest_framework.decorators import api_view
 from valhalla.common.telescope_states import get_telescope_states, get_telescope_availability_per_day
 
@@ -20,23 +21,14 @@ class UserRequestListView(FilterView):
         else:
             return UserRequest.objects.none()
 
-def parse_date(date_string):
-    formats = ['%Y-%m-%dT%H:%M:%S', '%Y-%m-%d']
-    for fmt in formats:
-        try:
-            return datetime.strptime(date_string, fmt)
-        except ValueError:
-            pass
-    raise ValueError("Invalid date format. Please send dates as 'YYYY-mm-ddTHH:MM:SS' or 'YYYY-mm-dd'")
-
 
 @api_view(['GET',])
 def telescope_states(request):
     ''' Retrieves the telescope states for all telescopes between the start and end times
     '''
     try:
-        start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
-        end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+        start = parse(request.query_params.get('start', '2016-10-10T0:0:0'))
+        end = parse(request.query_params.get('end', '2016-10-16T0:0:0'))
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('site', None)
@@ -52,8 +44,8 @@ def telescope_availability(request):
     ''' Retrieves the nightly % availability of each telescope between the start and end times
     '''
     try:
-        start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
-        end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+        start = parse(request.query_params.get('start', '2016-10-10T0:0:0'))
+        end = parse(request.query_params.get('end', '2016-10-16T0:0:0'))
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('sites', None)
