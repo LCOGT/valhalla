@@ -21,8 +21,8 @@ urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
-    url(r'^telescope_states/', telescope_states),
-    url(r'^telescope_availability/', telescope_availability),
+    url(r'^telescope_states/', telescope_states, name='telescope_states'),
+    url(r'^telescope_availability/', telescope_availability, name='telescope_availability'),
     url(r'^admin/', admin.site.urls),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled

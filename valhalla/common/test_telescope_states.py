@@ -2,7 +2,7 @@ from valhalla.common.telescope_states import get_telescope_states, get_telescope
 from valhalla.common.test_configdb import configdb_data
 from valhalla.common.configdb import TelescopeKey
 
-from unittest.case import TestCase
+from django.test import TestCase
 from datetime import datetime
 from unittest.mock import patch, MagicMock
 import json
@@ -153,7 +153,7 @@ class TestTelescopeStates(TestCase):
         self.assertIn(domb_expected_available_state2, telescope_states[self.tk2])
 
     @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
-    def test_telescope_availability(self, mock_intervals):
+    def test_telescope_availability_limits_interval(self, mock_intervals):
         mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0), datetime(2016, 9, 30, 18, 0, 0)),
                                        (datetime(2016, 10, 1, 15, 30, 0), datetime(2016, 10, 1, 18, 0, 0)),
                                        (datetime(2016, 10, 2, 15, 30, 0), datetime(2016, 10, 2, 18, 0, 0))]

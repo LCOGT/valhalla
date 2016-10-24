@@ -1,5 +1,6 @@
 from django_filters.views import FilterView
 from rest_framework.response import Response
+from django.http import HttpResponseBadRequest
 from datetime import datetime, timedelta
 from rest_framework.decorators import api_view
 from valhalla.common.telescope_states import get_telescope_states, get_telescope_availability_per_day
@@ -33,8 +34,11 @@ def parse_date(date_string):
 def telescope_states(request):
     ''' Retrieves the telescope states for all telescopes between the start and end times
     '''
-    start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
-    end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+    try:
+        start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
+        end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('site', None)
     telescopes = request.query_params.getlist('telescope', None)
     telescope_states = get_telescope_states(start, end, sites=sites, telescopes=telescopes)
@@ -47,8 +51,11 @@ def telescope_states(request):
 def telescope_availability(request):
     ''' Retrieves the nightly % availability of each telescope between the start and end times
     '''
-    start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
-    end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+    try:
+        start = parse_date(request.query_params.get('start', '2016-10-10T0:0:0'))
+        end = parse_date(request.query_params.get('end', '2016-10-16T0:0:0'))
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('sites', None)
     telescopes = request.query_params.getlist('telescope', None)
     telescope_availability = get_telescope_availability_per_day(start - timedelta(days=1),
