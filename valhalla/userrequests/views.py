@@ -1,7 +1,7 @@
 from django_filters.views import FilterView
 from rest_framework.response import Response
 from django.http import HttpResponseBadRequest
-from datetime import timedelta
+from django.utils import timezone
 from dateutil.parser import parse
 from rest_framework.decorators import api_view
 from valhalla.common.telescope_states import get_telescope_states, get_telescope_availability_per_day
@@ -28,7 +28,11 @@ def telescope_states(request):
     '''
     try:
         start = parse(request.query_params.get('start', '2016-10-10T0:0:0'))
+        if not start.tzinfo:
+            start = start.replace(tzinfo=timezone.utc)
         end = parse(request.query_params.get('end', '2016-10-16T0:0:0'))
+        if not end.tzinfo:
+            end = end.replace(tzinfo=timezone.utc)
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('site', None)
@@ -45,13 +49,17 @@ def telescope_availability(request):
     '''
     try:
         start = parse(request.query_params.get('start', '2016-10-10T0:0:0'))
+        if not start.tzinfo:
+            start = start.replace(tzinfo=timezone.utc)
         end = parse(request.query_params.get('end', '2016-10-16T0:0:0'))
+        if not end.tzinfo:
+            end = end.replace(tzinfo=timezone.utc)
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
     sites = request.query_params.getlist('sites', None)
     telescopes = request.query_params.getlist('telescope', None)
-    telescope_availability = get_telescope_availability_per_day(start - timedelta(days=1),
-                                                                end + timedelta(days=1),
+    telescope_availability = get_telescope_availability_per_day(start,
+                                                                end,
                                                                 sites=sites,
                                                                 telescopes=telescopes)
     str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}

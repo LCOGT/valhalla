@@ -1,6 +1,7 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
+from django.utils import timezone
 from copy import deepcopy
 import logging
 
@@ -88,7 +89,8 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
                                      observatory=events['_source']['enclosure'],
                                      telescope=events['_source']['telescope'])
         if telescope_key in available_telescopes:
-            timestamp = datetime.strptime(events['_source']['timestamp'], ES_STRING_FORMATTER)
+            timestamp = datetime.strptime(events['_source']['timestamp'],
+                                          ES_STRING_FORMATTER).replace(tzinfo=timezone.utc)
             if telescope_key not in telescope_status:
                 telescope_status[telescope_key] = []
                 last_event[telescope_key] = None
@@ -102,7 +104,7 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
                                                          'event_reason': last_event[telescope_key]['reason'],
                                                          'start': datetime.strptime(
                                                              last_event[telescope_key]['timestamp'],
-                                                             ES_STRING_FORMATTER),
+                                                             ES_STRING_FORMATTER).replace(tzinfo=timezone.utc),
                                                          'end': timestamp})
                 last_event[telescope_key] = events['_source']
 
@@ -111,14 +113,15 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
             telescope_status[telescope_key].append({'telescope': str(telescope_key),
                                                      'event_type': event['type'],
                                                      'event_reason': event['reason'],
-                                                     'start': datetime.strptime(event['timestamp'],
-                                                                                ES_STRING_FORMATTER),
+                                                    'start': datetime.strptime(event['timestamp'],
+                                                                               ES_STRING_FORMATTER)
+                                                    .replace(tzinfo=timezone.utc),
                                                      'end': end})
 
     return telescope_status
 
 
-def filter_telescope_states_by_intervals(telescope_states, sites_intervals):
+def filter_telescope_states_by_intervals(telescope_states, sites_intervals, start, end):
     filtered_states = {}
     for telescope_key, events in telescope_states.items():
         # now loop through the events for the telescope, and tally the time the telescope is available for each 'day'
@@ -126,24 +129,31 @@ def filter_telescope_states_by_intervals(telescope_states, sites_intervals):
         filtered_events = []
 
         for event in events:
+            event_start = max(event['start'], start)
+            event_end = min(event['end'], end)
             for interval in site_intervals:
-                if event['start'] >= interval[0] and event['end'] <= interval[1]:
+                if event_start >= interval[0] and event_end <= interval[1]:
                     # the event is fully contained to add it and break out
+                    extra_event = deepcopy(event)
+                    extra_event['start'] = event_start
+                    extra_event['end'] = event_end
                     filtered_events.append(deepcopy(event))
-                elif event['start'] < interval[0] and event['end'] > interval[1]:
+                elif event_start < interval[0] and event_end > interval[1]:
                     # start is before interval and end is after, so it spans the interval
                     extra_event = deepcopy(event)
                     extra_event['start'] = interval[0]
                     extra_event['end'] = interval[1]
                     filtered_events.append(deepcopy(extra_event))
-                elif event['start'] < interval[0] and event['end'] > interval[0] and event['end'] <= interval[1]:
+                elif event_start < interval[0] and event_end > interval[0] and event_end <= interval[1]:
                     # start is before interval and end is in interval, so truncate start
                     extra_event = deepcopy(event)
                     extra_event['start'] = interval[0]
+                    extra_event['end'] = event_end
                     filtered_events.append(deepcopy(extra_event))
-                elif event['start'] >= interval[0] and event['start'] < interval[1] and event['end'] > interval[1]:
+                elif event_start >= interval[0] and event_start < interval[1] and event_end > interval[1]:
                     # start is within interval and end is after, so truncate end
                     extra_event = deepcopy(event)
+                    extra_event['start'] = event_start
                     extra_event['end'] = interval[1]
                     filtered_events.append(deepcopy(extra_event))
 
@@ -159,8 +169,10 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
     for telescope_key, events in telescope_states.items():
         if telescope_key.site not in rise_set_intervals:
             # remove the first and last interval as they may only be partial intervals
-            rise_set_intervals[telescope_key.site] = get_site_rise_set_intervals(start, end, telescope_key.site)[1:-1]
-    filtered_events = filter_telescope_states_by_intervals(telescope_states, rise_set_intervals)
+            rise_set_intervals[telescope_key.site] = get_site_rise_set_intervals(start - timedelta(days=1),
+                                                                                 end + timedelta(days=1),
+                                                                                 telescope_key.site)[1:-1]
+    filtered_events = filter_telescope_states_by_intervals(telescope_states, rise_set_intervals, start, end)
     # now just compute a % available each day from the rise_set filtered set of events
     telescope_availability = {}
     for telescope_key, events in filtered_events.items():
@@ -172,9 +184,10 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
             current_end = list(events)[0]['start']
         for event in events:
             if (event['start'] - current_end) > timedelta(hours=4):
-                # we must be in a new observing day, so tally time in previous day and increment day counter
-                telescope_availability[telescope_key].append([current_day, (
-                    time_available.total_seconds() / time_total.total_seconds())])
+                if (event['start'].date() != current_day):
+                    # we must be in a new observing day, so tally time in previous day and increment day counter
+                    telescope_availability[telescope_key].append([current_day, (
+                        time_available.total_seconds() / time_total.total_seconds())])
                 time_available = timedelta(seconds=0)
                 time_total = timedelta(seconds=0)
                 current_day = event['start'].date()
