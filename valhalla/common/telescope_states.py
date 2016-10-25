@@ -100,23 +100,23 @@ def get_telescope_states(start, end, telescopes=None, sites=None, instrument_typ
             elif (last_event[telescope_key]['type'] != events['_source']['type']
                   or last_event[telescope_key]['reason'] != events['_source']['reason']):
                 telescope_status[telescope_key].append({'telescope': str(telescope_key),
-                                                         'event_type': last_event[telescope_key]['type'],
-                                                         'event_reason': last_event[telescope_key]['reason'],
-                                                         'start': datetime.strptime(
-                                                             last_event[telescope_key]['timestamp'],
-                                                             ES_STRING_FORMATTER).replace(tzinfo=timezone.utc),
-                                                         'end': timestamp})
+                                                        'event_type': last_event[telescope_key]['type'],
+                                                        'event_reason': last_event[telescope_key]['reason'],
+                                                        'start': datetime.strptime(
+                                                            last_event[telescope_key]['timestamp'],
+                                                            ES_STRING_FORMATTER).replace(tzinfo=timezone.utc),
+                                                        'end': timestamp})
                 last_event[telescope_key] = events['_source']
 
     for telescope_key, event in last_event.items():
         if event:
             telescope_status[telescope_key].append({'telescope': str(telescope_key),
-                                                     'event_type': event['type'],
-                                                     'event_reason': event['reason'],
+                                                    'event_type': event['type'],
+                                                    'event_reason': event['reason'],
                                                     'start': datetime.strptime(event['timestamp'],
                                                                                ES_STRING_FORMATTER)
                                                     .replace(tzinfo=timezone.utc),
-                                                     'end': end})
+                                                    'end': end})
 
     return telescope_status
 
@@ -199,6 +199,6 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
 
         if time_total > timedelta():
             telescope_availability[telescope_key].append([current_day, (
-                    time_available.total_seconds() / time_total.total_seconds())])
+                time_available.total_seconds() / time_total.total_seconds())])
 
     return telescope_availability

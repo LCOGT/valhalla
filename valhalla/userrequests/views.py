@@ -22,7 +22,7 @@ class UserRequestListView(FilterView):
             return UserRequest.objects.none()
 
 
-@api_view(['GET',])
+@api_view(['GET'])
 def telescope_states(request):
     ''' Retrieves the telescope states for all telescopes between the start and end times
     '''
@@ -43,7 +43,7 @@ def telescope_states(request):
     return Response(str_telescope_states)
 
 
-@api_view(['GET',])
+@api_view(['GET'])
 def telescope_availability(request):
     ''' Retrieves the nightly % availability of each telescope between the start and end times
     '''
@@ -65,4 +65,3 @@ def telescope_availability(request):
     str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}
 
     return Response(str_telescope_availability)
-

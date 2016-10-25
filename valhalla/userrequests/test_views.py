@@ -76,4 +76,3 @@ class TestTelescopeStates(TelescopeStatesFromFile):
                                    '?start=2016-10-1%201:3323:44&end=10-10T22:22:2')
         self.assertEqual(response.status_code, 400)
         self.assertIn("minute must be in 0..59", str(response.content))
-

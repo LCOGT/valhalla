@@ -5,7 +5,7 @@ from valhalla.common.configdb import TelescopeKey
 from django.test import TestCase
 from datetime import datetime
 from django.utils import timezone
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import json
 
 
