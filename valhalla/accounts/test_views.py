@@ -116,6 +116,7 @@ class TestProfile(TestCase):
     def test_unique_email(self):
         mixer.blend(User, email='first@example.com')
         bad_data = self.data.copy()
+        bad_data['email'] = 'first@example.com'
         response = self.client.post(reverse('profile'), bad_data, follow=True)
         self.assertContains(response, 'User with this email already exists')
         self.assertNotEqual(Profile.objects.get(pk=self.profile.id).user.email, 'first@example.com')
