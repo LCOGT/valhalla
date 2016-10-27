@@ -224,5 +224,3 @@ def combine_telescope_availabilities_by_site_and_class(telescope_availabilities)
         combined_availabilities[key] = total_availability
 
     return combined_availabilities
-
-
