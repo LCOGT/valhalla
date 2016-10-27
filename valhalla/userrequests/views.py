@@ -4,7 +4,8 @@ from django.http import HttpResponseBadRequest
 from django.utils import timezone
 from dateutil.parser import parse
 from rest_framework.views import APIView
-from valhalla.common.telescope_states import get_telescope_states, get_telescope_availability_per_day
+from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
+                                              combine_telescope_availabilities_by_site_and_class)
 
 from valhalla.userrequests.models import UserRequest
 from valhalla.userrequests.filters import UserRequestFilter
@@ -56,12 +57,15 @@ class TelescopeAvailabilityView(APIView):
                 end = end.replace(tzinfo=timezone.utc)
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
+        combine = request.query_params.get('combine', None)
         sites = request.query_params.getlist('sites', None)
         telescopes = request.query_params.getlist('telescope', None)
         telescope_availability = get_telescope_availability_per_day(start,
                                                                     end,
                                                                     sites=sites,
                                                                     telescopes=telescopes)
+        if combine:
+            telescope_availability = combine_telescope_availabilities_by_site_and_class(telescope_availability)
         str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}
 
         return Response(str_telescope_availability)

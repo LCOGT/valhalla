@@ -171,7 +171,7 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
             # remove the first and last interval as they may only be partial intervals
             rise_set_intervals[telescope_key.site] = get_site_rise_set_intervals(start - timedelta(days=1),
                                                                                  end + timedelta(days=1),
-                                                                                 telescope_key.site)[1:-1]
+                                                                                 telescope_key.site)[1:]
     filtered_events = filter_telescope_states_by_intervals(telescope_states, rise_set_intervals, start, end)
     # now just compute a % available each day from the rise_set filtered set of events
     telescope_availability = {}
@@ -202,3 +202,27 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
                 time_available.total_seconds() / time_total.total_seconds())])
 
     return telescope_availability
+
+
+def combine_telescope_availabilities_by_site_and_class(telescope_availabilities):
+    combined_keys = {TelescopeKey(tk.site, '', tk.telescope[:-1]) for tk in telescope_availabilities.keys()}
+    combined_availabilities = {}
+    for key in combined_keys:
+        num_groups = 0
+        total_availability = []
+        for telescope_key, availabilities in telescope_availabilities.items():
+            if telescope_key.site == key.site and telescope_key.telescope[:-1] == key.telescope:
+                num_groups += 1
+                if not total_availability:
+                    total_availability = availabilities
+                else:
+                    for i, availability in enumerate(availabilities):
+                        total_availability[i][1] += availability[1]
+
+        for i, availability in enumerate(total_availability):
+            total_availability[i][1] /= num_groups
+        combined_availabilities[key] = total_availability
+
+    return combined_availabilities
+
+

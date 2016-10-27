@@ -38,33 +38,18 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
 
 
 class UserForm(forms.ModelForm):
-    institution = forms.CharField(max_length=200)
-    title = forms.CharField(max_length=200)
-    notifications_enabled = forms.BooleanField()
-
     class Meta:
         model = User
-        fields = [
-            'first_name', 'last_name', 'username', 'email',
-            'institution', 'title', 'notifications_enabled',
-        ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for k in self.fields:
-            self.fields[k].required = True
-        self.fields['institution'].initial = self.instance.profile.institution
-        self.fields['title'].initial = self.instance.profile.title
-        self.fields['notifications_enabled'].initial = self.instance.profile.notifications_enabled
+        fields = ['first_name', 'last_name', 'username', 'email']
 
     def clean_email(self):
-        if User.objects.filter(email=self.cleaned_data['email']).exists():
-            raise forms.ValidationError('User with this email already exists.')
-        return self.cleaned_data['email']
+        email = self.cleaned_data['email']
+        if email and User.objects.filter(email=email).exclude(pk=self.instance.id).exists():
+            raise forms.ValidationError('User with this email already exists')
+        return email
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.instance.profile.institution = self.cleaned_data.get('institution')
-        self.instance.profile.last_name = self.cleaned_data.get('title')
-        self.instance.profile.username = self.cleaned_data.get('notifications_enabled')
-        self.instance.profile.save()
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['institution', 'title', 'notifications_enabled']

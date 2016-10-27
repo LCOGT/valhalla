@@ -27,7 +27,7 @@ class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope
     __slots__ = ()
 
     def __str__(self):
-        return "{}.{}.{}".format(self.site, self.observatory, self.telescope)
+        return ".".join(s for s in [self.site, self.observatory, self.telescope] if s)
 
 
 class ConfigDB(object):
