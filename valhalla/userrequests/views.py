@@ -36,8 +36,8 @@ class TelescopeStatesView(APIView):
                 end = end.replace(tzinfo=timezone.utc)
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
-        sites = request.query_params.getlist('site', None)
-        telescopes = request.query_params.getlist('telescope', None)
+        sites = request.query_params.getlist('site', [])
+        telescopes = request.query_params.getlist('telescope', [])
         telescope_states = get_telescope_states(start, end, sites=sites, telescopes=telescopes)
         str_telescope_states = {str(k): v for k, v in telescope_states.items()}
 
@@ -57,9 +57,9 @@ class TelescopeAvailabilityView(APIView):
                 end = end.replace(tzinfo=timezone.utc)
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
-        combine = request.query_params.get('combine', None)
-        sites = request.query_params.getlist('sites', None)
-        telescopes = request.query_params.getlist('telescope', None)
+        combine = request.query_params.get('combine')
+        sites = request.query_params.getlist('sites', [])
+        telescopes = request.query_params.getlist('telescope', [])
         telescope_availability = get_telescope_availability_per_day(start,
                                                                     end,
                                                                     sites=sites,
