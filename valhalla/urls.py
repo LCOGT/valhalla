@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet
 from valhalla.userrequests.views import UserRequestListView
+from valhalla.userrequests.views import telescope_states, telescope_availability
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
 import valhalla.proposals.urls as proposals_urls
@@ -22,6 +23,8 @@ urlpatterns = [
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
     url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
+    url(r'^telescope_states/', telescope_states, name='telescope_states'),
+    url(r'^telescope_availability/', telescope_availability, name='telescope_availability'),
     url(r'^admin/', admin.site.urls),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled

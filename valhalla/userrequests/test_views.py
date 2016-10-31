@@ -5,6 +5,7 @@ from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Proposal, Membership
 from valhalla.userrequests.models import UserRequest, Request
+from valhalla.common.test_telescope_states import TestTelescopeStatesFromFile
 
 
 class UserRequestList(TestCase):
@@ -49,3 +50,30 @@ class UserRequestList(TestCase):
         self.assertContains(response, self.userrequests[0].request_set.all()[0].id)
         self.assertNotContains(response, self.userrequests[1].group_id)
         self.assertNotContains(response, self.userrequests[2].group_id)
+
+
+class TestTelescopeStates(TestTelescopeStatesFromFile):
+    def _login(self):
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+    def test_date_format_1(self):
+        self._login()
+        response = self.client.get(reverse('telescope_states') + '?start=2016-10-1&end=2016-10-10')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "lsc")
+
+    def test_date_format_2(self):
+        self._login()
+        response = self.client.get(reverse('telescope_availability') +
+                                   '?start=2016-10-1T1:23:44&end=2016-10-10T22:22:2')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "lsc")
+
+    def test_date_format_bad(self):
+        self._login()
+        response = self.client.get(reverse('telescope_states') +
+                                   '?start=2016-10-1%201:23:44&end=10-10T22:22:2')
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Invalid date format", str(response.content))
+

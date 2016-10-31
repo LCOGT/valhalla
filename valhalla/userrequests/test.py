@@ -1,6 +1,7 @@
 from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
 from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.configdb import ConfigDBException
+from valhalla.common.test_configdb import configdb_data
 
 from django.utils import timezone
 from unittest.case import TestCase
@@ -9,108 +10,6 @@ from datetime import datetime
 from unittest.mock import patch
 import math
 
-configdb_data = [
-    {
-        'code': 'tst',
-        'enclosure_set': [
-            {
-                'code': 'doma',
-                'telescope_set': [
-                    {
-                        'code': '1m0a',
-                        'lat': -32.3805542,
-                        'lon': 20.8100352,
-                        'horizon': 15.0,
-                        'ha_limit_pos': 4.6,
-                        'ha_limit_neg': -4.6,
-                        'instrument_set': [
-                            {
-                                'state': 'SCHEDULABLE',
-                                'code': 'xx01',
-                                'science_camera': {
-                                    'camera_type': {
-                                        'code': '1M0-SCICAM-SBIG',
-                                        'name': '1M0-SCICAM-SBIG',
-                                        'config_change_time': 0,
-                                        'filter_change_time': 2,
-                                        'fixed_overhead_per_exposure': 1,
-                                        'front_padding': 90,
-                                        'acquire_processing_time': 0,
-                                        'acquire_exposure_time': 0,
-                                        'default_mode': {
-                                            'binning': 2,
-                                            'readout': 14.5,
-                                        },
-                                        'mode_set': [
-                                            {
-                                                'binning': 1,
-                                                'readout': 35,
-                                            },
-                                            {
-                                                'binning': 2,
-                                                'readout': 14.5,
-                                            },
-                                        ]
-                                    },
-                                    'filters': 'air',
-                                },
-                                '__str__': 'tst.doma.1m0a.xx01-xx01',
-                            },
-                            {
-                                'state': 'SCHEDULABLE',
-                                'code': 'xx02',
-                                'science_camera': {
-                                    'camera_type': {
-                                        'code': '2M0-FLOYDS-SCICAM',
-                                        'name': '2M0-FLOYDS-SCICAM',
-                                        'config_change_time': 30,
-                                        'filter_change_time': 0,
-                                        'fixed_overhead_per_exposure': 0.5,
-                                        'front_padding': 240,
-                                        'acquire_processing_time': 60,
-                                        'acquire_exposure_time': 30,
-                                        'default_mode': {
-                                            'binning': 1,
-                                            'readout': 25,
-                                        },
-                                        'mode_set': [
-                                            {
-                                                'binning': 1,
-                                                'readout': 25,
-                                            },
-                                        ]
-                                    },
-                                    'filters': 'slit_1.2as,floyds_slit_default',
-                                },
-                                '__str__': 'tst.doma.1m0a.xx02-xx02',
-                            },
-                        ]
-                    },
-                ]
-            },
-        ]
-    },
-    {
-        'code': 'non',
-        'enclosure_set': [
-            {
-                'code': 'doma',
-                'telescope_set': [
-                    {
-                        'code': '1m0a',
-                        'lat': -32.3805542,
-                        'lon': 20.8100352,
-                        'horizon': 15.0,
-                        'ha_limit_pos': 4.6,
-                        'ha_limit_neg': -4.6,
-                        'instrument_set': [
-                        ]
-                    },
-                ]
-            },
-        ]
-    },
-]
 
 class TestUserRequestTotalDuration(TestCase):
     def setUp(self):

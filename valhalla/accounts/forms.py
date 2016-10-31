@@ -11,7 +11,6 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
     last_name = forms.CharField(max_length=200)
     institution = forms.CharField(max_length=200)
     title = forms.CharField(max_length=200)
-    ptoken = forms.CharField(max_length=64, widget=forms.HiddenInput, required=False)
 
     field_order = [
         'first_name', 'last_name', 'institution', 'title',
@@ -20,7 +19,7 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'ptoken')
+        fields = ('username', 'email', 'first_name', 'last_name')
         help_texts = {
             'username': 'Will be present under the USERID fits header.'
         }
@@ -36,3 +35,21 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
             invite.accept(new_user_instance)
 
         return new_user_instance
+
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'username', 'email']
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if email and User.objects.filter(email=email).exclude(pk=self.instance.id).exists():
+            raise forms.ValidationError('User with this email already exists')
+        return email
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['institution', 'title', 'notifications_enabled']
