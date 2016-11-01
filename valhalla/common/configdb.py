@@ -40,7 +40,7 @@ class ConfigDB(object):
         :return: list of dictionaries of site data
         '''
 
-        json_results = default_cache.get('configdb_data', None)
+        json_results = default_cache.get('configdb_data')
         if not json_results:
             try:
                 r = requests.get(CONFIGDB_URL + 'sites/')
