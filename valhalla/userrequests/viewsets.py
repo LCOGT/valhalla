@@ -1,12 +1,13 @@
 from rest_framework import viewsets, filters
-from rest_framework.decorators import list_route
+from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
-
+from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
+                                                     get_telescope_states_for_request)
 
 class UserRequestViewSet(viewsets.ModelViewSet):
     serializer_class = UserRequestSerializer
@@ -55,3 +56,14 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
             )
         else:
             return Request.objects.none()
+
+    @detail_route()
+    def airmass(self, request, pk=None):
+        return Response(get_airmasses_for_request_at_sites(self.get_object()))
+
+    @detail_route()
+    def telescope_states(self, request, pk=None):
+        telescope_states = get_telescope_states_for_request(self.get_object())
+        str_telescope_states = {str(k): v for k, v in telescope_states.items()}
+
+        return Response(str_telescope_states)
