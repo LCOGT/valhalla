@@ -1,4 +1,5 @@
-from valhalla.common.telescope_states import get_telescope_states, get_telescope_availability_per_day
+from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
+                                              combine_telescope_availabilities_by_site_and_class)
 from valhalla.common.test_configdb import configdb_data
 from valhalla.common.configdb import TelescopeKey
 
@@ -207,6 +208,38 @@ class TestTelescopeStates(TestCase):
 
         domb_expected_availability = 1.0
         self.assertAlmostEqual(domb_expected_availability, telescope_availability[self.tk2][0][1])
+
+    @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
+    def test_telescope_availability_combine(self, mock_intervals):
+        mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 9, 30, 18, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 1, 15, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 1, 18, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 2, 15, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 2, 18, 0, 0, tzinfo=timezone.utc))]
+        start = datetime(2016, 9, 30, tzinfo=timezone.utc)
+        end = datetime(2016, 10, 2, tzinfo=timezone.utc)
+        telescope_availability = get_telescope_availability_per_day(start, end)
+
+        self.assertIn(self.tk1, telescope_availability)
+        self.assertIn(self.tk2, telescope_availability)
+
+        combined_telescope_availability = combine_telescope_availabilities_by_site_and_class(telescope_availability)
+        combined_key = TelescopeKey(self.tk1.site, '', self.tk1.telescope[:-1])
+
+        self.assertIn(combined_key, combined_telescope_availability)
+
+        doma_available_time = (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        doma_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        doma_expected_availability = doma_available_time / doma_total_time
+
+        domb_available_time = (datetime(2016, 10, 1, 16, 24, 59) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        domb_available_time += (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 17, 24, 59)).total_seconds()
+        domb_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        domb_expected_availability = domb_available_time / domb_total_time
+
+        total_expected_availability = (doma_expected_availability + domb_expected_availability) / 2.0
+        self.assertAlmostEqual(total_expected_availability, combined_telescope_availability[combined_key][0][1])
 
 
 class TelescopeStatesFromFile(TestCase):
