@@ -5,7 +5,7 @@ from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Proposal, Membership
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.common.test_telescope_states import TestTelescopeStatesFromFile
+from valhalla.common.test_telescope_states import TelescopeStatesFromFile
 
 
 class UserRequestList(TestCase):
@@ -52,7 +52,7 @@ class UserRequestList(TestCase):
         self.assertNotContains(response, self.userrequests[2].group_id)
 
 
-class TestTelescopeStates(TestTelescopeStatesFromFile):
+class TestTelescopeStates(TelescopeStatesFromFile):
     def _login(self):
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -73,7 +73,6 @@ class TestTelescopeStates(TestTelescopeStatesFromFile):
     def test_date_format_bad(self):
         self._login()
         response = self.client.get(reverse('telescope_states') +
-                                   '?start=2016-10-1%201:23:44&end=10-10T22:22:2')
+                                   '?start=2016-10-1%201:3323:44&end=10-10T22:22:2')
         self.assertEqual(response.status_code, 400)
-        self.assertIn("Invalid date format", str(response.content))
-
+        self.assertIn("minute must be in 0..59", str(response.content))

@@ -100,10 +100,10 @@ def get_site_rise_set_intervals(start, end, site_code):
     if site_code in site_details:
         site_detail = site_details[site_code]
         rise_set_site = {'latitude': Angle(degrees=site_detail['latitude']),
-                     'longitude': Angle(degrees=site_detail['longitude']),
-                     'horizon': Angle(degrees=site_detail['horizon']),
-                     'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
-                     'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)}
+                         'longitude': Angle(degrees=site_detail['longitude']),
+                         'horizon': Angle(degrees=site_detail['horizon']),
+                         'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
+                         'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)}
 
         v = Visibility(site=rise_set_site,
                        start_date=start,
@@ -117,7 +117,3 @@ def get_site_rise_set_intervals(start, end, site_code):
         return v.get_dark_intervals()
 
     return []
-
-
-
-
