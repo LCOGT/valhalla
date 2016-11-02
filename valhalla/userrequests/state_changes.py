@@ -76,21 +76,21 @@ def validate_ipp(ur_dict, total_duration_dict):
         return
 
     time_allocations_dict = {tak: TimeAllocation.objects.get(semester__id=tak.semester,
-                                                            telescope_class=tak.telescope_class,
-                                                            proposal__id=ur_dict['proposal']).ipp_time_available
-                            for tak in total_duration_dict.keys()}
+                                                             telescope_class=tak.telescope_class,
+                                                             proposal__id=ur_dict['proposal']).ipp_time_available
+                             for tak in total_duration_dict.keys()}
 
     for tak, duration in total_duration_dict.items():
         duration_hours = duration / 3600.0
         if time_allocations_dict[tak] < (duration_hours * ipp_value):
             max_ipp_allowable = (time_allocations_dict[tak] / duration_hours) + 1.0
             msg = _(("{} '{}' ipp_value of {} requires more ipp_time then is available. "
-                    "Please lower your ipp_value to <= {:.3f} and submit again.")).format(
-                    tak.telescope_class,
-                    ur_dict['observation_type'],
-                    (ipp_value + 1),
-                    max_ipp_allowable
-                )
+                     "Please lower your ipp_value to <= {:.3f} and submit again.")).format(
+                tak.telescope_class,
+                ur_dict['observation_type'],
+                (ipp_value + 1),
+                max_ipp_allowable
+            )
             raise TimeAllocationError(msg)
         time_allocations_dict[tak] -= (duration_hours * ipp_value)
 

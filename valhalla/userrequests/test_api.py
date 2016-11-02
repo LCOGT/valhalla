@@ -11,7 +11,7 @@ from django.utils import timezone
 from datetime import datetime
 import copy
 
-import valhalla.userrequests.signals.handlers # noqa
+import valhalla.userrequests.signals.handlers  # noqa
 
 
 generic_payload = {

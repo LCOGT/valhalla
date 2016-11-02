@@ -145,7 +145,6 @@ class WindowSerializer(serializers.ModelSerializer):
 
 
 class TargetSerializer(serializers.ModelSerializer):
-
     TYPE_HELPER_MAP = {
         'SIDEREAL': SiderealTargetHelper,
         'NON_SIDEREAL': NonSiderealTargetHelper,
@@ -223,12 +222,12 @@ class RequestSerializer(serializers.ModelSerializer):
                                                     data['window_set'])
         largest_interval = timedelta(seconds=0)
         for interval in rise_set_intervals:
-            largest_interval = max((interval[1]-interval[0]), largest_interval)
+            largest_interval = max((interval[1] - interval[0]), largest_interval)
         if largest_interval.total_seconds() <= duration:
             raise serializers.ValidationError(
                 _("The request duration {} did not fit into any visible intervals. "
                   "The largest visible interval within your window was {}").format(
-                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
+                    duration / 3600.0, largest_interval.total_seconds() / 3600.0))
 
         return data
 

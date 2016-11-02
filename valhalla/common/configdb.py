@@ -27,7 +27,7 @@ class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope
     __slots__ = ()
 
     def __str__(self):
-        return "{}.{}.{}".format(self.site, self.observatory, self.telescope)
+        return ".".join(s for s in [self.site, self.observatory, self.telescope] if s)
 
 
 class ConfigDB(object):
@@ -40,7 +40,7 @@ class ConfigDB(object):
         :return: list of dictionaries of site data
         '''
 
-        json_results = default_cache.get('configdb_data', None)
+        json_results = default_cache.get('configdb_data')
         if not json_results:
             try:
                 r = requests.get(CONFIGDB_URL + 'sites/')
