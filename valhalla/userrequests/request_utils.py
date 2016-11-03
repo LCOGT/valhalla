@@ -9,29 +9,36 @@ from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_int
 
 
 def get_telescope_states_for_request(request):
-    instrument_types = [mol.instrument_name for mol in request.molecule_set.all()]
+    instrument_type = request.molecule_set.first().instrument_name
     rs_target = get_rise_set_target(model_to_dict(request.target))
     constraints = request.constraints
     configdb = ConfigDB()
     site_intervals = {}
     # Build up the list of telescopes and their rise set intervals for the target on this request
-    for instrument_type in instrument_types:
-        site_data = configdb.get_sites_with_instrument_type_and_location(instrument_type=instrument_type)
-        for site, details in site_data.items():
-            if site not in site_intervals:
-                site_intervals[site] = get_rise_set_interval_for_target_and_site(rise_set_target=rs_target,
-                                                                                 site_detail=details,
-                                                                                 windows=[model_to_dict(w) for w in
-                                                                                          request.window_set.all()],
-                                                                                 airmass=constraints.max_airmass,
-                                                                                 moon_distance=constraints.min_lunar_distance)
-    # Remove the empty intervals from the dictionary
-    site_intervals = {site: intervals for site, intervals in site_intervals.items() if intervals}
+    site_data = configdb.get_sites_with_instrument_type_and_location(instrument_type=instrument_type,
+                                                                     site_code=request.location.site,
+                                                                     observatory_code=request.location.observatory,
+                                                                     telescope_code=request.location.telescope)
+    for site, details in site_data.items():
+        if site not in site_intervals:
+            site_intervals[site] = get_rise_set_interval_for_target_and_site(rise_set_target=rs_target,
+                                                                             site_detail=details,
+                                                                             windows=[model_to_dict(w) for w in
+                                                                                      request.window_set.all()],
+                                                                             airmass=constraints.max_airmass,
+                                                                             moon_distance=constraints.min_lunar_distance)
+    # If you have no sites, return the empty dict here
+    if not site_intervals:
+        return {}
+
     # Retrieve the telescope states for that set of sites
     telescope_states = get_telescope_states(start=request.min_window_time,
                                             end=request.max_window_time,
                                             sites=list(site_intervals.keys()),
-                                            instrument_types=instrument_types)
+                                            instrument_types=[instrument_type])
+    # Remove the empty intervals from the dictionary
+    site_intervals = {site: intervals for site, intervals in site_intervals.items() if intervals}
+
     # Filter the telescope states list with the site intervals
     filtered_telescope_states = filter_telescope_states_by_intervals(telescope_states,
                                                                      site_intervals,
@@ -53,7 +60,10 @@ def get_airmasses_for_request_at_sites(request):
     constraints = request.constraints
 
     configdb = ConfigDB()
-    site_data = configdb.get_sites_with_instrument_type_and_location(instrument_type=instrument_type)
+    site_data = configdb.get_sites_with_instrument_type_and_location(instrument_type=instrument_type,
+                                                                     site_code=request.location.site,
+                                                                     observatory_code=request.location.observatory,
+                                                                     telescope_code=request.location.telescope)
 
     rs_target = get_rise_set_target(model_to_dict(request.target))
 
