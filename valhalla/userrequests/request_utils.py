@@ -1,5 +1,5 @@
 from django.forms.models import model_to_dict
-from datetime import datetime, timedelta
+from datetime import timedelta
 from rise_set.angle import Angle
 from rise_set.astrometry import calculate_airmass_at_times
 
