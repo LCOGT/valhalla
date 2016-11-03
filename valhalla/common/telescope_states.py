@@ -3,6 +3,8 @@ from elasticsearch import Elasticsearch
 from datetime import datetime, timedelta
 from django.utils import timezone
 from copy import deepcopy
+from urllib3.exceptions import LocationValueError
+from django.core.exceptions import ImproperlyConfigured
 import logging
 
 from valhalla.common.configdb import ConfigDB, TelescopeKey
@@ -14,7 +16,12 @@ ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
 
 
 def get_es_data(query):
-    es = Elasticsearch([settings.ELASTICSEARCH_URL])
+    try:
+        es = Elasticsearch([settings.ELASTICSEARCH_URL])
+    except LocationValueError:
+        logger.error('Could not find host. Make sure ELASTICSEARCH_URL is set.')
+        raise ImproperlyConfigured('ELASTICSEARCH_URL')
+
     event_data = []
     query_size = 10000
     data = es.search(index="telescope_events", body=query, size=query_size, scroll='1m',
