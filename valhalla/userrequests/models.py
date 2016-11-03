@@ -248,6 +248,9 @@ class Target(models.Model):
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
     rot_angle = models.FloatField(default=0.0, blank=True)
 
+    def __str__(self):
+        return 'Target {}: {} type'.format(self.id, self.type)
+
     def rise_set_target(self):
         return get_rise_set_target(self)
 
@@ -256,6 +259,9 @@ class Window(models.Model):
     request = models.ForeignKey(Request)
     start = models.DateTimeField()
     end = models.DateTimeField()
+
+    def __str__(self):
+        return 'Window {}: {} to {}'.format(self.id, self.start, self.end)
 
 
 class Molecule(models.Model):
@@ -330,6 +336,12 @@ class Molecule(models.Model):
     # Other options
     defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-10.0), MaxValueValidator(40.0)])
 
+    def __str__(self):
+        return 'Molecule {}: {} type, {} instrument, {} exposures @ {}s'.format(self.id, self.type,
+                                                                                self.instrument_name,
+                                                                                self.exposure_count,
+                                                                                self.exposure_time)
+
     @cached_property
     def duration(self):
         return get_molecule_duration(self.instrument_name, self.bin_x, self.exposure_time, self.exposure_count)
@@ -342,6 +354,11 @@ class Constraints(models.Model):
     max_lunar_phase = models.FloatField(null=True, blank=True)
     max_seeing = models.FloatField(null=True, blank=True)
     min_transparency = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return 'Constraints {}: {} max airmass, {} min_lunar_distance'.format(self.id, self.max_airmass,
+                                                                              self.min_lunar_distance)
+
 
     class Meta:
         verbose_name_plural = 'Constraints'
