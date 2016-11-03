@@ -33,8 +33,7 @@ def get_es_data(query):
 
 
 def get_telescope_states(start, end, telescopes=None, sites=None, instrument_types=None):
-    configdb = ConfigDB()
-    telescope_to_instruments = configdb.get_instrument_types_per_telescope()
+    telescope_to_instruments = ConfigDB().get_instrument_types_per_telescope()
     if not instrument_types:
         available_telescopes = telescope_to_instruments.keys()
     else:
@@ -172,10 +171,10 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
             rise_set_intervals[telescope_key.site] = get_site_rise_set_intervals(start - timedelta(days=1),
                                                                                  end + timedelta(days=1),
                                                                                  telescope_key.site)[1:]
-    filtered_events = filter_telescope_states_by_intervals(telescope_states, rise_set_intervals, start, end)
+    telescope_states = filter_telescope_states_by_intervals(telescope_states, rise_set_intervals, start, end)
     # now just compute a % available each day from the rise_set filtered set of events
     telescope_availability = {}
-    for telescope_key, events in filtered_events.items():
+    for telescope_key, events in telescope_states.items():
         telescope_availability[telescope_key] = []
         time_available = timedelta(seconds=0)
         time_total = timedelta(seconds=0)
