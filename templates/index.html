@@ -3,12 +3,13 @@
 {% block title %}Home{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-8">
     {% block request_list %}
     {% endblock %}
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         {% if user.is_authenticated %}
+        {% include "telescope_availability_chart.html" %}
         <div class="row">
             <div class="col-md-12">
                 <h3>Active Proposals</h3>
@@ -37,6 +38,8 @@
 </div>
 {% endblock %}
 {% block extra_javascript %}
+{% load static bootstrap3 %}
+<script src="{% static 'js/telescope_availability.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
     $.ajax({
@@ -54,6 +57,16 @@ $(document).ready(function(){
             rss = rss + '</ul>'
             $('#news').html(rss)
         }
+    });
+    var end_date = new Date();
+    var start_date = new Date(end_date);
+    start_date.setDate(start_date.getDate() - 3);
+    start_date.setHours(0);
+    start_date.setMinutes(0);
+    start_date.setSeconds(0);
+    $.getJSON("{% url 'telescope_availability' %}" + "?start=" + start_date.toISOString() +
+        "&end=" + end_date.toISOString(), function(data) {
+        create_telescope_availability_chart(data);
     });
 });
 </script>

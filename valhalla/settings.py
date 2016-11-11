@@ -162,12 +162,12 @@ REST_FRAMEWORK = {
 }
 
 try:
-    from local_settings import * # noqa
+    from local_settings import *  # noqa
 except ImportError:
     pass
 
 try:
-    INSTALLED_APPS += LOCAL_INSTALLED_APPS # noqa
-    ALLOWED_HOSTS += LOCAL_ALLOWED_HOSTS # noqa
+    INSTALLED_APPS += LOCAL_INSTALLED_APPS  # noqa
+    ALLOWED_HOSTS += LOCAL_ALLOWED_HOSTS  # noqa
 except NameError:
     pass
