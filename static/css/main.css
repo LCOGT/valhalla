@@ -3,6 +3,10 @@ body {
     font-family: 'Affogato-Medium', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.thumbnail {
+    margin-bottom: 0px;
+}
+
 .downPage ul.nav {
     width: auto;
 }
@@ -47,7 +51,6 @@ body {
 }
 
 .userrequest {
-    margin-bottom: 5px;
     border: 1px solid #EFF0EC;
     min-height: 75px;
 
@@ -117,4 +120,27 @@ body {
 .child-requests {
     line-height: 0.9;
     margin-bottom: 0px;
+}
+
+.request-detail {
+    border-left: 1px solid #EFF0EC;
+    border-right: 1px solid #EFF0EC;
+}
+
+.request-show {
+    border: 1px solid #EFF0EC;
+    border-top: 0px solid #EFF0EC;
+}
+
+.request-show:hover{
+    background-color: #F5F5F5;
+    cursor: pointer;
+}
+
+.request-show p {
+    margin: 0px;
+}
+
+.spacer {
+    margin-bottom: 10px;
 }

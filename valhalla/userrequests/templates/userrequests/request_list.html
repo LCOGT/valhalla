@@ -1,205 +1,201 @@
 {% extends 'base.html' %}
-{% load i18n static request_extras bootstrap3 %}
+{% load i18n static request_extras bootstrap3 humanize %}
 {% block title %} Request Details {% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-12 ">
-        <h2>{{ userrequest.group_id }} <small>#{{ userrequest.id }}</small></h2>
-    </div>
+  <div class="col-md-12 ">
+    <h2>{{ userrequest.group_id }} <small>#{{ userrequest.id }}</small></h2>
+  </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
-        <dl class="col-md-2">
-            <dt>{% trans 'state' %}</dt>
-            <dd class="text-{{ userrequest.state|state_to_bs }}">
-                <i class="fa fa-{{ userrequest.state|state_to_icon }}"></i> {{ userrequest.state }}
-            </dd>
-        </dl>
-        <dl class="col-md-2">
-            <dt>{% trans 'Last Update' %}</dt>
-            <dd>{{ userrequest.modified }}</dd>
-        </dl>
-        <dl class="col-md-2">
-            <dt>{% trans 'Created' %}</dt>
-            <dd>{{ userrequest.created }}</dd>
-        </dl>
-        <dl class="col-md-2">
-            <dt>{% trans 'Proposa' %}l</dt>
-            <dd>
-                <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
-            </dd>
-        </dl>
-        <dl class="col-md-2">
-            <dt>{% trans 'Submitter' %}</dt>
-            <dd>{{ userrequest.submitter }}</dd>
-        </dl>
-        <dl class="col-md-1">
-            <dt>{% trans 'Type' %}</dt>
-            <dd>{{ userrequest.observation_type }}</dd>
-        </dl>
-        <dl class="col-md-1">
-            <dt>IPP</dt>
-            <dd>{{ userrequest.ipp_value }}</dd>
-        </dl>
-    </div>
+  <div class="col-md-12">
+    <dl class="col-md-2">
+      <dt>{% trans 'state' %}</dt>
+      <dd class="text-{{ userrequest.state|state_to_bs }}">
+        <i class="fa fa-{{ userrequest.state|state_to_icon }}"></i> {{ userrequest.state }}
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Last Update' %}</dt>
+      <dd>{{ userrequest.modified }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Created' %}</dt>
+      <dd>{{ userrequest.created }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Proposa' %}l</dt>
+      <dd>
+        <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Submitter' %}</dt>
+      <dd>{{ userrequest.submitter }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>{% trans 'Type' %}</dt>
+      <dd>{{ userrequest.observation_type }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>IPP</dt>
+      <dd>{{ userrequest.ipp_value }}</dd>
+    </dl>
+  </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
-        <h3>{% trans 'Child Requests' %} ({{ object_list.count }})</h3>
-    </div>
+  <div class="col-md-12">
+    <h3>{% trans 'Child Requests' %} ({{ object_list.count }})</h3>
+  </div>
 </div>
 {% for request in object_list %}
-<div class="request">
-    <div class="row">
+<section class="request-list">
+  <div class="row userrequest userrequest-{{ request.state|state_to_bs }}" data-request='{{ request.id }}'>
+    <div class="col-md-10">
+      <div class="row">
         <div class="col-md-12">
-            <center><h3>&nbsp;#{{ request.id }}</h3></center>
+          <strong><a class="text-{{ request.state|state_to_bs }} userrequest-title" href="#"> #{{ request.id }}</a></strong>
         </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 userrequest-block border-right">
+          <p><i class="fa fa-clock-o"></i> Duration: {{ request.duration }} seconds</p>
+          <p><i class="fa fa-ban"></i> Fail Count: {{ request.fail_count }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          <p><span class="text-{{ request.state|state_to_bs }}">
+              <i class="fa fa-{{ request.state|state_to_icon }}"></i>
+              {{ request.state }}
+          </span></p>
+          <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download</button>
+          <div class="btn-group">
+            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-cog"></i> Options <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#">Copy Request</a></li>
+            </ul>
+          </div>
+        </div>  
+      </div>
     </div>
-    <div class="row">
-        <div class="col-md-4">
-            <dl class="col-md-6">
-                <dt>{% trans 'state' %}</dt>
-                <dd class="text-{{ request.state|state_to_bs }}">
-                    <i class="fa fa-{{ request.state|state_to_icon }}"></i> {{ request.state }}
-                </dd>
-            </dl>
-            <dl class="col-md-6">
-                <dt>{% trans 'Last Update' %}</dt>
-                <dd>{{ request.modified }}</dd>
-            </dl>
-            <dl class="col-md-6">
-                <dt>{% trans 'Fail Count' %}</dt>
-                <dd>{{ request.fail_count }}</dd>
-            </dl>
-            <dl class="col-md-6">
-                <dt>{% trans 'Duration (sec)' %}</dt>
-                <dd>{{ request.duration }}</dd>
-            </dl>
-            <div class="col-md-12">
-                <table class="table">
-                    <caption>{% trans 'Windows' %}</caption>
-                    <thead>
-                        <tr><td>{% trans 'Start' %}</td><td>{% trans 'End' %}</td></tr>
-                    </thead>
-                    <tbody>
-                        {% for window in request.window_set.all %}
-                        <tr><td>{{ window.start }}</td><td>{{ window.end }}</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-12">
-                <table class="table table-condensed">
-                    <caption>Configurations</caption>
-                    <thead>
-                        <tr><td>Inst.</td><td>Filter</td><td>Exposures</td></tr>
-                    </thead>
-                    <tbody>
-                        {% for molecule in request.molecule_set.all %}
-                        <tr>
-                            <td>{{ molecule.instrument_name }}</td>
-                            <td>{{ molecule.filter }}</td>
-                            <td>{{ molecule.exposure_time }} x {{ molecule.exposure_count }}</td>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div id="preview-image-status-{{ request.id }}" style="display: none;"></div>
-                    <img src="" style="display: none;" class="img-responsive preview-image" id="{{ request.id }}"/>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-8">
-            <div class="row">
-                <div class="col-md-12">
-                    <ul class="nav nav-tabs nav-justified">
-                        <li class="active"><a href="#">Data</a></li>
-                        <li><a href="#">History</a></li>
-                        <li><a href="#">Target Availability</a></li>
-                        <li><a href="#">Telescope Status</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="frame-list-toolbar" id="table-{{ request.id }}-toolbar">
-                        <button onClick="downloadSome({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-check"></i> Download Selected </button>
-                        <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download All </button>
-                        <a class="btn btn-default btn-sm" target="_blank"  href="{{ request.archive_url }}"><i class="fa fa-arrow-right"></i> View on Archive </a>
-                    </div>
-                    <table class="frame-list" id="table-{{ request.id }}" data-requestid="{{ request.id }}" data-requeststart="{{ request.start_time }}">
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="col-md-2">
+      {% if request.state == 'COMPLETED' %}
+      <p class="text-center" style="margin-top: 10px"><i class="fa fa-spinner fa-pulse"></i></p>
+      <img src="" class="thumbnail" data-request="{{ request.id }}" style="display: none">
+      {% endif %}
     </div>
-</div>
+  </div>
+  <div class="request-detail row" id="request-detail-{{ request.id }}" style="display:none">
+      <div class="col-md-4">
+        <div class="col-md-12">
+          <table class="table">
+            <caption>{% trans 'Windows' %}</caption>
+            <thead>
+              <tr><td>{% trans 'Start' %}</td><td>{% trans 'End' %}</td></tr>
+            </thead>
+            <tbody>
+              {% for window in request.window_set.all %}
+              <tr><td>{{ window.start }}</td><td>{{ window.end }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-12">
+          <table class="table table-condensed">
+            <caption>Configurations</caption>
+            <thead>
+              <tr><td>Inst.</td><td>Filter</td><td>Exposures</td></tr>
+            </thead>
+            <tbody>
+              {% for molecule in request.molecule_set.all %}
+              <tr>
+                <td>{{ molecule.instrument_name }}</td>
+                <td>{{ molecule.filter }}</td>
+                <td>{{ molecule.exposure_time }} x {{ molecule.exposure_count }}</td>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-md-12">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#data-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}">Data</a>
+              </li>
+              <li role="presentation">
+                <a href="#history-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}">History</a>
+              </li>
+              <li role="presentation">
+                <a href="#availability-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}">Availability</a>
+              </li>
+              <li role="presentation">
+                <a href="#status-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}">Status</a>
+              </li>
+            </ul>
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane active" id="data-{{ request.id }}">
+                <div class="frame-list-toolbar" id="table-{{ request.id }}-toolbar">
+                <button onClick="downloadSelected({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-check"></i> Download Selected </button>
+                <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download All </button>
+                <a class="btn btn-default btn-sm" target="_blank" href="https://archive.lco.global/?REQNUM={{ request.id }}&start={{ request.created|date:'Y-m-d 00:00:00' }}"><i class="fa fa-arrow-right"></i> View on Archive </a>
+              </div>
+              <table class="frame-list"></table>
+            </div>
+            <div role="tabpanel"  class="tab-pane" id="history-{{ request.id }}">
+              <div class="col-md-12">History</div>
+            </div> 
+            <div role="tabpanel" class="tab-pane" id="availability-{{ request.id }}">
+              <div class="col-md-12">Availability</div>
+            </div> 
+            <div role="tabpanel" class="tab-pane" id="status-{{ request.id }}">
+              <div class="col-md-12">Status</div>
+            </div> 
+          </div>
+        </div>
+      </div>    
+    </div>
+  </div>
+  <div class="request-show row" id="request-show-{{ request.id }}" onClick="showDetails({{request.id}})">
+    <div class="col-md-12">
+      <p class="text-center">Details
+      <i class="fa fa-arrow-down text-center"></i>
+      </p>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</section>
 {% endfor %}
+{% if page_obj.count > 20 %}
 {% bootstrap_pagination page_obj %}
+{% endif %}
 {% endblock %}
 {% block extra_javascript %}
 <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.fileDownload/1.4.2/jquery.fileDownload.min.js"></script>
 <script src="{% static 'js/archive.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/request_detail.js' %}" type="text/javascript"></script>
 <script type="text/javascript">
-    $(document).ready(function(){
-        login("{{ user.profile.archive_bearer_token }}", function(){
-            console.log('logged in.')
-            $('.frame-list').each(function(idx, frameList){
-                frameList = $(frameList)
-                var requestId = frameList.data('requestid')
-                var requeststart = frameList.data('requeststart')
-                frameList.bootstrapTable({
-                    url: archiveRoot + 'frames/?limit=1000&start=' + requeststart + '&REQNUM=' + requestId,
-                    responseHandler: function(res){
-                      if(res.count > 1000){
-                          alert('More than 1000 results found, please view on archive to view all data')
-                      }
-                      return res.results
-                    },
-                    queryParamsType: '',
-                    idField: 'id',
-                    pagination: true,
-                    pageSize: 15,
-                    sortName: 'RLEVEL',
-                    sortOrder: 'desc',
-                    maintainSelected: true,
-                    checkboxHeader: true,
-                    toolbar: '#table-' + requestId + '-toolbar',
-                    columns: [{
-                        field: 'state',
-                        title: '',
-                        checkbox: true,
-                    },{
-                        field: 'filename',
-                        title: 'filename',
-                        sortable: 'true',
-                    },{
-                        field: 'DATE_OBS',
-                        title: 'date_obs',
-                        sortable: 'true',
-                        formatter: function(value){
-                            return moment.utc(value, 'YYYY-MM-DDTHH:mm:ssZ').format('YYYY-MM-DD HH:mm:ss');
-                        }
-                    },{
-                        field: 'FILTER',
-                        title: 'filter',
-                        sortable: 'true',
-                    },{
-                        field: 'OBSTYPE',
-                        title: 'obstype',
-                        sortable: 'true',
-                    },{
-                        field: 'RLEVEL',
-                        title: 'r. level',
-                        sortable: 'true',
-                    }]
-                });
-            });
-        })
-    })
+  /* globals $ */
+  /* eslint-disable no-undef */
+  $(document).ready(function(){
+    login('{{ user.profile.archive_bearer_token }}', function(){
+      $('.thumbnail').each(function(idx, elem){
+        getLatestFrame($(elem).data('request'), function(frame){
+          getThumbnail(frame.id, 100, function(thumb_data){
+            $(elem).attr('src', thumb_data.url);
+            $(elem).prev().hide();
+            $(elem).show();
+          });
+        });
+      });
+    });
+  });
 </script>
 {% endblock %}

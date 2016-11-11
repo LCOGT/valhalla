@@ -67,6 +67,7 @@ def telescope_availability(request):
     str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}
 
     return Response(str_telescope_availability)
+    
 
 class RequestListView(LoginRequiredMixin, FilterView):
     template_name = 'userrequests/request_list.html'
