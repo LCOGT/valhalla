@@ -1,0 +1,5 @@
+<h4 align="center" id="{{request_number}}-telescope-states-plot-title"></h4>
+<div id="{{request_number}}-telescope-states-plot" data-request-number="{{request_number}}" class="telescope-states-plot col-md-12">
+    {% include "plot_controls.html" with request_number=request_number plot_type='telescope-states'%}
+    <i id="{{request_number}}-ts-loading" class="fa fa-spinner fa-spin"></i>
+</div>

@@ -3,3 +3,6 @@ python-targets:
     - 3
 ignore-patterns:
   - (^|/)migrations(/|$)
+pylint:
+  disable:
+    - unused-argument
