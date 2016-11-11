@@ -2,6 +2,7 @@
 configdb_data = [
     {
         'code': 'tst',
+        'elevation': 100,
         'enclosure_set': [
             {
                 'code': 'doma',
@@ -165,6 +166,7 @@ configdb_data = [
     },
     {
         'code': 'non',
+        'elevation': 10,
         'enclosure_set': [
             {
                 'code': 'doma',

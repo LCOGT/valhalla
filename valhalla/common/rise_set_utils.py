@@ -13,7 +13,7 @@ HOURS_PER_DEGREES = 15.0
 def get_rise_set_intervals(instrument_type, target_dict, constraints_dict, location_dict, window_list):
     target = get_rise_set_target(target_dict)
     airmass = constraints_dict['max_airmass']
-    moon_distance = Angle(degrees=constraints_dict['min_lunar_distance'])
+    moon_distance = constraints_dict['min_lunar_distance']
 
     configdb = ConfigDB()
     site_details = configdb.get_sites_with_instrument_type_and_location(instrument_type,
@@ -22,7 +22,7 @@ def get_rise_set_intervals(instrument_type, target_dict, constraints_dict, locat
                                                                         location_dict.get('telescope', ''))
     intervals = []
     for site_detail in site_details.values():
-        intervals.extend(_get_rise_set_interval_for_target_and_site(target, site_detail,
+        intervals.extend(get_rise_set_interval_for_target_and_site(target, site_detail,
                                                                     window_list,
                                                                     airmass, moon_distance))
 
@@ -31,7 +31,7 @@ def get_rise_set_intervals(instrument_type, target_dict, constraints_dict, locat
     return intervals
 
 
-def _get_rise_set_interval_for_target_and_site(rise_set_target, site_detail, windows, airmass, moon_distance):
+def get_rise_set_interval_for_target_and_site(rise_set_target, site_detail, windows, airmass, moon_distance):
     rise_set_site = {'latitude': Angle(degrees=site_detail['latitude']),
                      'longitude': Angle(degrees=site_detail['longitude']),
                      'horizon': Angle(degrees=site_detail['horizon']),
@@ -48,7 +48,7 @@ def _get_rise_set_interval_for_target_and_site(rise_set_target, site_detail, win
                        twilight='nautical'
                        )
         intervals.extend(v.get_observable_intervals(rise_set_target, airmass=airmass,
-                                                    moon_distance=moon_distance))
+                                                    moon_distance=Angle(degrees=moon_distance)))
 
     return intervals
 

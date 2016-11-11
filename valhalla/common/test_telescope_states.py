@@ -10,7 +10,7 @@ from unittest.mock import patch
 import json
 
 
-class TestTelescopeStates(TestCase):
+class TelescopeStatesFakeInput(TestCase):
     def setUp(self):
         self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
         self.mock_configdb = self.configdb_patcher.start()
@@ -20,7 +20,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'AVAILABLE',
-                    'timestamp': '2016-10-01 15:24:58',
+                    'timestamp': '2016-10-01 18:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Available for scheduling',
@@ -30,7 +30,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'AVAILABLE',
-                    'timestamp': '2016-10-01 15:30:00',
+                    'timestamp': '2016-10-01 18:30:00',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Available for scheduling',
@@ -40,7 +40,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'AVAILABLE',
-                    'timestamp': '2016-10-01 16:24:58',
+                    'timestamp': '2016-10-01 19:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Available for scheduling',
@@ -50,7 +50,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'SEQUENCER_UNAVAILABLE',
-                    'timestamp': '2016-10-01 16:24:59',
+                    'timestamp': '2016-10-01 19:24:59',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'It is broken',
@@ -60,7 +60,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'ENCLOSURE_INTERLOCK',
-                    'timestamp': '2016-10-01 16:24:59',
+                    'timestamp': '2016-10-01 19:24:59',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'It is locked',
@@ -70,7 +70,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'AVAILABLE',
-                    'timestamp': '2016-10-01 17:24:58',
+                    'timestamp': '2016-10-01 20:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Available for scheduling',
@@ -80,7 +80,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'AVAILABLE',
-                    'timestamp': '2016-10-01 17:24:59',
+                    'timestamp': '2016-10-01 20:24:59',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Available for scheduling',
@@ -90,7 +90,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'BUG',
-                    'timestamp': '2016-10-01 17:44:58',
+                    'timestamp': '2016-10-01 20:44:58',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Bad bug ruins everything',
@@ -100,7 +100,7 @@ class TestTelescopeStates(TestCase):
             {
                 '_source': {
                     'type': 'BUG',
-                    'timestamp': '2016-10-01 17:44:58',
+                    'timestamp': '2016-10-01 20:44:58',
                     'site': 'tst',
                     'telescope': '1m0a',
                     'reason': 'Bad bug ruins everything',
@@ -120,6 +120,8 @@ class TestTelescopeStates(TestCase):
         self.configdb_patcher.stop()
         self.es_patcher.stop()
 
+
+class TestTelescopeStates(TelescopeStatesFakeInput):
     def test_aggregate_states_1(self):
         start = datetime(2016, 10, 1)
         end = datetime(2016, 10, 2)
@@ -131,8 +133,8 @@ class TestTelescopeStates(TestCase):
         doma_expected_available_state = {'telescope': 'tst.doma.1m0a',
                                          'event_type': 'AVAILABLE',
                                          'event_reason': 'Available for scheduling',
-                                         'start': datetime(2016, 10, 1, 15, 24, 58, tzinfo=timezone.utc),
-                                         'end': datetime(2016, 10, 1, 17, 44, 58, tzinfo=timezone.utc)
+                                         'start': datetime(2016, 10, 1, 18, 24, 58, tzinfo=timezone.utc),
+                                         'end': datetime(2016, 10, 1, 20, 44, 58, tzinfo=timezone.utc)
                                          }
 
         self.assertIn(doma_expected_available_state, telescope_states[self.tk1])
@@ -140,8 +142,8 @@ class TestTelescopeStates(TestCase):
         domb_expected_available_state1 = {'telescope': 'tst.domb.1m0a',
                                           'event_type': 'AVAILABLE',
                                           'event_reason': 'Available for scheduling',
-                                          'start': datetime(2016, 10, 1, 15, 30, 0, tzinfo=timezone.utc),
-                                          'end': datetime(2016, 10, 1, 16, 24, 59, tzinfo=timezone.utc)
+                                          'start': datetime(2016, 10, 1, 18, 30, 0, tzinfo=timezone.utc),
+                                          'end': datetime(2016, 10, 1, 19, 24, 59, tzinfo=timezone.utc)
                                           }
 
         self.assertIn(domb_expected_available_state1, telescope_states[self.tk2])
@@ -149,19 +151,19 @@ class TestTelescopeStates(TestCase):
         domb_expected_available_state2 = {'telescope': 'tst.domb.1m0a',
                                           'event_type': 'AVAILABLE',
                                           'event_reason': 'Available for scheduling',
-                                          'start': datetime(2016, 10, 1, 17, 24, 59, tzinfo=timezone.utc),
-                                          'end': datetime(2016, 10, 1, 17, 44, 58, tzinfo=timezone.utc)
+                                          'start': datetime(2016, 10, 1, 20, 24, 59, tzinfo=timezone.utc),
+                                          'end': datetime(2016, 10, 1, 20, 44, 58, tzinfo=timezone.utc)
                                           }
         self.assertIn(domb_expected_available_state2, telescope_states[self.tk2])
 
     @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
     def test_telescope_availability_limits_interval(self, mock_intervals):
-        mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 9, 30, 18, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 1, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 1, 18, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 2, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 2, 18, 0, 0, tzinfo=timezone.utc))]
+        mock_intervals.return_value = [(datetime(2016, 9, 30, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 9, 30, 21, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 1, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 1, 21, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 2, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 2, 21, 0, 0, tzinfo=timezone.utc))]
         start = datetime(2016, 9, 30, tzinfo=timezone.utc)
         end = datetime(2016, 10, 2, tzinfo=timezone.utc)
         telescope_availability = get_telescope_availability_per_day(start, end)
@@ -169,29 +171,29 @@ class TestTelescopeStates(TestCase):
         self.assertIn(self.tk1, telescope_availability)
         self.assertIn(self.tk2, telescope_availability)
 
-        doma_available_time = (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
-        doma_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        doma_available_time = (datetime(2016, 10, 1, 20, 44, 58) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
+        doma_total_time = (datetime(2016, 10, 1, 21, 0, 0) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
 
         doma_expected_availability = doma_available_time / doma_total_time
         self.assertAlmostEqual(doma_expected_availability, telescope_availability[self.tk1][0][1])
 
-        domb_available_time = (datetime(2016, 10, 1, 16, 24, 59) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
-        domb_available_time += (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 17, 24, 59)).total_seconds()
-        domb_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        domb_available_time = (datetime(2016, 10, 1, 19, 24, 59) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
+        domb_available_time += (datetime(2016, 10, 1, 20, 44, 58) - datetime(2016, 10, 1, 20, 24, 59)).total_seconds()
+        domb_total_time = (datetime(2016, 10, 1, 21, 0, 0) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
 
         domb_expected_availability = domb_available_time / domb_total_time
         self.assertAlmostEqual(domb_expected_availability, telescope_availability[self.tk2][0][1])
 
     @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
     def test_telescope_availability_spans_interval(self, mock_intervals):
-        mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 9, 30, 18, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 1, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 1, 16, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 1, 16, 10, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 1, 16, 20, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 2, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 2, 18, 0, 0, tzinfo=timezone.utc))]
+        mock_intervals.return_value = [(datetime(2016, 9, 30, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 9, 30, 21, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 1, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 1, 19, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 1, 19, 10, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 1, 19, 20, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 2, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 2, 21, 0, 0, tzinfo=timezone.utc))]
         start = datetime(2016, 9, 30, tzinfo=timezone.utc)
         end = datetime(2016, 10, 2, tzinfo=timezone.utc)
         telescope_availability = get_telescope_availability_per_day(start, end)
@@ -199,8 +201,8 @@ class TestTelescopeStates(TestCase):
         self.assertIn(self.tk1, telescope_availability)
         self.assertIn(self.tk2, telescope_availability)
 
-        doma_available_time = (datetime(2016, 10, 1, 16, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
-        doma_available_time += (datetime(2016, 10, 1, 16, 20, 0) - datetime(2016, 10, 1, 16, 10, 0)).total_seconds()
+        doma_available_time = (datetime(2016, 10, 1, 19, 0, 0) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
+        doma_available_time += (datetime(2016, 10, 1, 19, 20, 0) - datetime(2016, 10, 1, 19, 10, 0)).total_seconds()
         doma_total_time = doma_available_time
 
         doma_expected_availability = doma_available_time / doma_total_time
@@ -211,12 +213,12 @@ class TestTelescopeStates(TestCase):
 
     @patch('valhalla.common.telescope_states.get_site_rise_set_intervals')
     def test_telescope_availability_combine(self, mock_intervals):
-        mock_intervals.return_value = [(datetime(2016, 9, 30, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 9, 30, 18, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 1, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 1, 18, 0, 0, tzinfo=timezone.utc)),
-                                       (datetime(2016, 10, 2, 15, 30, 0, tzinfo=timezone.utc),
-                                        datetime(2016, 10, 2, 18, 0, 0, tzinfo=timezone.utc))]
+        mock_intervals.return_value = [(datetime(2016, 9, 30, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 9, 30, 21, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 1, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 1, 21, 0, 0, tzinfo=timezone.utc)),
+                                       (datetime(2016, 10, 2, 18, 30, 0, tzinfo=timezone.utc),
+                                        datetime(2016, 10, 2, 21, 0, 0, tzinfo=timezone.utc))]
         start = datetime(2016, 9, 30, tzinfo=timezone.utc)
         end = datetime(2016, 10, 2, tzinfo=timezone.utc)
         telescope_availability = get_telescope_availability_per_day(start, end)
@@ -229,13 +231,13 @@ class TestTelescopeStates(TestCase):
 
         self.assertIn(combined_key, combined_telescope_availability)
 
-        doma_available_time = (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
-        doma_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        doma_available_time = (datetime(2016, 10, 1, 20, 44, 58) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
+        doma_total_time = (datetime(2016, 10, 1, 21, 0, 0) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
         doma_expected_availability = doma_available_time / doma_total_time
 
-        domb_available_time = (datetime(2016, 10, 1, 16, 24, 59) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
-        domb_available_time += (datetime(2016, 10, 1, 17, 44, 58) - datetime(2016, 10, 1, 17, 24, 59)).total_seconds()
-        domb_total_time = (datetime(2016, 10, 1, 18, 0, 0) - datetime(2016, 10, 1, 15, 30, 0)).total_seconds()
+        domb_available_time = (datetime(2016, 10, 1, 19, 24, 59) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
+        domb_available_time += (datetime(2016, 10, 1, 20, 44, 58) - datetime(2016, 10, 1, 20, 24, 59)).total_seconds()
+        domb_total_time = (datetime(2016, 10, 1, 21, 0, 0) - datetime(2016, 10, 1, 18, 30, 0)).total_seconds()
         domb_expected_availability = domb_available_time / domb_total_time
 
         total_expected_availability = (doma_expected_availability + domb_expected_availability) / 2.0

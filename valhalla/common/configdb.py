@@ -80,6 +80,7 @@ class ConfigDB(object):
                                                 site_details[site['code']] = {'latitude': telescope['lat'],
                                                                               'longitude': telescope['long'],
                                                                               'horizon': telescope['horizon'],
+                                                                              'altitude': site['elevation'],
                                                                               'ha_limit_pos': telescope['ha_limit_pos'],
                                                                               'ha_limit_neg': telescope['ha_limit_neg']}
 
