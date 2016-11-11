@@ -16,7 +16,7 @@ def get_start_end_paramters(request):
     try:
         start = parse(request.query_params.get('start'))
     except TypeError:
-        start = timezone.now() - timedelta(days=6)
+        start = timezone.now() - timedelta(days=1)
     start = start.replace(tzinfo=timezone.utc)
     try:
         end = parse(request.query_params.get('end'))
