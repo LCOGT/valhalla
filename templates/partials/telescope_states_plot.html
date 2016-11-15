@@ -1,5 +1,41 @@
 <h4 align="center" id="{{request_number}}-telescope-states-plot-title"></h4>
-<div id="{{request_number}}-telescope-states-plot" data-request-number="{{request_number}}" class="telescope-states-plot col-md-12">
-    {% include "plot_controls.html" with request_number=request_number plot_type='telescope-states'%}
+<div id="{{request_number}}-telescope-states-plot" data-request-number="{{request_number}}" class="telescope-states-plot">
     <i id="{{request_number}}-ts-loading" class="fa fa-spinner fa-spin"></i>
+</div>
+<div class="panel panel-default" >
+    <div class="panel-heading clickable" data-toggle="collapse" data-target="#{{request_number}}-ts-legend-collapse">
+        Telescope Status Legend
+    </div>
+    <div class="panel-body collapse" id="{{request_number}}-ts-legend-collapse">
+        <table class="table table-condensed" >
+            <tr>
+                <td class="AVAILABLE legend-item">
+                </td>
+                <td>
+                    Available
+                </td>
+            </tr>
+            <tr>
+                <td class="NOT_OK_TO_OPEN legend-item">
+                </td>
+                <td>
+                    Weather
+                </td>
+            </tr>
+            <tr>
+                <td class="SEQUENCER_DISABLED legend-item">
+                </td>
+                <td>
+                    Manually Disabled
+                </td>
+            </tr>
+            <tr>
+                <td class="SITE_AGENT_UNRESPONSIVE legend-item">
+                </td>
+                <td>
+                    No Connection to Telescope
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>

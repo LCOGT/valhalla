@@ -65,20 +65,3 @@ getTableData = function(requestId){
     }]
   });
 };
-
-
-$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-  var tab = $(e.target).text();
-  var requestId = $(e.target).data('request');
-  if(tab == 'Data'){
-    getTableData(requestId);
-  }else if(tab == 'History'){
-    console.log('History tab for ' + requestId);
-  }else if(tab == 'Availability'){
-    console.log('Availability tab for ' + requestId);
-  }else if(tab == 'Status'){
-    console.log('Status tab for ' + requestId);
-  }
-});
-
-

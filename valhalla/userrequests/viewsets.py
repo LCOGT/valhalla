@@ -67,3 +67,10 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
         str_telescope_states = {str(k): v for k, v in telescope_states.items()}
 
         return Response(str_telescope_states)
+
+    @detail_route()
+    def blocks(self, request, pk=None):
+        blocks = self.get_object().blocks
+        if request.GET.get('canceled'):
+            return Response([b for b in blocks if not b['canceled']])
+        return Response(blocks)

@@ -1,4 +1,13 @@
-create_telescope_states_plot = function(request_number, site_to_color, site_code_to_name, block, data){
+create_telescope_states_plot = function(request_number, site_to_color, site_code_to_name, block_data, data){
+    // find the current non canceled block
+    block_data = block_data.reverse();
+    var block = null;
+    for (var i = 0; i < block_data.length; i++) {
+        if(!block_data[i].cancleld){
+            block = block_data[i];
+            break;
+        }
+    }
     var groups = new vis.DataSet();
 
     var event_types = {"AVAILABLE": 'Available',
@@ -55,8 +64,8 @@ create_telescope_states_plot = function(request_number, site_to_color, site_code
                 title: event_types[event['event_type']] + reason + "<br/>start: " + event['start'].replace('T',' ')
                 + "<br/>end: " + event['end'].replace('T',' '),
                 className: event['event_type'],
-                start: event['start'] + 'Z',
-                end: event['end'] + 'Z',
+                start: event['start'],
+                end: event['end'],
                 toggle: 'tooltip',
                 html: true,
                 type: 'range'
@@ -65,11 +74,11 @@ create_telescope_states_plot = function(request_number, site_to_color, site_code
         if(block && block.site == site && block.observatory == sorted_telescopes[telescope].split('.')[1] && block.telescope == sorted_telescopes[telescope].split('.')[2]){
            items.add({
                 group: g,
-                title: block.type.toLowerCase() + " at " + sorted_telescopes[telescope] + "<br/>" + "start: " + block.start +
+                title: block.status.toLowerCase() + " at " + sorted_telescopes[telescope] + "<br/>" + "start: " + block.start +
                 "<br/>end: " + block.end,
-                className: block.type,
-                start: block.start + 'Z',
-                end: block.end + 'Z',
+                className: block.status,
+                start: block.start,
+                end: block.end,
                 toggle: 'tooltip',
                 html: true,
                 type: 'range'

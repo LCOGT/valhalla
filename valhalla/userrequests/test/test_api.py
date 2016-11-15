@@ -88,7 +88,7 @@ class TestUserGetRequestApi(APITestCase):
         mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
         result = self.client.get(reverse('api:user_requests-list'))
         self.assertEquals(result.status_code, 200)
-        self.assertEquals(result.json(), [])
+        self.assertEquals(result.json()['results'], [])
 
     def test_get_user_request_list_authenticated(self):
         user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
@@ -931,7 +931,7 @@ class TestGetRequestApi(APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-list'))
-        self.assertEquals(result.json()[0]['observation_note'], request.observation_note)
+        self.assertEquals(result.json()['results'][0]['observation_note'], request.observation_note)
 
     def test_get_request_list_unauthenticated(self):
         mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')

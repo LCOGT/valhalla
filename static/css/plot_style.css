@@ -100,10 +100,8 @@
 
 .plot_controls {
 	 position: absolute;
-     top: 0;
      right: 0;
      margin-right: 22px;
-     margin-top: 10px;
      z-index: 9999;
 }
 

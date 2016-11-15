@@ -1,0 +1,63 @@
+{% load static %}
+<div class="row">
+    <h4 align="center" id="{{request.id}}-blockhistory-plot-title">Scheduled Block History by Scheduling Run #</h4>
+    <div class="blockhistory_plot col-md-12" id="{{request.id}}-blockhistory-plot" data-request-number="{{request.id}}">
+        {% include "partials/plot_controls.html" with request_number=request.id plot_type='blockhistory'%}
+        <i id="{{request.id}}-bh-loading" class="fa fa-spinner fa-spin" alt="Loading"></i>
+    </div>
+</div>
+<div class="row" id="{{request.id}}-bh-legend">
+    <div class="col-md-12">
+        <div class="panel panel-default" >
+            <div class="panel-heading clickable" data-toggle="collapse" data-target="#{{request.id}}-bh-legend-collapse">
+                Legend
+            </div>
+            <div class="panel-body collapse" id="{{request.id}}-bh-legend-collapse">
+                <table class="table table-condensed" >
+                    <tr>
+                        <td class="SCHEDULED legend-item">
+                        </td>
+                        <td>
+                            Scheduled in the future
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="SCHEDULED-PAST legend-item">
+                        </td>
+                        <td>
+                            Scheduled in the past
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="CANCELED legend-item">
+                        </td>
+                        <td>
+                            Superseded by new schedule
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="ATTEMPTED legend-item">
+                        </td>
+                        <td>
+                            Currently running
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="FAILED legend-item">
+                        </td>
+                        <td>
+                            Failed
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="COMPLETED legend-item">
+                        </td>
+                        <td>
+                            Completed
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
