@@ -14,6 +14,20 @@ downloadSelected = function(requestId){
     frameIds.push(selections[i].id);
   }
   downloadZip(frameIds);
+
+};
+
+setThumb = function(frameid, elem, size){
+  elem.fadeOut(200);
+  elem.prev().show().html('<center><span class="fa fa-spinner fa-spin"></span></center>');
+  getThumbnail(frameid, size, function(data){
+    if(data.error){
+      elem.prev().html(data.error);
+    }else{
+      elem.attr('src', data.url).show();
+      elem.prev().hide();
+    }
+  });
 };
 
 getTableData = function(requestId){

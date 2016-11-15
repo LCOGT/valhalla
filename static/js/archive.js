@@ -56,6 +56,8 @@ downloadAll = function(requestId){
 getThumbnail = function(frameId, size, callback){
   $.getJSON('https://thumbnails.lco.global/' + frameId + '/?width=' + size + '&height=' + size, function(data){
     callback(data);
+  }).fail(function(){
+    callback({'error': '<span>Could not load thumbnail for this file</span>'});
   });
 };
 

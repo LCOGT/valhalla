@@ -80,7 +80,8 @@
               <i class="fa fa-cog"></i> Options <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-              <li><a href="#">Copy Request</a></li>
+              <li><a href="#"><i class="fa fa-files-o"></i> Copy Request</a></li>
+              <li><a href="{% url 'api:requests-detail' pk=request.id %}"><i class="fa fa-cogs"></i> View on API</a></li>
             </ul>
           </div>
         </div>  
@@ -88,7 +89,7 @@
     </div>
     <div class="col-md-2">
       {% if request.state == 'COMPLETED' %}
-      <p class="text-center" style="margin-top: 10px"><i class="fa fa-spinner fa-pulse"></i></p>
+      <div style="display: none; margin-top: 10px;"></div>
       <img src="" class="thumbnail" data-request="{{ request.id }}" style="display: none">
       {% endif %}
     </div>
@@ -123,6 +124,10 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+        <div class="col-md-12">
+            <div style="display: none;"></div>
+            <img src="" style="display: none;" class="img-responsive" id="preview-image-{{ request.id }}"/>
         </div>
       </div>
       <div class="col-md-8">
@@ -207,66 +212,74 @@
     'sqa': 'Sedgwick',
     'ngq': 'Ali'
   };
+
+  $('.frame-list').on('load-success.bs.table', function(e, data){
+    if(data.length > 0){
+      setThumb(data[0].id, $('#preview-image-' + data[0].REQNUM), 600);
+    }
+  });
+
+  $('.frame-list').on('click-row.bs.table', function(e, row){
+    setThumb(row.id, $('#preview-image-' + row.REQNUM), 600);
+  });
+
   $(document).ready(function(){
     login('{{ user.profile.archive_bearer_token }}', function(){
       $('.thumbnail').each(function(idx, elem){
         getLatestFrame($(elem).data('request'), function(frame){
-          getThumbnail(frame.id, 100, function(thumb_data){
-            $(elem).attr('src', thumb_data.url);
-            $(elem).prev().hide();
-            $(elem).show();
-          });
+          setThumb(frame.id, $(elem), 100);
         });
       });
     });
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
-      var target = $(e.target);
-      var tab = target.text();
-      var requestId = target.data('request');
-      if(!target.data('loaded')){
-        if(tab == 'Data'){
-          getTableData(requestId);
-        }else if(tab == 'History'){
-          $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/', function(data){
-            create_blockhistory_plot(requestId, data);
-          });
-        }else if(tab == 'Visibility'){
-          $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/?canceled=false', function(block_data){
-            $.when(
-              $.getJSON('{% url "api:requests-list" %}' + requestId + '/airmass/', function(airmass_data){
-                create_visibility_plot(requestId, site_to_color, site_code_to_name, airmass_data);
-              }),
-              $.getJSON('{% url "api:requests-list" %}' + requestId + '/telescope_states', function(data){
-                create_telescope_states_plot(requestId, site_to_color, site_code_to_name, block_data, data);
-              })
-            ).done(function(visibility_data, telescope_status_data){
-              if(telescope_status_data[0]['plot'] && visibility_data[0]['plot']){
-                //hack to get the window min/max onto the telescope status plot
-                telescope_status_data[0]['plot'].range.options.max = visibility_data[0]['plot'].range.options.max;
-                telescope_status_data[0]['plot'].range.options.min = visibility_data[0]['plot'].range.options.min;
+  });
+  
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+    var target = $(e.target);
+    var tab = target.text();
+    var requestId = target.data('request');
+    if(!target.data('loaded')){
+      if(tab == 'Data'){
+        getTableData(requestId);
+      }else if(tab == 'History'){
+        $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/', function(data){
+          create_blockhistory_plot(requestId, data);
+        });
+      }else if(tab == 'Visibility'){
+        $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/?canceled=false', function(block_data){
+          $.when(
+            $.getJSON('{% url "api:requests-list" %}' + requestId + '/airmass/', function(airmass_data){
+              create_visibility_plot(requestId, site_to_color, site_code_to_name, airmass_data);
+            }),
+            $.getJSON('{% url "api:requests-list" %}' + requestId + '/telescope_states', function(data){
+              create_telescope_states_plot(requestId, site_to_color, site_code_to_name, block_data, data);
+            })
+          ).done(function(visibility_data, telescope_status_data){
+            if(telescope_status_data[0]['plot'] && visibility_data[0]['plot']){
+              //hack to get the window min/max onto the telescope status plot
+              telescope_status_data[0]['plot'].range.options.max = visibility_data[0]['plot'].range.options.max;
+              telescope_status_data[0]['plot'].range.options.min = visibility_data[0]['plot'].range.options.min;
 
-                visibility_data[0]['plot'].on('rangechanged', function(){
-                  var window = visibility_data[0]['plot'].getWindow();
-                  var timeline_window = telescope_status_data[0]['plot'].getWindow();
-                  if(window.start != timeline_window.start || window.end != timeline_window.end){
-                    telescope_status_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
-                  }
-                });
+              visibility_data[0]['plot'].on('rangechanged', function(){
+                var window = visibility_data[0]['plot'].getWindow();
+                var timeline_window = telescope_status_data[0]['plot'].getWindow();
+                if(window.start != timeline_window.start || window.end != timeline_window.end){
+                  telescope_status_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
+                }
+              });
 
-                telescope_status_data[0]['plot'].on('rangechanged', function(){
-                  var window = telescope_status_data[0]['plot'].getWindow();
-                  var visibility_window = visibility_data[0]['plot'].getWindow();
-                  if(window.start != visibility_window.start || window.end != visibility_window.end){
-                    visibility_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
-                  }
-                });
-              }
-            }); 
-          });
-        }
-        $(e.target).data('loaded', true);
+              telescope_status_data[0]['plot'].on('rangechanged', function(){
+                var window = telescope_status_data[0]['plot'].getWindow();
+                var visibility_window = visibility_data[0]['plot'].getWindow();
+                if(window.start != visibility_window.start || window.end != visibility_window.end){
+                  visibility_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
+                }
+              });
+            }
+          }); 
+        });
       }
-    });
+      $(e.target).data('loaded', true);
+    }
   });
 </script>
 {% endblock %}
