@@ -67,10 +67,15 @@
           <p><i class="fa fa-ban"></i> Fail Count: {{ request.fail_count }}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
-          <p><span class="text-{{ request.state|state_to_bs }}">
+          <p>
+            <span class="text-{{ request.state|state_to_bs }}">
               <i class="fa fa-{{ request.state|state_to_icon }}"></i>
               {{ request.state }}
-          </span></p>
+            </span>
+            {% if request.state == 'PENDING' %}
+              <a class="fa fa-question-circle block-info" data-requestid="{{ request.id }}" role="button" data-toggle="popover" data-trigger="focus" tabindex="0" title="Schedule Details" data-content="<i class='fa fa-pulse fa-spinner'>"></a>
+            {% endif %}
+          </p>
           <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
@@ -138,7 +143,7 @@
                 <a href="#data-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Data</a>
               </li>
               <li role="presentation">
-                <a href="#history-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">History</a>
+                <a href="#history-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Scheduling</a>
               </li>
               <li role="presentation">
                 <a href="#visibility-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Visibility</a>
@@ -232,7 +237,21 @@
       });
     });
   });
-  
+
+  $('.block-info').on('shown.bs.popover', function(e){
+    var target = $(e.target);
+    $.getJSON('{% url "api:requests-list" %}' + target.data('requestid') + '/blocks/?canceled=false', function(data){
+      data = data.reverse(); // get the latest non cancled block
+      content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' + 
+        data[0].end + '<br/>Site: ' + data[0].site;
+      target.data('bs.popover').tip().find('.popover-content').html(content);
+    });
+  });
+
+  $('.block-info').popover({
+    html: true
+  });
+
   $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
     var target = $(e.target);
     var tab = target.text();
@@ -240,7 +259,7 @@
     if(!target.data('loaded')){
       if(tab == 'Data'){
         getTableData(requestId);
-      }else if(tab == 'History'){
+      }else if(tab == 'Scheduling'){
         $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/', function(data){
           create_blockhistory_plot(requestId, data);
         });

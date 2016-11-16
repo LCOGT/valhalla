@@ -73,6 +73,7 @@ class BlockSerializer(serializers.Serializer):
     failed = serializers.SerializerMethodField()
     attempted = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    fail_reason = serializers.SerializerMethodField()
 
     def get_completed(self, obj):
         return all(m['completed'] for m in obj['molecules'])
@@ -95,3 +96,10 @@ class BlockSerializer(serializers.Serializer):
                 if timezone.make_aware(parse(obj['start'])) < timezone.now():
                     status = 'IN_PROGRESS'
         return status
+
+    def get_fail_reason(self, obj):
+        for molecule in obj['molecules']:
+            if molecule['failed']:
+                for event in molecule['event']:
+                    return event['state'] + ': ' + event['reason']
+        return ''
