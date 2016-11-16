@@ -5,7 +5,7 @@ from django.utils import timezone
 from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Proposal, Membership
-from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.models import UserRequest, Request, Molecule
 from valhalla.common.test_telescope_states import TelescopeStatesFromFile
 
 
@@ -51,6 +51,23 @@ class UserRequestList(TestCase):
         self.assertContains(response, self.userrequests[0].request_set.all()[0].id)
         self.assertNotContains(response, self.userrequests[1].group_id)
         self.assertNotContains(response, self.userrequests[2].group_id)
+
+
+class RequestList(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, proposal=self.proposal, user=self.user)
+        self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
+        self.requests = mixer.cycle(10).blend(Request, user_request=self.userrequest)
+        for request in self.requests:
+            mixer.blend(Molecule, request=request)
+        self.client.force_login(self.user)
+
+    def test_request_list(self):
+        response = self.client.get(reverse('userrequests:request-list', kwargs={'ur': self.userrequest.id}))
+        for request in self.requests:
+            self.assertContains(response, request.id)
 
 
 class TestTelescopeStates(TelescopeStatesFromFile):

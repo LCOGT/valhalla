@@ -79,7 +79,9 @@
           <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
+          {% if request.state == 'COMPLETED' %}
           <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download</button>
+          {% endif %}
           <div class="btn-group">
             <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
               <i class="fa fa-cog"></i> Options <span class="caret"></span>
