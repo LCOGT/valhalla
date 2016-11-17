@@ -10,7 +10,6 @@ from mixer.backend.django import mixer
 from unittest.mock import patch, MagicMock
 from django.utils import timezone
 from datetime import datetime
-from requests.exceptions import ConnectionError
 import responses
 import requests
 import os

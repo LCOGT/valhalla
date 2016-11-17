@@ -90,7 +90,7 @@ class RequestListView(LoginRequiredMixin, FilterView):
         )
         return user_request.request_set.all()
 
-    def get_context_data(self, filter=None, object_list=[]):
-        context = super().get_context_data(filter=filter, object_list=object_list)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['userrequest'] = UserRequest.objects.get(pk=self.kwargs['ur'])
         return context

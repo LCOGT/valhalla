@@ -4,7 +4,6 @@ from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
-from requests.exceptions import ConnectionError
 import requests
 import logging
 

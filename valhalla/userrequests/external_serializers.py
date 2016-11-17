@@ -2,11 +2,6 @@ from rest_framework import serializers
 from django.utils import timezone
 from dateutil.parser import parse
 
-"""
-Serializers for external models from outside services
-recieved via json, etc
-"""
-
 
 class EventSerializer(serializers.Serializer):
     start = serializers.CharField()
