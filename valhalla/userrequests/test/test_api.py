@@ -1,14 +1,19 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.conf import settings
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_configdb import configdb_data
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from django.utils import timezone
 from datetime import datetime
+from requests.exceptions import ConnectionError
+import responses
+import requests
+import os
 import copy
 
 import valhalla.userrequests.signals.handlers  # noqa
@@ -954,3 +959,61 @@ class TestGetRequestApi(APITestCase):
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
+
+
+class TestBlocksApi(APITestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User, is_staff=False, is_superuser=False)
+        self.staff_user = mixer.blend(User, is_staff=True)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal)
+        self.request = mixer.blend(Request, user_request=self.user_request)
+        self.client.force_login(self.user)
+        self.TESTDATA = os.path.join(os.path.dirname(__file__), 'data/blocks.json')
+
+    @responses.activate
+    def test_empty_blocks(self):
+        responses.add(
+            responses.GET,
+            'http://{0}/pond/pond/block/request/{1}.json'.format(
+                settings.POND_HOST, self.request.get_id_display()
+            ),
+            body='[]',
+            status=200
+        )
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())
+
+    @responses.activate
+    def test_block_returns(self):
+        with open(self.TESTDATA) as f:
+            responses.add(
+                responses.GET,
+                'http://{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_HOST, self.request.get_id_display()
+                ),
+                body=f.read(),
+                status=200
+            )
+            result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+            self.assertEqual(len(result.json()), 251)
+
+    @responses.activate
+    def test_no_canceled(self):
+        with open(self.TESTDATA) as f:
+            responses.add(
+                responses.GET,
+                'http://{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_HOST, self.request.get_id_display()
+                ),
+                body=f.read(),
+                status=200
+            )
+            result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
+            self.assertEqual(len(result.json()), 2)
+
+    def test_no_connection(self):
+        requests.get = MagicMock(side_effect=ConnectionError())
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())
