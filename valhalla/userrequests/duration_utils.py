@@ -2,7 +2,7 @@ from valhalla.proposals.models import TimeAllocationKey, Proposal
 import itertools
 from math import ceil
 
-from valhalla.common.configdb import ConfigDB, ConfigDBException
+from valhalla.common.configdb import ConfigDB
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
@@ -19,10 +19,7 @@ def get_num_filter_changes(molecules):
 
 def get_molecule_duration(instrument_type, binning, exposure_time, exposure_count):
     configdb = ConfigDB()
-    try:
-        total_overhead_per_exp = configdb.get_exposure_overhead(instrument_type, binning)
-    except ConfigDBException:
-        return -1
+    total_overhead_per_exp = configdb.get_exposure_overhead(instrument_type, binning)
     mol_duration = exposure_count * (exposure_time + total_overhead_per_exp)
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
@@ -32,24 +29,22 @@ def get_molecule_duration(instrument_type, binning, exposure_time, exposure_coun
 def get_request_duration(instrument_type, molecule_list, target_acquire_mode='OPTIONAL'):
     # calculate the total time needed by the request, based on its instrument and exposures
     configdb = ConfigDB()
-    try:
-        request_overheads = configdb.get_request_overheads(instrument_type)
-        duration = sum([get_molecule_duration(instrument_type, m['bin_x'], m['exposure_time'], m['exposure_count'])
-                        for m in molecule_list])
-        if configdb.is_spectrograph(instrument_type):
-            duration += get_num_mol_changes(molecule_list) * request_overheads['config_change_time']
+    request_overheads = configdb.get_request_overheads(instrument_type)
+    duration = sum([get_molecule_duration(instrument_type, m['bin_x'], m['exposure_time'], m['exposure_count'])
+                    for m in molecule_list])
+    if configdb.is_spectrograph(instrument_type):
+        duration += get_num_mol_changes(molecule_list) * request_overheads['config_change_time']
 
-            if target_acquire_mode.upper() != 'OFF':
-                mol_types = [mol['type'].upper() for mol in molecule_list]
-                # Only add the overhead if we have on-sky targets to acquire
-                if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
-                    duration += request_overheads['acquire_exposure_time'] + \
-                        request_overheads['acquire_processing_time']
-        else:
-            duration += get_num_filter_changes(molecule_list) * request_overheads['filter_change_time']
+        if target_acquire_mode.upper() != 'OFF':
+            mol_types = [mol['type'].upper() for mol in molecule_list]
+            # Only add the overhead if we have on-sky targets to acquire
+            if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
+                duration += request_overheads['acquire_exposure_time'] + \
+                    request_overheads['acquire_processing_time']
 
-    except ConfigDBException:
-        return -1
+    else:
+        duration += get_num_filter_changes(molecule_list) * request_overheads['filter_change_time']
+
     duration += request_overheads['front_padding']
     duration = ceil(duration)
 

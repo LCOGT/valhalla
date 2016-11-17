@@ -359,9 +359,10 @@ class Molecule(models.Model):
     defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-10.0), MaxValueValidator(40.0)])
 
     def __str__(self):
-        return 'Molecule {0}: {1} type, {2} instrument, {3} exposures @ {4}s'.format(
-            self.id, self.type, self.instrument_name, self.exposure_count, self.exposure_time
-        )
+        return 'Molecule {}: {} type, {} instrument, {} exposures @ {}s'.format(self.id, self.type,
+                                                                                self.instrument_name,
+                                                                                self.exposure_count,
+                                                                                self.exposure_time)
 
     @cached_property
     def duration(self):

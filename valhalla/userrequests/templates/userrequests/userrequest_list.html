@@ -111,7 +111,7 @@
                 {% endfor %}
             </section>
         </div>
-    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+    {% bootstrap_pagination page_obj %}
     </div>
 {% else %}
     <h3>{% trans 'LCO.global Observation Portal' %}</h3>
