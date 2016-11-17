@@ -10,6 +10,7 @@ from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabili
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
 import valhalla.proposals.urls as proposals_urls
+import valhalla.userrequests.urls as userrequest_urls
 
 router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
@@ -21,6 +22,7 @@ urlpatterns = [
     url(r'^api/', include(router.urls, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
+    url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
     url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
     url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'^admin/', admin.site.urls),

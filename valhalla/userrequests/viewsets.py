@@ -7,7 +7,8 @@ from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
-                                                     get_telescope_states_for_request)
+                                                 get_telescope_states_for_request)
+
 
 class UserRequestViewSet(viewsets.ModelViewSet):
     serializer_class = UserRequestSerializer
@@ -67,3 +68,10 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
         str_telescope_states = {str(k): v for k, v in telescope_states.items()}
 
         return Response(str_telescope_states)
+
+    @detail_route()
+    def blocks(self, request, pk=None):
+        blocks = self.get_object().blocks
+        if request.GET.get('canceled'):
+            return Response([b for b in blocks if not b['canceled']])
+        return Response(blocks)

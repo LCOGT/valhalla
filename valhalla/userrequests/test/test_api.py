@@ -1,14 +1,18 @@
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.conf import settings
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_configdb import configdb_data
 from rest_framework.test import APITestCase
 
 from mixer.backend.django import mixer
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from django.utils import timezone
 from datetime import datetime
+import responses
+import requests
+import os
 import copy
 
 import valhalla.userrequests.signals.handlers  # noqa
@@ -88,7 +92,7 @@ class TestUserGetRequestApi(APITestCase):
         mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
         result = self.client.get(reverse('api:user_requests-list'))
         self.assertEquals(result.status_code, 200)
-        self.assertEquals(result.json(), [])
+        self.assertEquals(result.json()['results'], [])
 
     def test_get_user_request_list_authenticated(self):
         user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
@@ -931,7 +935,7 @@ class TestGetRequestApi(APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-list'))
-        self.assertEquals(result.json()[0]['observation_note'], request.observation_note)
+        self.assertEquals(result.json()['results'][0]['observation_note'], request.observation_note)
 
     def test_get_request_list_unauthenticated(self):
         mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
@@ -954,3 +958,61 @@ class TestGetRequestApi(APITestCase):
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
+
+
+class TestBlocksApi(APITestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User, is_staff=False, is_superuser=False)
+        self.staff_user = mixer.blend(User, is_staff=True)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal)
+        self.request = mixer.blend(Request, user_request=self.user_request)
+        self.client.force_login(self.user)
+        self.TESTDATA = os.path.join(os.path.dirname(__file__), 'data/blocks.json')
+
+    @responses.activate
+    def test_empty_blocks(self):
+        responses.add(
+            responses.GET,
+            '{0}/pond/pond/block/request/{1}.json'.format(
+                settings.POND_URL, self.request.get_id_display()
+            ),
+            body='[]',
+            status=200
+        )
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())
+
+    @responses.activate
+    def test_block_returns(self):
+        with open(self.TESTDATA) as f:
+            responses.add(
+                responses.GET,
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.request.get_id_display()
+                ),
+                body=f.read(),
+                status=200
+            )
+            result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+            self.assertEqual(len(result.json()), 251)
+
+    @responses.activate
+    def test_no_canceled(self):
+        with open(self.TESTDATA) as f:
+            responses.add(
+                responses.GET,
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.request.get_id_display()
+                ),
+                body=f.read(),
+                status=200
+            )
+            result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
+            self.assertEqual(len(result.json()), 2)
+
+    def test_no_connection(self):
+        requests.get = MagicMock(side_effect=ConnectionError())
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())

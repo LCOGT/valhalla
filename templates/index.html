@@ -9,7 +9,7 @@
     </div>
     <div class="col-md-4">
         {% if user.is_authenticated %}
-        {% include "telescope_availability_chart.html" %}
+        {% include "partials/telescope_availability_chart.html" %}
         <div class="row">
             <div class="col-md-12">
                 <h3>Active Proposals</h3>
@@ -42,6 +42,17 @@
 <script src="{% static 'js/telescope_availability.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
+    var end_date = new Date();
+    var start_date = new Date(end_date);
+    start_date.setDate(start_date.getDate() - 3);
+    start_date.setHours(0);
+    start_date.setMinutes(0);
+    start_date.setSeconds(0);
+    var state_url = "{% url 'telescope_availability' %}" + "?start=" + 
+                     start_date.toISOString() + "&end=" + end_date.toISOString()
+    $.getJSON(state_url, function(data) {
+        create_telescope_availability_chart(data);
+    });
     $.ajax({
         url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
         dataType: 'json',
@@ -57,17 +68,6 @@ $(document).ready(function(){
             rss = rss + '</ul>'
             $('#news').html(rss)
         }
-    });
-    var end_date = new Date();
-    var start_date = new Date(end_date);
-    start_date.setDate(start_date.getDate() - 3);
-    start_date.setHours(0);
-    start_date.setMinutes(0);
-    start_date.setSeconds(0);
-    var state_url = "{% url 'telescope_availability' %}" + "?start=" + 
-                     start_date.toISOString() + "&end=" + end_date.toISOString()
-    $.getJSON(state_url, function(data) {
-        create_telescope_availability_chart(data);
     });
 });
 </script>

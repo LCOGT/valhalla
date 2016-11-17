@@ -3,11 +3,17 @@ from django.contrib.auth.models import User
 from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.conf import settings
+import requests
+import logging
 
 from valhalla.proposals.models import Proposal, TimeAllocationKey
+from valhalla.userrequests.external_serializers import BlockSerializer
+from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
 from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration,
                                                   get_total_duration_dict)
-from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
+
+logger = logging.getLogger(__name__)
 
 
 class UserRequest(models.Model):
@@ -130,12 +136,28 @@ class Request(models.Model):
             telescope_class=self.location.telescope_class
         )
 
+    @cached_property
+    def blocks(self):
+        try:
+            response = requests.get(
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.get_id_display()  # the pond hardcodes 0 padded strings... awesome
+                )
+            )
+            response.raise_for_status()
+            return BlockSerializer(response.json(), many=True).data
+        except ConnectionError:
+            logger.error('Could not connect to the pond.')
+            return BlockSerializer([], many=True).data
+
     def rise_set_intervals(self):
-        return get_rise_set_intervals(self.molecule_set.first().instrument_name,
-                                      model_to_dict(self.target),
-                                      model_to_dict(self.constraints),
-                                      model_to_dict(self.location),
-                                      [model_to_dict(window) for window in self.window_set.all()])
+        return get_rise_set_intervals(
+            self.molecule_set.first().instrument_name,
+            model_to_dict(self.target),
+            model_to_dict(self.constraints),
+            model_to_dict(self.location),
+            [model_to_dict(window) for window in self.window_set.all()]
+        )
 
 
 class Location(models.Model):
@@ -358,7 +380,6 @@ class Constraints(models.Model):
     def __str__(self):
         return 'Constraints {}: {} max airmass, {} min_lunar_distance'.format(self.id, self.max_airmass,
                                                                               self.min_lunar_distance)
-
 
     class Meta:
         verbose_name_plural = 'Constraints'

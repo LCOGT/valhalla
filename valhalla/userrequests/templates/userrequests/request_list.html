@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load i18n static request_extras bootstrap3 humanize %}
+{% block title %} Request Details {% endblock %}
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.css" rel="stylesheet" />
+<link href="{% static 'css/plot_style.css' %}" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12 ">
+    <h2>{{ userrequest.group_id }} <small>#{{ userrequest.id }}</small></h2>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <dl class="col-md-2">
+      <dt>{% trans 'state' %}</dt>
+      <dd class="text-{{ userrequest.state|state_to_bs }}">
+        <i class="fa fa-{{ userrequest.state|state_to_icon }}"></i> {{ userrequest.state }}
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Last Update' %}</dt>
+      <dd>{{ userrequest.modified }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Created' %}</dt>
+      <dd>{{ userrequest.created }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Proposa' %}l</dt>
+      <dd>
+        <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Submitter' %}</dt>
+      <dd>{{ userrequest.submitter }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>{% trans 'Type' %}</dt>
+      <dd>{{ userrequest.observation_type }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>IPP</dt>
+      <dd>{{ userrequest.ipp_value }}</dd>
+    </dl>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <h3>{% trans 'Child Requests' %} ({{ object_list.count }})</h3>
+  </div>
+</div>
+{% for request in object_list %}
+<section class="request-list">
+  <div class="row userrequest userrequest-{{ request.state|state_to_bs }}" data-request='{{ request.id }}'>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-12">
+          <strong><a class="text-{{ request.state|state_to_bs }} userrequest-title" href="#"> #{{ request.id }}</a></strong>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 userrequest-block border-right">
+          <p><i class="fa fa-clock-o"></i> Duration: {{ request.duration }} seconds</p>
+          <p><i class="fa fa-ban"></i> Fail Count: {{ request.fail_count }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          <p>
+            <span class="text-{{ request.state|state_to_bs }}">
+              <i class="fa fa-{{ request.state|state_to_icon }}"></i>
+              {{ request.state }}
+            </span>
+            {% if request.state == 'PENDING' %}
+              <a class="fa fa-question-circle block-info" data-requestid="{{ request.id }}" role="button" data-toggle="popover" data-trigger="focus" tabindex="0" title="Schedule Details" data-content="<i class='fa fa-pulse fa-spinner'>"></a>
+            {% endif %}
+          </p>
+          <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          {% if request.state == 'COMPLETED' %}
+          <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download</button>
+          {% endif %}
+          <div class="btn-group">
+            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-cog"></i> Options <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#"><i class="fa fa-files-o"></i> Copy Request</a></li>
+              <li><a href="{% url 'api:requests-detail' pk=request.id %}"><i class="fa fa-cogs"></i> View on API</a></li>
+            </ul>
+          </div>
+        </div>  
+      </div>
+    </div>
+    <div class="col-md-2">
+      {% if request.state == 'COMPLETED' %}
+      <div style="display: none; margin-top: 10px;"></div>
+      <img src="" class="thumbnail" data-request="{{ request.id }}" style="display: none">
+      {% endif %}
+    </div>
+  </div>
+  <div class="request-detail row" id="request-detail-{{ request.id }}" style="display:none">
+      <div class="col-md-4">
+        <div class="col-md-12">
+          <table class="table">
+            <caption>{% trans 'Windows' %}</caption>
+            <thead>
+              <tr><td>{% trans 'Start' %}</td><td>{% trans 'End' %}</td></tr>
+            </thead>
+            <tbody>
+              {% for window in request.window_set.all %}
+              <tr><td>{{ window.start }}</td><td>{{ window.end }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-12">
+          <table class="table table-condensed">
+            <caption>Configurations</caption>
+            <thead>
+              <tr><td>Inst.</td><td>Filter</td><td>Exposures</td></tr>
+            </thead>
+            <tbody>
+              {% for molecule in request.molecule_set.all %}
+              <tr>
+                <td>{{ molecule.instrument_name }}</td>
+                <td>{{ molecule.filter }}</td>
+                <td>{{ molecule.exposure_time }} x {{ molecule.exposure_count }}</td>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-12">
+            <div style="display: none;"></div>
+            <img src="" style="display: none;" class="img-responsive" id="preview-image-{{ request.id }}"/>
+        </div>
+      </div>
+      <div class="col-md-8">
+        <div class="row">
+          <div class="col-md-12">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#data-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Data</a>
+              </li>
+              <li role="presentation">
+                <a href="#history-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Scheduling</a>
+              </li>
+              <li role="presentation">
+                <a href="#visibility-{{ request.id }}" role="tab" data-toggle="tab" data-request="{{ request.id }}" data-loaded="false">Visibility</a>
+              </li>
+            </ul>
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane active" id="data-{{ request.id }}">
+                <div class="frame-list-toolbar" id="table-{{ request.id }}-toolbar">
+                <button onClick="downloadSelected({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-check"></i> Download Selected </button>
+                <button onClick="downloadAll({{ request.id }})" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download All </button>
+                <a class="btn btn-default btn-sm" target="_blank" href="https://archive.lco.global/?REQNUM={{ request.id }}&start={{ request.created|date:'Y-m-d 00:00:00' }}"><i class="fa fa-arrow-right"></i> View on Archive </a>
+              </div>
+              <table class="frame-list"></table>
+            </div>
+            <div role="tabpanel"  class="tab-pane" id="history-{{ request.id }}">
+              {% include 'partials/block_history.html' with request=request %}
+            </div> 
+            <div role="tabpanel" class="tab-pane" id="visibility-{{ request.id }}">
+              {% include 'partials/visibility_plot.html' with request_number=request.id %}
+              {% include 'partials/telescope_states_plot.html' with request_number=request.id %}
+            </div> 
+          </div>
+        </div>
+      </div>    
+    </div>
+  </div>
+  <div class="request-show row" id="request-show-{{ request.id }}" onClick="showDetails({{request.id}})">
+    <div class="col-md-12">
+      <p class="text-center">Details
+      <i class="fa fa-arrow-down text-center"></i>
+      </p>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</section>
+{% endfor %}
+{% if page_obj.count > 20 %}
+{% bootstrap_pagination page_obj %}
+{% endif %}
+{% endblock %}
+{% block extra_javascript %}
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery.fileDownload/1.4.2/jquery.fileDownload.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.js"></script>
+<script src="{% static 'js/archive.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/request_detail.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/blockhistory.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/visibility_plot.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/telescope_states_plot.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+  /* globals $ */
+  /* eslint-disable no-undef */
+  var site_to_color = {
+    'tfn': '#263c6f',
+    'elp': '#700000',
+    'lsc': '#f04e23',
+    'cpt': '#004f00',
+    'coj': '#fac900',
+    'ogg': '#3366dd',
+    'sqa': '#009d00'
+  };
+
+  var site_code_to_name = {
+    'tfn': 'Teide',
+    'elp': 'McDonald',
+    'lsc': 'Cerro Tololo',
+    'cpt': 'Sutherland',
+    'coj': 'Siding Spring',
+    'ogg': 'Haleakala',
+    'sqa': 'Sedgwick',
+    'ngq': 'Ali'
+  };
+
+  $('.frame-list').on('load-success.bs.table', function(e, data){
+    if(data.length > 0){
+      setThumb(data[0].id, $('#preview-image-' + data[0].REQNUM), 600);
+    }
+  });
+
+  $('.frame-list').on('click-row.bs.table', function(e, row){
+    setThumb(row.id, $('#preview-image-' + row.REQNUM), 600);
+  });
+
+  $(document).ready(function(){
+    login('{{ user.profile.archive_bearer_token }}', function(){
+      $('.thumbnail').each(function(idx, elem){
+        getLatestFrame($(elem).data('request'), function(frame){
+          setThumb(frame.id, $(elem), 100);
+        });
+      });
+    });
+  });
+
+  $('.block-info').on('shown.bs.popover', function(e){
+    var target = $(e.target);
+    $.getJSON('{% url "api:requests-list" %}' + target.data('requestid') + '/blocks/?canceled=false', function(data){
+      data = data.reverse(); // get the latest non cancled block
+      content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' + 
+        data[0].end + '<br/>Site: ' + data[0].site;
+      target.data('bs.popover').tip().find('.popover-content').html(content);
+    });
+  });
+
+  $('.block-info').popover({
+    html: true
+  });
+
+  $('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+    var target = $(e.target);
+    var tab = target.text();
+    var requestId = target.data('request');
+    if(!target.data('loaded')){
+      if(tab == 'Data'){
+        getTableData(requestId);
+      }else if(tab == 'Scheduling'){
+        $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/', function(data){
+          create_blockhistory_plot(requestId, data);
+        });
+      }else if(tab == 'Visibility'){
+        $.getJSON('{% url "api:requests-list" %}' + requestId + '/blocks/?canceled=false', function(block_data){
+          $.when(
+            $.getJSON('{% url "api:requests-list" %}' + requestId + '/airmass/', function(airmass_data){
+              create_visibility_plot(requestId, site_to_color, site_code_to_name, airmass_data);
+            }),
+            $.getJSON('{% url "api:requests-list" %}' + requestId + '/telescope_states', function(data){
+              create_telescope_states_plot(requestId, site_to_color, site_code_to_name, block_data, data);
+            })
+          ).done(function(visibility_data, telescope_status_data){
+            if(telescope_status_data[0]['plot'] && visibility_data[0]['plot']){
+              //hack to get the window min/max onto the telescope status plot
+              telescope_status_data[0]['plot'].range.options.max = visibility_data[0]['plot'].range.options.max;
+              telescope_status_data[0]['plot'].range.options.min = visibility_data[0]['plot'].range.options.min;
+
+              visibility_data[0]['plot'].on('rangechanged', function(){
+                var window = visibility_data[0]['plot'].getWindow();
+                var timeline_window = telescope_status_data[0]['plot'].getWindow();
+                if(window.start != timeline_window.start || window.end != timeline_window.end){
+                  telescope_status_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
+                }
+              });
+
+              telescope_status_data[0]['plot'].on('rangechanged', function(){
+                var window = telescope_status_data[0]['plot'].getWindow();
+                var visibility_window = visibility_data[0]['plot'].getWindow();
+                if(window.start != visibility_window.start || window.end != visibility_window.end){
+                  visibility_data[0]['plot'].setWindow(window.start, window.end, {animation: false});
+                }
+              });
+            }
+          }); 
+        });
+      }
+      $(e.target).data('loaded', true);
+    }
+  });
+</script>
+{% endblock %}
