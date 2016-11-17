@@ -976,8 +976,8 @@ class TestBlocksApi(APITestCase):
     def test_empty_blocks(self):
         responses.add(
             responses.GET,
-            'http://{0}/pond/pond/block/request/{1}.json'.format(
-                settings.POND_HOST, self.request.get_id_display()
+            '{0}/pond/pond/block/request/{1}.json'.format(
+                settings.POND_URL, self.request.get_id_display()
             ),
             body='[]',
             status=200
@@ -990,8 +990,8 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                'http://{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_HOST, self.request.get_id_display()
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.request.get_id_display()
                 ),
                 body=f.read(),
                 status=200
@@ -1004,8 +1004,8 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                'http://{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_HOST, self.request.get_id_display()
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.request.get_id_display()
                 ),
                 body=f.read(),
                 status=200

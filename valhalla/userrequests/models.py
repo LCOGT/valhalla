@@ -141,8 +141,8 @@ class Request(models.Model):
     def blocks(self):
         try:
             response = requests.get(
-                'http://{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_HOST, self.get_id_display()  # the pond hardcodes 0 padded strings... awesome
+                '{0}/pond/pond/block/request/{1}.json'.format(
+                    settings.POND_URL, self.get_id_display()  # the pond hardcodes 0 padded strings... awesome
                 )
             )
             response.raise_for_status()
