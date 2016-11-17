@@ -250,9 +250,12 @@ class TestRequestDuration(TestCase):
 
         self.assertEqual(duration, (1800 + 60 + 2*30 + 4*25 + 4*0.5 + 3*5 + 3*11))
 
-    def test_get_duration_from_non_existent_camera(self):
+    def test_get_molecule_duration_from_non_existent_camera(self):
         bad_molecule = mixer.blend(Molecule, instrument_name='FAKE_INSTRUMENT', bin_x=1, bin_y=1)
+        self.assertEqual(bad_molecule.duration, -1)
 
-        with self.assertRaises(ConfigDBException) as context:
-            bad_molecule.duration
-            self.assertTrue('not found in configdb' in context.exception)
+    def test_get_request_duration_from_non_existent_camera(self):
+        request = mixer.blend(Request)
+        mixer.blend(Target, request=request)
+        mixer.blend(Molecule, request=request, instrument_name='FAKE_INSTRUMENT', bin_x=1, bin_y=1)
+        self.assertEqual(request.duration, -1)

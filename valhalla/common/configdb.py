@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class ConfigDBException(Exception):
     pass
 
+
 CONFIGDB_ERROR_MSG = _(("ConfigDB connection is currently down, please wait a few minutes and try again."
                        " If this problem persists then please contact support."))
 
@@ -86,7 +87,7 @@ class ConfigDB(object):
 
         return site_details
 
-    def get_schedulable_instruments(self):
+    def get_instruments(self, scheduleable=True):
         schedulable_instruments = []
         site_data = self.get_site_data()
         for site in site_data:

@@ -63,7 +63,13 @@
       </div>
       <div class="row">
         <div class="col-md-4 userrequest-block border-right">
-          <p><i class="fa fa-clock-o"></i> Duration: {{ request.duration }} seconds</p>
+          <p><i class="fa fa-clock-o"></i> Duration:
+          {% if request.duration >= 0 %}
+             {{ request.duration }} seconds
+          {% else %}
+            Unknown
+          {% endif %}
+          </p>
           <p><i class="fa fa-ban"></i> Fail Count: {{ request.fail_count }}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
@@ -91,7 +97,7 @@
               <li><a href="{% url 'api:requests-detail' pk=request.id %}"><i class="fa fa-cogs"></i> View on API</a></li>
             </ul>
           </div>
-        </div>  
+        </div>
       </div>
     </div>
     <div class="col-md-2">
@@ -162,14 +168,14 @@
             </div>
             <div role="tabpanel"  class="tab-pane" id="history-{{ request.id }}">
               {% include 'partials/block_history.html' with request=request %}
-            </div> 
+            </div>
             <div role="tabpanel" class="tab-pane" id="visibility-{{ request.id }}">
               {% include 'partials/visibility_plot.html' with request_number=request.id %}
               {% include 'partials/telescope_states_plot.html' with request_number=request.id %}
-            </div> 
+            </div>
           </div>
         </div>
-      </div>    
+      </div>
     </div>
   </div>
   <div class="request-show row" id="request-show-{{ request.id }}" onClick="showDetails({{request.id}})">
@@ -244,7 +250,7 @@
     var target = $(e.target);
     $.getJSON('{% url "api:requests-list" %}' + target.data('requestid') + '/blocks/?canceled=false', function(data){
       data = data.reverse(); // get the latest non cancled block
-      content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' + 
+      content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' +
         data[0].end + '<br/>Site: ' + data[0].site;
       target.data('bs.popover').tip().find('.popover-content').html(content);
     });
@@ -296,7 +302,7 @@
                 }
               });
             }
-          }); 
+          });
         });
       }
       $(e.target).data('loaded', true);
