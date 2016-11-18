@@ -1,26 +1,18 @@
 import requests
-from django.core.cache import caches
+from django.core.cache import cache
 from django.utils.translation import ugettext as _
-from os import getenv
+from django.conf import settings
 from collections import namedtuple
 import logging
 
-__author__ = 'jnation'
-
 logger = logging.getLogger(__name__)
-
-
-class ConfigDBException(Exception):
-    pass
 
 CONFIGDB_ERROR_MSG = _(("ConfigDB connection is currently down, please wait a few minutes and try again."
                        " If this problem persists then please contact support."))
 
-CONFIGDB_URL = getenv('CONFIGDB_URL', 'http://configdb.lco.gtn/')
-if not CONFIGDB_URL.endswith('/'):
-    CONFIGDB_URL += "/"
 
-default_cache = caches['default']
+class ConfigDBException(Exception):
+    pass
 
 
 class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope'])):
@@ -40,31 +32,26 @@ class ConfigDB(object):
         :return: list of dictionaries of site data
         '''
 
-        json_results = default_cache.get('configdb_data')
-        if not json_results:
+        site_data = cache.get('site_data')
+        if not site_data:
             try:
-                r = requests.get(CONFIGDB_URL + 'sites/')
-            except requests.exceptions.RequestException as e:
-                msg = "{}: {}".format(e.__class__.__name__, self.CONFIGDB_ERROR_MSG)
+                r = requests.get(settings.CONFIGDB_URL + '/sites/')
+                r.raise_for_status()
+            except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
+                msg = "{}: {}".format(e.__class__.__name__, CONFIGDB_ERROR_MSG)
                 raise ConfigDBException(msg)
-            r.encoding = 'UTF-8'
-            if not r.status_code == 200:
-                raise ConfigDBException(self.CONFIGDB_ERROR_MSG)
-            json_results = r.json()
-            if 'results' not in json_results:
-                raise ConfigDBException(self.CONFIGDB_ERROR_MSG)
-            json_results = json_results['results']
+            try:
+                site_data = r.json()['results']
+            except KeyError:
+                raise ConfigDBException(CONFIGDB_ERROR_MSG)
             # cache the results for 15 minutes
-            default_cache.set('configdb_data', json_results, 900)
+            cache.set('site_data', site_data, 900)
 
-        return json_results
-
-    def get_site_data(self):
-        return self.site_data
+        return site_data
 
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
-        site_data = self.get_site_data()
+        site_data = self.site_data
         site_details = {}
         for site in site_data:
             if not site_code or site_code == site['code']:
@@ -77,33 +64,36 @@ class ConfigDB(object):
                                         camera_type = instrument['science_camera']['camera_type']['code']
                                         if not instrument_type or instrument_type.upper() == camera_type.upper():
                                             if site['code'] not in site_details:
-                                                site_details[site['code']] = {'latitude': telescope['lat'],
-                                                                              'longitude': telescope['long'],
-                                                                              'horizon': telescope['horizon'],
-                                                                              'altitude': site['elevation'],
-                                                                              'ha_limit_pos': telescope['ha_limit_pos'],
-                                                                              'ha_limit_neg': telescope['ha_limit_neg']}
+                                                site_details[site['code']] = {
+                                                    'latitude': telescope['lat'],
+                                                    'longitude': telescope['long'],
+                                                    'horizon': telescope['horizon'],
+                                                    'altitude': site['elevation'],
+                                                    'ha_limit_pos': telescope['ha_limit_pos'],
+                                                    'ha_limit_neg': telescope['ha_limit_neg']
+                                                }
 
         return site_details
 
-    def get_schedulable_instruments(self):
-        schedulable_instruments = []
-        site_data = self.get_site_data()
-        for site in site_data:
+    def get_instruments(self, only_scheduleable=False):
+        instruments = []
+        for site in self.site_data:
             for enclosure in site['enclosure_set']:
                 for telescope in enclosure['telescope_set']:
                     for instrument in telescope['instrument_set']:
-                        if instrument['state'] == 'SCHEDULABLE':
-                            schedulable_instruments.append(instrument)
+                        if only_scheduleable and instrument['state'] != 'SCHEDULEABLE':
+                            pass
+                        else:
+                            instruments.append(instrument)
 
-        return schedulable_instruments
+        return instruments
 
     def get_instrument_types_per_telescope(self):
         '''
             Function uses the configdb to get a set of available instrument types per telescope
         :return: set of available instrument types per TelescopeKey
         '''
-        site_data = self.get_site_data()
+        site_data = self.site_data
         telescope_instrument_types = {}
         for site in site_data:
             for enclosure in site['enclosure_set']:
@@ -112,12 +102,11 @@ class ConfigDB(object):
                                                  observatory=enclosure['code'],
                                                  telescope=telescope['code'])
                     for instrument in telescope['instrument_set']:
-                        if instrument['state'] == 'SCHEDULABLE':
-                            if telescope_key not in telescope_instrument_types:
-                                telescope_instrument_types[telescope_key] = []
-                            instrument_type = instrument['science_camera']['camera_type']['code'].upper()
-                            if instrument_type not in telescope_instrument_types[telescope_key]:
-                                telescope_instrument_types[telescope_key].append(instrument_type)
+                        if telescope_key not in telescope_instrument_types:
+                            telescope_instrument_types[telescope_key] = []
+                        instrument_type = instrument['science_camera']['camera_type']['code'].upper()
+                        if instrument_type not in telescope_instrument_types[telescope_key]:
+                            telescope_instrument_types[telescope_key].append(instrument_type)
 
         return telescope_instrument_types
 
@@ -127,7 +116,7 @@ class ConfigDB(object):
         :param instrument_type:
         :return: returns the available set of filters for an instrument_type
         '''
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         available_filters = set()
         for instrument in instruments:
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
@@ -142,7 +131,7 @@ class ConfigDB(object):
         :param instrument_type:
         :return: returns the available set of binnings for an instrument_type
         '''
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         available_binnings = set()
         for instrument in instruments:
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
@@ -158,7 +147,7 @@ class ConfigDB(object):
         :param instrument_type:
         :return: binning default
         '''
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         for instrument in instruments:
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
@@ -171,7 +160,7 @@ class ConfigDB(object):
         :return: Set of available instrument_types (i.e. 1M0-SCICAM-SBIG, etc.)
         '''
         instrument_types = set()
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         for instrument in instruments:
             split_string = instrument['__str__'].lower().split('.')
             if (location.get('site', '').lower() in split_string[0]
@@ -182,7 +171,7 @@ class ConfigDB(object):
 
     def get_exposure_overhead(self, instrument_type, binning):
         # using the instrument type, build an instrument with the correct configdb parameters
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         for instrument in instruments:
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():
@@ -194,7 +183,7 @@ class ConfigDB(object):
         raise ConfigDBException("Instrument type {} not found in configdb.".format(instrument_type))
 
     def get_request_overheads(self, instrument_type):
-        instruments = self.get_schedulable_instruments()
+        instruments = self.get_instruments()
         for instrument in instruments:
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():

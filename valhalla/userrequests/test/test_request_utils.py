@@ -4,19 +4,16 @@ from mixer.backend.django import mixer
 from datetime import datetime
 from unittest.mock import patch
 
-from valhalla.common.test_configdb import configdb_data
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites, get_telescope_states_for_request)
 from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location, Constraints
 from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.test_telescope_states import TelescopeStatesFakeInput
+from valhalla.common.test_helpers import ConfigDBTestMixin
 
 
-class BaseSetupRequest(TestCase):
+class BaseSetupRequest(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
+        super().setUp()
         self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
         self.mock_now = self.time_patcher.start()
         self.mock_now.return_value = datetime(2016, 10, 1, tzinfo=timezone.utc)
@@ -49,7 +46,7 @@ class BaseSetupRequest(TestCase):
         mixer.blend(Constraints, request=self.request)
 
     def tearDown(self):
-        self.configdb_patcher.stop()
+        super().tearDown()
         self.time_patcher.stop()
 
 
@@ -75,11 +72,7 @@ class TestRequestAirmass(BaseSetupRequest):
 
 class TestRequestTelescopeStates(TelescopeStatesFakeInput):
     def setUp(self):
-        super(TestRequestTelescopeStates, self).setUp()
-        self.configdb_patcher2 = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher2.start()
-        self.mock_configdb.return_value = configdb_data
-
+        super().setUp()
         self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
         self.mock_now = self.time_patcher.start()
         self.mock_now.return_value = datetime(2016, 10, 1, tzinfo=timezone.utc)
@@ -111,8 +104,7 @@ class TestRequestTelescopeStates(TelescopeStatesFakeInput):
         mixer.blend(Constraints, request=self.request)
 
     def tearDown(self):
-        super(TestRequestTelescopeStates, self).tearDown()
-        self.configdb_patcher2.stop()
+        super().tearDown()
         self.time_patcher.stop()
 
         # super(BaseSetupRequest, self).tearDown()

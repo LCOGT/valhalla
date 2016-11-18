@@ -100,8 +100,7 @@ class LocationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_("Must specify an observatory with a telescope."))
 
         configdb = ConfigDB()
-        site_json = configdb.get_site_data()
-        site_data_dict = {site['code']: site for site in site_json}
+        site_data_dict = {site['code']: site for site in configdb.site_data}
         if 'site' in data:
             if data['site'] not in site_data_dict:
                 msg = _('Site {} not valid. Valid choices: {}').format(data['site'], ', '.join(site_data_dict.keys()))

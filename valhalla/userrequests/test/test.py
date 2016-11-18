@@ -1,8 +1,3 @@
-from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
-from valhalla.proposals.models import Proposal, TimeAllocation, Semester
-from valhalla.common.configdb import ConfigDBException
-from valhalla.common.test_configdb import configdb_data
-
 from django.utils import timezone
 from unittest.case import TestCase
 from mixer.backend.django import mixer
@@ -10,13 +5,15 @@ from datetime import datetime
 from unittest.mock import patch
 import math
 
+from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
+from valhalla.proposals.models import Proposal, TimeAllocation, Semester
+from valhalla.common.configdb import ConfigDBException
+from valhalla.common.test_helpers import ConfigDBTestMixin
 
-class TestUserRequestTotalDuration(TestCase):
+
+class TestUserRequestTotalDuration(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
+        super().setUp()
         self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
         self.mock_now = self.time_patcher.start()
         self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
@@ -79,7 +76,7 @@ class TestUserRequestTotalDuration(TestCase):
         mixer.blend(Location, request=self.request_3, telescope_class='1m0')
 
     def tearDown(self):
-        self.configdb_patcher.stop()
+        super().tearDown()
         self.time_patcher.stop()
 
     def test_single_ur_total_duration(self):
@@ -107,12 +104,9 @@ class TestUserRequestTotalDuration(TestCase):
         self.assertEqual(sum_duration, total_duration[tak])
 
 
-class TestRequestDuration(TestCase):
+class TestRequestDuration(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
+        super().setUp()
         self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
         self.mock_now = self.time_patcher.start()
         self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
@@ -157,7 +151,7 @@ class TestRequestDuration(TestCase):
         )
 
     def tearDown(self):
-        self.configdb_patcher.stop()
+        super().tearDown()
         self.time_patcher.stop()
 
     def test_ccd_single_molecule_request_duration(self):

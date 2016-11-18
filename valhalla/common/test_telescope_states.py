@@ -1,7 +1,7 @@
 from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class)
-from valhalla.common.test_configdb import configdb_data
 from valhalla.common.configdb import TelescopeKey
+from valhalla.common.test_helpers import ConfigDBTestMixin
 
 from django.test import TestCase
 from datetime import datetime
@@ -10,12 +10,9 @@ from unittest.mock import patch
 import json
 
 
-class TelescopeStatesFakeInput(TestCase):
+class TelescopeStatesFakeInput(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
+        super().setUp()
         self.es_output = [
             {
                 '_source': {
@@ -117,7 +114,7 @@ class TelescopeStatesFakeInput(TestCase):
         self.mock_es.return_value = self.es_output
 
     def tearDown(self):
-        self.configdb_patcher.stop()
+        super().tearDown()
         self.es_patcher.stop()
 
 
