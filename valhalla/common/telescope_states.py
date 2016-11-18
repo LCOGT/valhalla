@@ -40,7 +40,7 @@ def get_es_data(query):
 
 
 def get_telescope_states(start, end, telescopes=None, sites=None, instrument_types=None):
-    telescope_to_instruments = ConfigDB().get_instrument_types_per_telescope()
+    telescope_to_instruments = ConfigDB().get_instrument_types_per_telescope(only_schedulable=True)
     if not instrument_types:
         available_telescopes = telescope_to_instruments.keys()
     else:

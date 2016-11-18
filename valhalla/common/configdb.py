@@ -75,38 +75,37 @@ class ConfigDB(object):
 
         return site_details
 
-    def get_instruments(self, only_scheduleable=False):
+    def get_instruments(self, only_schedulable=False):
         instruments = []
         for site in self.site_data:
             for enclosure in site['enclosure_set']:
                 for telescope in enclosure['telescope_set']:
                     for instrument in telescope['instrument_set']:
-                        if only_scheduleable and instrument['state'] != 'SCHEDULEABLE':
+                        if only_schedulable and instrument['state'] != 'SCHEDULABLE':
                             pass
                         else:
+                            telescope_key = TelescopeKey(
+                                site=site['code'],
+                                observatory=enclosure['code'],
+                                telescope=telescope['code']
+                            )
+                            instrument['telescope_key'] = telescope_key
                             instruments.append(instrument)
 
         return instruments
 
-    def get_instrument_types_per_telescope(self):
+    def get_instrument_types_per_telescope(self, only_schedulable=False):
         '''
             Function uses the configdb to get a set of available instrument types per telescope
         :return: set of available instrument types per TelescopeKey
         '''
-        site_data = self.site_data
         telescope_instrument_types = {}
-        for site in site_data:
-            for enclosure in site['enclosure_set']:
-                for telescope in enclosure['telescope_set']:
-                    telescope_key = TelescopeKey(site=site['code'],
-                                                 observatory=enclosure['code'],
-                                                 telescope=telescope['code'])
-                    for instrument in telescope['instrument_set']:
-                        if telescope_key not in telescope_instrument_types:
-                            telescope_instrument_types[telescope_key] = []
-                        instrument_type = instrument['science_camera']['camera_type']['code'].upper()
-                        if instrument_type not in telescope_instrument_types[telescope_key]:
-                            telescope_instrument_types[telescope_key].append(instrument_type)
+        for instrument in self.get_instruments(only_schedulable=only_schedulable):
+            if instrument['telescope_key'] not in telescope_instrument_types:
+                telescope_instrument_types[instrument['telescope_key']] = []
+            instrument_type = instrument['science_camera']['camera_type']['code'].upper()
+            if instrument_type not in telescope_instrument_types[instrument['telescope_key']]:
+                telescope_instrument_types[instrument['telescope_key']].append(instrument_type)
 
         return telescope_instrument_types
 
