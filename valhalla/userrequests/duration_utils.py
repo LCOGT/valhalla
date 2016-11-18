@@ -70,7 +70,7 @@ def get_total_duration_dict(operator, durations):
         (tak, duration) = durations[0]
         total_duration[tak] = duration
 
-    elif operator == 'MANY' or operator == 'ONEOF':
+    elif operator in ['MANY', 'ONEOF']:
         for (tak, duration) in durations:
             total_duration[tak] = max(total_duration.get(tak, 0.0), duration)
     elif operator == 'AND':
