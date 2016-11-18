@@ -6,10 +6,10 @@ USERREQUEST_STATE_FILTER_CHOICES = (('', '----------'),) + UserRequest.STATE_CHO
 
 
 class UserRequestFilter(filters.FilterSet):
-    created_after = django_filters.DateTimeFilter(name='created', lookup_type='gte')
-    created_before = django_filters.DateTimeFilter(name='created', lookup_type='lte')
+    created_after = django_filters.DateTimeFilter(name='created', lookup_expr='gte')
+    created_before = django_filters.DateTimeFilter(name='created', lookup_expr='lte')
     state = django_filters.ChoiceFilter(choices=USERREQUEST_STATE_FILTER_CHOICES)
-    title = django_filters.CharFilter(name='group_id', lookup_type='icontains')
+    title = django_filters.CharFilter(name='group_id', lookup_expr='icontains')
 
     class Meta:
         model = UserRequest

@@ -5,7 +5,7 @@ django-oauth-toolkit
 django-cors-headers
 requests
 responses
-django-filter==0.15.3
+django-filter
 mixer
 django-bootstrap3
 WeasyPrint
