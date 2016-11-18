@@ -115,9 +115,8 @@ class ConfigDB(object):
         :param instrument_type:
         :return: returns the available set of filters for an instrument_type
         '''
-        instruments = self.get_instruments()
         available_filters = set()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 for camera_filter in instrument['science_camera']['filters'].split(','):
                     available_filters.add(camera_filter.lower())
@@ -130,9 +129,8 @@ class ConfigDB(object):
         :param instrument_type:
         :return: returns the available set of binnings for an instrument_type
         '''
-        instruments = self.get_instruments()
         available_binnings = set()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 for mode in instrument['science_camera']['camera_type']['mode_set']:
                     available_binnings.add(mode['binning'])
@@ -146,8 +144,7 @@ class ConfigDB(object):
         :param instrument_type:
         :return: binning default
         '''
-        instruments = self.get_instruments()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
         return None
@@ -159,8 +156,7 @@ class ConfigDB(object):
         :return: Set of available instrument_types (i.e. 1M0-SCICAM-SBIG, etc.)
         '''
         instrument_types = set()
-        instruments = self.get_instruments()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             split_string = instrument['__str__'].lower().split('.')
             if (location.get('site', '').lower() in split_string[0]
                     and location.get('observatory', '').lower() in split_string[1]
@@ -170,8 +166,7 @@ class ConfigDB(object):
 
     def get_exposure_overhead(self, instrument_type, binning):
         # using the instrument type, build an instrument with the correct configdb parameters
-        instruments = self.get_instruments()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():
                 # get the binnings and put them into a dictionary
@@ -182,8 +177,7 @@ class ConfigDB(object):
         raise ConfigDBException("Instrument type {} not found in configdb.".format(instrument_type))
 
     def get_request_overheads(self, instrument_type):
-        instruments = self.get_instruments()
-        for instrument in instruments:
+        for instrument in self.get_instruments():
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():
                 return {'config_change_time': camera_type['config_change_time'],
