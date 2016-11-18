@@ -153,7 +153,8 @@ EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
 ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', '')
-POND_URL = os.getenv('POND_URL', 'http://pond')
+POND_URL = os.getenv('POND_URL', 'http://localhost')
+CONFIGDB_URL = os.getenv('CONFIGDB_URL', 'http://localhost')
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',

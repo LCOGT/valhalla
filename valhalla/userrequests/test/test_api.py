@@ -1,22 +1,19 @@
+from valhalla.userrequests.models import UserRequest, Request
+from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
+from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
+import valhalla.userrequests.signals.handlers  # noqa
+
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.conf import settings
-from valhalla.userrequests.models import UserRequest, Request
-from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
-from valhalla.common.test_configdb import configdb_data
 from rest_framework.test import APITestCase
-
 from mixer.backend.django import mixer
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from django.utils import timezone
 from datetime import datetime
 import responses
-import requests
 import os
 import copy
-
-import valhalla.userrequests.signals.handlers  # noqa
-
 
 generic_payload = {
     'proposal': 'temp',
@@ -55,25 +52,14 @@ generic_payload = {
 }
 
 
-class TestUserGetRequestApi(APITestCase):
+class TestUserGetRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User, is_staff=False, is_superuser=False)
         self.other_user = mixer.blend(User, is_staff=False, is_superuser=False)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.staff_user = mixer.blend(User, is_staff=True)
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_get_user_request_detail_unauthenticated(self):
         self.client.force_login(self.other_user)
@@ -107,16 +93,9 @@ class TestUserGetRequestApi(APITestCase):
         self.assertContains(result, user_request.group_id)
 
 
-class TestUserPostRequestApi(APITestCase):
+class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -131,10 +110,6 @@ class TestUserPostRequestApi(APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_post_userrequest_unauthenticated(self):
         self.other_user = mixer.blend(User)
@@ -221,16 +196,9 @@ class TestUserPostRequestApi(APITestCase):
         self.assertIn('must have more than one child request', str(response.content))
 
 
-class TestUserRequestIPP(APITestCase):
+class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -268,10 +236,6 @@ class TestUserRequestIPP(APITestCase):
         self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         self.second_request['location']['telescope_class'] = '2m0'
         self.generic_multi_payload['requests'].append(self.second_request)
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def _build_user_request(self, ur_dict):
         response = self.client.post(reverse('api:user_requests-list'), data=ur_dict)
@@ -351,16 +315,9 @@ class TestUserRequestIPP(APITestCase):
         self.assertEqual(time_allocation_2m0.ipp_time_available, 5.0)
 
 
-class TestRequestIPP(APITestCase):
+class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -385,10 +342,6 @@ class TestRequestIPP(APITestCase):
         self.generic_payload['ipp_value'] = 1.5
         self.generic_payload['proposal'] = self.proposal.id
         self.generic_payload['group_id'] = 'ipp_request'
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def _build_user_request(self, ur_dict):
         response = self.client.post(reverse('api:user_requests-list'), data=ur_dict)
@@ -470,16 +423,9 @@ class TestRequestIPP(APITestCase):
         self.assertGreater(time_allocation.ipp_time_available, 5.0)
 
 
-class TestWindowApi(APITestCase):
+class TestWindowApi(ConfigDBTestMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -488,10 +434,6 @@ class TestWindowApi(APITestCase):
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
 
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
-
     def test_post_userrequest_window_end_before_start(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['windows'][0]['end'] = '2016-09-28T21:12:18Z'
@@ -499,16 +441,9 @@ class TestWindowApi(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class TestSiderealTarget(APITestCase):
+class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -525,10 +460,6 @@ class TestSiderealTarget(APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_post_userrequest_no_ra(self):
         bad_data = self.generic_payload.copy()
@@ -574,16 +505,9 @@ class TestSiderealTarget(APITestCase):
         self.assertEqual(response.status_code, 201)
 
 
-class TestNonSiderealTarget(APITestCase):
+class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -613,10 +537,6 @@ class TestNonSiderealTarget(APITestCase):
             'eccentricity': 0.5391962,
             'epochofperih': 57400.0,
         }
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_post_userrequest_invalid_target_type(self):
         bad_data = self.generic_payload.copy()
@@ -666,16 +586,9 @@ class TestNonSiderealTarget(APITestCase):
         self.assertIn('meandist', str(response.content))
 
 
-class TestSatelliteTarget(APITestCase):
+class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -705,10 +618,6 @@ class TestSatelliteTarget(APITestCase):
             'epoch': 2000.0,
         }
 
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
-
     def test_post_userrequest_satellite_target(self):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
@@ -725,16 +634,9 @@ class TestSatelliteTarget(APITestCase):
         self.assertIn('diff_pitch_acceleration', str(response.content))
 
 
-class TestLocationApi(APITestCase):
+class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -750,10 +652,6 @@ class TestLocationApi(APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_post_userrequest_all_location_info(self):
         good_data = self.generic_payload.copy()
@@ -802,16 +700,9 @@ class TestLocationApi(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class TestMoleculeApi(APITestCase):
+class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
@@ -826,10 +717,6 @@ class TestMoleculeApi(APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_default_ag_mode_for_spectrograph(self):
         good_data = self.generic_payload.copy()
@@ -911,25 +798,14 @@ class TestMoleculeApi(APITestCase):
         self.assertEqual(response.status_code, 400)
 
 
-class TestGetRequestApi(APITestCase):
+class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def setUp(self):
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = configdb_data
-
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
+        super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User, is_staff=False, is_superuser=False)
         self.staff_user = mixer.blend(User, is_staff=True)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal)
-
-    def tearDown(self):
-        self.configdb_patcher.stop()
-        self.time_patcher.stop()
 
     def test_get_request_list_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
@@ -1012,7 +888,7 @@ class TestBlocksApi(APITestCase):
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
             self.assertEqual(len(result.json()), 2)
 
-    def test_no_connection(self):
-        requests.get = MagicMock(side_effect=ConnectionError())
+    @patch('requests.get', side_effect=ConnectionError())
+    def test_no_connection(self, request_patch):
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
         self.assertFalse(result.json())
