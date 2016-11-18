@@ -8,16 +8,12 @@ import math
 from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
 from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.configdb import ConfigDBException
-from valhalla.common.test_helpers import ConfigDBTestMixin
+from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 
 
-class TestUserRequestTotalDuration(ConfigDBTestMixin, TestCase):
+class TestUserRequestTotalDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
                                end=datetime(2016, 12, 31, tzinfo=timezone.utc)
@@ -75,10 +71,6 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, TestCase):
         mixer.blend(Location, request=self.request_2, telescope_class='1m0')
         mixer.blend(Location, request=self.request_3, telescope_class='1m0')
 
-    def tearDown(self):
-        super().tearDown()
-        self.time_patcher.stop()
-
     def test_single_ur_total_duration(self):
         request_duration = self.request.duration
         total_duration = self.ur_single.total_duration
@@ -104,13 +96,9 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, TestCase):
         self.assertEqual(sum_duration, total_duration[tak])
 
 
-class TestRequestDuration(ConfigDBTestMixin, TestCase):
+class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
-
         self.target_acquire_on = mixer.blend(Target, acquire_mode='ON')
 
         self.target_acquire_off = mixer.blend(Target, acquire_mode='OFF')
@@ -149,10 +137,6 @@ class TestRequestDuration(ConfigDBTestMixin, TestCase):
             Molecule, bin_x=1, bin_y=1, instrument_name='2M0-FLOYDS-SCICAM',
             exposure_time=60, exposure_count=1, type='LAMPFLAT'
         )
-
-    def tearDown(self):
-        super().tearDown()
-        self.time_patcher.stop()
 
     def test_ccd_single_molecule_request_duration(self):
         request = mixer.blend(Request)

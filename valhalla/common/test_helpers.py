@@ -1,4 +1,7 @@
 from django.conf import settings
+from unittest.mock import patch
+from datetime import datetime
+from django.utils import timezone
 import responses
 import json
 import os
@@ -19,3 +22,13 @@ class ConfigDBTestMixin(object):
     def tearDown(self):
         super().tearDown()
         responses._default_mock.__exit__()
+
+
+class SetTimeMixin(object):
+    def setUp(self):
+        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
+        self.mock_now = self.time_patcher.start()
+        self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
+
+    def tearDown(self):
+        self.time_patcher.stop()

@@ -8,15 +8,12 @@ from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_si
 from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location, Constraints
 from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.test_telescope_states import TelescopeStatesFakeInput
-from valhalla.common.test_helpers import ConfigDBTestMixin
+from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 
 
-class BaseSetupRequest(ConfigDBTestMixin, TestCase):
+class BaseSetupRequest(ConfigDBTestMixin, SetTimeMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
-        self.mock_now = self.time_patcher.start()
-        self.mock_now.return_value = datetime(2016, 10, 1, tzinfo=timezone.utc)
 
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
@@ -44,10 +41,6 @@ class BaseSetupRequest(ConfigDBTestMixin, TestCase):
 
         self.location = mixer.blend(Location, request=self.request, telescope_class='1m0')
         mixer.blend(Constraints, request=self.request)
-
-    def tearDown(self):
-        super().tearDown()
-        self.time_patcher.stop()
 
 
 class TestRequestAirmass(BaseSetupRequest):
