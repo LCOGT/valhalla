@@ -39,7 +39,7 @@ def get_es_data(query):
     return event_data
 
 
-def get_telescope_states(start, end, telescopes=None, sites=None, instrument_types=None):
+def get_telescope_states(start, end, telescopes=[], sites=[], instrument_types=[]):
     telescope_to_instruments = ConfigDB().get_instrument_types_per_telescope(only_schedulable=True)
     if not instrument_types:
         available_telescopes = telescope_to_instruments.keys()
@@ -168,7 +168,7 @@ def filter_telescope_states_by_intervals(telescope_states, sites_intervals, star
     return filtered_states
 
 
-def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, instrument_types=None):
+def get_telescope_availability_per_day(start, end, telescopes=[], sites=[], instrument_types=[]):
     telescope_states = get_telescope_states(start, end, telescopes, sites, instrument_types)
     # go through each telescopes list of states, grouping it up by observing night at the site
     rise_set_intervals = {}
@@ -206,7 +206,6 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
         if time_total > timedelta():
             telescope_availability[telescope_key].append([current_day, (
                 time_available.total_seconds() / time_total.total_seconds())])
-
     return telescope_availability
 
 

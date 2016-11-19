@@ -4,6 +4,1064 @@
   "previous": null,
   "results": [
     {
+        "id": 5,
+        "name": "Cerro Tololo, Chile",
+        "code": "lsc",
+        "active": true,
+        "timezone": -4,
+        "elevation": 2198,
+        "enclosure_set": [
+            {
+                "id": 10,
+                "name": "Dome A",
+                "code": "doma",
+                "active": true,
+                "site": "http://configdb.lco.gtn/sites/5/?format=json",
+                "telescope_set": [
+                    {
+                        "id": 10,
+                        "name": "1 Meter",
+                        "code": "1m0a",
+                        "active": true,
+                        "lat": -30.1673833333,
+                        "long": -70.8047888889,
+                        "enclosure": "http://configdb.lco.gtn/enclosures/10/?format=json",
+                        "horizon": 15.0,
+                        "ha_limit_pos": 4.6,
+                        "ha_limit_neg": -4.6,
+                        "instrument_set": [
+                            {
+                                "id": 30,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/10/?format=json",
+                                "science_camera": {
+                                    "id": 5,
+                                    "code": "ef06",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "autoguider_camera": {
+                                    "id": 5,
+                                    "code": "ef06",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.doma.1m0a.ef06-ef06"
+                            },
+                            {
+                                "id": 31,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/10/?format=json",
+                                "science_camera": {
+                                    "id": 23,
+                                    "code": "kb10",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "autoguider_camera": {
+                                    "id": 23,
+                                    "code": "kb10",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "__str__": "lsc.doma.1m0a.kb10-kb10"
+                            },
+                            {
+                                "id": 62,
+                                "state": "DISABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/10/?format=json",
+                                "science_camera": {
+                                    "id": 65,
+                                    "code": "kb69",
+                                    "camera_type": {
+                                        "id": 14,
+                                        "size": "15.8x15.8",
+                                        "pscale": 0.232,
+                                        "default_mode": {
+                                            "id": 30,
+                                            "binning": 2,
+                                            "overhead": 60000,
+                                            "readout": 14.5
+                                        },
+                                        "name": "1.0 meter SBIG",
+                                        "code": "1m0-SciCam-SBIG",
+                                        "mode_set": [
+                                            {
+                                                "id": 31,
+                                                "binning": 3,
+                                                "overhead": 60000,
+                                                "readout": 11.5
+                                            },
+                                            {
+                                                "id": 30,
+                                                "binning": 2,
+                                                "overhead": 60000,
+                                                "readout": 14.5
+                                            },
+                                            {
+                                                "id": 29,
+                                                "binning": 1,
+                                                "overhead": 60000,
+                                                "readout": 35.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 2.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 19,
+                                    "filters": "I,R,U,w,Y,up,air,rp,ip,gp,zs,V,B,ND,400um-Pinhole,150um-Pinhole"
+                                },
+                                "autoguider_camera": {
+                                    "id": 5,
+                                    "code": "ef06",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.doma.1m0a.kb69-ef06"
+                            },
+                            {
+                                "id": 65,
+                                "state": "SCHEDULABLE",
+                                "telescope": "http://configdb.lco.gtn/telescopes/10/?format=json",
+                                "science_camera": {
+                                    "id": 70,
+                                    "code": "fl15",
+                                    "camera_type": {
+                                        "id": 3,
+                                        "size": "26.4x26.4",
+                                        "pscale": 0.389,
+                                        "default_mode": {
+                                            "id": 8,
+                                            "binning": 1,
+                                            "overhead": 46000,
+                                            "readout": 37.0
+                                        },
+                                        "name": "1.0 meter Sinistro",
+                                        "code": "1m0-SciCam-Sinistro",
+                                        "mode_set": [
+                                            {
+                                                "id": 8,
+                                                "binning": 1,
+                                                "overhead": 46000,
+                                                "readout": 37.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 2.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 19,
+                                    "filters": "I,R,U,w,Y,up,air,rp,ip,gp,zs,V,B,ND,400um-Pinhole,150um-Pinhole"
+                                },
+                                "autoguider_camera": {
+                                    "id": 5,
+                                    "code": "ef06",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.doma.1m0a.fl15-ef06"
+                            }
+                        ],
+                        "__str__": "lsc.doma.1m0a"
+                    }
+                ],
+                "__str__": "lsc.doma"
+            },
+            {
+                "id": 11,
+                "name": "Dome B",
+                "code": "domb",
+                "active": true,
+                "site": "http://configdb.lco.gtn/sites/5/?format=json",
+                "telescope_set": [
+                    {
+                        "id": 11,
+                        "name": "1 Meter",
+                        "code": "1m0a",
+                        "active": true,
+                        "lat": -30.1673305556,
+                        "long": -70.8046611111,
+                        "enclosure": "http://configdb.lco.gtn/enclosures/11/?format=json",
+                        "horizon": 15.0,
+                        "ha_limit_pos": 4.6,
+                        "ha_limit_neg": -4.6,
+                        "instrument_set": [
+                            {
+                                "id": 33,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/11/?format=json",
+                                "science_camera": {
+                                    "id": 6,
+                                    "code": "ef07",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "autoguider_camera": {
+                                    "id": 6,
+                                    "code": "ef07",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.domb.1m0a.ef07-ef07"
+                            },
+                            {
+                                "id": 34,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/11/?format=json",
+                                "science_camera": {
+                                    "id": 24,
+                                    "code": "kb11",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "autoguider_camera": {
+                                    "id": 24,
+                                    "code": "kb11",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "__str__": "lsc.domb.1m0a.kb11-kb11"
+                            },
+                            {
+                                "id": 32,
+                                "state": "SCHEDULABLE",
+                                "telescope": "http://configdb.lco.gtn/telescopes/11/?format=json",
+                                "science_camera": {
+                                    "id": 14,
+                                    "code": "fl03",
+                                    "camera_type": {
+                                        "id": 3,
+                                        "size": "26.4x26.4",
+                                        "pscale": 0.389,
+                                        "default_mode": {
+                                            "id": 8,
+                                            "binning": 1,
+                                            "overhead": 46000,
+                                            "readout": 37.0
+                                        },
+                                        "name": "1.0 meter Sinistro",
+                                        "code": "1m0-SciCam-Sinistro",
+                                        "mode_set": [
+                                            {
+                                                "id": 8,
+                                                "binning": 1,
+                                                "overhead": 46000,
+                                                "readout": 37.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 2.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 14,
+                                    "filters": "H-Beta,H-Alpha,I,R,U,w,Y,up,air,rp,ip,gp,zs,V,B,400um-Pinhole,150um-Pinhole"
+                                },
+                                "autoguider_camera": {
+                                    "id": 6,
+                                    "code": "ef07",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.domb.1m0a.fl03-ef07"
+                            }
+                        ],
+                        "__str__": "lsc.domb.1m0a"
+                    }
+                ],
+                "__str__": "lsc.domb"
+            },
+            {
+                "id": 12,
+                "name": "Dome C",
+                "code": "domc",
+                "active": true,
+                "site": "http://configdb.lco.gtn/sites/5/?format=json",
+                "telescope_set": [
+                    {
+                        "id": 12,
+                        "name": "1 Meter",
+                        "code": "1m0a",
+                        "active": true,
+                        "lat": -30.1674472222,
+                        "long": -70.8046805556,
+                        "enclosure": "http://configdb.lco.gtn/enclosures/12/?format=json",
+                        "horizon": 15.0,
+                        "ha_limit_pos": 4.6,
+                        "ha_limit_neg": -4.6,
+                        "instrument_set": [
+                            {
+                                "id": 35,
+                                "state": "SCHEDULABLE",
+                                "telescope": "http://configdb.lco.gtn/telescopes/12/?format=json",
+                                "science_camera": {
+                                    "id": 15,
+                                    "code": "fl04",
+                                    "camera_type": {
+                                        "id": 3,
+                                        "size": "26.4x26.4",
+                                        "pscale": 0.389,
+                                        "default_mode": {
+                                            "id": 8,
+                                            "binning": 1,
+                                            "overhead": 46000,
+                                            "readout": 37.0
+                                        },
+                                        "name": "1.0 meter Sinistro",
+                                        "code": "1m0-SciCam-Sinistro",
+                                        "mode_set": [
+                                            {
+                                                "id": 8,
+                                                "binning": 1,
+                                                "overhead": 46000,
+                                                "readout": 37.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 2.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 1,
+                                    "filters": "I,R,U,w,Y,up,air,rp,ip,gp,zs,V,B,400um-Pinhole,150um-Pinhole"
+                                },
+                                "autoguider_camera": {
+                                    "id": 7,
+                                    "code": "ef08",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.domc.1m0a.fl04-ef08"
+                            },
+                            {
+                                "id": 36,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/12/?format=json",
+                                "science_camera": {
+                                    "id": 27,
+                                    "code": "kb15",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "autoguider_camera": {
+                                    "id": 27,
+                                    "code": "kb15",
+                                    "camera_type": {
+                                        "id": 7,
+                                        "size": "237.6x158.4",
+                                        "pscale": 4.641,
+                                        "default_mode": {
+                                            "id": 14,
+                                            "binning": 1,
+                                            "overhead": 32000,
+                                            "readout": 0.0
+                                        },
+                                        "name": "ContextCam",
+                                        "code": "ContextCam",
+                                        "mode_set": [
+                                            {
+                                                "id": 14,
+                                                "binning": 1,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 15,
+                                                "binning": 2,
+                                                "overhead": 32000,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 3,
+                                    "filters": "rp,ip,V,B,zp"
+                                },
+                                "__str__": "lsc.domc.1m0a.kb15-kb15"
+                            },
+                            {
+                                "id": 37,
+                                "state": "ENABLED",
+                                "telescope": "http://configdb.lco.gtn/telescopes/12/?format=json",
+                                "science_camera": {
+                                    "id": 7,
+                                    "code": "ef08",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "autoguider_camera": {
+                                    "id": 7,
+                                    "code": "ef08",
+                                    "camera_type": {
+                                        "id": 1,
+                                        "size": "5.7x5.7",
+                                        "pscale": 0.335,
+                                        "default_mode": {
+                                            "id": 1,
+                                            "binning": 1,
+                                            "overhead": 115,
+                                            "readout": 0.0
+                                        },
+                                        "name": "Autoguider",
+                                        "code": "Autoguider",
+                                        "mode_set": [
+                                            {
+                                                "id": 1,
+                                                "binning": 1,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 2,
+                                                "binning": 2,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 3,
+                                                "binning": 3,
+                                                "overhead": 115,
+                                                "readout": 0.0
+                                            },
+                                            {
+                                                "id": 4,
+                                                "binning": 4,
+                                                "overhead": 114,
+                                                "readout": 0.0
+                                            }
+                                        ],
+                                        "fixed_overhead_per_exposure": 1.0,
+                                        "front_padding": 90.0,
+                                        "filter_change_time": 0.0,
+                                        "config_change_time": 0.0,
+                                        "acquire_exposure_time": 0.0,
+                                        "acquire_processing_time": 0.0
+                                    },
+                                    "filter_wheel": 10,
+                                    "filters": "opaque,150um-Pinhole,air,rp,ip,gp,zs,V,B"
+                                },
+                                "__str__": "lsc.domc.1m0a.ef08-ef08"
+                            }
+                        ],
+                        "__str__": "lsc.domc.1m0a"
+                    }
+                ],
+                "__str__": "lsc.domc"
+            },
+            {
+                "id": 13,
+                "name": "Aqawan A",
+                "code": "aqwa",
+                "active": true,
+                "site": "http://configdb.lco.gtn/sites/5/?format=json",
+                "telescope_set": [
+                    {
+                        "id": 13,
+                        "name": "0.4 Meter",
+                        "code": "0m4a",
+                        "active": true,
+                        "lat": -30.1674472222,
+                        "long": -70.8046805556,
+                        "enclosure": "http://configdb.lco.gtn/enclosures/13/?format=json",
+                        "horizon": 15.0,
+                        "ha_limit_pos": 4.4666667,
+                        "ha_limit_neg": -4.533333,
+                        "instrument_set": [ ],
+                        "__str__": "lsc.aqwa.0m4a"
+                    }
+                ],
+                "__str__": "lsc.aqwa"
+            }
+        ],
+        "__str__": "lsc"
+    },
+    {
       "code": "tst",
       "elevation": 100,
       "enclosure_set": [

@@ -49,31 +49,39 @@ class ConfigDB(object):
 
         return site_data
 
-    def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
-                                                    observatory_code='', telescope_code=''):
-        site_data = self.site_data
-        site_details = {}
-        for site in site_data:
+    def get_site(self, code):
+        for site in self.site_data:
+            if site['code'].upper() == code.upper():
+                return site
+
+    def filter_sites_by_location(self, site_code='', observatory_code='', telescope_code=''):
+        sites = []
+        for site in self.site_data:
             if not site_code or site_code == site['code']:
                 for enclosure in site['enclosure_set']:
                     if not observatory_code or observatory_code == enclosure['code']:
                         for telescope in enclosure['telescope_set']:
                             if not telescope_code or telescope_code == telescope['code']:
-                                for instrument in telescope['instrument_set']:
-                                    if instrument['state'] == 'SCHEDULABLE':
-                                        camera_type = instrument['science_camera']['camera_type']['code']
-                                        if not instrument_type or instrument_type.upper() == camera_type.upper():
-                                            if site['code'] not in site_details:
-                                                site_details[site['code']] = {
-                                                    'latitude': telescope['lat'],
-                                                    'longitude': telescope['long'],
-                                                    'horizon': telescope['horizon'],
-                                                    'altitude': site['elevation'],
-                                                    'ha_limit_pos': telescope['ha_limit_pos'],
-                                                    'ha_limit_neg': telescope['ha_limit_neg']
-                                                }
+                                sites.append(site)
+        return sites
 
-        return site_details
+    def get_sites_with_instrument_type(self, instrument_type):
+        sites = []
+        for instrument in self.get_instruments():
+            if instrument['science_camera']['camera_type']['code'].upper() == instrument_type.upper():
+                sites.append(self.get_site(instrument['telescope_key'].site))
+        return sites
+
+    def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
+                                                    observatory_code='', telescope_code=''):
+        sites_with_instrument = self.get_sites_with_instrument_type(instrument_type)
+        sites_with_location = self.filter_sites_by_location(
+          site_code, observatory_code, telescope_code
+        )
+        common_sites = set([site['code'] for site in sites_with_instrument]).intersection(
+            set([site['code'] for site in sites_with_location])
+        )
+        return [self.get_site(site_code) for site_code in common_sites]
 
     def get_instruments(self, only_schedulable=False):
         instruments = []

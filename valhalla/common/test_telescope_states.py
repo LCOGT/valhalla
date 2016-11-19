@@ -241,28 +241,9 @@ class TestTelescopeStates(TelescopeStatesFakeInput):
         self.assertAlmostEqual(total_expected_availability, combined_telescope_availability[combined_key][0][1])
 
 
-class TelescopeStatesFromFile(TestCase):
+class TelescopeStatesFromFile(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_null_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        mock_configdb_null = self.configdb_null_patcher.start()
-        mock_configdb_null.return_value = {}
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB.get_instrument_types_per_telescope')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = {
-            TelescopeKey(site='coj', observatory='clma', telescope='2m0a'): ['2M0-FLOYDS-SCICAM',
-                                                                             '2M0-SCICAM-SPECTRAL'],
-            TelescopeKey(site='coj', observatory='doma', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='coj', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='cpt', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='cpt', observatory='domc', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='elp', observatory='doma', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='lsc', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='lsc', observatory='domc', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='ogg', observatory='clma', telescope='0m4b'): ['0M4-SCICAM-SBIG'],
-            TelescopeKey(site='ogg', observatory='clma', telescope='2m0a'): ['2M0-FLOYDS-SCICAM'],
-            TelescopeKey(site='sqa', observatory='doma', telescope='0m8a'): ['0M8-SCICAM-SBIG',
-                                                                             '0M8-NRES-SCICAM']}
-
+        super().setUp()
         with open('valhalla/common/test_data/es_telescope_states_data.txt', 'r') as input_file:
             self.es_output = json.loads(input_file.read())
 
@@ -275,8 +256,7 @@ class TelescopeStatesFromFile(TestCase):
         self.mock_es.return_value = self.es_output
 
     def tearDown(self):
-        self.configdb_patcher.stop()
-        self.configdb_null_patcher.stop()
+        super().tearDown()
         self.es_patcher.stop()
 
 
