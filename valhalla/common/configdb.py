@@ -62,7 +62,7 @@ class ConfigDB(object):
             if site['code'].upper() == code.upper():
                 return site
 
-    def filter_sites_by_location(self, sites=[], site_code='', observatory_code='', telescope_code=''):
+    def filter_sites_by_location(self, sites=None, site_code='', observatory_code='', telescope_code=''):
         filtered_sites = []
         if not sites:
             sites = self.site_data
@@ -75,7 +75,7 @@ class ConfigDB(object):
                                 filtered_sites.append(site)
         return filtered_sites
 
-    def filter_sites_with_instrument_type(self, instrument_type, sites=[]):
+    def filter_sites_with_instrument_type(self, instrument_type, sites=None):
         filtered_sites = []
         for instrument in self.get_instruments():
             if instrument['science_camera']['camera_type']['code'].upper() == instrument_type.upper():
@@ -165,7 +165,7 @@ class ConfigDB(object):
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
         return None
 
-    def get_active_instrument_types(self, location={}):
+    def get_active_instrument_types(self, location=None):
         '''
         Function uses the configdb to get a set of the available instrument_types.
         Location should be a dictionary of the location, with site, observatory, and telescope fields
@@ -173,7 +173,7 @@ class ConfigDB(object):
         '''
         instrument_types = set()
         for instrument in self.get_instruments():
-            if str(TelescopeKey.from_location(location)) in str(instrument['telescope_key']):
+            if location and str(TelescopeKey.from_location(location)) in str(instrument['telescope_key']):
                 instrument_types.add(instrument['science_camera']['camera_type']['code'].upper())
         return instrument_types
 
@@ -182,7 +182,6 @@ class ConfigDB(object):
         for instrument in self.get_instruments():
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():
-                # get the binnings and put them into a dictionary
                 for mode in camera_type['mode_set']:
                     if mode['binning'] == binning:
                         return mode['readout'] + camera_type['fixed_overhead_per_exposure']
