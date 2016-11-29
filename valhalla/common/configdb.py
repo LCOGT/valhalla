@@ -172,8 +172,10 @@ class ConfigDB(object):
         :return: Set of available instrument_types (i.e. 1M0-SCICAM-SBIG, etc.)
         '''
         instrument_types = set()
+        if location is None:
+            location = {}
         for instrument in self.get_instruments():
-            if location and str(TelescopeKey.from_location(location)) in str(instrument['telescope_key']):
+            if str(TelescopeKey.from_location(location)) in str(instrument['telescope_key']):
                 instrument_types.add(instrument['science_camera']['camera_type']['code'].upper())
         return instrument_types
 
