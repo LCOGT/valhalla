@@ -78,12 +78,12 @@ class TestTelescopeStates(TelescopeStatesFromFile):
 
     def test_date_format_1(self):
         response = self.client.get(reverse('telescope_states') + '?start=2016-10-1&end=2016-10-10')
-        self.assertContains(response, "lsc")
+        self.assertContains(response, "tst")
 
     def test_date_format_2(self):
         response = self.client.get(reverse('telescope_availability') +
                                    '?start=2016-10-1T1:23:44&end=2016-10-10T22:22:2')
-        self.assertContains(response, "lsc")
+        self.assertContains(response, "tst")
 
     def test_date_format_bad(self):
         response = self.client.get(reverse('telescope_states') +

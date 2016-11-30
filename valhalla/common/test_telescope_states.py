@@ -241,28 +241,9 @@ class TestTelescopeStates(TelescopeStatesFakeInput):
         self.assertAlmostEqual(total_expected_availability, combined_telescope_availability[combined_key][0][1])
 
 
-class TelescopeStatesFromFile(TestCase):
+class TelescopeStatesFromFile(ConfigDBTestMixin, TestCase):
     def setUp(self):
-        self.configdb_null_patcher = patch('valhalla.common.configdb.ConfigDB._get_configdb_data')
-        mock_configdb_null = self.configdb_null_patcher.start()
-        mock_configdb_null.return_value = {}
-        self.configdb_patcher = patch('valhalla.common.configdb.ConfigDB.get_instrument_types_per_telescope')
-        self.mock_configdb = self.configdb_patcher.start()
-        self.mock_configdb.return_value = {
-            TelescopeKey(site='coj', observatory='clma', telescope='2m0a'): ['2M0-FLOYDS-SCICAM',
-                                                                             '2M0-SCICAM-SPECTRAL'],
-            TelescopeKey(site='coj', observatory='doma', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='coj', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='cpt', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='cpt', observatory='domc', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='elp', observatory='doma', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='lsc', observatory='domb', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='lsc', observatory='domc', telescope='1m0a'): ['1M0-SCICAM-SINISTRO'],
-            TelescopeKey(site='ogg', observatory='clma', telescope='0m4b'): ['0M4-SCICAM-SBIG'],
-            TelescopeKey(site='ogg', observatory='clma', telescope='2m0a'): ['2M0-FLOYDS-SCICAM'],
-            TelescopeKey(site='sqa', observatory='doma', telescope='0m8a'): ['0M8-SCICAM-SBIG',
-                                                                             '0M8-NRES-SCICAM']}
-
+        super().setUp()
         with open('valhalla/common/test_data/es_telescope_states_data.txt', 'r') as input_file:
             self.es_output = json.loads(input_file.read())
 
@@ -275,116 +256,115 @@ class TelescopeStatesFromFile(TestCase):
         self.mock_es.return_value = self.es_output
 
     def tearDown(self):
-        self.configdb_patcher.stop()
-        self.configdb_null_patcher.stop()
+        super().tearDown()
         self.es_patcher.stop()
 
 
 class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
     def test_one_telescope_correctness(self):
         telescope_states = get_telescope_states(self.start, self.end)
-        tak = TelescopeKey(site='lsc', observatory='domb', telescope='1m0a')
+        tak = TelescopeKey(site='tst', observatory='domb', telescope='1m0a')
         expected_events = [{'end': datetime(2016, 10, 3, 10, 25, 5, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 1, 0, 0, 11, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 10, 31, 20, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer unavailable for scheduling',
                             'event_type': 'SEQUENCER_UNAVAILABLE',
                             'start': datetime(2016, 10, 3, 10, 25, 5, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 16, 47, 42, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 3, 10, 31, 20, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 17, 7, 49, tzinfo=timezone.utc),
                             'event_reason': 'No update since 2016-10-03T16:37:35',
                             'event_type': 'SITE_AGENT_UNRESPONSIVE',
                             'start': datetime(2016, 10, 3, 16, 47, 42, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 23, 35, 58, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 3, 17, 7, 49, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 1, 3, tzinfo=timezone.utc),
                             'event_reason': 'Sky transparency too low',
                             'event_type': 'NOT_OK_TO_OPEN',
                             'start': datetime(2016, 10, 3, 23, 35, 58, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 1, 20, 46, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 4, 1, 3, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 1, 20, 47, tzinfo=timezone.utc),
                             'event_reason': 'Sky transparency too low',
                             'event_type': 'NOT_OK_TO_OPEN',
                             'start': datetime(2016, 10, 4, 1, 20, 46, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 1, 26, 56, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer unavailable for scheduling',
                             'event_type': 'SEQUENCER_UNAVAILABLE',
                             'start': datetime(2016, 10, 4, 1, 20, 47, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 10, 24, 18, tzinfo=timezone.utc),
                             'event_reason': 'Sky transparency too low',
                             'event_type': 'NOT_OK_TO_OPEN',
                             'start': datetime(2016, 10, 4, 1, 26, 56, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 10, 30, 55, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer unavailable for scheduling',
                             'event_type': 'SEQUENCER_UNAVAILABLE',
                             'start': datetime(2016, 10, 4, 10, 24, 18, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 21, 47, 6, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 4, 10, 30, 55, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 5, 0, 58, 26, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer in MANUAL state',
                             'event_type': 'SEQUENCER_DISABLED',
                             'start': datetime(2016, 10, 4, 21, 47, 6, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 6, 16, 48, 6, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 5, 0, 58, 26, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 6, 16, 57, 19, tzinfo=timezone.utc),
                             'event_reason': 'No update since 2016-10-06T16:12:10',
                             'event_type': 'SITE_AGENT_UNRESPONSIVE',
                             'start': datetime(2016, 10, 6, 16, 48, 6, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 7, 10, 20, 44, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 6, 16, 57, 19, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 7, 10, 28, 58, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer unavailable for scheduling',
                             'event_type': 'SEQUENCER_UNAVAILABLE',
                             'start': datetime(2016, 10, 7, 10, 20, 44, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 8, 10, 20, 25, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 7, 10, 28, 58, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 8, 10, 28, 36, tzinfo=timezone.utc),
                             'event_reason': 'Sequencer unavailable for scheduling',
                             'event_type': 'SEQUENCER_UNAVAILABLE',
                             'start': datetime(2016, 10, 8, 10, 20, 25, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'},
+                            'telescope': 'tst.domb.1m0a'},
                            {'end': datetime(2016, 10, 10, 0, 0, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
                             'start': datetime(2016, 10, 8, 10, 28, 36, tzinfo=timezone.utc),
-                            'telescope': 'lsc.domb.1m0a'}]
-        # looked in depth at lsc.domb.1m0a in the date range to verify correctness of this
+                            'telescope': 'tst.domb.1m0a'}]
+        # looked in depth at tst.domb.1m0a in the date range to verify correctness of this
         # data is available on the telescope_events index of elasticsearch
         self.assertEqual(telescope_states[tak], expected_events)
 

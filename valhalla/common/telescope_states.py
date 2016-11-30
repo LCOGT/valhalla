@@ -206,7 +206,6 @@ def get_telescope_availability_per_day(start, end, telescopes=None, sites=None, 
         if time_total > timedelta():
             telescope_availability[telescope_key].append([current_day, (
                 time_available.total_seconds() / time_total.total_seconds())])
-
     return telescope_availability
 
 

@@ -18,6 +18,14 @@ class ConfigDBException(Exception):
 class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope'])):
     __slots__ = ()
 
+    @classmethod
+    def from_location(cls, location):
+        return cls(
+            site=location.get('site', ''),
+            observatory=location.get('observatory', ''),
+            telescope=location.get('telescope', '')
+        )
+
     def __str__(self):
         return ".".join(s for s in [self.site, self.observatory, self.telescope] if s)
 
@@ -49,31 +57,39 @@ class ConfigDB(object):
 
         return site_data
 
-    def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
-                                                    observatory_code='', telescope_code=''):
-        site_data = self.site_data
-        site_details = {}
-        for site in site_data:
+    def get_site(self, code):
+        for site in self.site_data:
+            if site['code'].upper() == code.upper():
+                return site
+
+    def filter_sites_by_location(self, sites=None, site_code='', observatory_code='', telescope_code=''):
+        filtered_sites = []
+        if not sites:
+            sites = self.site_data
+        for site in sites:
             if not site_code or site_code == site['code']:
                 for enclosure in site['enclosure_set']:
                     if not observatory_code or observatory_code == enclosure['code']:
                         for telescope in enclosure['telescope_set']:
                             if not telescope_code or telescope_code == telescope['code']:
-                                for instrument in telescope['instrument_set']:
-                                    if instrument['state'] == 'SCHEDULABLE':
-                                        camera_type = instrument['science_camera']['camera_type']['code']
-                                        if not instrument_type or instrument_type.upper() == camera_type.upper():
-                                            if site['code'] not in site_details:
-                                                site_details[site['code']] = {
-                                                    'latitude': telescope['lat'],
-                                                    'longitude': telescope['long'],
-                                                    'horizon': telescope['horizon'],
-                                                    'altitude': site['elevation'],
-                                                    'ha_limit_pos': telescope['ha_limit_pos'],
-                                                    'ha_limit_neg': telescope['ha_limit_neg']
-                                                }
+                                filtered_sites.append(site)
+        return filtered_sites
 
-        return site_details
+    def filter_sites_with_instrument_type(self, instrument_type, sites=None):
+        filtered_sites = []
+        for instrument in self.get_instruments():
+            if instrument['science_camera']['camera_type']['code'].upper() == instrument_type.upper():
+                filtered_sites.append(self.get_site(instrument['telescope_key'].site))
+        if sites:
+            return [site for site in filtered_sites if site['code'] in [site['code'] for site in sites]]
+        return filtered_sites
+
+    def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
+                                                    observatory_code='', telescope_code=''):
+        sites_with_instrument = self.filter_sites_with_instrument_type(instrument_type)
+        return self.filter_sites_by_location(
+          sites_with_instrument, site_code, observatory_code, telescope_code
+        )
 
     def get_instruments(self, only_schedulable=False):
         instruments = []
@@ -96,7 +112,7 @@ class ConfigDB(object):
 
     def get_instrument_types_per_telescope(self, only_schedulable=False):
         '''
-            Function uses the configdb to get a set of available instrument types per telescope
+        Function uses the configdb to get a set of available instrument types per telescope
         :return: set of available instrument types per TelescopeKey
         '''
         telescope_instrument_types = {}
@@ -125,7 +141,7 @@ class ConfigDB(object):
 
     def get_binnings(self, instrument_type):
         '''
-            Function creates a set of available binning modes for the instrument_type specified
+        Function creates a set of available binning modes for the instrument_type specified
         :param instrument_type:
         :return: returns the available set of binnings for an instrument_type
         '''
@@ -140,7 +156,7 @@ class ConfigDB(object):
 
     def get_default_binning(self, instrument_type):
         '''
-            Function returns the default binning for the instrument type specified
+        Function returns the default binning for the instrument type specified
         :param instrument_type:
         :return: binning default
         '''
@@ -149,18 +165,17 @@ class ConfigDB(object):
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
         return None
 
-    def get_active_instrument_types(self, location):
+    def get_active_instrument_types(self, location=None):
         '''
-            Function uses the configdb to get a set of the available instrument_types.
-            Location should be a dictionary of the location, with site, observatory, and telescope fields
+        Function uses the configdb to get a set of the available instrument_types.
+        Location should be a dictionary of the location, with site, observatory, and telescope fields
         :return: Set of available instrument_types (i.e. 1M0-SCICAM-SBIG, etc.)
         '''
         instrument_types = set()
+        if location is None:
+            location = {}
         for instrument in self.get_instruments():
-            split_string = instrument['__str__'].lower().split('.')
-            if (location.get('site', '').lower() in split_string[0]
-                    and location.get('observatory', '').lower() in split_string[1]
-                    and location.get('telescope', '').lower() in split_string[2]):
+            if str(TelescopeKey.from_location(location)) in str(instrument['telescope_key']):
                 instrument_types.add(instrument['science_camera']['camera_type']['code'].upper())
         return instrument_types
 
@@ -169,7 +184,6 @@ class ConfigDB(object):
         for instrument in self.get_instruments():
             camera_type = instrument['science_camera']['camera_type']
             if camera_type['code'].upper() == instrument_type.upper():
-                # get the binnings and put them into a dictionary
                 for mode in camera_type['mode_set']:
                     if mode['binning'] == binning:
                         return mode['readout'] + camera_type['fixed_overhead_per_exposure']
