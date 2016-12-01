@@ -53,7 +53,7 @@ class UserRequestList(TestCase):
         self.assertNotContains(response, self.userrequests[2].group_id)
 
 
-class RequestList(TestCase):
+class TestRequestList(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         self.proposal = mixer.blend(Proposal)
@@ -65,7 +65,7 @@ class RequestList(TestCase):
         self.client.force_login(self.user)
 
     def test_request_list(self):
-        response = self.client.get(reverse('userrequests:request-list', kwargs={'ur': self.userrequest.id}))
+        response = self.client.get(reverse('userrequests:list', kwargs={'ur': self.userrequest.id}))
         for request in self.requests:
             self.assertContains(response, request.id)
 

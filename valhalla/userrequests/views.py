@@ -1,5 +1,6 @@
 from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.base import TemplateView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.http import HttpResponseBadRequest
@@ -94,3 +95,7 @@ class RequestListView(LoginRequiredMixin, FilterView):
         context = super().get_context_data(**kwargs)
         context['userrequest'] = UserRequest.objects.get(pk=self.kwargs['ur'])
         return context
+
+
+class RequestCreateView(LoginRequiredMixin, TemplateView):
+    template_name = 'userrequests/request_create.html'

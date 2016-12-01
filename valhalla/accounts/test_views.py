@@ -127,3 +127,7 @@ class TestProfile(TestCase):
         response = self.client.post(reverse('profile'), bad_data, follow=True)
         self.assertContains(response, 'This field is required')
         self.assertTrue(Profile.objects.get(pk=self.profile.id).user.username)
+
+    def test_api_call(self):
+        response = self.client.get(reverse('api:profile'))
+        self.assertEqual(response.json()['username'], self.profile.user.username)

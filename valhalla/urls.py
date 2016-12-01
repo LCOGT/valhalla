@@ -7,6 +7,7 @@ from django.conf.urls.static import static
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet
 from valhalla.userrequests.views import UserRequestListView
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView
+from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
 import valhalla.proposals.urls as proposals_urls
@@ -16,10 +17,15 @@ router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
 router.register(r'user_requests', UserRequestViewSet, 'user_requests')
 
+api_urlpatterns = [
+    url(r'^', include(router.urls)),
+    url(r'profile/', ProfileApiView.as_view(), name='profile')
+]
+
 urlpatterns = [
     url(r'^$', UserRequestListView.as_view(), name='index'),
     url(r'^accounts/', include(accounts_urls)),
-    url(r'^api/', include(router.urls, namespace='api')),
+    url(r'^api/', include(api_urlpatterns, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
     url(r'^requests/', include(userrequest_urls, namespace='userrequests')),

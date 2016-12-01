@@ -31,7 +31,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'])
     def validate(self, request):
-        serializer = UserRequestSerializer(data=request.data)
+        serializer = UserRequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             return Response('ok')
         else:

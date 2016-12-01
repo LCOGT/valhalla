@@ -1,10 +1,12 @@
 from django.views.generic.base import TemplateView
+from rest_framework.generics import RetrieveAPIView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
 from django.contrib import messages
 
 from valhalla.accounts.forms import UserForm, ProfileForm
+from valhalla.accounts.serializers import UserSerializer
 
 
 class UserUpdateView(LoginRequiredMixin, TemplateView):
@@ -28,3 +30,13 @@ class UserUpdateView(LoginRequiredMixin, TemplateView):
         else:
             context = self.get_context_data(user_form=user_form, profile_form=profile_form)
             return super().render_to_response(context)
+
+
+class ProfileApiView(RetrieveAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        if self.request.user.is_authenticated():
+            return self.request.user
+        else:
+            return None
