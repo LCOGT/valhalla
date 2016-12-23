@@ -7,31 +7,35 @@
   <div class="row">
     <div class="col-md-12">
       <h2>Observation Request: {{ userrequest.group_id }}</h2>
+      <div class="form-group">
+        <input type="checkbox" id="advanced" v-model="advanced">
+        <label for="advanced">Show advanced options</label>
+      </div>
       <form class="form-inline" v-on:change="validate()">
-        <div class="form-group" :class="{'has-error': errors.has('title')}">
+        <div class="form-group" :class="{'has-error': errors['title']}">
           <label for="group_id">Title:</label>
-          <input id="group_id" v-model="userrequest.group_id" v-validate data-vv-rules="required" name="title" class="form-control">
-          <span v-show="errors.has('title')" class="help-block">{{ errors.first('title') }}</span>
+          <input id="group_id" v-model="userrequest.group_id" name="title" class="form-control" required>
+          <span v-show="errors['title']" class="help-block">{{ errors['title'] }}</span>
         </div>
-        <div class="form-group" :class="{'has-error': errors.has('proposal')}">
+        <div class="form-group" :class="{'has-error': errors['proposal'] && userrequest.proposal}">
           <label for="proposal">Proposal:</label>
-          <select id="proposal" v-model="userrequest.proposal" v-validate data-vv-rules="required" name="proposal" class="form-control">
+          <select id="proposal" v-model="userrequest.proposal" name="proposal" class="form-control">
             <option selected="selected">Choose a proposal</option>
             <option v-for="proposal in proposals">{{ proposal }}</option>
           </select>
-          <span v-show="errors.has('proposal')" class="help-block">{{ errors.first('proposal') }}</span>
+          <span v-show="errors['proposal'] && userrequest.proposal" v-show="userrequest.proposal" class="help-block">{{ errors['proposal'] }}</span>
         </div>
-        <div class="form-group" :class="{'has-error': errors.has('ipp_value')}">
+        <div class="form-group" :class="{'has-error': errors['ipp_value'].length}">
           <label for="ipp_value">Ipp Value</label>
-          <input id="ipp_value" type="number" v-validate data-vv-rules="" name="ipp_value" v-model="userrequest.ipp_value" class="form-control">
-          <span v-show="errors.has('ipp_value')" class="help-block">{{ errors.first('ipp_value') }}</span>
+          <input id="ipp_value" type="number" name="ipp_value" v-model="userrequest.ipp_value" class="form-control">
+          <span v-show="errors['ipp_value'].length" class="help-block">{{ errors['ipp_value'] }}</span>
         </div>
       </form>
     </div>
   </div>
   <div class="row">
     <div class="col-md-12">
-      <h3>Observation Elements</h3>
+      <h3>Observation Elements</h3><small><a href="#" v-on:click="addRequest()">Add Another Request</a>
     </div>
   </div>
   <!-- For each Request -->
@@ -39,12 +43,11 @@
     <div class="col-md-12">
     <!-- Taget form -->
     <h4>Target: {{ request.target.name }}</h4>
-    <form class="form-inline" v-on:change="validate()" data-vv-scope="request-{{ index }}">
-      <div class="form-group">
+    <form class="form-inline" v-on:change="validate()">
+      <div class="form-group" :class="{'has-error': errors.requests[0].target.name.length}">
         <label for="request_{{ index }}_target_name">Name:</label>
-        <input id="request_{{ index }}_target_name" name="request_target_name" v-validate data-vv-rules="required" v-model="request.target.name" class="form-control">
-        <span v-show="errors.has('requests[index]')" class="help-block">{{ errors.first('ipp_value') }}</span>
-        <div class="error" v-if="errors.requests">
+        <input id="request_{{ index }}_target_name" name="request_target_name" v-model="request.target.name" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.name.length">
           <span class="text-danger" v-for="error in errors.requests[index].target.name">{{ error }}</span>
         </div>
       </div>
@@ -54,25 +57,82 @@
           <option value="SIDEREAL" selected>Sidereal</option>
           <option value="NON_SIDEREAL">Non-Sidereal</option>
         </select>
-        <div class="error" v-if="errors.requests">
+        <div class="error" v-if="errors.requests[index].target.type.length">
           <span class="text-danger" v-for="error in errors.requests[index].target.type">{{ error }}</span>
         </div>
       </div>
     </form>
+
     <!-- Sidereal form -->
     <form class="form" v-if="request.target.type == 'SIDEREAL'" v-on:change="validate()">
       <div class="form-group col-md-6">
         <label for="request_{{ index }}_target_ra">Right Ascension:</label>
         <input id="request_{{ index }}_target_ra" v-model="request.target.ra" class="form-control">
-        <div class="error" v-if="errors.requests">
+        <div class="error" v-if="errors.requests[index].target.ra.length">
           <span class="text-danger" v-for="error in errors.requests[index].target.ra">{{ error }}</span>
         </div>
       </div>
       <div class="form-group col-md-6">
         <label for="request_{{ index }}_target_dec">Declination:</label>
         <input id="request_{{ index }}_target_dec" v-model="request.target.dec" class="form-control">
-        <div class="error" v-if="errors.requests">
+        <div class="error" v-if="errors.requests[index].target.dec.length">
           <span class="text-danger" v-for="error in errors.requests[index].target.dec">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6" v-if="advanced">
+        <label for="request_{{ index }}_target_proper_motion_ra">Proper Motion RA:</label>
+        <input id="request_{{ index }}_target_proper_motion_ra" v-model="request.target.proper_motion_ra" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.proper_motion_ra.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.proper_motion_ra">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6" v-if="advanced">
+        <label for="request_{{ index }}_target_proper_motion_dec">Proper Motion Dec:</label>
+        <input id="request_{{ index }}_target_proper_motion_dec" v-model="request.target.proper_motion_dec" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.proper_motion_dec.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.proper_motion_dec">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6" v-if="advanced">
+        <label for="request_{{ index }}_target_epoch">Epoch:</label>
+        <input id="request_{{ index }}_target_epoch" v-model="request.target.epoch" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.epoch.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.epoch">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6" v-if="advanced">
+        <label for="request_{{ index }}_target_parallax">Parallax:</label>
+        <input id="request_{{ index }}_target_parallax" v-model="request.target.parallax" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.parallax.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.parallax">{{ error }}</span>
+        </div>
+      </div>
+    </form>
+
+    <!-- NonSidereal Form -->
+    <form class="form" v-if="request.target.type == 'NON_SIDEREAL'" v-on:change="validate()">
+      <div class="form-group col-md-6">
+        <label for="request_{{ index }}_target_scheme">Scheme:</label>
+        <select id="request_{{ index }}_target_scheme" v-model="request.target.scheme" class="form-control">
+          <option value="MPC_MINOR_PLANET" selected>MPC Minor Planet</option>
+          <option value="MPC_COMET">MPC Comet</option>
+        </select>
+        <div class="error" v-if="errors.requests[index].target.scheme.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.scheme">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6">
+        <label for="request_{{ index }}_target_epoch">Epoch (MJD):</label>
+        <input id="request_{{ index }}_target_epoch" v-model="request.target.epoch" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.epoch.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.epoch">{{ error }}</span>
+        </div>
+      </div>
+      <div class="form-group col-md-6">
+        <label for="request_{{ index }}_target_orbinc">Orbital Inclination (deg):</label>
+        <input id="request_{{ index }}_target_orbinc" v-model="request.target.orbinc" class="form-control">
+        <div class="error" v-if="errors.requests[index].target.orbinc.length">
+          <span class="text-danger" v-for="error in errors.requests[index].target.orbinc">{{ error }}</span>
         </div>
       </div>
     </form>
@@ -82,9 +142,5 @@
 {% endblock %}
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.3/vue.min.js"></script>
-<script src="https://cdn.jsdelivr.net/vee-validate/2.0.0-beta.17/vee-validate.min.js"></script>
-<script>
-  Vue.use(VeeValidate);
-</script>
 <script src="{% static 'js/request_create.js' %}"></script>
 {% endblock %}

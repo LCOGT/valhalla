@@ -16,7 +16,8 @@ var userrequest = {
       name: '',
       type: 'SIDEREAL',
       ra: '',
-      dec: ''
+      dec: '',
+      scheme: 'MPC_MINOR_PLANET'
     },
     molecules:[{
       type: 'EXPOSE',
@@ -39,12 +40,57 @@ var userrequest = {
       min_lunar_distance: 30.0
     }
   }]
-}
+};
+
+var errors = {
+  proposal: [],
+  group_id: [],
+  operator: [],
+  ipp_value: [],
+  observation_type: [],
+  requests:[{
+    target: {
+      name: [],
+      type: [],
+      ra: [],
+      dec: [],
+      proper_motion_ra: [],
+      proper_motion_dec: [],
+      epoch: [],
+      parallax: [],
+      scheme: [],
+      orbinc: []
+    },
+    molecules:[{
+      type: [],
+      instrument_name: [],
+      fitler: [],
+      exposure_time: [],
+      exposure_count: [],
+      bin_x: [],
+      bin_y: []
+    }],
+    windows:[{
+      start: [],
+      end: []
+    }],
+    location:{
+      telescope_class: []
+    },
+    constraints: {
+      max_airmass: [],
+      min_lunar_distance: []
+    }
+  }]
+};
+
 var app = new Vue({
   el: '#vueapp',
   data: {
     proposals: [],
-    userrequest: JSON.parse(JSON.stringify(userrequest))
+    userrequest: JSON.parse(JSON.stringify(userrequest)),
+    errors: JSON.parse(JSON.stringify(errors)),
+    advanced: false,
   },
   methods: {
     validate: function(){
@@ -55,13 +101,7 @@ var app = new Vue({
         data: JSON.stringify(that.userrequest),
         contentType: 'application/json',
         success: function(data){
-          for (var key in data){
-            if(data.hasOwnProperty(key)){
-              for(i=0; i<data[key].length; i++){
-                that.errors.add(key, data[key][i]);
-              }
-            }
-          }
+          that.errors = $.extend(true, JSON.parse(JSON.stringify(errors)), data);
         }
       });
     },
@@ -72,7 +112,9 @@ var app = new Vue({
       });
     },
     addRequest: function(){
-      this.userrequest.requests.push(JSON.parse(JSON.stringify(userrequest.requests[0])))
+      this.userrequest.requests.push(JSON.parse(JSON.stringify(this.userrequest.requests[0])));
+      errors.requests.push(JSON.parse(JSON.stringify(errors.requests[0])));
+      this.errors.requests.push(JSON.parse(JSON.stringify(this.errors.requests[0])));
     }
   }
 });
