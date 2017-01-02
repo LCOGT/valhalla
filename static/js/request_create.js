@@ -59,7 +59,9 @@ var errors = {
       epoch: [],
       parallax: [],
       scheme: [],
-      orbinc: []
+      orbinc: [],
+      longascnode: [],
+      argofperih: [],
     },
     molecules:[{
       type: [],
@@ -83,6 +85,17 @@ var errors = {
     }
   }]
 };
+
+Vue.component('request-field', {
+  props: ['size', 'id', 'label', 'value', 'errpath'],
+  template: '<div class="form-group" :class="[{\'has-error\': errpath.length}, size]"> \
+              <label :for="id">{{ label }}</label> \
+              <input :id=id class="form-control" v-bind:value="value" @input="$emit(\'input\', $event.target.value)"/> \
+              <div class="error" v-if="errpath.length"> \
+                <span class="text-danger" v-for="error in errpath">{{ error }}</span> \
+              </div> \
+            </div>'
+})
 
 var app = new Vue({
   el: '#vueapp',
