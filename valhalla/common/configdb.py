@@ -156,7 +156,7 @@ class ConfigDB(object):
         :return: Set of available instrument_types (i.e. 1M0-SCICAM-SBIG, etc.)
         '''
         instrument_types = set()
-        for instrument in self.get_instruments():
+        for instrument in self.get_instruments(only_schedulable=True):
             split_string = instrument['__str__'].lower().split('.')
             if (location.get('site', '').lower() in split_string[0]
                     and location.get('observatory', '').lower() in split_string[1]

@@ -6,6 +6,7 @@ var userrequest = {
   ipp_value: 1.0,
   observation_type: 'NORMAL',
   requests:[{
+    data_type: 'IMAGE',
     target: {
       name: '',
       type: 'SIDEREAL',
@@ -83,6 +84,15 @@ var errors = {
   }]
 };
 
+var allInstrumentTypes = {
+  '2M0-SCICAM-SPECTRAL': 'IMAGE',
+  '2M0-FLOYDS-SCICAM': 'SPECTRA',
+  '0M8-SCICAM-SBIG': 'IMAGE',
+  '1M0-SCICAM-SINISTRO': 'IMAGE',
+  '0M4-SCICAM-SBIG': 'IMAGE',
+  '0M8-NRES-SCICAM': 'SPECTRA'
+};
+
 Vue.component('request-field', {
   props: ['size', 'id', 'label', 'value', 'errpath'],
   template: '<div class="control-group" :class="[{\'has-error\': errpath.length}, size]"> \
@@ -98,6 +108,7 @@ var app = new Vue({
   el: '#vueapp',
   data: {
     proposals: [],
+    instrumentTypes: [],
     userrequest: JSON.parse(JSON.stringify(userrequest)),
     errors: JSON.parse(JSON.stringify(errors)),
     advanced: false,
@@ -119,6 +130,11 @@ var app = new Vue({
       var that = this;
       $.getJSON('/api/profile/', function(data){
         that.proposals = data.proposals;
+        for (var i = 0; i < data.available_instrument_types.length; i++) {
+          that.instrumentTypes.push(
+            {'type': allInstrumentTypes[data.available_instrument_types[i]], 'name': data.available_instrument_types[i]}
+          );
+        }
       });
     },
     addRequest: function(index){
@@ -152,9 +168,25 @@ var app = new Vue({
       );
     },
     removeMolecule: function(requestIndex, molIndex){
-      if(confirm('Are you sure you wish to remove this configuration?')){
+      if(confirm('Are you sure you wish to remove configuration #' + (molIndex + 1) + '?')){
         this.userrequest.requests[requestIndex].molecules.splice(molIndex, 1);
         this.errors.requests[requestIndex].molecules.splice(molIndex, 1);
+      }
+    },
+    changeDataType: function(requestIndex){
+      var request = this.userrequest.requests[requestIndex];
+      var new_mol = JSON.parse(JSON.stringify(userrequest.requests[0].molecules[0]));
+      new_mol.type = (request.data_type === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+      if(request.molecules.length > 1){
+        if(confirm('This is will remove all instrument configurations, are you sure?')){
+          errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
+          this.errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
+          this.userrequest.requests[requestIndex].molecules = [new_mol];
+        }else{
+          request.data_type = (request.data_type === 'IMAGE') ? 'SPECTRA': 'IMAGE';
+        }
+      }else{
+        request.molecules[0] = new_mol;
       }
     }
   }

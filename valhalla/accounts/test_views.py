@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from mixer.backend.django import mixer
 
+from valhalla.common.test_helpers import ConfigDBTestMixin
 from valhalla.accounts.models import Profile
-from valhalla.proposals.models import ProposalInvite, Membership
+from valhalla.proposals.models import ProposalInvite, Membership, Proposal, TimeAllocation
 
 
 class TestIndex(TestCase):
@@ -92,8 +93,9 @@ class TestRegistration(TestCase):
         self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
 
 
-class TestProfile(TestCase):
+class TestProfile(ConfigDBTestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.profile = mixer.blend(Profile, notifications_enabled=True)
         self.data = {
             'first_name': self.profile.user.first_name,
@@ -131,3 +133,14 @@ class TestProfile(TestCase):
     def test_api_call(self):
         response = self.client.get(reverse('api:profile'))
         self.assertEqual(response.json()['username'], self.profile.user.username)
+
+    def test_avaialable_instruments(self):
+        response = self.client.get(reverse('api:profile'))
+        self.assertFalse(response.json()['available_instrument_types'])
+
+        proposal = mixer.blend(Proposal, active=True)
+        mixer.blend(Membership, proposal=proposal, user=self.profile.user)
+        mixer.blend(TimeAllocation, proposal=proposal, telescope_class="1m0")
+
+        response = self.client.get(reverse('api:profile'))
+        self.assertGreater(len(response.json()['available_instrument_types']), 0)
