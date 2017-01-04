@@ -1,10 +1,4 @@
 /* globals $ Vue */
-/* Notes
- * vee-validate seems nice, but getting it to work with nested forms may be an issue. Can't seem to index in templates.
- * May be worth just writing our own error bag class that just extends what the backend sends us.
- * See the validate method below
- * we may also be able to just connect custom validators to every field that needs it an parse the josn response
- */
 var userrequest = {
   proposal: '',
   group_id: '',
@@ -23,7 +17,7 @@ var userrequest = {
       type: 'EXPOSE',
       instrument_name: '',
       fitler: '',
-      exposure_time: 0,
+      exposure_time: 30,
       exposure_count: 1,
       bin_x: 1,
       bin_y: 1
@@ -62,6 +56,9 @@ var errors = {
       orbinc: [],
       longascnode: [],
       argofperih: [],
+      meandist: [],
+      eccentricity: [],
+      meananom: [],
     },
     molecules:[{
       type: [],
@@ -88,14 +85,14 @@ var errors = {
 
 Vue.component('request-field', {
   props: ['size', 'id', 'label', 'value', 'errpath'],
-  template: '<div class="form-group" :class="[{\'has-error\': errpath.length}, size]"> \
+  template: '<div class="control-group" :class="[{\'has-error\': errpath.length}, size]"> \
               <label :for="id">{{ label }}</label> \
-              <input :id=id class="form-control" v-bind:value="value" @input="$emit(\'input\', $event.target.value)"/> \
-              <div class="error" v-if="errpath.length"> \
-                <span class="text-danger" v-for="error in errpath">{{ error }}</span> \
-              </div> \
+              <div class="controls"> \
+                <input :id=id class="form-control" v-bind:value="value" @input="$emit(\'input\', $event.target.value)"/> \
+                  <span class="help-block text-danger" v-for="error in errpath">{{ error }}</span> \
+                </div> \
             </div>'
-})
+});
 
 var app = new Vue({
   el: '#vueapp',
@@ -124,10 +121,41 @@ var app = new Vue({
         that.proposals = data.proposals;
       });
     },
-    addRequest: function(){
-      this.userrequest.requests.push(JSON.parse(JSON.stringify(this.userrequest.requests[0])));
-      errors.requests.push(JSON.parse(JSON.stringify(errors.requests[0])));
-      this.errors.requests.push(JSON.parse(JSON.stringify(this.errors.requests[0])));
+    addRequest: function(index){
+      this.userrequest.requests.push(JSON.parse(JSON.stringify(this.userrequest.requests[index])));
+      errors.requests.push(JSON.parse(JSON.stringify(errors.requests[index])));
+      this.errors.requests.push(JSON.parse(JSON.stringify(this.errors.requests[index])));
+    },
+    removeRequest: function(index){
+      if(confirm('Are you sure you want to remove this request?')){
+        this.userrequest.requests.splice(index, 1);
+        this.errors.requests.splice(index, 1);
+      }
+    },
+    clearTargetFields: function(index){
+      var fieldsToKeep = ['name', 'type'];
+      for(var prop in this.userrequest.requests[index].target){
+        if(fieldsToKeep.indexOf(prop) < 0){
+          delete this.userrequest.requests[index].target[prop];
+        }
+      }
+    },
+    addMolecule: function(requestIndex, molIndex){
+      this.userrequest.requests[requestIndex].molecules.push(
+        JSON.parse(JSON.stringify(this.userrequest.requests[requestIndex].molecules[molIndex]))
+      );
+      errors.requests[requestIndex].molecules.push(
+        JSON.parse(JSON.stringify(errors.requests[requestIndex].molecules[molIndex]))
+      );
+      this.errors.requests[requestIndex].molecules.push(
+        JSON.parse(JSON.stringify(this.errors.requests[requestIndex].molecules[molIndex]))
+      );
+    },
+    removeMolecule: function(requestIndex, molIndex){
+      if(confirm('Are you sure you wish to remove this configuration?')){
+        this.userrequest.requests[requestIndex].molecules.splice(molIndex, 1);
+        this.errors.requests[requestIndex].molecules.splice(molIndex, 1);
+      }
     }
   }
 });
