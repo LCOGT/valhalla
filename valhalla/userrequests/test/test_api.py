@@ -797,6 +797,14 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn("Invalid instrument name \\\'1M0-SCICAM-SBIG\\\' at site", str(response.content))
         self.assertEqual(response.status_code, 400)
 
+    def test_molecules_with_different_instrument_names(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'].append(bad_data['requests'][0]['molecules'][0].copy())
+        bad_data['requests'][0]['molecules'][1]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def setUp(self):
