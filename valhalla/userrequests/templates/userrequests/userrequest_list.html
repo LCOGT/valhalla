@@ -2,137 +2,143 @@
 {% load i18n bootstrap3 request_extras humanize %}
 {% block title %}Submitted Requests{% endblock %}
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
 {% endblock %}
 {% block request_list %}
 {% if user.is_authenticated %}
-    <div class="row">
-        <div class="col-md-12">
-        <h3>Requests<small><a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a></small></h3>
-        <div class="filter-block" style="display:none">
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Requests<small><a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a></small></h3>
+      <div class="filter-block" style="display:none">
         <form method="get" action="" class="form-inline">
-            <div class="form-group">
-                {% bootstrap_field filter.form.state show_label=False show_help=False size='small' addon_before='State:' bound_css_class='' %}
-            </div>
-            <div class="form-group">
-                {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' %}
-            </div>
-            <div class="form-group">
-                <label class="sr-only control-label" for="id_proposal">Proposal</label>
-                <div class="input-group">
-                    <span class="input-group-addon">Proposal:</span>
-                    <select class="form-control input-sm" id="id_proposal" name="proposal" title="">
-                        <option value="">---------</option>
-                        {% for proposal in user.proposal_set.all %}
-                        <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>{{ proposal }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='Created After' bound_css_class='' %}
-            </div>
-            <div class="form-group">
-                {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='Created Before' bound_css_class='' %}
-            </div>
-            <input type="submit" class="btn btn-default btn-sm" value="Filter"/>
-        </form>
-        </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <section class="userrequest-list">
-                {% for ur in object_list %}
-                    <div class="row userrequest userrequest-{{ ur.state|state_to_bs }}">
-                        <div class="col-md-7">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <strong><a class="text-{{ ur.state|state_to_bs }} userrequest-title" href="{% url 'userrequests:request-list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 userrequest-block border-right">
-                                    <p><i class="fa fa-user"></i> {{ ur.submitter }}</p>
-                                    <p><i class="fa fa-users"></i> {{ ur.proposal }}</p>
-                                </div>
-                                <div class="col-md-6 userrequest-block border-right">
-                                    <p><span class="text-{{ ur.state|state_to_bs }}">
-                                        <i class="fa fa-{{ ur.state|state_to_icon }}"></i>
-                                        {{ ur.state }}
-                                    </span></p>
-                                    <p><i class="fa fa-calendar"></i> {{ ur.modified|naturaltime }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% if ur.request_set.all %}
-                            <div class="col-xs-1">
-                                <div class="row">
-                                    <div class="col-md-12 request-count">
-                                        <a href="#"><center>{{ ur.request_set.count }}</center></a></span>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <small><p class="text-muted text-center request-id child-requests">Child Request{{ ur.request_set.count|pluralize }}</p></small>
-                                    </div>
-                                </div>
-                            </div>
-                            {% for i in 'xxxx' %}
-                                {% with req=ur.request_set.all|array_item:forloop.counter %}
-                                {% if req %}
-                                <div class="col-xs-1 bg-{{ req.state|state_to_bs }} request-block">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                           <i class="fa fa-{{ req.state|state_to_icon }} fa-2x request-icon text-{{ req.state|state_to_bs }} text-center"></i>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <span class="text-muted request-id text-center"><small>#{{ req.id }}</small></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% else %}
-                                    <div class="col-xs-1 hidden-sm hidden-xs request-block">
-                                    </div>
-                                {% endif %}
-                                {% endwith %}
-                            {% endfor %}
-                        {% else %}
-                            <div class="col-md-4 bg-danger no-requests request-block">
-                                <p>No requests attempted.</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="spacer"></div>
-                {% empty %}
-                    {% trans 'You have not submitted any requests.' %} <a href="#">{% trans 'Submit Observation Request' %}</a>
+          <div class="form-group">
+            {% bootstrap_field filter.form.state show_label=False show_help=False size='small' addon_before='State:' bound_css_class='' %}
+          </div>
+          <div class="form-group">
+            {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' %}
+          </div>
+          <div class="form-group">
+            <label class="sr-only control-label" for="id_proposal">Proposal</label>
+            <div class="input-group">
+              <span class="input-group-addon">Proposal:</span>
+              <select class="form-control input-sm" id="id_proposal" name="proposal" title="">
+                <option value="">---------</option>
+                {% for proposal in user.proposal_set.all %}
+                <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>{{ proposal }}</option>
                 {% endfor %}
-            </section>
-        </div>
-    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='Created After' bound_css_class='' %}
+          </div>
+          <div class="form-group">
+            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='Created Before' bound_css_class='' %}
+          </div>
+          <input type="submit" class="btn btn-info btn-sm" value="Filter"/>
+        </form>
+      </div>
     </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <small>User Info</small>
+    </div>
+    <div class="col-md-3">
+      <small>State Info</small>
+    </div>
+    <div class="col-md-5">
+      <small class="pull-right"># Requests / Complete / Pending / Failed</small>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <section class="userrequest-list">
+        {% for ur in object_list %}
+        <div class="row userrequest userrequest-{{ ur.state|state_to_bs }}">
+          <div class="col-md-8">
+            <div class="row">
+              <div class="col-md-12">
+                <strong><a class="text-{{ ur.state|state_to_bs }} userrequest-title" href="{% url 'userrequests:request-list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 userrequest-block border-right">
+                <p><i class="fa fa-user"></i> {{ ur.submitter }}</p>
+                <p><i class="fa fa-users"></i> {{ ur.proposal }}</p>
+              </div>
+              <div class="col-md-6 userrequest-block border-right">
+                <p><span class="text-{{ ur.state|state_to_bs }}">
+                  <i class="fa fa-{{ ur.state|state_to_icon }}"></i>
+                  {{ ur.state }}
+                </span></p>
+                <p><i class="fa fa-calendar"></i> {{ ur.modified|naturaltime }}</p>
+              </div>
+            </div>
+          </div>
+          {% if ur.request_set.all %}
+          <div class="col-xs-1 request-block">
+            <div class="row">
+              <div class="col-md-12 request-count">
+                <p><center>{{ ur.request_set.count }}</center></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-1 request-block">
+            <div class="row">
+              <div class="col-xs-12 request-count">
+                <p><center class="text-success">{{ ur|request_state_count:'COMPLETED' }}</center></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-1 request-block">
+            <div class="row">
+              <div class="col-xs-12 request-count">
+                <p><center class="text-warning">{{ ur|request_state_count:'PENDING' }}</center></p>
+              </div>
+            </div>
+          </div>
+           <div class="col-xs-1 request-block">
+            <div class="row">
+              <div class="col-xs-12 request-count">
+                <p><center class="text-danger">{{ ur|request_state_count:'WINDOW_EXPIRED' }}</center></p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="col-md-3 bg-danger no-requests request-block">
+            <p>No requests attempted.</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="spacer"></div>
+        {% empty %}
+        {% trans 'You have not submitted any requests.' %} <a href="#">{% trans 'Submit Observation Request' %}</a>
+      {% endfor %}
+    </section>
+  </div>
+  {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+</div>
 {% else %}
-    <h3>{% trans 'LCO.global Observation Portal' %}</h3>
-    {% url 'auth_login' as login_url %}
-    {% url 'registration_register' as register_url %}
-    {% blocktrans %}
-    <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
-    <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
-    {% endblocktrans %}
+  <h3>{% trans 'LCO.global Observation Portal' %}</h3>
+  {% url 'auth_login' as login_url %}
+  {% url 'registration_register' as register_url %}
+  {% blocktrans %}
+  <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
+  <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
+  {% endblocktrans %}
 {% endif %}
 {% endblock %}
 {% block extra_javascript %}
-{{ block.super }}
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js'></script>
-<script type="text/javascript">
+  {{ block.super }}
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js'></script>
+  <script type="text/javascript">
     $('#id_created_after, #id_created_before').datetimepicker({
-        'format': 'YYYY-M-D HH:mm:ss'
+      'format': 'YYYY-M-D HH:mm:ss'
     });
     $('#filter').click(function(){
-        $('.filter-block').toggle(300);
+      $('.filter-block').toggle(300);
     })
-</script>
+  </script>
 {% endblock %}
