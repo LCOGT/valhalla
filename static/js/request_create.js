@@ -84,7 +84,7 @@ var errors = {
   }]
 };
 
-var allInstrumentTypes = {
+var instrumentTypeMap = {
   '2M0-SCICAM-SPECTRAL': 'IMAGE',
   '2M0-FLOYDS-SCICAM': 'SPECTRA',
   '0M8-SCICAM-SBIG': 'IMAGE',
@@ -108,7 +108,7 @@ var app = new Vue({
   el: '#vueapp',
   data: {
     proposals: [],
-    instrumentTypes: [],
+    instrumentTypes: {},
     userrequest: JSON.parse(JSON.stringify(userrequest)),
     errors: JSON.parse(JSON.stringify(errors)),
     advanced: false,
@@ -131,9 +131,14 @@ var app = new Vue({
       $.getJSON('/api/profile/', function(data){
         that.proposals = data.proposals;
         for (var i = 0; i < data.available_instrument_types.length; i++) {
-          that.instrumentTypes.push(
-            {'type': allInstrumentTypes[data.available_instrument_types[i]], 'name': data.available_instrument_types[i]}
-          );
+          var instrument_type = data.available_instrument_types[i];
+          that.instrumentTypes[instrument_type] = {
+            'type': instrumentTypeMap[instrument_type],
+            'name': instrument_type,
+            'filters': [],
+            'binnings': [],
+            'default_binning': undefined
+          };
         }
       });
     },
@@ -188,6 +193,21 @@ var app = new Vue({
       }else{
         request.molecules[0] = new_mol;
       }
+    },
+    changeInstrument: function(requestIndex, molIndex){
+      var mol = this.userrequest.requests[requestIndex].molecules[molIndex];
+      var that = this;
+      $.getJSON('/api/instrument/' + mol.instrument_name + '/', function(data){
+        that.instrumentTypes[mol.instrument_name].filters = data.filters;
+        that.instrumentTypes[mol.instrument_name].binnings = data.binnings;
+        that.instrumentTypes[mol.instrument_name].default_binning = data.default_binning;
+        mol.bin_x = data.default_binning;
+        mol.bin_y = data.default_binning;
+      });
+    },
+    updateBinning: function(requestIndex, molIndex){
+      var mol = this.userrequest.requests[requestIndex].molecules[molIndex];
+      mol.bin_y = mol.bin_x;
     }
   }
 });

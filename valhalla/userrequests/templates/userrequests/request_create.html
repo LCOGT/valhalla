@@ -131,10 +131,28 @@
             <div class="control-group col-md-3">
               <label for="instrument_name">Telescope Class</label>
               <div class="controls">
-                <select id="instrument_name" v-model="molecule.instrument_name" class="form-control">
+                <select id="instrument_name" v-model="molecule.instrument_name" class="form-control" v-on:change="changeInstrument(index, molIndex)">
                   <option v-for="instrumentType in instrumentTypes" :value="instrumentType.name" v-if="instrumentType.type === request.data_type">{{ instrumentType.name }}</option>
                 </select>
                 <span class="help-block text-danger" v-for="error in errors.requests[index].molecules[molIndex].instrument_name">{{ error }}</span>
+              </div>
+            </div>
+            <div class="control-group col-md-3" v-if="molecule.instrument_name">
+              <label for="filter">Filter</label>
+              <div class="controls">
+                <select id="filter" v-model="molecule.filter" class="form-control">
+                  <option v-for="filter in instrumentTypes[molecule.instrument_name].filters" :value="filter">{{ filter }}</option>
+                </select>
+                <span class="help-block text-danger" v-for="error in errors.requests[index].molecules[molIndex].filter">{{ error }}</span>
+              </div>
+            </div>
+            <div class="control-group col-md-3" v-if="molecule.instrument_name">
+              <label for="binning">Binning</label>
+              <div class="controls">
+                <select id="binning" v-model="molecule.bin_x" class="form-control" v-on:change="updateBinning(index, molIndex)">
+                  <option v-for="binning in instrumentTypes[molecule.instrument_name].binnings" :value="binning">{{ binning }}</option>
+                </select>
+                <span class="help-block text-danger" v-for="error in errors.requests[index].molecules[molIndex].bin_x">{{ error }}</span>
               </div>
             </div>
             <request-field id="exposure-time" label="Exposure Time" v-model="molecule.exposure_time" :errpath="errors.requests[index].molecules[molIndex].exposure_time" size="col-md-3"></request-field>

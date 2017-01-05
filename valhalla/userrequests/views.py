@@ -8,6 +8,9 @@ from django.utils import timezone
 from dateutil.parser import parse
 from datetime import timedelta
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
+from valhalla.common.configdb import ConfigDB
 from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class)
 
@@ -76,6 +79,18 @@ class TelescopeAvailabilityView(APIView):
         str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}
 
         return Response(str_telescope_availability)
+
+
+class InstrumentInformationView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, instrument_type):
+        configdb = ConfigDB()
+        return Response({
+            'filters': configdb.get_filters(instrument_type),
+            'binnings': configdb.get_binnings(instrument_type),
+            'default_binning': configdb.get_default_binning(instrument_type),
+        })
 
 
 class RequestListView(LoginRequiredMixin, FilterView):

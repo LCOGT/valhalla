@@ -7,6 +7,7 @@ from mixer.backend.django import mixer
 from valhalla.proposals.models import Proposal, Membership
 from valhalla.userrequests.models import UserRequest, Request, Molecule
 from valhalla.common.test_telescope_states import TelescopeStatesFromFile
+from valhalla.common.test_helpers import ConfigDBTestMixin
 
 
 class UserRequestList(TestCase):
@@ -94,3 +95,12 @@ class TestTelescopeStates(TelescopeStatesFromFile):
     def test_no_date_specified(self):
         response = self.client.get(reverse('telescope_states'))
         self.assertContains(response, str(timezone.now().date()))
+
+
+class TestInstrumentInformation(ConfigDBTestMixin, TestCase):
+    def test_instrument_information(self):
+        response = self.client.get(
+            reverse('api:instrument_information', kwargs={'instrument_type': '1M0-SCICAM-SBIG'})
+        )
+        self.assertIn('air', response.json()['filters'])
+        self.assertTrue(True)
