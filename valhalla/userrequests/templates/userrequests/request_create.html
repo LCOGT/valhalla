@@ -52,8 +52,15 @@
               <option value="SPECTRA">Spectra</option>
             </select>
         </div>
+        <div class="form-group">
+          <label for="instrument_name">Instrument</label>
+          <select id="instrument_name" v-model="request.instrument_name" class="form-control" v-on:change="changeInstrument(index)">
+            <option v-for="instrumentType in instrumentTypes" :value="instrumentType.name" v-if="instrumentType.type === request.data_type">{{ instrumentType.name }}</option>
+          </select>
+        </div>
       </form>
     </div>
+
     <!-- Target form -->
     <div class="col-md-12">
       <h3>Target</h3>
@@ -108,7 +115,7 @@
     </div>
 
     <!-- Molecule Form -->
-    <div class="col-md-12">
+    <div class="col-md-12" v-if="request.instrument_name">
       <h3>Configurations</h3>
       <div class="row" v-for="(molecule, molIndex) in request.molecules">
         <div class="col-md-12">
@@ -129,15 +136,6 @@
               </div>
             </div>
             <div class="control-group col-md-3">
-              <label for="instrument_name">Telescope Class</label>
-              <div class="controls">
-                <select id="instrument_name" v-model="molecule.instrument_name" class="form-control" v-on:change="changeInstrument(index, molIndex)">
-                  <option v-for="instrumentType in instrumentTypes" :value="instrumentType.name" v-if="instrumentType.type === request.data_type">{{ instrumentType.name }}</option>
-                </select>
-                <span class="help-block text-danger" v-for="error in errors.requests[index].molecules[molIndex].instrument_name">{{ error }}</span>
-              </div>
-            </div>
-            <div class="control-group col-md-3" v-if="molecule.instrument_name">
               <label for="filter">Filter</label>
               <div class="controls">
                 <select id="filter" v-model="molecule.filter" class="form-control">
@@ -146,7 +144,7 @@
                 <span class="help-block text-danger" v-for="error in errors.requests[index].molecules[molIndex].filter">{{ error }}</span>
               </div>
             </div>
-            <div class="control-group col-md-3" v-if="molecule.instrument_name">
+            <div class="control-group col-md-3">
               <label for="binning">Binning</label>
               <div class="controls">
                 <select id="binning" v-model="molecule.bin_x" class="form-control" v-on:change="updateBinning(index, molIndex)">
@@ -156,6 +154,7 @@
               </div>
             </div>
             <request-field id="exposure-time" label="Exposure Time" v-model="molecule.exposure_time" :errpath="errors.requests[index].molecules[molIndex].exposure_time" size="col-md-3"></request-field>
+            <request-field id="exposure-count" label="Exposure Count" v-model="molecule.exposure_count" :errpath="errors.requests[index].molecules[molIndex].exposure_count" size="col-md-3"></request-field>
 
             <button class="btn btn-primary col-md-3" v-if="request.data_type === 'SPECTRA' && molecule.type === 'SPECTRUM'">Add Calibrations</button>
           </form>

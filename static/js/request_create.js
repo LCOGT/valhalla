@@ -6,7 +6,8 @@ var userrequest = {
   ipp_value: 1.0,
   observation_type: 'NORMAL',
   requests:[{
-    data_type: 'IMAGE',
+    data_type: '',
+    instrument_name: '',
     target: {
       name: '',
       type: 'SIDEREAL',
@@ -180,34 +181,42 @@ var app = new Vue({
     },
     changeDataType: function(requestIndex){
       var request = this.userrequest.requests[requestIndex];
+      request.instrument_name = this.selectFirstInstrumentForDataType(request.data_type);
       var new_mol = JSON.parse(JSON.stringify(userrequest.requests[0].molecules[0]));
       new_mol.type = (request.data_type === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
-      if(request.molecules.length > 1){
-        if(confirm('This is will remove all instrument configurations, are you sure?')){
-          errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
-          this.errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
-          this.userrequest.requests[requestIndex].molecules = [new_mol];
-        }else{
-          request.data_type = (request.data_type === 'IMAGE') ? 'SPECTRA': 'IMAGE';
-        }
-      }else{
-        request.molecules[0] = new_mol;
-      }
+      new_mol.instrument_name = request.instrument_name;
+      errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
+      this.errors.requests[requestIndex].molecules = [JSON.parse(JSON.stringify(errors.requests[0].molecules[0]))];
+      this.userrequest.requests[requestIndex].molecules = [new_mol];
+      this.changeInstrument(requestIndex);
+
     },
-    changeInstrument: function(requestIndex, molIndex){
-      var mol = this.userrequest.requests[requestIndex].molecules[molIndex];
+    changeInstrument: function(requestIndex){
+      var request = this.userrequest.requests[requestIndex];
       var that = this;
-      $.getJSON('/api/instrument/' + mol.instrument_name + '/', function(data){
-        that.instrumentTypes[mol.instrument_name].filters = data.filters;
-        that.instrumentTypes[mol.instrument_name].binnings = data.binnings;
-        that.instrumentTypes[mol.instrument_name].default_binning = data.default_binning;
-        mol.bin_x = data.default_binning;
-        mol.bin_y = data.default_binning;
+      $.getJSON('/api/instrument/' + request.instrument_name + '/', function(data){
+        that.instrumentTypes[request.instrument_name].filters = data.filters;
+        that.instrumentTypes[request.instrument_name].binnings = data.binnings;
+        that.instrumentTypes[request.instrument_name].default_binning = data.default_binning;
+        for (var i = 0; i < request.molecules.length; i++) {
+          var mol = request.molecules[i];
+          mol.bin_x = data.default_binning;
+          mol.bin_y = data.default_binning;
+          mol.instrument_name = request.instrument_name;
+        }
       });
     },
     updateBinning: function(requestIndex, molIndex){
       var mol = this.userrequest.requests[requestIndex].molecules[molIndex];
       mol.bin_y = mol.bin_x;
+    },
+    selectFirstInstrumentForDataType: function(dataType){
+      for(var instrumentType in this.instrumentTypes){
+        if(this.instrumentTypes[instrumentType].type === dataType){
+          return instrumentType;
+        }
+      }
+      return '';
     }
   }
 });
