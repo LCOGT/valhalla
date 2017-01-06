@@ -6,6 +6,7 @@ from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
+from valhalla.userrequests.duration_utils import get_request_duration
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -33,9 +34,12 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     def validate(self, request):
         serializer = UserRequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            return Response('ok')
+            duration = sum([get_request_duration(req) for req in serializer.validated_data['request_set']])
+            errors = []
         else:
-            return Response(serializer.errors)
+            errors = serializer.errors
+            duration = 0
+        return Response({'duration': duration, 'errors': errors})
 
 
 class RequestViewSet(viewsets.ReadOnlyModelViewSet):

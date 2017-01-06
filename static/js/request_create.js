@@ -25,8 +25,8 @@ var userrequest = {
       bin_y: 1
     }],
     windows:[{
-      start: '2016-09-29T21:12:18Z',
-      end: '2016-10-29T21:12:19Z'
+      start: '2017-01-10T21:12:18Z',
+      end: '2017-01-29T21:12:19Z'
     }],
     location:{
       telescope_class: '1m0'
@@ -110,6 +110,7 @@ var app = new Vue({
   data: {
     proposals: [],
     instrumentTypes: {},
+    duration: 0,
     userrequest: JSON.parse(JSON.stringify(userrequest)),
     errors: JSON.parse(JSON.stringify(errors)),
     advanced: false,
@@ -123,7 +124,8 @@ var app = new Vue({
         data: JSON.stringify(that.userrequest),
         contentType: 'application/json',
         success: function(data){
-          that.errors = $.extend(true, JSON.parse(JSON.stringify(errors)), data);
+          that.errors = $.extend(true, JSON.parse(JSON.stringify(errors)), data.errors);
+          that.duration = data.duration;
         }
       });
     },
@@ -147,11 +149,17 @@ var app = new Vue({
       this.userrequest.requests.push(JSON.parse(JSON.stringify(this.userrequest.requests[index])));
       errors.requests.push(JSON.parse(JSON.stringify(errors.requests[index])));
       this.errors.requests.push(JSON.parse(JSON.stringify(this.errors.requests[index])));
+      this.userrequest.operator = 'MANY';
+      this.validate();
     },
     removeRequest: function(index){
       if(confirm('Are you sure you want to remove this request?')){
         this.userrequest.requests.splice(index, 1);
         this.errors.requests.splice(index, 1);
+        if(this.userrequest.requests.length < 2){
+            this.userrequest.operator = 'SINGLE'
+        }
+        this.validate();
       }
     },
     clearTargetFields: function(index){
@@ -172,11 +180,13 @@ var app = new Vue({
       this.errors.requests[requestIndex].molecules.push(
         JSON.parse(JSON.stringify(this.errors.requests[requestIndex].molecules[molIndex]))
       );
+      this.validate();
     },
     removeMolecule: function(requestIndex, molIndex){
       if(confirm('Are you sure you wish to remove configuration #' + (molIndex + 1) + '?')){
         this.userrequest.requests[requestIndex].molecules.splice(molIndex, 1);
         this.errors.requests[requestIndex].molecules.splice(molIndex, 1);
+        this.validate();
       }
     },
     changeDataType: function(requestIndex){
