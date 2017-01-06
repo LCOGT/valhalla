@@ -28,8 +28,5 @@ def state_to_icon(value):
 
 
 @register.filter
-def array_item(array, value):
-    try:
-        return array[value - 1]
-    except IndexError:
-        return None
+def request_state_count(userrequest, state):
+    return userrequest.request_set.filter(state=state).count()
