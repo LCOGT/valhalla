@@ -199,14 +199,14 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-validate'), data=good_data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'ok')
+        self.assertFalse(response.json()['errors'])
 
     def test_validation_fail(self):
         bad_data = self.generic_payload.copy()
         del bad_data['operator']
         response = self.client.post(reverse('api:user_requests-validate'), data=bad_data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['operator'][0], 'This field is required.')
+        self.assertEqual(response.json()['errors']['operator'][0], 'This field is required.')
 
 
 class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
