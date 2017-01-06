@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
+from importlib import import_module
 import requests
 import logging
 
@@ -117,8 +118,8 @@ class Request(models.Model):
 
     @property
     def as_dict(self):
-        from valhalla.userrequests.serializers import RequestSerializer
-        r_dict = RequestSerializer(self).data
+        serializers = import_module('valhalla.userrequests.serializers')
+        r_dict = serializers.RequestSerializer(self).data
         r_dict['window_set'] = r_dict['windows']
         r_dict['molecule_set'] = r_dict['molecules']
         return r_dict
@@ -367,8 +368,8 @@ class Molecule(models.Model):
 
     @property
     def as_dict(self):
-        from valhalla.userrequests.serializers import MoleculeSerializer
-        return MoleculeSerializer(self).data
+        serializers = import_module('valhalla.userrequests.serializers')  # avoid cyclic import
+        return serializers.MoleculeSerializer(self).data
 
     @cached_property
     def duration(self):
