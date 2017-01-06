@@ -189,7 +189,7 @@ class RequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_('You must specify at least 1 molecule'))
 
         # Make sure each molecule has the same instrument name
-        if len(set([molecule['instrument_name'] for molecule in value])) > 1:
+        if len(set(molecule['instrument_name'] for molecule in value)) > 1:
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))
         return value
 
