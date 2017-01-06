@@ -9,20 +9,23 @@ var userrequest = {
     data_type: '',
     instrument_name: '',
     target: {
-      name: '',
+      name: undefined,
       type: 'SIDEREAL',
-      ra: '',
-      dec: '',
+      ra: undefined,
+      dec: undefined,
       scheme: 'MPC_MINOR_PLANET'
     },
     molecules:[{
       type: 'EXPOSE',
-      instrument_name: '',
+      instrument_name: undefined,
       fitler: '',
       exposure_time: 30,
       exposure_count: 1,
       bin_x: 1,
-      bin_y: 1
+      bin_y: 1,
+      fill_window: false,
+      acquire_mode: undefined,
+      acquire_radius_arcsec: undefined,
     }],
     windows:[{
       start: '2017-01-10T21:12:18Z',
@@ -69,7 +72,9 @@ var errors = {
       exposure_time: [],
       exposure_count: [],
       bin_x: [],
-      bin_y: []
+      bin_y: [],
+      acquire_mode: [],
+      acquire_radius_arcsec: []
     }],
     windows:[{
       start: [],
@@ -157,7 +162,7 @@ var app = new Vue({
         this.userrequest.requests.splice(index, 1);
         this.errors.requests.splice(index, 1);
         if(this.userrequest.requests.length < 2){
-            this.userrequest.operator = 'SINGLE'
+          this.userrequest.operator = 'SINGLE';
         }
         this.validate();
       }
