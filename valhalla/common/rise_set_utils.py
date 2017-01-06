@@ -10,21 +10,22 @@ from valhalla.common.configdb import ConfigDB
 HOURS_PER_DEGREES = 15.0
 
 
-def get_rise_set_intervals(instrument_type, target_dict, constraints_dict, location_dict, window_list):
-    target = get_rise_set_target(target_dict)
-    airmass = constraints_dict['max_airmass']
-    moon_distance = constraints_dict['min_lunar_distance']
+def get_rise_set_intervals(request_dict):
+    target = get_rise_set_target(request_dict['target'])
+    airmass = request_dict['constraints']['max_airmass']
+    moon_distance = request_dict['constraints']['min_lunar_distance']
+    location = request_dict['location']
+    instrument_type = request_dict['molecule_set'][0]['instrument_name']
 
     configdb = ConfigDB()
-    site_details = configdb.get_sites_with_instrument_type_and_location(instrument_type,
-                                                                        location_dict.get('site', ''),
-                                                                        location_dict.get('observatory', ''),
-                                                                        location_dict.get('telescope', ''))
+    site_details = configdb.get_sites_with_instrument_type_and_location(
+            instrument_type, location.get('site', ''), location.get('observatory', ''), location.get('telescope', '')
+    )
     intervals = []
     for site_detail in site_details.values():
-        intervals.extend(get_rise_set_interval_for_target_and_site(target, site_detail,
-                                                                    window_list,
-                                                                    airmass, moon_distance))
+        intervals.extend(get_rise_set_interval_for_target_and_site(
+            target, site_detail, request_dict['window_set'], airmass, moon_distance)
+        )
 
     intervals = coalesce_adjacent_intervals(intervals)
 

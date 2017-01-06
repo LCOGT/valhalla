@@ -147,7 +147,8 @@ class TargetSerializer(serializers.ModelSerializer):
     TYPE_HELPER_MAP = {
         'SIDEREAL': SiderealTargetHelper,
         'NON_SIDEREAL': NonSiderealTargetHelper,
-        'SATELLITE': SatelliteTargetHelper
+        'SATELLITE': SatelliteTargetHelper,
+        'STATIC': SiderealTargetHelper,
     }
 
     class Meta:
@@ -209,16 +210,9 @@ class RequestSerializer(serializers.ModelSerializer):
                     msg += inst_name + ', '
                 raise serializers.ValidationError(msg)
 
-        instrument_type = data['molecule_set'][0]['instrument_name'].upper()
-
         # check that the requests window has enough rise_set visible time to accomodate the requests duration
-        duration = get_request_duration(instrument_type,
-                                        data['molecule_set'], data['target'].get('acquire_mode'))
-        rise_set_intervals = get_rise_set_intervals(instrument_type,
-                                                    data['target'],
-                                                    data['constraints'],
-                                                    data['location'],
-                                                    data['window_set'])
+        duration = get_request_duration(data)
+        rise_set_intervals = get_rise_set_intervals(data)
         largest_interval = timedelta(seconds=0)
         for interval in rise_set_intervals:
             largest_interval = max((interval[1] - interval[0]), largest_interval)
@@ -298,10 +292,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                                               min_window_time,
                                               max_window_time
                                               )
-                duration = get_request_duration(request['molecule_set'][0]['instrument_name'],
-                                                request['molecule_set'],
-                                                request['target'].get('acquire_mode')
-                                                )
+                duration = get_request_duration(request)
                 request_durations.append((tak, duration))
 
             total_duration_dict = get_total_duration_dict(data['operator'], request_durations)

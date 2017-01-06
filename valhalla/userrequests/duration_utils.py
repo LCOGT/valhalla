@@ -17,33 +17,32 @@ def get_num_filter_changes(molecules):
     return len(list(itertools.groupby([mol.get('filter', '') for mol in molecules])))
 
 
-def get_molecule_duration(instrument_type, binning, exposure_time, exposure_count):
+def get_molecule_duration(molecule_dict):
     configdb = ConfigDB()
-    total_overhead_per_exp = configdb.get_exposure_overhead(instrument_type, binning)
-    mol_duration = exposure_count * (exposure_time + total_overhead_per_exp)
+    total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
+    mol_duration = molecule_dict['exposure_count'] * (molecule_dict['exposure_time'] + total_overhead_per_exp)
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
     return duration
 
 
-def get_request_duration(instrument_type, molecule_list, target_acquire_mode='OPTIONAL'):
+def get_request_duration(request_dict):
     # calculate the total time needed by the request, based on its instrument and exposures
     configdb = ConfigDB()
-    request_overheads = configdb.get_request_overheads(instrument_type)
-    duration = sum([get_molecule_duration(instrument_type, m['bin_x'], m['exposure_time'], m['exposure_count'])
-                    for m in molecule_list])
-    if configdb.is_spectrograph(instrument_type):
-        duration += get_num_mol_changes(molecule_list) * request_overheads['config_change_time']
+    request_overheads = configdb.get_request_overheads(request_dict['molecule_set'][0]['instrument_name'])
+    duration = sum([get_molecule_duration(m) for m in request_dict['molecule_set']])
+    if configdb.is_spectrograph(request_dict['molecule_set'][0]['instrument_name']):
+        duration += get_num_mol_changes(request_dict['molecule_set']) * request_overheads['config_change_time']
 
-        if target_acquire_mode.upper() != 'OFF':
-            mol_types = [mol['type'].upper() for mol in molecule_list]
+        if request_dict['target'].get('acquire_mode', '').upper() != 'OFF':
+            mol_types = [mol['type'].upper() for mol in request_dict['molecule_set']]
             # Only add the overhead if we have on-sky targets to acquire
             if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
                 duration += request_overheads['acquire_exposure_time'] + \
                     request_overheads['acquire_processing_time']
 
     else:
-        duration += get_num_filter_changes(molecule_list) * request_overheads['filter_change_time']
+        duration += get_num_filter_changes(request_dict['molecule_set']) * request_overheads['filter_change_time']
 
     duration += request_overheads['front_padding']
     duration = ceil(duration)

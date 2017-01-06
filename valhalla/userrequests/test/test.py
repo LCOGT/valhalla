@@ -99,9 +99,9 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
 class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.target_acquire_on = mixer.blend(Target, acquire_mode='ON')
+        self.target_acquire_on = mixer.blend(Target, acquire_mode='ON', type='SIDEREAL')
 
-        self.target_acquire_off = mixer.blend(Target, acquire_mode='OFF')
+        self.target_acquire_off = mixer.blend(Target, acquire_mode='OFF', type='SIDEREAL')
 
         self.molecule_expose = mixer.blend(
             Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',

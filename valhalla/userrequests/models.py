@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
@@ -9,9 +8,8 @@ import logging
 
 from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.userrequests.external_serializers import BlockSerializer
-from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
-from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration,
-                                                  get_total_duration_dict)
+from valhalla.common.rise_set_utils import get_rise_set_target
+from valhalla.userrequests.duration_utils import get_request_duration, get_molecule_duration, get_total_duration_dict
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +55,13 @@ class UserRequest(models.Model):
 
     def get_id_display(self):
         return str(self.id).zfill(10)
+
+    @property
+    def as_dict(self):
+        from valhalla.userrequests.serializers import UserRequestSerializer
+        r_dict = UserRequestSerializer(self).data
+        r_dict['request_set'] = r_dict['requests']
+        return r_dict
 
     @property
     def min_window_time(self):
@@ -110,11 +115,17 @@ class Request(models.Model):
     def get_id_display(self):
         return str(self.id).zfill(10)
 
+    @property
+    def as_dict(self):
+        from valhalla.userrequests.serializers import RequestSerializer
+        r_dict = RequestSerializer(self).data
+        r_dict['window_set'] = r_dict['windows']
+        r_dict['molecule_set'] = r_dict['molecules']
+        return r_dict
+
     @cached_property
     def duration(self):
-        return get_request_duration(self.molecule_set.first().instrument_name,
-                                    [model_to_dict(m) for m in self.molecule_set.all()],
-                                    self.target.acquire_mode)
+        return get_request_duration(self.as_dict)
 
     @property
     def min_window_time(self):
@@ -149,15 +160,6 @@ class Request(models.Model):
         except ConnectionError:
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data
-
-    def rise_set_intervals(self):
-        return get_rise_set_intervals(
-            self.molecule_set.first().instrument_name,
-            model_to_dict(self.target),
-            model_to_dict(self.constraints),
-            model_to_dict(self.location),
-            [model_to_dict(window) for window in self.window_set.all()]
-        )
 
 
 class Location(models.Model):
@@ -363,9 +365,14 @@ class Molecule(models.Model):
             self.id, self.type, self.instrument_name, self.exposure_count, self.exposure_time
         )
 
+    @property
+    def as_dict(self):
+        from valhalla.userrequests.serializers import MoleculeSerializer
+        return MoleculeSerializer(self).data
+
     @cached_property
     def duration(self):
-        return get_molecule_duration(self.instrument_name, self.bin_x, self.exposure_time, self.exposure_count)
+        return get_molecule_duration(self.as_dict)
 
 
 class Constraints(models.Model):

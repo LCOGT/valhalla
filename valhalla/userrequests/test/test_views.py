@@ -62,7 +62,7 @@ class TestRequestList(TestCase):
         self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
         self.requests = mixer.cycle(10).blend(Request, user_request=self.userrequest)
         for request in self.requests:
-            mixer.blend(Molecule, request=request)
+            mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
 
     def test_request_list(self):
