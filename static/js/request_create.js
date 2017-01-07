@@ -1,7 +1,7 @@
-/* globals $ Vue */
+/* globals $ Vue moment */
 var userrequest = {
-  proposal: '',
-  group_id: '',
+  proposal: undefined,
+  group_id: undefined,
   operator: 'SINGLE',
   ipp_value: 1.0,
   observation_type: 'NORMAL',
@@ -28,8 +28,8 @@ var userrequest = {
       acquire_radius_arcsec: undefined,
     }],
     windows:[{
-      start: '2017-01-10T21:12:18Z',
-      end: '2017-01-29T21:12:19Z'
+      start: moment().format('YYYY-M-D HH:mm:ss'),
+      end: moment().format('YYYY-M-D HH:mm:ss')
     }],
     location:{
       telescope_class: '1m0'
@@ -191,6 +191,25 @@ var app = new Vue({
       if(confirm('Are you sure you wish to remove configuration #' + (molIndex + 1) + '?')){
         this.userrequest.requests[requestIndex].molecules.splice(molIndex, 1);
         this.errors.requests[requestIndex].molecules.splice(molIndex, 1);
+        this.validate();
+      }
+    },
+    addWindow: function(requestIndex, winIndex){
+      this.userrequest.requests[requestIndex].windows.push(
+        JSON.parse(JSON.stringify(this.userrequest.requests[requestIndex].windows[winIndex]))
+      );
+      errors.requests[requestIndex].windows.push(
+        JSON.parse(JSON.stringify(errors.requests[requestIndex].windows[winIndex]))
+      );
+      this.errors.requests[requestIndex].windows.push(
+        JSON.parse(JSON.stringify(this.errors.requests[requestIndex].windows[winIndex]))
+      );
+      this.validate();
+    },
+    removeWindow: function(requestIndex, winIndex){
+      if(confirm('Are you sure you wish to remove window #' + (winIndex + 1) + '?')){
+        this.userrequest.requests[requestIndex].windows.splice(winIndex, 1);
+        this.errors.requests[requestIndex].windows.splice(winIndex, 1);
         this.validate();
       }
     },

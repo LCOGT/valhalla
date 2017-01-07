@@ -71,7 +71,22 @@
         </div>
       </form>
     </div>
-
+    <!-- Window form -->
+    <div class="col-md-12">
+      <h3>Windows</h3>
+      <div class="row" v-for="(window, winIndex) in request.windows">
+        <div class="col-md-12">
+          <h4>Window #{{ winIndex + 1 }}
+          <small v-if="request.windows.length > 1"><a href="#" title="remove window" class="fa fa-trash" v-on:click="removeWindow(reqIndex, winIndex)"></a></small>
+          <small><a class="fa fa-clone" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
+          </h4>
+          <form class="form" v-on:change="validate()">
+            <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
+            <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
+          </form>
+        </div>
+      </div>
+    </div>
     <!-- Target form -->
     <div class="col-md-12">
       <h3>Target</h3>
@@ -209,7 +224,7 @@
               </div>
             </div>
             <request-field v-if="request.data_type === 'SPECTRA'" id="rot_angle" label="Rotator Angle" v-model="molecule.acquire_radius_arcsec" :errpath="errors.requests[reqIndex].molecules[molIndex].acquire_radius_arcsec" size="col-md-2"></request-field>
-            <button class="btn btn-primary col-md-2" v-if="request.data_type === 'SPECTRA' && molecule.type === 'SPECTRUM'">Add Calibrations</button>
+            <button class="btn btn-primary col-md-2" v-if="request.data_type === 'SPECTRA' && molecule.type === 'SPECTRUM'" style="margin-top: 25px">Add Calibrations</button>
           </div>
           </form>
         </div>
@@ -223,5 +238,6 @@
 {% endblock %}
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.8/vue.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="{% static 'js/request_create.js' %}"></script>
 {% endblock %}
