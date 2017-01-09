@@ -157,6 +157,7 @@ var app = new Vue({
             'default_binning': undefined
           };
         }
+        that.validate();
       });
     },
     submitRequest: function(){

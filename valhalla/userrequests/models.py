@@ -40,7 +40,7 @@ class UserRequest(models.Model):
 
     submitter = models.ForeignKey(User)
     proposal = models.ForeignKey(Proposal)
-    group_id = models.CharField(max_length=50, default='', blank=True)
+    group_id = models.CharField(max_length=50)
     observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES, default=OBSERVATION_TYPES[0][0])
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
     ipp_value = models.FloatField(default=1.0, validators=[MinValueValidator(0.5)])
