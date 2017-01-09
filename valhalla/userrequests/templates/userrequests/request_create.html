@@ -52,6 +52,7 @@
         <small v-if="userrequest.requests.length > 1"><a href="#" title="remove request" class="fa fa-trash" v-on:click="removeRequest(reqIndex)"></a></small>
         <small><a class="fa fa-clone" title="copy request" href="#" v-on:click="addRequest(reqIndex)"></a></small>
       </h2>
+      <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].non_field_errors"> {{ error }}</div>
     </div>
 
     <div class="col-md-12">
@@ -80,6 +81,7 @@
           <small v-if="request.windows.length > 1"><a href="#" title="remove window" class="fa fa-trash" v-on:click="removeWindow(reqIndex, winIndex)"></a></small>
           <small><a class="fa fa-clone" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
           </h4>
+          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
           <form class="form" v-on:change="validate()">
             <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
             <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
@@ -90,6 +92,7 @@
     <!-- Target form -->
     <div class="col-md-12">
       <h3>Target</h3>
+      <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].target.non_field_errors"> {{ error }}</div>
       <form class="form" v-on:change="validate()">
         <request-field id="name" label="Name" v-model="request.target.name" :errpath="errors.requests[reqIndex].target.name" size="col-md-3"></request-field>
         <div class="control-group col-md-2">
@@ -146,6 +149,7 @@
       <div class="row" v-for="(molecule, molIndex) in request.molecules">
         <div class="col-md-12">
           <h4>Configuration #{{ molIndex + 1 }}
+          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].molecules[molIndex].non_field_errors"> {{ error }}</div>
           <small v-if="request.molecules.length > 1"><a href="#" title="remove configuration" class="fa fa-trash" v-on:click="removeMolecule(reqIndex, molIndex)"></a></small>
           <small><a class="fa fa-clone" title="copy request" href="#" v-on:click="addMolecule(reqIndex, molIndex)"></a></small>
           </h4>

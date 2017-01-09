@@ -32,7 +32,7 @@ var userrequest = {
       end: moment().format('YYYY-M-D HH:mm:ss')
     }],
     location:{
-      telescope_class: '1m0'
+      telescope_class: undefined
     },
     constraints: {
       max_airmass: 2.0,
@@ -42,6 +42,7 @@ var userrequest = {
 };
 
 var errors = {
+  non_field_errors: [],
   proposal: [],
   group_id: [],
   operator: [],
@@ -49,6 +50,7 @@ var errors = {
   observation_type: [],
   requests:[{
     target: {
+      non_field_errors: [],
       name: [],
       type: [],
       ra: [],
@@ -66,6 +68,7 @@ var errors = {
       meananom: [],
     },
     molecules:[{
+      non_field_errors: [],
       type: [],
       instrument_name: [],
       fitler: [],
@@ -77,13 +80,16 @@ var errors = {
       acquire_radius_arcsec: []
     }],
     windows:[{
+      non_field_errors: [],
       start: [],
       end: []
     }],
     location:{
+      non_field_errors: [],
       telescope_class: []
     },
     constraints: {
+      non_field_errors: [],
       max_airmass: [],
       min_lunar_distance: []
     }
