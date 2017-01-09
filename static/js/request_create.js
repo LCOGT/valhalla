@@ -113,6 +113,7 @@ Vue.component('request-field', {
 var app = new Vue({
   el: '#vueapp',
   data: {
+    hasError: true,
     proposals: [],
     instrumentTypes: {},
     duration: 0,
@@ -131,6 +132,7 @@ var app = new Vue({
         success: function(data){
           that.errors = $.extend(true, JSON.parse(JSON.stringify(errors)), data.errors);
           that.duration = data.duration;
+          that.hasError = (data.errors.length === 0) ? false: true;
         }
       });
     },
@@ -147,6 +149,18 @@ var app = new Vue({
             'binnings': [],
             'default_binning': undefined
           };
+        }
+      });
+    },
+    submitRequest: function(){
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/',
+        data: JSON.stringify(that.userrequest),
+        contentType: 'application/json',
+        success: function(data){
+          window.location = '/requests/' + data.id + '/';
         }
       });
     },

@@ -230,8 +230,12 @@
         </div>
       </div>
     </div>
-
     <hr class="col-md-12"/>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <button class="btn btn-default" :disabled="hasError" v-on:click="submitRequest()">Submit Request</button>
+    </div>
   </div>
 </div>
 {% endverbatim %}
