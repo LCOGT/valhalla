@@ -97,12 +97,12 @@ var errors = {
 };
 
 var instrumentTypeMap = {
-  '2M0-SCICAM-SPECTRAL': 'IMAGE',
-  '2M0-FLOYDS-SCICAM': 'SPECTRA',
-  '0M8-SCICAM-SBIG': 'IMAGE',
-  '1M0-SCICAM-SINISTRO': 'IMAGE',
-  '0M4-SCICAM-SBIG': 'IMAGE',
-  '0M8-NRES-SCICAM': 'SPECTRA'
+  '2M0-SCICAM-SPECTRAL': {'type': 'IMAGE', 'class': '2m0'},
+  '2M0-FLOYDS-SCICAM': {'type': 'SPECTRA', 'class': '2m0'},
+  '0M8-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m8'},
+  '1M0-SCICAM-SINISTRO': {'type': 'IMAGE', 'class': '1m0'},
+  '0M4-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m4'},
+  '0M8-NRES-SCICAM': {'type': 'SPECTRA', 'class': '0m8'}
 };
 
 Vue.component('request-field', {
@@ -149,7 +149,8 @@ var app = new Vue({
         for (var i = 0; i < data.available_instrument_types.length; i++) {
           var instrument_type = data.available_instrument_types[i];
           that.instrumentTypes[instrument_type] = {
-            'type': instrumentTypeMap[instrument_type],
+            'type': instrumentTypeMap[instrument_type].type,
+            'class': instrumentTypeMap[instrument_type].class,
             'name': instrument_type,
             'filters': [],
             'binnings': [],
@@ -247,6 +248,7 @@ var app = new Vue({
     },
     changeInstrument: function(requestIndex){
       var request = this.userrequest.requests[requestIndex];
+      request.location.telescope_class = this.instrumentTypes[request.instrument_name].class;
       var that = this;
       $.getJSON('/api/instrument/' + request.instrument_name + '/', function(data){
         that.instrumentTypes[request.instrument_name].filters = data.filters;
