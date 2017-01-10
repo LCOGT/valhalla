@@ -119,6 +119,7 @@ Vue.component('request-field', {
 var app = new Vue({
   el: '#vueapp',
   data: {
+    reqTab: 0,
     hasError: true,
     proposals: [],
     instrumentTypes: {},
