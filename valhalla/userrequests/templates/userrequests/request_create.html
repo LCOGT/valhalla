@@ -70,7 +70,7 @@
     <div class="col-md-12">
       <h2> Child Request #{{ reqIndex + 1}}
         <small v-if="userrequest.requests.length > 1"><a href="#" title="remove request" class="fa fa-trash" v-on:click="removeRequest(reqIndex)"></a></small>
-        <small><a class="fa fa-clone" title="copy request" href="#" v-on:click="addRequest(reqIndex)"></a></small>
+        <small><a class="fa fa-plus" title="copy request" href="#" v-on:click="addRequest(reqIndex)"></a></small>
       </h2>
       <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].non_field_errors"> {{ error }}</div>
     </div>
@@ -111,7 +111,7 @@
 
 
     <!-- Target form -->
-    <div class="col-md-12">
+    <div class="col-md-12" id="target-form">
       <div class="row">
         <div class="col-md-12">
           <h3>Target</h3>
@@ -174,10 +174,10 @@
           </dl>
         </div>
         <div class="col-md-6">
-          <form class="form" v-on:change="validate()">
-            <div class="control-group col-md-2">
-              <label for="scheme">Scheme</label>
-              <div class="controls">
+          <form class="form-horizontal" v-on:change="validate()">
+            <div class="form-group">
+              <label for="scheme" class="control-label col-sm-3">Scheme</label>
+              <div class="col-sm-7">
                 <select id="scheme" v-model="request.target.scheme" class="form-control">
                   <option value="MPC_MINOR_PLANET">MPC Minor Planet</option>
                   <option value="MPC_COMET">MPC Comet</option>
@@ -187,7 +187,7 @@
             </div>
             <request-field id="epoch" label="Epoch (MJD)" v-model="request.target.epoch" :errpath="errors.requests[reqIndex].target.epoch" size="col-md-2"></request-field>
             <request-field id="orbinc" label="Orbital Inclination" v-model="request.target.orbinc" :errpath="errors.requests[reqIndex].target.orbinc" size="col-md-2"></request-field>
-            <request-field id="longascnode" label="Longitude of ascentding Node" v-model="request.target.longascnode" :errpath="errors.requests[reqIndex].target.longascnode" size="col-md-3"></request-field>
+            <request-field id="longascnode" label="Longitude of ascending Node" v-model="request.target.longascnode" :errpath="errors.requests[reqIndex].target.longascnode" size="col-md-3"></request-field>
             <request-field id="argofperih" label="Argument of Perihelion" v-model="request.target.argofperih" :errpath="errors.requests[reqIndex].target.argofperih" size="col-md-3"></request-field>
             <request-field id="meandist" label="Mean Distance (AU)" v-model="request.target.meandist" :errpath="errors.requests[reqIndex].target.meandist" size="col-md-2"></request-field>
             <request-field id="eccentricity" label="Eccentricity" v-model="request.target.eccentricity" :errpath="errors.requests[reqIndex].target.eccentricity" size="col-md-2"></request-field>
@@ -199,68 +199,86 @@
 
     <!-- Window form -->
     <div class="col-md-12">
-      <div class="col-md-12">
-        <h3>Windows</h3>
-      </div>
-      <div class="col-md-12">
-        <div class="row" v-for="(window, winIndex) in request.windows">
-          <div class="col-md-12">
-            <h4>Window #{{ winIndex + 1 }}
+      <h3>Windows</h3>
+      <div class="row" v-for="(window, winIndex) in request.windows">
+        <div class="col-md-6">
+          <p v-if="winIndex < 1">Enter the time windows in which you would like your request to be made.</p>
+          <dl v-if="winIndex < 1">
+            <dt>Start</dt>
+            <dd>The lower limit of the time window.</dd>
+            <dt>End</dt>
+            <dd>The Upper end of fthe time window.</dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <h4><center>Window #{{ winIndex + 1 }}
             <small v-if="request.windows.length > 1"><a href="#" title="remove window" class="fa fa-trash" v-on:click="removeWindow(reqIndex, winIndex)"></a></small>
-            <small><a class="fa fa-clone" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
-            </h4>
-            <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
-            <form class="form" v-on:change="validate()">
-              <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
-              <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
-            </form>
-          </div>
+            <small><a class="fa fa-plus" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
+          </center></h4>
+          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
+          <form class="form-horizontal" v-on:change="validate()">
+            <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
+            <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
+          </form>
         </div>
       </div>
     </div>
 
     <!-- Molecule Form -->
-    <div class="col-md-12" v-if="request.instrument_name">
+    <div class="col-md-12">
       <h3>Configurations</h3>
       <div class="row" v-for="(molecule, molIndex) in request.molecules">
-        <div class="col-md-12">
-          <h4>Configuration #{{ molIndex + 1 }}
+        <div class="col-md-6">
+          <p>Fill in the configuration details for this request</p>
+          <dl>
+            <dt>Filter/Slit</dt>
+            <dd>The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.</dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <h4><center>Configuration #{{ molIndex + 1 }}
           <small v-if="request.molecules.length > 1"><a href="#" title="remove configuration" class="fa fa-trash" v-on:click="removeMolecule(reqIndex, molIndex)"></a></small>
-          <small><a class="fa fa-clone" title="copy request" href="#" v-on:click="addMolecule(reqIndex, molIndex)"></a></small>
-          </h4>
+          <small><a class="fa fa-plus" title="copy request" href="#" v-on:click="addMolecule(reqIndex, molIndex)"></a></small>
+          </center></h4>
           <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].molecules[molIndex].non_field_errors"> {{ error }}</div>
-          <form class="form" v-on:change="validate()">
+          <form class="form-horizontal" v-on:change="validate()">
             <div class="row">
               <!-- common fields -->
-              <div class="control-group col-md-1">
-                <label for="filter" v-if="request.data_type === 'IMAGE'">Filter</label>
-                <label for="filter" v-if="request.data_type === 'SPECTRA'">Slit</label>
-                <div class="controls">
-                  <select id="filter" v-model="molecule.filter" class="form-control">
+              <div class="form-group">
+                <label for="filter" class="control-label col-sm-3" v-if="request.data_type === 'IMAGE' || !molecule.instrument_name">Filter</label>
+                <label for="filter" class="control-label col-sm-3" v-if="request.data_type === 'SPECTRA'">Slit</label>
+                <div class="col-sm-7">
+                  <select id="filter" v-model="molecule.filter" class="form-control" v-if="molecule.instrument_name">
                     <option v-for="filter in instrumentTypes[molecule.instrument_name].filters" :value="filter">{{ filter }}</option>
+                  </select>
+                  <select id="filter" class="form-control" v-if="!molecule.instrument_name">
+                    <option value="" disabled>Please select an instrment</option>
                   </select>
                   <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].molecules[molIndex].filter">{{ error }}</span>
                 </div>
               </div>
-              <div class="control-group col-md-1">
-                <label for="binning">Binning</label>
-                <div class="controls">
-                  <select id="binning" v-model="molecule.bin_x" class="form-control" v-on:change="updateBinning(reqIndex, molIndex)">
+              <div class="form-group">
+                <label for="binning" class="control-label col-sm-3">Binning</label>
+                <div class="col-sm-7">
+                  <select id="binning" v-model="molecule.bin_x" class="form-control" v-if="molecule.instrument_name" v-on:change="updateBinning(reqIndex, molIndex)">
                     <option v-for="binning in instrumentTypes[molecule.instrument_name].binnings" :value="binning">{{ binning }}</option>
+                  </select>
+                  <select id="binning" class="form-control" v-if="!molecule.instrument_name">
+                    <option value="" disabled>Please select an instrment</option>
                   </select>
                   <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].molecules[molIndex].bin_x">{{ error }}</span>
                 </div>
               </div>
               <request-field id="exposure-time" label="Exposure Time" v-model="molecule.exposure_time" :errpath="errors.requests[reqIndex].molecules[molIndex].exposure_time" size="col-md-2"></request-field>
-              <div class="control-group col-md-3" :class="{'has-error': errors.requests[reqIndex].molecules[molIndex].exposure_count.length}">
-                <label for="exposure_count">Exposure Count</label>
-                <div class="controls">
+              <div class="form-group" :class="{'has-error': errors.requests[reqIndex].molecules[molIndex].exposure_count.length}">
+                <label for="exposure_count" class="control-label col-sm-3">Exposure Count</label>
+                <div class="col-sm-7">
                   <input id="exposure_count" class="form-control" v-model="molecule.exposure_count" :disabled="molecule.fill_window"/>
                   <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].molecules[molIndex].exposure_count">{{ error }}</span>
                   <div class="checkbox">
                     <label>
-                      <input id="fill_window" type="checkbox" v-model="molecule.fill_window"/>
-                      Fill Window
+                      <input id="fill_window" type="checkbox" v-model="molecule.fill_window" :disabled="request.windows.length > 1"/>
+                      Fill Window <span class="text-danger" v-if="request.windows.length > 1">Can only be used with 1 window</span>
                     </label>
                   </div>
                 </div>
@@ -270,9 +288,9 @@
 
             <!-- spectragraph fields -->
             <div class="row">
-              <div class="control-group col-md-2" v-if="request.data_type === 'SPECTRA'">
-                <label for="mol-type">Type</label>
-                <div class="controls">
+              <div class="form-group" v-if="request.data_type === 'SPECTRA'">
+                <label for="mol-type" class="control-label col-sm-3">Type</label>
+                <div class="col-sm-7">
                   <select id="mol-type" v-model="molecule.type" class="form-control">
                     <option value="SPECTRUM">Spectrum</option>
                     <option value="LAMP_FLAT">Lamp Flat</option>
@@ -281,9 +299,9 @@
                   <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].molecules[molIndex].type">{{ error }}</span>
                 </div>
               </div>
-              <div class="control-group col-md-2" v-if="request.data_type === 'SPECTRA'">
-                <label for="mol-type">Acquire Mode</label>
-                <div class="controls">
+              <div class="form-group" v-if="request.data_type === 'SPECTRA'">
+                <label for="mol-type" class="control-label col-sm-3">Acquire Mode</label>
+                <div class="col-sm-7">
                   <select id="acquire_mode" v-model="molecule.acquire_mode" class="form-control">
                     <option value="OFF">Off</option>
                     <option value="WCS">WCS</option>
@@ -293,9 +311,9 @@
                 </div>
               </div>
               <request-field v-if="request.data_type === 'SPECTRA' && molecule.acquire_mode === 'BRIGHTEST'" id="acquire_radius" label="Aqcuire radius" v-model="molecule.acquire_radius_arcsec" :errpath="errors.requests[reqIndex].molecules[molIndex].acquire_radius_arcsec" size="col-md-2"></request-field>
-              <div class="control-group col-md-2" v-if="request.data_type === 'SPECTRA'">
-                <label for="mol-type">Rotator Mode</label>
-                <div class="controls">
+              <div class="form-group" v-if="request.data_type === 'SPECTRA'">
+                <label for="mol-type" class="control-label col-sm-3">Rotator Mode</label>
+                <div class="col-sm-7">
                   <select id="rot_mode" v-model="request.target.rot_mode" class="form-control">
                     <option value="SKY">Sky</option>
                     <option value="VFLOAT">Vertical Floating</option>
@@ -304,19 +322,38 @@
                 </div>
               </div>
               <request-field v-if="request.data_type === 'SPECTRA'" id="rot_angle" label="Rotator Angle" v-model="molecule.acquire_radius_arcsec" :errpath="errors.requests[reqIndex].molecules[molIndex].acquire_radius_arcsec" size="col-md-2"></request-field>
-              <button class="btn btn-primary col-md-2" v-if="request.data_type === 'SPECTRA' && molecule.type === 'SPECTRUM'" style="margin-top: 25px">Add Calibrations</button>
+              <button class="btn btn-primary col-md-7 col-sm-offset-3" v-if="request.data_type === 'SPECTRA' && molecule.type === 'SPECTRUM'">Add Calibrations</button>
             </div>
           </form>
         </div>
+
+
       </div>
     </div>
     <div class="col-md-12">
-      <h3>Constraints</h3>
-      <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].constraints.non_field_errors"> {{ error }}</div>
-      <form class="form" v-on:change="validate()">
-        <request-field id="max_airmass" label="Max. Airmass" v-model="request.constraints.max_airmass" :errpath="errors.requests[reqIndex].constraints.max_airmass" size="col-md-2"></request-field>
-        <request-field id="min_lunar_distance" label="Min. Lunar Distance" v-model="request.constraints.min_lunar_distance" :errpath="errors.requests[reqIndex].constraints.min_lunar_distance" size="col-md-3"></request-field>
-      </form>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Constraints</h3>
+          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].constraints.non_field_errors"> {{ error }}</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <p>Please provide the contraints you would like to impose as prerequisites to observation. The tighter the constraints the less
+          likely the observation is to be successful</p>
+          <dl>
+            <dt>Max Airmass</dt>
+            <dd>The maximum airmass at which this request should be considered for the target.</dd>
+            <dt>Min Lunar Distance</dt>
+            <dd>The minimum distance (in degrees) the target can be to the moon before the request is no longer considered</dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <form class="form-horizontal" v-on:change="validate()">
+            <request-field id="max_airmass" label="Max. Airmass" v-model="request.constraints.max_airmass" :errpath="errors.requests[reqIndex].constraints.max_airmass" size="col-md-2"></request-field>
+            <request-field id="min_lunar_distance" label="Min. Lunar Distance" v-model="request.constraints.min_lunar_distance" :errpath="errors.requests[reqIndex].constraints.min_lunar_distance" size="col-md-3"></request-field>
+          </form>
+        </div>
     </div>
     <hr class="col-md-12"/>
   </div>
