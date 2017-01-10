@@ -5,23 +5,44 @@
 {% verbatim %}
 <div id="vueapp">
   <div class="row">
-
-    <div class="col-md-12">
-      <h1>Observation Request</h1>
-      <h3>Duration: {{ duration }}</h3>
+    <div class="col-md-6">
+      <h2>Request an Observation</h2>
+    </div>
+    <div class="col-md-6">
+      <span class="pull-right">
+      <h4>Duration: {{ duration }} seconds</h4>
       <!-- Top level userrequest fields -->
       <div class="control-group">
+      <a href="#"><i class="fa fa-save"></i> Save Draft </a>
         <input type="checkbox" id="advanced" v-model="advanced">
-        <label for="advanced">Show advanced options</label>
+        <label for="advanced">Advanced Mode</label>
       </div>
+      </span>
     </div>
+    <hr class="col-md-12">
 
-    <div class="col-md-12">
-      <form class="form" v-on:change="validate()">
-        <request-field id="title" label="Title" v-model="userrequest.group_id" :errpath="errors.group_id" size="col-md-3"></request-field>
-        <div class="control-group col-md-3" :class="{'has-error': errors.proposal.length}">
-          <label for="proposal">Proposal</label>
-          <div class="controls">
+    <!-- General Form -->
+    <div class="col-md-6" id="general-help">
+      <p>Please provide some general information about this observation request. </p>
+      <dl>
+        <dt>Title</dt>
+        <dd>Provide a meaningful title for this observation request.</dd>
+        <dt>Proposal</dt>
+        <dd>Select the proposal for which this observation should be associated with.</dd>
+        <dt>Ipp Value</dt>
+        <dd>Select the Inter Proposal Priority for this request. More information about IPP can here:
+            <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">Increased Flexibility for Prioritizing Targets at LCOGT.</a>
+        </dd>
+        <dt>Priority</dt>
+        <dd>Select whether this is a target of opportunity or not. ToO requests will interrupt currently running observations.</dd>
+      </dl>
+    </div>
+    <div class="col-md-6">
+      <form class="form-horizontal" v-on:change="validate()">
+        <request-field id="title" label="Title" v-model="userrequest.group_id" :errpath="errors.group_id" size="col-sm-7"></request-field>
+        <div class="form-group" :class="{'has-error': errors.proposal.length}">
+          <label for="proposal" class="col-sm-3 control-label">Proposal</label>
+          <div class="col-sm-7">
             <select id="proposal" v-model="userrequest.proposal" name="proposal" class="form-control">
               <option>Choose a proposal</option>
               <option v-for="proposal in proposals">{{ proposal }}</option>
@@ -29,11 +50,11 @@
             <span class="help-block text-danger" v-for="error in errors.proposal">{{ error }}</span>
           </div>
         </div>
-        <request-field id="ipp_value" label="Ipp Value" v-model="userrequest.ipp_value" :errpath="errors.ipp_value" size="col-md-2"></request-field>
-        <div class="control-group col-md-2" :class="{'has-error': errors.observation_type.length}">
-          <label for="proposal">Priority</label>
-          <div class="controls">
-            <select id="proposal" v-model="userrequest.observation_type" class="form-control">
+        <request-field id="ipp_value" label="Ipp Value" v-model="userrequest.ipp_value" :errpath="errors.ipp_value" size="col-sm-7"></request-field>
+        <div class="form-group" :class="{'has-error': errors.observation_type.length}">
+          <label for="priority" class="col-sm-3 control-label">Priority</label>
+          <div class="col-sm-7">
+            <select id="priority" v-model="userrequest.observation_type" class="form-control">
               <option value="NORMAL">Normal</option>
               <option value="TARGET_OF_OPPORTUNITY">Target Of Opportunity</option>
             </select>
@@ -42,7 +63,6 @@
         </div>
       </form>
     </div>
-
   </div>
 
   <!-- For each Request -->
@@ -54,92 +74,147 @@
       </h2>
       <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].non_field_errors"> {{ error }}</div>
     </div>
-
-    <div class="col-md-12">
-      <form class="form" v-on:change="validate()">
-        <div class="form-group col-md-2">
-          <label for="data-type">Data Type</label>
+    <div class="col-md-6" v-if="reqIndex < 1">
+      <p>Observation requests can have more than one child request. You can use this multiplicity to logically
+      group several requests together. For example: Spectra and calibration requests can be grouped together
+      to make the requests easier to track.</p>
+      <dl>
+        <dt>Data Type</dt>
+        <dd>Choose <strong>Expose</strong> for imaging a target. Choose <strong>Spectra</strong> for use of a spectrograph.</dd>
+        <dt>Instrument</dt>
+        <dd>Please choose the instrument you would like to observe with. Descriptions of each instrument
+        can be found here: <a href="https://lco.global/observatory/instruments/">LCO Instruments</a>.</dd>
+      </dl>
+    </div>
+    <div class="col-md-6">
+      <form class="form-horizontal" v-on:change="validate()">
+        <div class="form-group">
+          <label for="data-type" class="col-sm-3 control-label">Data Type</label>
+          <div class="col-sm-7">
             <select id="data-type" v-model="request.data_type" class="form-control" v-on:change="changeDataType(reqIndex)">
               <option value="IMAGE">Image</option>
               <option value="SPECTRA">Spectra</option>
             </select>
+          </div>
         </div>
-        <div class="form-group col-md-3">
-          <label for="instrument_name">Instrument</label>
-          <select id="instrument_name" v-model="request.instrument_name" class="form-control col-md-3" v-on:change="changeInstrument(reqIndex)">
-            <option v-for="instrumentType in instrumentTypes" :value="instrumentType.name" v-if="instrumentType.type === request.data_type">{{ instrumentType.name }}</option>
-          </select>
+        <div class="form-group">
+          <label for="instrument_name" class="control-label col-sm-3">Instrument</label>
+          <div class="col-sm-7">
+            <select id="instrument_name" v-model="request.instrument_name" class="form-control col-md-3" v-on:change="changeInstrument(reqIndex)" placeholder="Please select a data type">
+              <option v-if="!request.data_type" value="" disabled>Please select a data type</option>
+              <option v-for="instrumentType in instrumentTypes" :value="instrumentType.name" v-if="instrumentType.type === request.data_type">{{ instrumentType.name }}</option>
+            </select>
+          </div>
         </div>
       </form>
     </div>
+
+
     <!-- Target form -->
     <div class="col-md-12">
-      <h3>Target</h3>
-      <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].target.non_field_errors"> {{ error }}</div>
-      <form class="form" v-on:change="validate()">
-        <request-field id="name" label="Name" v-model="request.target.name" :errpath="errors.requests[reqIndex].target.name" size="col-md-3"></request-field>
-        <div class="control-group col-md-2">
-          <label for="target_type">Type</label>
-          <div class="controls">
-            <select id="target_type" v-model="request.target.type" class="form-control" v-on:change="clearTargetFields(reqIndex)">
-              <option value="SIDEREAL">Sidereal</option>
-              <option value="NON_SIDEREAL">Non-Sidereal</option>
-            </select>
-            <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].target.type">{{ error }}</span>
-          </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h3>Target</h3>
+          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].target.non_field_errors"> {{ error }}</div>
         </div>
-      </form>
-    </div>
-
-    <!-- Sidereal form -->
-    <div class="col-md-12">
-      <form class="form" v-if="request.target.type == 'SIDEREAL'" v-on:change="validate()">
-        <request-field id="ra" label="Right Ascension" v-model="request.target.ra" :errpath="errors.requests[reqIndex].target.ra" size="col-md-2"></request-field>
-        <request-field id="dec" label="Declination" v-model="request.target.dec" :errpath="errors.requests[reqIndex].target.dec" size="col-md-2"></request-field>
-        <request-field id="proper_motion_ra" label="Proper Motion RA" v-if="advanced" v-model="request.target.proper_motion_ra" :errpath="errors.requests[reqIndex].target.proper_motion_ra" size="col-md-2"></request-field>
-        <request-field id="proper_motion_dec" label="Proper Motion Dec" v-if="advanced" v-model="request.target.proper_motion_dec" :errpath="errors.requests[reqIndex].target.proper_motion_dec" size="col-md-2"></request-field>
-        <request-field id="epoch" label="Epoch" v-if="advanced" v-model="request.target.epoch" :errpath="errors.requests[reqIndex].target.epoch" size="col-md-2"></request-field>
-        <request-field id="parallax" label="Parallax" v-if="advanced" v-model="request.target.parallax" :errpath="errors.requests[reqIndex].target.parallax" size="col-md-2"></request-field>
-      </form>
-    </div>
-
-    <!-- NonSidereal Form -->
-    <div class="col-md-12">
-      <form class="form" v-if="request.target.type == 'NON_SIDEREAL'" v-on:change="validate()">
-        <div class="control-group col-md-2">
-          <label for="scheme">Scheme</label>
-          <div class="controls">
-            <select id="scheme" v-model="request.target.scheme" class="form-control">
-              <option value="MPC_MINOR_PLANET">MPC Minor Planet</option>
-              <option value="MPC_COMET">MPC Comet</option>
-            </select>
-            <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].target.scheme">{{ error }}</span>
-          </div>
+        <div class="col-md-6">
+          <p>Please provide details about the target of this observation.</p>
+          <dl>
+            <dt>Name</dt>
+            <dd>The name of the target. If it is a known object, we will attempt to fill in coordinates</dd>
+            <dt>Type</dt>
+            <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
+          </dl>
         </div>
-        <request-field id="epoch" label="Epoch (MJD)" v-model="request.target.epoch" :errpath="errors.requests[reqIndex].target.epoch" size="col-md-2"></request-field>
-        <request-field id="orbinc" label="Orbital Inclination" v-model="request.target.orbinc" :errpath="errors.requests[reqIndex].target.orbinc" size="col-md-2"></request-field>
-        <request-field id="longascnode" label="Longitude of ascentding Node" v-model="request.target.longascnode" :errpath="errors.requests[reqIndex].target.longascnode" size="col-md-3"></request-field>
-        <request-field id="argofperih" label="Argument of Perihelion" v-model="request.target.argofperih" :errpath="errors.requests[reqIndex].target.argofperih" size="col-md-3"></request-field>
-        <request-field id="meandist" label="Mean Distance (AU)" v-model="request.target.meandist" :errpath="errors.requests[reqIndex].target.meandist" size="col-md-2"></request-field>
-        <request-field id="eccentricity" label="Eccentricity" v-model="request.target.eccentricity" :errpath="errors.requests[reqIndex].target.eccentricity" size="col-md-2"></request-field>
-        <request-field id="meananom" label="Mean Anomoly" v-model="request.target.meananom" :errpath="errors.requests[reqIndex].target.meananom" size="col-md-2"></request-field>
-      </form>
+        <div class="col-md-6">
+          <form class="form-horizontal" v-on:change="validate()">
+            <request-field id="name" label="Name" v-model="request.target.name" :errpath="errors.requests[reqIndex].target.name" size="col-sm-3"></request-field>
+            <div class="form-group">
+              <label for="target_type" class="col-sm-3 control-label">Type</label>
+              <div class="col-sm-7">
+                <select id="target_type" v-model="request.target.type" class="form-control" v-on:change="clearTargetFields(reqIndex)">
+                  <option value="SIDEREAL">Sidereal</option>
+                  <option value="NON_SIDEREAL">Non-Sidereal</option>
+                </select>
+                <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].target.type">{{ error }}</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Sidereal form -->
+      <div class="row" v-if="request.target.type == 'SIDEREAL'">
+        <div class="col-md-6">
+          <dl>
+            <dt>Right Ascension</dt>
+            <dd>The Right ascenscion of the target, in degrees or hours:minues:seconds</dd>
+            <dt>Declination</dt>
+            <dd>The declination of the target, in degrees.</dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <form class="form-horizontal" v-on:change="validate()">
+            <request-field id="ra" label="Right Ascension" v-model="request.target.ra" :errpath="errors.requests[reqIndex].target.ra" size="col-md-2"></request-field>
+            <request-field id="dec" label="Declination" v-model="request.target.dec" :errpath="errors.requests[reqIndex].target.dec" size="col-md-2"></request-field>
+            <request-field id="proper_motion_ra" label="Proper Motion RA" v-if="advanced" v-model="request.target.proper_motion_ra" :errpath="errors.requests[reqIndex].target.proper_motion_ra" size="col-md-2"></request-field>
+            <request-field id="proper_motion_dec" label="Proper Motion Dec" v-if="advanced" v-model="request.target.proper_motion_dec" :errpath="errors.requests[reqIndex].target.proper_motion_dec" size="col-md-2"></request-field>
+            <request-field id="epoch" label="Epoch" v-if="advanced" v-model="request.target.epoch" :errpath="errors.requests[reqIndex].target.epoch" size="col-md-2"></request-field>
+            <request-field id="parallax" label="Parallax" v-if="advanced" v-model="request.target.parallax" :errpath="errors.requests[reqIndex].target.parallax" size="col-md-2"></request-field>
+          </form>
+        </div>
+      </div>
+
+      <!-- NonSidereal Form -->
+      <div class="row" v-if="request.target.type == 'NON_SIDEREAL'">
+        <div class="col-md-6">
+          <dl>
+            <dt>Scheme</dt>
+            <dd>The orbital elements scheme to use for this target.</dd>
+          </dl>
+        </div>
+        <div class="col-md-6">
+          <form class="form" v-on:change="validate()">
+            <div class="control-group col-md-2">
+              <label for="scheme">Scheme</label>
+              <div class="controls">
+                <select id="scheme" v-model="request.target.scheme" class="form-control">
+                  <option value="MPC_MINOR_PLANET">MPC Minor Planet</option>
+                  <option value="MPC_COMET">MPC Comet</option>
+                </select>
+                <span class="help-block text-danger" v-for="error in errors.requests[reqIndex].target.scheme">{{ error }}</span>
+              </div>
+            </div>
+            <request-field id="epoch" label="Epoch (MJD)" v-model="request.target.epoch" :errpath="errors.requests[reqIndex].target.epoch" size="col-md-2"></request-field>
+            <request-field id="orbinc" label="Orbital Inclination" v-model="request.target.orbinc" :errpath="errors.requests[reqIndex].target.orbinc" size="col-md-2"></request-field>
+            <request-field id="longascnode" label="Longitude of ascentding Node" v-model="request.target.longascnode" :errpath="errors.requests[reqIndex].target.longascnode" size="col-md-3"></request-field>
+            <request-field id="argofperih" label="Argument of Perihelion" v-model="request.target.argofperih" :errpath="errors.requests[reqIndex].target.argofperih" size="col-md-3"></request-field>
+            <request-field id="meandist" label="Mean Distance (AU)" v-model="request.target.meandist" :errpath="errors.requests[reqIndex].target.meandist" size="col-md-2"></request-field>
+            <request-field id="eccentricity" label="Eccentricity" v-model="request.target.eccentricity" :errpath="errors.requests[reqIndex].target.eccentricity" size="col-md-2"></request-field>
+            <request-field id="meananom" label="Mean Anomoly" v-model="request.target.meananom" :errpath="errors.requests[reqIndex].target.meananom" size="col-md-2"></request-field>
+          </form>
+        </div>
+      </div>
     </div>
 
     <!-- Window form -->
     <div class="col-md-12">
-      <h3>Windows</h3>
-      <div class="row" v-for="(window, winIndex) in request.windows">
-        <div class="col-md-12">
-          <h4>Window #{{ winIndex + 1 }}
-          <small v-if="request.windows.length > 1"><a href="#" title="remove window" class="fa fa-trash" v-on:click="removeWindow(reqIndex, winIndex)"></a></small>
-          <small><a class="fa fa-clone" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
-          </h4>
-          <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
-          <form class="form" v-on:change="validate()">
-            <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
-            <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
-          </form>
+      <div class="col-md-12">
+        <h3>Windows</h3>
+      </div>
+      <div class="col-md-12">
+        <div class="row" v-for="(window, winIndex) in request.windows">
+          <div class="col-md-12">
+            <h4>Window #{{ winIndex + 1 }}
+            <small v-if="request.windows.length > 1"><a href="#" title="remove window" class="fa fa-trash" v-on:click="removeWindow(reqIndex, winIndex)"></a></small>
+            <small><a class="fa fa-clone" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
+            </h4>
+            <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
+            <form class="form" v-on:change="validate()">
+              <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
+              <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
+            </form>
+          </div>
         </div>
       </div>
     </div>

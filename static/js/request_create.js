@@ -107,12 +107,12 @@ var instrumentTypeMap = {
 
 Vue.component('request-field', {
   props: ['size', 'id', 'label', 'value', 'errpath'],
-  template: '<div class="control-group" :class="[{\'has-error\': errpath.length}, size]"> \
-              <label :for="id">{{ label }}</label> \
-              <div class="controls"> \
-                <input :id=id class="form-control" v-bind:value="value" @input="$emit(\'input\', $event.target.value)"/> \
-                  <span class="help-block text-danger" v-for="error in errpath">{{ error }}</span> \
-                </div> \
+  template: '<div class="form-group" :class="{\'has-error\': errpath.length}"> \
+              <label :for="id" class="col-sm-3 control-label">{{ label }}</label> \
+              <div class="col-sm-7"> \
+              <input :id=id class="form-control" v-bind:value="value" @input="$emit(\'input\', $event.target.value)"/> \
+              <span class="help-block text-danger" v-for="error in errpath">{{ error }}</span> \
+              </div> \
             </div>'
 });
 
