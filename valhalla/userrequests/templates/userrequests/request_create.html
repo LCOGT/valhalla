@@ -41,7 +41,7 @@
       </dl>
     </div>
     <div class="col-md-6">
-      <form class="form-horizontal" v-on:change="validate()">
+      <form class="form-horizontal">
         <request-field id="title" label="Title" v-model="userrequest.group_id" :errpath="errors.group_id" size="col-sm-7"></request-field>
         <div class="form-group" :class="{'has-error': errors.proposal.length}">
           <label for="proposal" class="col-sm-3 control-label">Proposal</label>
@@ -102,7 +102,7 @@
         </dl>
       </div>
       <div class="col-md-6">
-        <form class="form-horizontal" v-on:change="validate()">
+        <form class="form-horizontal">
           <div class="form-group">
             <label for="data-type" class="col-sm-3 control-label">Data Type</label>
             <div class="col-sm-7">
@@ -142,7 +142,7 @@
             </dl>
           </div>
           <div class="col-md-6">
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <request-field id="name" label="Name" v-model="request.target.name" :errpath="errors.requests[reqIndex].target.name" size="col-sm-3"></request-field>
               <div class="form-group">
                 <label for="target_type" class="col-sm-3 control-label">Type</label>
@@ -169,7 +169,7 @@
             </dl>
           </div>
           <div class="col-md-6">
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <request-field id="ra" label="Right Ascension" v-model="request.target.ra" :errpath="errors.requests[reqIndex].target.ra" size="col-md-2"></request-field>
               <request-field id="dec" label="Declination" v-model="request.target.dec" :errpath="errors.requests[reqIndex].target.dec" size="col-md-2"></request-field>
               <request-field id="proper_motion_ra" label="Proper Motion RA" v-if="advanced" v-model="request.target.proper_motion_ra" :errpath="errors.requests[reqIndex].target.proper_motion_ra" size="col-md-2"></request-field>
@@ -189,7 +189,7 @@
             </dl>
           </div>
           <div class="col-md-6">
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <div class="form-group">
                 <label for="scheme" class="control-label col-sm-3">Scheme</label>
                 <div class="col-sm-7">
@@ -231,7 +231,7 @@
               <small><a class="fa fa-plus" title="copy window" href="#" v-on:click="addWindow(reqIndex, winIndex)"></a></small>
             </center></h4>
             <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].windows[winIndex].non_field_errors"> {{ error }}</div>
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <request-field id="start" label="Start" v-model="window.start" :errpath="errors.requests[reqIndex].windows[winIndex].start" size="col-md-2"></request-field>
               <request-field id="end" label="End" v-model="window.end" :errpath="errors.requests[reqIndex].windows[winIndex].end" size="col-md-2"></request-field>
             </form>
@@ -256,7 +256,7 @@
             <small><a class="fa fa-plus" title="copy request" href="#" v-on:click="addMolecule(reqIndex, molIndex)"></a></small>
             </center></h4>
             <div class="alert alert-danger" role="alert" v-for="error in errors.requests[reqIndex].molecules[molIndex].non_field_errors"> {{ error }}</div>
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <div class="row">
                 <!-- common fields -->
                 <div class="form-group">
@@ -364,7 +364,7 @@
             </dl>
           </div>
           <div class="col-md-6">
-            <form class="form-horizontal" v-on:change="validate()">
+            <form class="form-horizontal">
               <request-field id="max_airmass" label="Max. Airmass" v-model="request.constraints.max_airmass" :errpath="errors.requests[reqIndex].constraints.max_airmass" size="col-md-2"></request-field>
               <request-field id="min_lunar_distance" label="Min. Lunar Distance" v-model="request.constraints.min_lunar_distance" :errpath="errors.requests[reqIndex].constraints.min_lunar_distance" size="col-md-3"></request-field>
             </form>
@@ -383,6 +383,7 @@
 {% endverbatim %}
 {% endblock %}
 {% block extra_javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.8/vue.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="{% static 'js/request_create.js' %}"></script>

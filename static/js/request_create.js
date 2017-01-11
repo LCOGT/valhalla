@@ -1,4 +1,4 @@
-/* globals $ Vue moment */
+/* globals _ $ Vue moment */
 var userrequest = {
   proposal: undefined,
   group_id: undefined,
@@ -145,6 +145,8 @@ var app = new Vue({
     },
     initialize: function(){
       var that = this;
+      $('input').keyup(_.debounce(that.validate, 500));
+      $('select').change(function(){that.validate();});
       $.getJSON('/api/profile/', function(data){
         that.proposals = data.proposals;
         for (var i = 0; i < data.available_instrument_types.length; i++) {
