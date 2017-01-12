@@ -4,8 +4,8 @@
 {% block content %}
 {% verbatim %}
 <div id="vueapp">
-  {{ requests[0].windows }}
-  <request :iwindows="requests[0].windows"></request>
+  {{ userrequest }}
+  <userrequest :irequests="userrequest.requests" v-on:userrequestupdate="userrequestUpdated"></userrequest>
 </div>
 
 <script type="text/x-template" id="window-template">
@@ -35,8 +35,18 @@
     <div class="col-md-12">
       <h1>Request</h1>
       <div v-for="window in windows">
-        <window :istart="window.start" :iend="window.end" v-on:windowUpdate="windowUpdated"></window>
+        <window :istart="window.start" :iend="window.end" v-on:windowupdate="windowUpdated"></window>
       </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="userrequest-template">
+  <div class="row userrequest">
+    <div class="col-md-12">
+    <h1>General Info</h1>
+    <div v-for="request in requests">
+      <request :iwindows="request.windows" v-on:requestupdate="requestUpdated"></request>
     </div>
   </div>
 </script>
