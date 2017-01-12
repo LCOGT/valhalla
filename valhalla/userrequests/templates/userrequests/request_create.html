@@ -8,23 +8,25 @@
   <userrequest :irequests="userrequest.requests" v-on:userrequestupdate="userrequestUpdated"></userrequest>
 </div>
 
+<script type="text/x-template" id="custom-field">
+  <div class="form-group">
+    <label :for="field" class="col-sm-3 control-label">{{ label }}</label>
+    <div class="col-sm-9">
+      <input :id="field" class="form-control" v-bind:value="value" v-on:input="update($event.target.value)"/>
+    </div>
+  </div>
+</script>
+
 <script type="text/x-template" id="window-template">
   <div class="row window">
     <div class="col-md-12">
       <h2>Window {{ index + 1}}</h2>
+      {{ errors.non_field_errors }}
       <form class="form-horizontal">
-        <div class="form-group">
-          <label for="start" class="col-sm-3 control-label">Start</label>
-          <div class="col-sm-9">
-            <input id="start" class="form-control" v-model="start" v-on:input="update"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="end" class="col-sm-3 control-label">End</label>
-          <div class="col-sm-9">
-            <input id="end" class="form-control" v-model="end" v-on:input="update"/>
-          </div>
-        </div>
+        <custom-field v-model="start" label="Start" field="start" v-on:input="update"></custom-field>
+        {{ errors.start }}
+        <custom-field v-model="end" label="End" field="end" v-on:input="update"></custon-field>
+        {{ errors.end }}
       </form>
     </div>
   </div>
@@ -46,8 +48,9 @@
   <div class="row userrequest">
     <div class="col-md-12">
     <h1>General Info</h1>
-    <div v-for="request in requests">
-      <request :iwindows="request.windows" v-on:requestupdate="requestUpdated"></request>
+    <button class="btn btn-default" v-on:click="addRequest">Add Request</button>
+    <div v-for="(request, idx) in requests">
+      <request :iwindows="request.windows" :idx="idx" v-on:requestupdate="requestUpdated"></request>
     </div>
   </div>
 </script>

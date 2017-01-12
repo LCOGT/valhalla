@@ -42,29 +42,52 @@ var userrequest = {
   }]
 };
 
+Vue.component('custom-field', {
+  props: ['value', 'label', 'field'],
+  methods: {
+    update: function(value){
+      this.$emit('input', value);
+    }
+  },
+  template: '#custom-field'
+});
+
 Vue.component('window',{
   props: ['istart', 'iend', 'index'],
   data: function(){
-    return { start: this.istart, end: this.iend };
+    return {
+      start: this.istart,
+      end: this.iend,
+      errors: []
+    };
   },
   methods: {
     update: function(){
       this.$emit('windowupdate', {'id': this.index, 'data': this.$data});
+    },
+    validate: function(data){
+      var reqIndex = this.$parent.$data.index;
+      console.log(data.requests[reqIndex].windows[this.index]);
+      this.errors = _.get(data, ['requests', reqIndex, 'windows', this.index], []);
+      console.log(this.errors.end);
     }
+  },
+  created: function(){
+    eventHub.$on('validate', this.validate);
   },
   template: '#window-template'
 });
 
 Vue.component('request', {
-  props: ['iwindows'],
+  props: ['iwindows', 'idx'],
   data: function(){
-    return { windows: this.iwindows };
+    return { windows: this.iwindows, index: this.idx };
   },
   methods: {
     windowUpdated: function(data){
       Vue.set(this.windows, data.id, data.data);
       console.log('windowUpdated')
-      this.$emit('requestupdate', this.$data);
+      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
     },
     addWindow: function(){
       var newWindow = {'start': moment().format('YYYY-M-D HH:mm:ss'), 'end': moment().format('YYYY-M-D HH:mm:ss')};
@@ -82,12 +105,18 @@ Vue.component('userrequest', {
   methods: {
     requestUpdated: function(data){
       console.log('request updated')
-      Vue.set(this.requests, 0, data);
+      Vue.set(this.requests, data.id, data.data);
       this.$emit('userrequestupdate', this.$data);
+    },
+    addRequest: function(){
+      var newRequest = JSON.parse(JSON.stringify(this.requests[0]));
+      this.requests.push(newRequest);
     }
   },
   template: '#userrequest-template'
 });
+
+var eventHub = new Vue();
 
 var vm = new Vue({
   el: '#vueapp',
@@ -95,9 +124,22 @@ var vm = new Vue({
     userrequest: userrequest
   },
   methods: {
+    validate: function(){
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/validate/',
+        data: JSON.stringify(that.userrequest),
+        contentType: 'application/json',
+        success: function(data){
+          eventHub.$emit('validate', data.errors);
+        }
+      });
+    },
     userrequestUpdated: function(data){
       console.log('userrequest updated')
       this.userrequest = data;
+      this.validate();
     }
   }
 });
