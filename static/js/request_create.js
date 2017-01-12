@@ -43,13 +43,13 @@ var userrequest = {
 };
 
 Vue.component('window',{
-  props: ['istart', 'iend'],
+  props: ['istart', 'iend', 'index'],
   data: function(){
     return { start: this.istart, end: this.iend };
   },
   methods: {
     update: function(){
-      this.$emit('windowupdate', this.$data);
+      this.$emit('windowupdate', {'id': this.index, 'data': this.$data});
     }
   },
   template: '#window-template'
@@ -62,8 +62,13 @@ Vue.component('request', {
   },
   methods: {
     windowUpdated: function(data){
-      this.windows[0] = data;
+      Vue.set(this.windows, data.id, data.data);
+      console.log('windowUpdated')
       this.$emit('requestupdate', this.$data);
+    },
+    addWindow: function(){
+      var newWindow = {'start': moment().format('YYYY-M-D HH:mm:ss'), 'end': moment().format('YYYY-M-D HH:mm:ss')};
+      this.windows.push(newWindow);
     }
   },
   template: '#request-template'
@@ -76,10 +81,9 @@ Vue.component('userrequest', {
   },
   methods: {
     requestUpdated: function(data){
-      this.requests[0] = data;
+      console.log('request updated')
+      Vue.set(this.requests, 0, data);
       this.$emit('userrequestupdate', this.$data);
-      console.log(this.requests[0].windows[0].start)
-      this.$root.$data.userrequest.requests[0] = this.requests[0];
     }
   },
   template: '#userrequest-template'
@@ -92,7 +96,7 @@ var vm = new Vue({
   },
   methods: {
     userrequestUpdated: function(data){
-      console.log(data);
+      console.log('userrequest updated')
       this.userrequest = data;
     }
   }

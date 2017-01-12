@@ -11,7 +11,7 @@
 <script type="text/x-template" id="window-template">
   <div class="row window">
     <div class="col-md-12">
-      <h2>Window</h2>
+      <h2>Window {{ index + 1}}</h2>
       <form class="form-horizontal">
         <div class="form-group">
           <label for="start" class="col-sm-3 control-label">Start</label>
@@ -34,8 +34,9 @@
   <div class="row request">
     <div class="col-md-12">
       <h1>Request</h1>
-      <div v-for="window in windows">
-        <window :istart="window.start" :iend="window.end" v-on:windowupdate="windowUpdated"></window>
+      <button class="btn btn-default" v-on:click="addWindow">Add Window</button>
+      <div v-for="(window, idx) in windows">
+        <window :istart="window.start" :iend="window.end" :index="idx" v-on:windowupdate="windowUpdated"></window>
       </div>
     </div>
   </div>
