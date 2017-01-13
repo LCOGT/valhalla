@@ -64,13 +64,21 @@ Vue.component('userrequest', {
     });
   },
   computed:{
+    toRep: function(){
+      var rep = {};
+      var that = this;
+      ['group_id', 'proposal', 'operator', 'ipp_value', 'observation_type', 'requests'].forEach(function(x){
+        rep[x] = that[x];
+      });
+      return rep;
+    },
     proposalOptions: function(){
       return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
     }
   },
   methods: {
     update: function(){
-      this.$emit('userrequestupdate', this.$data);
+      this.$emit('userrequestupdate', this.toRep);
     },
     requestUpdated: function(data){
       console.log('request updated')
@@ -91,6 +99,14 @@ Vue.component('request', {
     return this.irequest;
   },
   computed: {
+    toRep: function(){
+      var rep = {};
+      var that = this;
+      ['target', 'molecules', 'windows', 'location', 'constraints'].forEach(function(x){
+        rep[x] = that[x];
+      });
+      return rep;
+    },
     availableInstrumentOptions: function(){
       var options = [];
       for(var i in this.iavailable_instruments){
@@ -104,7 +120,7 @@ Vue.component('request', {
   },
   methods: {
     update: function(){
-      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
+      this.$emit('requestupdate', {'id': this.index, 'data': this.toRep});
     },
     windowUpdated: function(data){
       Vue.set(this.windows, data.id, data.data);
