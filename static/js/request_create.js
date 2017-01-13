@@ -109,6 +109,16 @@ Vue.component('custom-field', {
   template: '#custom-field'
 });
 
+Vue.component('custom-select', {
+  props: ['value', 'label', 'field', 'options', 'errors'],
+  methods: {
+    update: function(value){
+      this.$emit('input', value);
+    }
+  },
+  template: '#custom-select'
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
