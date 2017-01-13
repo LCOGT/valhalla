@@ -11,12 +11,9 @@ Vue.component('custom-field', {
 });
 
 Vue.component('window',{
-  props: ['index', 'errors'],
+  props: ['iwindow', 'index', 'errors'],
   data: function(){
-    return {
-      start: moment().format('YYYY-M-D HH:mm:ss'),
-      end: moment().format('YYYY-M-D HH:mm:ss'),
-    };
+    return this.iwindow;
   },
   computed: {
     toRep: function(){
@@ -32,13 +29,9 @@ Vue.component('window',{
 });
 
 Vue.component('request', {
-  props: ['idx', 'errors'],
+  props: ['irequest', 'index', 'errors'],
   data: function(){
-    return {
-      windows: [{}],
-      molecules: [{}],
-      index: this.idx
-    };
+    return this.irequest;
   },
   methods: {
     windowUpdated: function(data){
@@ -46,8 +39,8 @@ Vue.component('request', {
       console.log('windowUpdated')
       this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
     },
-    addWindow: function(){
-      var newWindow = {'start': moment().format('YYYY-M-D HH:mm:ss'), 'end': moment().format('YYYY-M-D HH:mm:ss')};
+    addWindow: function(idx){
+      var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
       this.windows.push(newWindow);
     }
   },
@@ -58,13 +51,45 @@ Vue.component('userrequest', {
   props: ['errors'],
   data: function(){
     return {
-      // requests: this.irequests,
       group_id: '',
       proposal: '',
       operator: 'SINGLE',
       ipp_value: 1,
       observation_type: 'NORMAL',
-      requests: [{}]
+      requests: [{
+        data_type: '',
+        instrument_name: '',
+        target: {
+          name: undefined,
+          type: 'SIDEREAL',
+          ra: undefined,
+          dec: undefined,
+          scheme: 'MPC_MINOR_PLANET'
+        },
+        molecules:[{
+          type: 'EXPOSE',
+          instrument_name: undefined,
+          fitler: '',
+          exposure_time: 30,
+          exposure_count: 1,
+          bin_x: 1,
+          bin_y: 1,
+          fill_window: false,
+          acquire_mode: undefined,
+          acquire_radius_arcsec: undefined,
+        }],
+        windows:[{
+          start: moment().format('YYYY-M-D HH:mm:ss'),
+          end: moment().format('YYYY-M-D HH:mm:ss')
+        }],
+        location:{
+          telescope_class: undefined
+        },
+        constraints: {
+          max_airmass: 2.0,
+          min_lunar_distance: 30.0
+        }
+      }]
     };
   },
   methods: {
@@ -76,8 +101,8 @@ Vue.component('userrequest', {
       Vue.set(this.requests, data.id, data.data);
       this.$emit('userrequestupdate', this.$data);
     },
-    addRequest: function(){
-      var newRequest = JSON.parse(JSON.stringify(this.requests[0]));
+    addRequest: function(idx){
+      var newRequest = JSON.parse(JSON.stringify(this.requests[idx]));
       this.requests.push(newRequest);
     },
   },
