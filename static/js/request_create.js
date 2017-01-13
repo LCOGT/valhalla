@@ -43,7 +43,7 @@ var userrequest = {
 };
 
 Vue.component('custom-field', {
-  props: ['value', 'label', 'field'],
+  props: ['value', 'label', 'field', 'errors'],
   methods: {
     update: function(value){
       this.$emit('input', value);
@@ -67,9 +67,7 @@ Vue.component('window',{
     },
     validate: function(data){
       var reqIndex = this.$parent.$data.index;
-      console.log(data.requests[reqIndex].windows[this.index]);
       this.errors = _.get(data, ['requests', reqIndex, 'windows', this.index], []);
-      console.log(this.errors.end);
     }
   },
   created: function(){
@@ -98,11 +96,23 @@ Vue.component('request', {
 });
 
 Vue.component('userrequest', {
-  props: ['irequests'],
+  props: ['irequests', 'igroup_id', 'iproposal', 'iobservation_type'],
   data: function(){
-    return { requests: this.irequests };
+    return {
+      requests: this.irequests,
+      group_id: this.igroup_id,
+      proposal: this.iproposal,
+      observation_type: this.iobservation_type,
+      errors: []
+    };
   },
   methods: {
+    validate: function(data){
+      this.errors = data;
+    },
+    update: function(){
+      this.$emit('userrequestupdate', this.$data);
+    },
     requestUpdated: function(data){
       console.log('request updated')
       Vue.set(this.requests, data.id, data.data);
@@ -111,7 +121,10 @@ Vue.component('userrequest', {
     addRequest: function(){
       var newRequest = JSON.parse(JSON.stringify(this.requests[0]));
       this.requests.push(newRequest);
-    }
+    },
+  },
+  created: function(){
+    eventHub.$on('validate', this.validate);
   },
   template: '#userrequest-template'
 });
