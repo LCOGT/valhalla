@@ -5,13 +5,7 @@
 {% verbatim %}
 <div id="vueapp">
   {{ userrequest }}
-  <userrequest :irequests="userrequest.requests"
-               :igroup_id="userrequest.group_id"
-               :iproposal="userrequest.proposal"
-               :iobservation_type="userrequest.observation_type"
-               :errors="errors"
-               v-on:userrequestupdate="userrequestUpdated">
-  </userrequest>
+  <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
 </div>
 
 <script type="text/x-template" id="custom-field">
@@ -43,7 +37,7 @@
       <h1>Request</h1>
       <button class="btn btn-default" v-on:click="addWindow">Add Window</button>
       <div v-for="(window, idx) in windows">
-        <window :istart="window.start" :iend="window.end" :index="idx" v-on:windowupdate="windowUpdated" :errors="_.get(errors, ['windows', idx], [])"></window>
+        <window :index="idx" v-on:windowupdate="windowUpdated" :errors="_.get(errors, ['windows', idx], [])"></window>
       </div>
     </div>
   </div>
@@ -56,7 +50,7 @@
     <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id"></custom-field>
     <button class="btn btn-default" v-on:click="addRequest">Add Request</button>
     <div v-for="(request, idx) in requests">
-      <request :iwindows="request.windows" :idx="idx" v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"></request>
+      <request :idx="idx" v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"></request>
     </div>
   </div>
 </script>

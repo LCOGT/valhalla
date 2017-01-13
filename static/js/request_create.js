@@ -1,47 +1,5 @@
 /* globals _ $ Vue moment */
 
-var userrequest = {
-  proposal: undefined,
-  group_id: undefined,
-  operator: 'SINGLE',
-  ipp_value: 1.0,
-  observation_type: 'NORMAL',
-  requests:[{
-    data_type: '',
-    instrument_name: '',
-    target: {
-      name: undefined,
-      type: 'SIDEREAL',
-      ra: undefined,
-      dec: undefined,
-      scheme: 'MPC_MINOR_PLANET'
-    },
-    molecules:[{
-      type: 'EXPOSE',
-      instrument_name: undefined,
-      fitler: '',
-      exposure_time: 30,
-      exposure_count: 1,
-      bin_x: 1,
-      bin_y: 1,
-      fill_window: false,
-      acquire_mode: undefined,
-      acquire_radius_arcsec: undefined,
-    }],
-    windows:[{
-      start: moment().format('YYYY-M-D HH:mm:ss'),
-      end: moment().format('YYYY-M-D HH:mm:ss')
-    }],
-    location:{
-      telescope_class: undefined
-    },
-    constraints: {
-      max_airmass: 2.0,
-      min_lunar_distance: 30.0
-    }
-  }]
-};
-
 Vue.component('custom-field', {
   props: ['value', 'label', 'field', 'errors'],
   methods: {
@@ -53,11 +11,11 @@ Vue.component('custom-field', {
 });
 
 Vue.component('window',{
-  props: ['istart', 'iend', 'index', 'errors'],
+  props: ['index', 'errors'],
   data: function(){
     return {
-      start: this.istart,
-      end: this.iend,
+      start: moment().format('YYYY-M-D HH:mm:ss'),
+      end: moment().format('YYYY-M-D HH:mm:ss'),
     };
   },
   computed: {
@@ -74,9 +32,13 @@ Vue.component('window',{
 });
 
 Vue.component('request', {
-  props: ['iwindows', 'idx', 'errors'],
+  props: ['idx', 'errors'],
   data: function(){
-    return { windows: this.iwindows, index: this.idx };
+    return {
+      windows: [{}],
+      molecules: [{}],
+      index: this.idx
+    };
   },
   methods: {
     windowUpdated: function(data){
@@ -93,13 +55,16 @@ Vue.component('request', {
 });
 
 Vue.component('userrequest', {
-  props: ['irequests', 'igroup_id', 'iproposal', 'iobservation_type', 'errors'],
+  props: ['errors'],
   data: function(){
     return {
-      requests: this.irequests,
-      group_id: this.igroup_id,
-      proposal: this.iproposal,
-      observation_type: this.iobservation_type,
+      // requests: this.irequests,
+      group_id: '',
+      proposal: '',
+      operator: 'SINGLE',
+      ipp_value: 1,
+      observation_type: 'NORMAL',
+      requests: [{}]
     };
   },
   methods: {
@@ -123,7 +88,7 @@ Vue.component('userrequest', {
 var vm = new Vue({
   el: '#vueapp',
   data:{
-    userrequest: userrequest,
+    userrequest: {},
     errors: []
   },
   methods: {
