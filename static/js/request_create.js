@@ -61,9 +61,14 @@ Vue.component('window',{
       errors: []
     };
   },
+  computed: {
+    toRep: function(){
+      return {'start': this.start, 'end': this.end};
+    }
+  },
   methods: {
     update: function(){
-      this.$emit('windowupdate', {'id': this.index, 'data': this.$data});
+      this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
     },
     validate: function(data){
       var reqIndex = this.$parent.$data.index;
