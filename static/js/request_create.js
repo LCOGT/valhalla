@@ -1,52 +1,5 @@
 /* globals _ $ Vue moment */
 
-Vue.component('custom-field', {
-  props: ['value', 'label', 'field', 'errors'],
-  methods: {
-    update: function(value){
-      this.$emit('input', value);
-    }
-  },
-  template: '#custom-field'
-});
-
-Vue.component('window',{
-  props: ['iwindow', 'index', 'errors'],
-  data: function(){
-    return this.iwindow;
-  },
-  computed: {
-    toRep: function(){
-      return {'start': this.start, 'end': this.end};
-    }
-  },
-  methods: {
-    update: function(){
-      this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
-    }
-  },
-  template: '#window-template'
-});
-
-Vue.component('request', {
-  props: ['irequest', 'index', 'errors'],
-  data: function(){
-    return this.irequest;
-  },
-  methods: {
-    windowUpdated: function(data){
-      Vue.set(this.windows, data.id, data.data);
-      console.log('windowUpdated')
-      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
-    },
-    addWindow: function(idx){
-      var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
-      this.windows.push(newWindow);
-    }
-  },
-  template: '#request-template'
-});
-
 Vue.component('userrequest', {
   props: ['errors'],
   data: function(){
@@ -109,6 +62,52 @@ Vue.component('userrequest', {
   template: '#userrequest-template'
 });
 
+Vue.component('request', {
+  props: ['irequest', 'index', 'errors'],
+  data: function(){
+    return this.irequest;
+  },
+  methods: {
+    windowUpdated: function(data){
+      Vue.set(this.windows, data.id, data.data);
+      console.log('windowUpdated')
+      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
+    },
+    addWindow: function(idx){
+      var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
+      this.windows.push(newWindow);
+    }
+  },
+  template: '#request-template'
+});
+
+Vue.component('window',{
+  props: ['iwindow', 'index', 'errors'],
+  data: function(){
+    return this.iwindow;
+  },
+  computed: {
+    toRep: function(){
+      return {'start': this.start, 'end': this.end};
+    }
+  },
+  methods: {
+    update: function(){
+      this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
+    }
+  },
+  template: '#window-template'
+});
+
+Vue.component('custom-field', {
+  props: ['value', 'label', 'field', 'errors'],
+  methods: {
+    update: function(value){
+      this.$emit('input', value);
+    }
+  },
+  template: '#custom-field'
+});
 
 var vm = new Vue({
   el: '#vueapp',

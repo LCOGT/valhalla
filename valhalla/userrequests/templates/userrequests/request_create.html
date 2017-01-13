@@ -8,12 +8,26 @@
   <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
 </div>
 
-<script type="text/x-template" id="custom-field">
-  <div class="form-group" :class="{ 'has-error': errors }">
-    <label :for="field" class="col-sm-2 control-label">{{ label }}</label>
-    <div class="col-sm-10">
-      <input :id="field" class="form-control" v-bind:value="value" v-on:input="update($event.target.value)"/>
-      <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+<script type="text/x-template" id="userrequest-template">
+  <div class="row userrequest">
+    <div class="col-md-12">
+    <h1>General Info</h1>
+    <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id"></custom-field>
+    <div v-for="(request, idx) in requests">
+      <request :index="idx" :irequest="request" v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"></request>
+      <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="request-template">
+  <div class="row request">
+    <div class="col-md-12">
+      <h1>Request</h1>
+      <div v-for="(window, idx) in windows">
+        <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :errors="_.get(errors, ['windows', idx], [])"></window>
+        <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
+      </div>
     </div>
   </div>
 </script>
@@ -31,26 +45,12 @@
   </div>
 </script>
 
-<script type="text/x-template" id="request-template">
-  <div class="row request">
-    <div class="col-md-12">
-      <h1>Request</h1>
-      <div v-for="(window, idx) in windows">
-        <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :errors="_.get(errors, ['windows', idx], [])"></window>
-        <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
-      </div>
-    </div>
-  </div>
-</script>
-
-<script type="text/x-template" id="userrequest-template">
-  <div class="row userrequest">
-    <div class="col-md-12">
-    <h1>General Info</h1>
-    <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id"></custom-field>
-    <div v-for="(request, idx) in requests">
-      <request :index="idx" :irequest="request" v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"></request>
-      <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
+<script type="text/x-template" id="custom-field">
+  <div class="form-group" :class="{ 'has-error': errors }">
+    <label :for="field" class="col-sm-2 control-label">{{ label }}</label>
+    <div class="col-sm-10">
+      <input :id="field" class="form-control" v-bind:value="value" v-on:input="update($event.target.value)"/>
+      <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
     </div>
   </div>
 </script>
