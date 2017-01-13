@@ -15,6 +15,9 @@
     <form class="form-horizontal">
       <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
       </custom-field>
+      <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
+                     :errors="errors.proposal" :options="proposalOptions">
+      </custom-select>
       <custom-select v-model="observation_type" label="Priority" field="observation_type" v-on:input="update"
                     :errors="errors.observation_type"
                     :options="[{value: 'NORMAL', text: 'Normal'},

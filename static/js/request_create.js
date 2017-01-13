@@ -1,9 +1,20 @@
 /* globals _ $ Vue moment */
 
+var instrumentTypeMap = {
+  '2M0-SCICAM-SPECTRAL': {'type': 'IMAGE', 'class': '2m0'},
+  '2M0-FLOYDS-SCICAM': {'type': 'SPECTRA', 'class': '2m0'},
+  '0M8-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m8'},
+  '1M0-SCICAM-SINISTRO': {'type': 'IMAGE', 'class': '1m0'},
+  '0M4-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m4'},
+  '0M8-NRES-SCICAM': {'type': 'SPECTRA', 'class': '0m8'}
+};
+
 Vue.component('userrequest', {
   props: ['errors'],
   data: function(){
     return {
+      proposals: [],
+      available_instrument_types: [],
       group_id: '',
       proposal: '',
       operator: 'SINGLE',
@@ -44,6 +55,17 @@ Vue.component('userrequest', {
         }
       }]
     };
+  },
+  created: function(){
+    var that = this;
+    $.getJSON('/api/profile/', function(data){
+      that.proposals = data.proposals;
+    });
+  },
+  computed:{
+    proposalOptions: function(){
+      return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
+    }
   },
   methods: {
     update: function(){
