@@ -53,12 +53,11 @@ Vue.component('custom-field', {
 });
 
 Vue.component('window',{
-  props: ['istart', 'iend', 'index'],
+  props: ['istart', 'iend', 'index', 'errors'],
   data: function(){
     return {
       start: this.istart,
       end: this.iend,
-      errors: []
     };
   },
   computed: {
@@ -69,20 +68,13 @@ Vue.component('window',{
   methods: {
     update: function(){
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
-    },
-    validate: function(data){
-      var reqIndex = this.$parent.$data.index;
-      this.errors = _.get(data, ['requests', reqIndex, 'windows', this.index], []);
     }
-  },
-  created: function(){
-    eventHub.$on('validate', this.validate);
   },
   template: '#window-template'
 });
 
 Vue.component('request', {
-  props: ['iwindows', 'idx'],
+  props: ['iwindows', 'idx', 'errors'],
   data: function(){
     return { windows: this.iwindows, index: this.idx };
   },
@@ -101,20 +93,16 @@ Vue.component('request', {
 });
 
 Vue.component('userrequest', {
-  props: ['irequests', 'igroup_id', 'iproposal', 'iobservation_type'],
+  props: ['irequests', 'igroup_id', 'iproposal', 'iobservation_type', 'errors'],
   data: function(){
     return {
       requests: this.irequests,
       group_id: this.igroup_id,
       proposal: this.iproposal,
       observation_type: this.iobservation_type,
-      errors: []
     };
   },
   methods: {
-    validate: function(data){
-      this.errors = data;
-    },
     update: function(){
       this.$emit('userrequestupdate', this.$data);
     },
@@ -128,18 +116,15 @@ Vue.component('userrequest', {
       this.requests.push(newRequest);
     },
   },
-  created: function(){
-    eventHub.$on('validate', this.validate);
-  },
   template: '#userrequest-template'
 });
 
-var eventHub = new Vue();
 
 var vm = new Vue({
   el: '#vueapp',
   data:{
-    userrequest: userrequest
+    userrequest: userrequest,
+    errors: []
   },
   methods: {
     validate: function(){
@@ -150,7 +135,7 @@ var vm = new Vue({
         data: JSON.stringify(that.userrequest),
         contentType: 'application/json',
         success: function(data){
-          eventHub.$emit('validate', data.errors);
+          that.errors = data.errors;
         }
       });
     },
