@@ -23,10 +23,13 @@
                     :options="[{value: 'NORMAL', text: 'Normal'},
                                {value:'TARGET_OF_OPPORTUNITY', text: 'Target Of Opportunity'}]">
       </custom-select>
+      <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
+                    v-on:input="update" :errors="errors.ipp_value">
+      </custom-field>
     </form>
     <div v-for="(request, idx) in requests">
-      <request :index="idx" :irequest="request" v-on:requestupdate="requestUpdated"
-               :errors="_.get(errors, ['requests', idx], [])">
+      <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments"
+               v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
      </request>
       <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
     </div>
@@ -37,6 +40,14 @@
   <div class="row request">
     <div class="col-md-12">
       <h1>Request</h1>
+      <form class="form-horizontal">
+         <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
+                        :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
+        </custom-select>
+        <custom-select v-model="instrument_type" label="Instrument" v-on:input="update" :errors="errors.instrument_type"
+                       :options="availableInstrumentOptions">
+        </custom-select>
+      </form>
       <div v-for="(window, idx) in windows">
         <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
                 :errors="_.get(errors, ['windows', idx], [])">

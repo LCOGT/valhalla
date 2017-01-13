@@ -14,7 +14,7 @@ Vue.component('userrequest', {
   data: function(){
     return {
       proposals: [],
-      available_instrument_types: [],
+      available_instruments: [],
       group_id: '',
       proposal: '',
       operator: 'SINGLE',
@@ -22,7 +22,7 @@ Vue.component('userrequest', {
       observation_type: 'NORMAL',
       requests: [{
         data_type: '',
-        instrument_name: '',
+        instrument_type: '',
         target: {
           name: undefined,
           type: 'SIDEREAL',
@@ -32,7 +32,7 @@ Vue.component('userrequest', {
         },
         molecules:[{
           type: 'EXPOSE',
-          instrument_name: undefined,
+          instrument_type: undefined,
           fitler: '',
           exposure_time: 30,
           exposure_count: 1,
@@ -60,6 +60,7 @@ Vue.component('userrequest', {
     var that = this;
     $.getJSON('/api/profile/', function(data){
       that.proposals = data.proposals;
+      that.available_instruments = data.available_instrument_types;
     });
   },
   computed:{
@@ -74,7 +75,7 @@ Vue.component('userrequest', {
     requestUpdated: function(data){
       console.log('request updated')
       Vue.set(this.requests, data.id, data.data);
-      this.$emit('userrequestupdate', this.$data);
+      this.update();
     },
     addRequest: function(idx){
       var newRequest = JSON.parse(JSON.stringify(this.requests[idx]));
@@ -85,20 +86,35 @@ Vue.component('userrequest', {
 });
 
 Vue.component('request', {
-  props: ['irequest', 'index', 'errors'],
+  props: ['irequest', 'index', 'errors', 'iavailable_instruments'],
   data: function(){
     return this.irequest;
   },
+  computed: {
+    availableInstrumentOptions: function(){
+      var options = [];
+      for(var i in this.iavailable_instruments){
+        var instrument_type = this.iavailable_instruments[i];
+        if(instrumentTypeMap[instrument_type].type === this.data_type){
+          options.push({value: instrument_type, text: instrument_type});
+        }
+      }
+      return options;
+    }
+  },
   methods: {
+    update: function(){
+      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
+    },
     windowUpdated: function(data){
       Vue.set(this.windows, data.id, data.data);
       console.log('windowUpdated')
-      this.$emit('requestupdate', {'id': this.index, 'data': this.$data});
+      this.update();
     },
     addWindow: function(idx){
       var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
       this.windows.push(newWindow);
-    }
+    },
   },
   template: '#request-template'
 });
