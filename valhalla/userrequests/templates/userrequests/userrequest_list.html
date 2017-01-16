@@ -116,12 +116,12 @@
         </div>
         <div class="spacer"></div>
         {% empty %}
-        <div class="empty requests">
-        <center>
-          <h2>{% trans 'You have not submitted any observation requests.' %}</h2>
-          <a class="btn btn-primary btn-lg" href="#">{% trans 'Submit Observation Request' %}</a>
-          <h3>Need help?</h3>
-          <a href="#">View the getting started guide.</a>
+        <div class="empty-requests">
+          <center>
+            <h2>{% trans 'You have not submitted any observation requests.' %}</h2>
+            <a class="btn btn-primary btn-lg" href="#">{% trans 'Submit an Observation Request' %}</a>
+            <h3>Need help?</h3>
+            <a href="https://lco.global/documentation/">View the documentation</a>
           </center>
         </div>
         {% endfor %}

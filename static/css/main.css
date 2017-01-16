@@ -25,6 +25,18 @@ a:hover {
     padding-top: 5px;
 }
 
+.empty-requests {
+    margin-top: 50px;
+}
+
+.sidebar-nav {
+    font-size: 1.3em;
+}
+
+.sidebar-nav li {
+    height: 50px;
+}
+
 .thumbnail {
     margin-bottom: 0px;
 }
