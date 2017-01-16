@@ -27,13 +27,6 @@
                 </p>
                 {% endfor %}
         {% endif %}
-        <div class="row">
-            <div class="col-md-12">
-                <h3>News</h3>
-                <div id="news">
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
@@ -52,22 +45,6 @@ $(document).ready(function(){
                      start_date.toISOString() + "&end=" + end_date.toISOString()
     $.getJSON(state_url, function(data) {
         create_telescope_availability_chart(data);
-    });
-    $.ajax({
-        url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
-        dataType: 'json',
-        success: function (data) {
-            rss = '<ul class="list-unstyled">'
-            if (data.responseData.feed && data.responseData.feed.entries) {
-                $.each(data.responseData.feed.entries, function (i, e) {
-                    time = new Date(e.publishedDate)
-                    str_time = time.getDate() + '/' + (time.getMonth()+1) + '/' + time.getFullYear()
-                    rss = rss + '<li><a href="' + e.link + '">' + e.title + '</a><small> ' + str_time + '</small></li>'
-                });
-            }
-            rss = rss + '</ul>'
-            $('#news').html(rss)
-        }
     });
 });
 </script>
