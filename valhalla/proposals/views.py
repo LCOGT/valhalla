@@ -1,5 +1,6 @@
 from django.views import View
 from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.validators import validate_email
 from django.http import Http404, HttpResponseRedirect
@@ -12,6 +13,13 @@ from valhalla.proposals.models import Proposal, Membership
 
 
 class ProposalDetailView(LoginRequiredMixin, DetailView):
+    model = Proposal
+
+    def get_queryset(self):
+        return self.request.user.proposal_set.all()
+
+
+class ProposalListView(LoginRequiredMixin, ListView):
     model = Proposal
 
     def get_queryset(self):
