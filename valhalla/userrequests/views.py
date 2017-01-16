@@ -2,6 +2,7 @@ from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 from django.http import HttpResponseBadRequest
 from django.utils import timezone
 from dateutil.parser import parse
@@ -43,6 +44,8 @@ class UserRequestListView(FilterView):
 class TelescopeStatesView(APIView):
     ''' Retrieves the telescope states for all telescopes between the start and end times
     '''
+    permission_classes = (AllowAny,)
+
     def get(self, request):
         try:
             start, end = get_start_end_paramters(request)
@@ -59,6 +62,8 @@ class TelescopeStatesView(APIView):
 class TelescopeAvailabilityView(APIView):
     ''' Retrieves the nightly % availability of each telescope between the start and end times
     '''
+    permission_classes = (AllowAny,)
+
     def get(self, request):
         try:
             start, end = get_start_end_paramters(request)

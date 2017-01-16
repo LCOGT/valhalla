@@ -16,15 +16,19 @@ router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
 router.register(r'user_requests', UserRequestViewSet, 'user_requests')
 
+api_urlpatterns = [
+    url(r'^', include(router.urls)),
+    url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
+    url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
+]
+
 urlpatterns = [
     url(r'^$', UserRequestListView.as_view(), name='index'),
     url(r'^accounts/', include(accounts_urls)),
-    url(r'^api/', include(router.urls, namespace='api')),
+    url(r'^api/', include(api_urlpatterns, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
     url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
-    url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
-    url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'^admin/', admin.site.urls),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled
