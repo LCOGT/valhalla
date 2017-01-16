@@ -36,7 +36,7 @@ class UserRequestList(TestCase):
     def test_userrequest_no_auth(self):
         self.client.logout()
         response = self.client.get(reverse('index'))
-        self.assertContains(response, 'In order to request observations, you must first')
+        self.assertContains(response, 'Register an Account')
 
     def test_no_other_requests(self):
         proposal = mixer.blend(Proposal)
