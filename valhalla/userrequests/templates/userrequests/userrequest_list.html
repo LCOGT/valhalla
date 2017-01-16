@@ -7,11 +7,11 @@
 {% block request_list %}
   <div class="row">
     <div class="col-md-12">
-      <h3>Submitted Requests
+      <h2>Submitted Requests
       <small>
         <a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a>
       </small>
-      </h3>
+      </h2>
       <div class="filter-block" style="display:none">
         <form method="get" action="" class="form-inline">
           <div class="form-group">
@@ -62,7 +62,7 @@
           <div class="col-md-8">
             <div class="row">
               <div class="col-md-12">
-                <strong><a class="text-{{ ur.state|state_to_bs }} userrequest-title" href="{% url 'userrequests:request-list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
+                <a class="userrequest-title" href="{% url 'userrequests:request-list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a>
               </div>
             </div>
             <div class="row">
