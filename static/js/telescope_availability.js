@@ -24,10 +24,9 @@ create_telescope_availability_chart = function(data){
     sorted_telescopes.sort();
 
     var telescope_availability_chart = $('#telescope_availability_chart');
-    var availability_chart = $('<table></table>').addClass('availability_chart').addClass('table').addClass('table-bordered');
-    availability_chart.addClass("table-condensed");
-    var thead = $('<thead></thead>').addClass('thead-default');
-    var header_item = $('<th></th>').text('Telescope');
+    var availability_chart = $('<table class="availability_chart table table-bordered table-condensed"></table>');
+    var thead = $('<thead class="thead-default"></thead>');
+    var header_item = $('<th>Telescope</th>');
     thead.append(header_item);
 
     var current_date = new Date(min_date);
