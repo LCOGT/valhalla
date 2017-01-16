@@ -5,7 +5,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
 {% endblock %}
 {% block request_list %}
-{% if user.is_authenticated %}
   <div class="row">
     <div class="col-md-12">
       <h3>Requests<small><a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a></small></h3>
@@ -114,20 +113,11 @@
         <div class="spacer"></div>
         {% empty %}
         {% trans 'You have not submitted any requests.' %} <a href="#">{% trans 'Submit Observation Request' %}</a>
-      {% endfor %}
-    </section>
+        {% endfor %}
+      </section>
+    </div>
+    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
   </div>
-  {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
-</div>
-{% else %}
-  <h3>{% trans 'LCO.global Observation Portal' %}</h3>
-  {% url 'auth_login' as login_url %}
-  {% url 'registration_register' as register_url %}
-  {% blocktrans %}
-  <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
-  <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
-  {% endblocktrans %}
-{% endif %}
 {% endblock %}
 {% block extra_javascript %}
   {{ block.super }}
