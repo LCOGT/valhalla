@@ -14,14 +14,14 @@
         network of telescopes remotely at any time.</p>
         <p>Registered users have the ability to:</p>
         <ul class="list-unstyled">
-            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left fa-border" aria-hidden="true"></i><span>Compose, draft and submit observation requests to be observed on the network.</span>
+            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left" aria-hidden="true"></i><span>Compose, draft and submit observation requests to be observed on the network.</span>
             </li>
-            <li><i class="fa fa-cloud-download fa-3x fa-pull-left fa-border" aria-hidden="true"></i><span>Track status of submitted observations, preview quicklook data and download final data products.</span></li>
-            <li><i class="fa fa-group fa-3x fa-pull-left fa-border" aria-hidden="true"></i><span>Submit proposals, track progress and manage primary and co-investigators.</span></li>
+            <li><i class="fa fa-cloud-download fa-3x fa-pull-left" aria-hidden="true"></i><span>Track status of submitted observations, preview quicklook data and download final data products.</span></li>
+            <li><i class="fa fa-group fa-3x fa-pull-left" aria-hidden="true"></i><span>Submit proposals, track progress and manage primary and co-investigators.</span></li>
         </ul>
-        <a href="{% url 'registration_register' %}" class="btn btn-lg btn-default col-md-5">Register an Account</a>
+        <a href="{% url 'registration_register' %}" class="btn btn-lg btn-success col-md-5">Register an Account</a>
         <a href="{% url 'auth_login' %}" class="btn btn-lg btn-default col-md-5 col-md-offset-2">Login</a>
-
+        <br/>
     </div>
     {% endif %}
     </div>
@@ -34,6 +34,12 @@
                 <li><a href="{% url 'proposals:list' %}"><i class="fa fa-group fa-2x fa-fw"></i> Manage Proposals</a></li>
                 <li><a href="{% url 'sciapplications:index' %}"><i class="fa fa-pencil-square-o fa-2x fa-fw"></i> Submit a Proposal</a></li>
                 </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Need more information?</h3>
+                Check out the  <a href="https://lco.global/documentation/">documentation.</a>
             </div>
         </div>
         {% include "partials/telescope_availability_chart.html" %}
@@ -50,7 +56,7 @@
                 <p>{% trans 'You have no proposals' %}</p>
                 <p>
                     <a href="{% url 'sciapplications:index' %}">
-                    {% trans 'Apply for time' %}
+                    {% trans 'Submit a proposal' %}
                     </a>
                 </p>
                 {% endfor %}
