@@ -24,11 +24,21 @@ Vue.component('userrequest', {
         data_type: '',
         instrument_type: '',
         target: {
-          name: undefined,
+          name: '',
           type: 'SIDEREAL',
-          ra: undefined,
-          dec: undefined,
-          scheme: 'MPC_MINOR_PLANET'
+          ra: 0,
+          dec: 0,
+          scheme: 'MPC_MINOR_PLANET',
+          proper_motion_ra: 0.0,
+          proper_motion_dec: 0.0,
+          epoch: 2000,
+          parallax: 0,
+          orbinc: 0,
+          longascnode: 0,
+          argofperih: 0,
+          meandist: 0,
+          eccentricity: 0,
+          meananom: 0
         },
         molecules:[{
           type: 'EXPOSE',
@@ -127,6 +137,11 @@ Vue.component('request', {
       console.log('windowUpdated')
       this.update();
     },
+    targetUpdated: function(data){
+      this.target = data.data;
+      console.log('tafgetUpdated')
+      this.update();
+    },
     addWindow: function(idx){
       var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
       this.windows.push(newWindow);
@@ -135,7 +150,36 @@ Vue.component('request', {
   template: '#request-template'
 });
 
-Vue.component('window',{
+Vue.component('target', {
+  props: ['itarget', 'errors'],
+  data: function(){
+    return this.itarget;
+  },
+  computed: {
+    toRep: function(){
+      var rep = {'name': this.name, 'type': this.type};
+      var that = this;
+      if(this.type === 'SIDEREAL'){
+        ['ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'epoch', 'parallax'].forEach(function(x){
+          rep[x] = that[x];
+        });
+      }else if(this.type === 'NON_SIDEREAL'){
+        ['scheme', 'epoch', 'orbinc', 'longascnode', 'argofperih', 'meandist', 'eccentricity', 'meananom'].forEach(function(x){
+          rep[x] = that[x];
+        });
+      }
+      return rep;
+    }
+  },
+  methods: {
+    update: function(){
+      this.$emit('targetupdate', {'data': this.toRep});
+    }
+  },
+  template: '#target-template'
+});
+
+Vue.component('window', {
   props: ['iwindow', 'index', 'errors'],
   data: function(){
     return this.iwindow;

@@ -48,12 +48,55 @@
                        :options="availableInstrumentOptions">
         </custom-select>
       </form>
+      <target :itarget="target" v-on:targetupdate="targetUpdated" :errors="_.get(errors, 'target', {})"></target>
       <div v-for="(window, idx) in windows">
         <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
                 :errors="_.get(errors, ['windows', idx], [])">
         </window>
         <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
       </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="target-template">
+  <div class="row target">
+    <div class="col-md-12">
+      <h2>Target</h2>
+      <form class="form-horizontal">
+        <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name" />
+        <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
+                       :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]"/>
+        <div class="sidereal" v-show="type === 'SIDEREAL'">
+          <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra"/>
+          <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec"/>
+          <custom-field v-model="proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
+                        v-on:input="update" :errors="errors.proper_motion_ra"/>
+          <custom-field v-model="proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
+                        v-on:input="update" :errors="errors.proper_motion_dec"/>
+          <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"/>
+          <custom-field v-model="parallax" label="Parallax" field="parallax" v-on:input="update"
+                        :errors="errors.parallax"/>
+        </div>
+        <div class="non-sidereal" v-show="type === 'NON_SIDEREAL'">
+          <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
+                         :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
+                                    {value: 'MPC_COMET', text: 'MPC Comet'}]"/>
+          <custom-field v-model="epoch" label="Epoch (MJD)" field="epoch" v-on:input="update" :errors="errors.epoch"/>
+          <custom-field v-model="orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
+                        :errors="errors.orbinc"/>
+          <custom-field v-model="longascnode" label="Longitude of Ascending Node" field="longascnode"
+                        v-on:input="update" :errors="errors.longascnode"/>
+          <custom-field v-model="argofperih" label="Argument of Perihelion" field="argofperih"
+                        v-on:input="update" :errors="errors.argofperih"/>
+          <custom-field v-model="meandist" label="Mean Distance (AU)" field="meandist"
+                        v-on:input="update" :errors="errors.meandist"/>
+          <custom-field v-model="eccentricity" label="Eccentricity" field="eccentricity"
+                        v-on:input="update" :errors="errors.eccentricity"/>
+          <custom-field v-model="meananom" label="Mean Anomoly" field="meananom"
+                        v-on:input="update" :errors="errors.meananom"/>
+        </div>
+      </form>
     </div>
   </div>
 </script>
