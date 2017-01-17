@@ -19,6 +19,8 @@ router.register(r'user_requests', UserRequestViewSet, 'user_requests')
 
 api_urlpatterns = [
     url(r'^', include(router.urls)),
+    url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
+    url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'profile/', ProfileApiView.as_view(), name='profile'),
     url(r'instrument/(?P<instrument_type>.+)/', InstrumentInformationView.as_view(), name='instrument_information')
 ]

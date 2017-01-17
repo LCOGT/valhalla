@@ -9,7 +9,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
         <link href='https://cdn.lco.global/mainstyle/css/affogato-1.0.0.css' rel="stylesheet">
         <link href='https://cdn.lco.global/mainstyle/css/lco-1.0.0.css' rel="stylesheet">
         <link href="{% static 'css/main.css' %}" rel="stylesheet">
@@ -36,8 +36,10 @@
               </div>
               <div id="navbar" class="navbar-collapse collapse headNav">
                 <ul class="nav navbar-nav navbar-main">
-                <li><a href="{% url 'sciapplications:index' %}">Apply For Time</a></li>
-                <li><a href="{% url 'userrequests:create' %}">Schedule Requests</a></li>
+                <li><a href="#">Submit Observations</a></li>
+                <li><a href="{% url 'proposals:list' %}">Manage Proposals</a></li>
+                <li><a href="{% url 'sciapplications:index' %}">Submit Proposals</a></li>
+                <li><a href="https://lco.global/documentation/">Documentation</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                   {% if user.is_authenticated %}

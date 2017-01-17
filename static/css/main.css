@@ -12,6 +12,31 @@ a:hover {
     text-decoration: none;
 }
 
+.noauth {
+    line-height: 1.4em;
+}
+
+.noauth li {
+    height: 75px;
+}
+
+.noauth span {
+    vertical-align: middle;
+    padding-top: 5px;
+}
+
+.empty-requests {
+    margin-top: 50px;
+}
+
+.sidebar-nav {
+    font-size: 1.3em;
+}
+
+.sidebar-nav li {
+    height: 50px;
+}
+
 .thumbnail {
     margin-bottom: 0px;
 }

@@ -37,7 +37,7 @@ class UserRequestList(TestCase):
     def test_userrequest_no_auth(self):
         self.client.logout()
         response = self.client.get(reverse('index'))
-        self.assertContains(response, 'In order to request observations, you must first')
+        self.assertContains(response, 'Register an Account')
 
     def test_no_other_requests(self):
         proposal = mixer.blend(Proposal)
@@ -78,22 +78,22 @@ class TestTelescopeStates(TelescopeStatesFromFile):
         self.client.force_login(self.user)
 
     def test_date_format_1(self):
-        response = self.client.get(reverse('telescope_states') + '?start=2016-10-1&end=2016-10-10')
+        response = self.client.get(reverse('api:telescope_states') + '?start=2016-10-1&end=2016-10-10')
         self.assertContains(response, "lsc")
 
     def test_date_format_2(self):
-        response = self.client.get(reverse('telescope_availability') +
+        response = self.client.get(reverse('api:telescope_availability') +
                                    '?start=2016-10-1T1:23:44&end=2016-10-10T22:22:2')
         self.assertContains(response, "lsc")
 
     def test_date_format_bad(self):
-        response = self.client.get(reverse('telescope_states') +
+        response = self.client.get(reverse('api:telescope_states') +
                                    '?start=2016-10-1%201:3323:44&end=10-10T22:22:2')
         self.assertEqual(response.status_code, 400)
         self.assertIn("minute must be in 0..59", str(response.content))
 
     def test_no_date_specified(self):
-        response = self.client.get(reverse('telescope_states'))
+        response = self.client.get(reverse('api:telescope_states'))
         self.assertContains(response, str(timezone.now().date()))
 
 

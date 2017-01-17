@@ -5,10 +5,29 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
 {% endblock %}
 {% block request_list %}
-{% if user.is_authenticated %}
+  {% if not object_list %}
+  <div class="empty-requests">
+          <center>
+          {% if user.proposal_set.count > 0 %}
+            <h2>{% trans 'You have not submitted any observation requests.' %}</h2>
+            <a class="btn btn-success btn-lg" href="#">{% trans 'Submit an Observation Request' %}</a>
+          {% else %}
+            <h2> You are not a member of any proposals yet.</h2>
+            <p>Only users with at least one active proposal may submit observation requests.</p>
+            <a class="btn btn-success btn-lg" href="{% url 'sciapplications:index' %}">{% trans 'Submit a new proposal' %}</a>
+          {% endif %}
+            <h3>Need help?</h3>
+            <a href="https://lco.global/documentation/">View the documentation</a> or <a href="mailto:scisupport@lco.global">contact support</a>.
+          </center>
+        </div>
+  {% else %}
   <div class="row">
     <div class="col-md-12">
-      <h3>Requests<small><a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a></small></h3>
+      <h2>Submitted Observation Requests
+      <small>
+        <a id="filter" class="btn btn-default pull-right" href="#"> Filter <i class="fa fa-filter"></i></a>
+      </small>
+      </h2>
       <div class="filter-block" style="display:none">
         <form method="get" action="" class="form-inline">
           <div class="form-group">
@@ -41,6 +60,12 @@
     </div>
   </div>
   <div class="row">
+    <div class="col-md-12">
+      <p>All observations requested under proposals you belong to will appear here. Click the title of a request for
+      more details and to download data. The list may be filtered using the filter button above.</p>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-4">
       <small>User Info</small>
     </div>
@@ -52,27 +77,27 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12" style="min-height: 500px">
       <section class="userrequest-list">
         {% for ur in object_list %}
         <div class="row userrequest userrequest-{{ ur.state|state_to_bs }}">
           <div class="col-md-8">
             <div class="row">
               <div class="col-md-12">
-                <strong><a class="text-{{ ur.state|state_to_bs }} userrequest-title" href="{% url 'userrequests:list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a></strong>
+                <a class="userrequest-title" href="{% url 'userrequests:list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a>
               </div>
             </div>
             <div class="row">
               <div class="col-md-6 userrequest-block border-right">
-                <p><i class="fa fa-user"></i> {{ ur.submitter }}</p>
-                <p><i class="fa fa-users"></i> {{ ur.proposal }}</p>
+                <p><i class="fa fa-fw fa-user"></i> {{ ur.submitter }}</p>
+                <p><i class="fa fa-fw fa-users"></i> <a href="{% url 'proposals:detail' pk=ur.proposal.id %}">{{ ur.proposal }}</a></p>
               </div>
               <div class="col-md-6 userrequest-block border-right">
                 <p><span class="text-{{ ur.state|state_to_bs }}">
-                  <i class="fa fa-{{ ur.state|state_to_icon }}"></i>
+                  <i class="fa fa-fw fa-{{ ur.state|state_to_icon }}"></i>
                   {{ ur.state }}
                 </span></p>
-                <p><i class="fa fa-calendar"></i> {{ ur.modified|naturaltime }}</p>
+                <p><i class="fa fa-fw fa-calendar"></i> {{ ur.modified|naturaltime }}</p>
               </div>
             </div>
           </div>
@@ -112,21 +137,13 @@
           {% endif %}
         </div>
         <div class="spacer"></div>
-        {% empty %}
-        {% trans 'You have not submitted any requests.' %} <a href="#">{% trans 'Submit Observation Request' %}</a>
       {% endfor %}
-    </section>
+      </section>
+    </div>
+    {% if paginator.num_pages > 1 %}
+    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+    {% endif %}
   </div>
-  {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
-</div>
-{% else %}
-  <h3>{% trans 'LCO.global Observation Portal' %}</h3>
-  {% url 'auth_login' as login_url %}
-  {% url 'registration_register' as register_url %}
-  {% blocktrans %}
-  <p>In order to request observations, you must first <a href="{{ login_url }}">Login</a>.</p>
-  <p>Don't have an account? <a href="{{ register_url }}">Register</a></p>
-  {% endblocktrans %}
 {% endif %}
 {% endblock %}
 {% block extra_javascript %}

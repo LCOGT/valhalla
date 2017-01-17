@@ -4,12 +4,46 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
+    {% if user.is_authenticated %}
     {% block request_list %}
     {% endblock %}
+    {% else %}
+    <div class="jumbotron noauth">
+        <h1>Observation Portal</h1>
+        <p>The Observation Portal enables scientists to utilize Las Cumbres Observatory's global
+        network of telescopes remotely at any time.</p>
+        <p>Registered users have the ability to:</p>
+        <ul class="list-unstyled">
+            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left" aria-hidden="true"></i><span>Compose, draft and submit observation requests to be observed on the network.</span>
+            </li>
+            <li><i class="fa fa-cloud-download fa-3x fa-pull-left" aria-hidden="true"></i><span>Track status of submitted observations, preview quicklook data and download final data products.</span></li>
+            <li><i class="fa fa-group fa-3x fa-pull-left" aria-hidden="true"></i><span>Submit proposals, track progress and manage primary and co-investigators.</span></li>
+        </ul>
+        <a href="{% url 'registration_register' %}" class="btn btn-lg btn-success col-md-5">Register an Account</a>
+        <a href="{% url 'auth_login' %}" class="btn btn-lg btn-default col-md-5 col-md-offset-2">Login</a>
+        <br/>
+    </div>
+    {% endif %}
     </div>
     <div class="col-md-4">
-        {% if user.is_authenticated %}
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Quick Navigation</h3>
+                <ul class="list-unstyled sidebar-nav">
+                <li><a href="#"><i class="fa fa-wpexplorer fa-2x fa-fw"></i> Submit Observation</a></li>
+                <li><a href="{% url 'proposals:list' %}"><i class="fa fa-group fa-2x fa-fw"></i> Manage Proposals</a></li>
+                <li><a href="{% url 'sciapplications:index' %}"><i class="fa fa-pencil-square-o fa-2x fa-fw"></i> Submit a Proposal</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Need more information?</h3>
+                Check out the  <a href="https://lco.global/documentation/">documentation.</a>
+            </div>
+        </div>
         {% include "partials/telescope_availability_chart.html" %}
+        {% if user.is_authenticated %}
         <div class="row">
             <div class="col-md-12">
                 <h3>Active Proposals</h3>
@@ -22,18 +56,11 @@
                 <p>{% trans 'You have no proposals' %}</p>
                 <p>
                     <a href="{% url 'sciapplications:index' %}">
-                    {% trans 'Apply for time' %}
+                    {% trans 'Submit a proposal' %}
                     </a>
                 </p>
                 {% endfor %}
         {% endif %}
-        <div class="row">
-            <div class="col-md-12">
-                <h3>News</h3>
-                <div id="news">
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
@@ -48,26 +75,10 @@ $(document).ready(function(){
     start_date.setHours(0);
     start_date.setMinutes(0);
     start_date.setSeconds(0);
-    var state_url = "{% url 'telescope_availability' %}" + "?start=" + 
+    var state_url = "{% url 'api:telescope_availability' %}" + "?start=" +
                      start_date.toISOString() + "&end=" + end_date.toISOString()
     $.getJSON(state_url, function(data) {
         create_telescope_availability_chart(data);
-    });
-    $.ajax({
-        url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent('http://lcogt.net/blog/feeds/rss/'),
-        dataType: 'json',
-        success: function (data) {
-            rss = '<ul class="list-unstyled">'
-            if (data.responseData.feed && data.responseData.feed.entries) {
-                $.each(data.responseData.feed.entries, function (i, e) {
-                    time = new Date(e.publishedDate)
-                    str_time = time.getDate() + '/' + (time.getMonth()+1) + '/' + time.getFullYear()
-                    rss = rss + '<li><a href="' + e.link + '">' + e.title + '</a><small> ' + str_time + '</small></li>'
-                });
-            }
-            rss = rss + '</ul>'
-            $('#news').html(rss)
-        }
     });
 });
 </script>

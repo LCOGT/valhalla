@@ -85,3 +85,23 @@ class TestProposalInvite(TestCase):
         self.assertFalse(ProposalInvite.objects.filter(email='notanemailaddress', proposal=self.proposal).exists())
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Please enter a valid email address')
+
+
+class TestPropsalList(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        self.proposals = mixer.cycle(5).blend(Proposal)
+        for proposal in self.proposals:
+            mixer.blend(Membership, user=self.user, proposal=proposal)
+
+    def test_no_proposals(self):
+        user = mixer.blend(User)
+        self.client.force_login(user)
+        response = self.client.get(reverse('proposals:list'))
+        self.assertContains(response, 'You are not a member of any proposals')
+
+    def test_proposals_show_in_list(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('proposals:list'))
+        for proposal in self.proposals:
+            self.assertContains(response, proposal.id)
