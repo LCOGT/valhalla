@@ -49,8 +49,8 @@ Vue.component('userrequest', {
           bin_x: null,
           bin_y: null,
           fill_window: false,
-          acquire_mode: undefined,
-          acquire_radius_arcsec: undefined,
+          acquire_mode: 'OFF',
+          acquire_radius_arcsec: null,
         }],
         windows:[{
           start: moment().format('YYYY-M-D HH:mm:ss'),
