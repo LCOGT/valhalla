@@ -50,7 +50,7 @@
       </form>
       <target :itarget="target" v-on:targetupdate="targetUpdated" :errors="_.get(errors, 'target', {})"></target>
       <div v-for="(molecule, idx) in molecules">
-        <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type"
+        <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type" :datatype="data_type"
                   v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
         </molecule>
         <button class="btn btn-default" v-on:click="addMolecule(idx)">Copy Configuration</button>
@@ -71,7 +71,7 @@
       <h2>Configuration {{ index + 1}}</h2>
       <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
       <form class="form-horizontal">
-        <custom-select v-model="filter" label="Filter" v-on:input="update" :errors="errors.filter" :options="filterOptions">
+        <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update" :errors="errors.filter" :options="filterOptions">
         </custom-select>
         <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated" :errors="errors.bin_x" :options="binningsOptions">
         </custom-select>

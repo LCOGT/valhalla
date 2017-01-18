@@ -21,7 +21,7 @@ Vue.component('userrequest', {
       ipp_value: 1,
       observation_type: 'NORMAL',
       requests: [{
-        data_type: '',
+        data_type: 'IMAGE',
         instrument_type: '',
         target: {
           name: '',
@@ -130,12 +130,17 @@ Vue.component('request', {
     }
   },
   watch: {
+    data_type: function(){
+      this.instrument_type = '';
+    },
     instrument_type: function(value){
-      $.getJSON('/api/instrument/' + value + '/', function(data){
-        vm.instrumentTypeMap[value].filters = data.filters;
-        vm.instrumentTypeMap[value].binnings = data.binnings;
-        vm.instrumentTypeMap[value].default_binning = data.default_binning;
-      });
+      if(value){
+        $.getJSON('/api/instrument/' + value + '/', function(data){
+          vm.instrumentTypeMap[value].filters = data.filters;
+          vm.instrumentTypeMap[value].binnings = data.binnings;
+          vm.instrumentTypeMap[value].default_binning = data.default_binning;
+        });
+      }
     }
   },
   methods: {
@@ -172,7 +177,7 @@ Vue.component('request', {
 });
 
 Vue.component('molecule', {
-  props: ['imolecule', 'index', 'errors', 'selectedinstrument'],
+  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype'],
   data: function(){
     return this.imolecule;
   },
