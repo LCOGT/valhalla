@@ -62,6 +62,7 @@
         </window>
         <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
       </div>
+      <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :errors="_.get(errors, 'constraints', {})">
     </div>
   </div>
 </script>
@@ -163,6 +164,23 @@
         <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
         </custom-field>
         <custom-field v-model="end" label="End" field="end" v-on:input="update" :errors="errors.end"></custon-field>
+      </form>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="constraints-template">
+  <div class="row constraints">
+    <div class="col-md-12">
+      <h2>Constraints</h2>
+      <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+      <form class="form-horizontal">
+        <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
+                      :errors="errors.max_airmass">
+        </custom-field>
+        <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
+                      :errors="errors.min_lunar_distance">
+        </custom-field>
       </form>
     </div>
   </div>

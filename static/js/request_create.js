@@ -59,7 +59,7 @@ Vue.component('userrequest', {
           end: moment().format('YYYY-M-D HH:mm:ss')
         }],
         location:{
-          telescope_class: undefined
+          telescope_class: ''
         },
         constraints: {
           max_airmass: 2.0,
@@ -93,7 +93,7 @@ Vue.component('userrequest', {
       this.$emit('userrequestupdate', this.toRep);
     },
     requestUpdated: function(data){
-      console.log('request updated')
+      console.log('request updated');
       Vue.set(this.requests, data.id, data.data);
       this.update();
     },
@@ -137,6 +137,7 @@ Vue.component('request', {
     },
     instrument_type: function(value){
       if(value){
+        this.location.telescope_class = vm.instrumentTypeMap[value].class;
         $.getJSON('/api/instrument/' + value + '/', function(data){
           vm.instrumentTypeMap[value].filters = data.filters;
           vm.instrumentTypeMap[value].binnings = data.binnings;
@@ -151,17 +152,22 @@ Vue.component('request', {
     },
     moleculeUpdated: function(data){
       Vue.set(this.molecules, data.id, data.data);
-      console.log('moleculeupdated')
+      console.log('moleculeupdated');
       this.update();
     },
     windowUpdated: function(data){
       Vue.set(this.windows, data.id, data.data);
-      console.log('windowUpdated')
+      console.log('windowUpdated');
       this.update();
     },
     targetUpdated: function(data){
       this.target = data.data;
-      console.log('tafgetUpdated')
+      console.log('targetUpdated');
+      this.update();
+    },
+    constraintsUpdated: function(data){
+      this.constraints = data.data;
+      console.log('constraintsUpdated');
       this.update();
     },
     addWindow: function(idx){
@@ -284,6 +290,24 @@ Vue.component('window', {
   template: '#window-template'
 });
 
+Vue.component('constraints', {
+  props: ['iconstraints', 'errors'],
+  data: function(){
+    return this.iconstraints;
+  },
+  computed: {
+    toRep: function(){
+      return {'max_airmass': this.max_airmass, 'min_lunar_distance': this.min_lunar_distance};
+    }
+  },
+  methods: {
+    update: function(){
+      this.$emit('constraintsupdate', {'data': this.toRep});
+    }
+  },
+  template: '#constraints-template'
+});
+
 Vue.component('custom-field', {
   props: ['value', 'label', 'field', 'errors'],
   methods: {
@@ -325,7 +349,7 @@ var vm = new Vue({
       });
     },
     userrequestUpdated: function(data){
-      console.log('userrequest updated')
+      console.log('userrequest updated');
       this.userrequest = data;
       this.validate();
     }
