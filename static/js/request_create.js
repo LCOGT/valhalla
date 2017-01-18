@@ -38,7 +38,9 @@ Vue.component('userrequest', {
           argofperih: 0,
           meandist: 0,
           eccentricity: 0,
-          meananom: 0
+          meananom: 0,
+          rot_mode: 'SKY',
+          rot_angle: 0
         },
         molecules:[{
           type: 'EXPOSE',
@@ -231,7 +233,7 @@ Vue.component('molecule', {
 });
 
 Vue.component('target', {
-  props: ['itarget', 'errors'],
+  props: ['itarget', 'errors', 'datatype'],
   data: function(){
     return this.itarget;
   },
@@ -245,6 +247,11 @@ Vue.component('target', {
         });
       }else if(this.type === 'NON_SIDEREAL'){
         ['scheme', 'epoch', 'orbinc', 'longascnode', 'argofperih', 'meandist', 'eccentricity', 'meananom'].forEach(function(x){
+          rep[x] = that[x];
+        });
+      }
+      if(this.datatype === 'SPECTRA'){
+        ['rot_mode', 'rot_angle'].forEach(function(x){
           rep[x] = that[x];
         });
       }

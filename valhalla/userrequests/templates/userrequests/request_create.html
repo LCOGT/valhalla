@@ -48,7 +48,7 @@
                        :errors="errors.instrument_type" :options="availableInstrumentOptions">
         </custom-select>
       </form>
-      <target :itarget="target" v-on:targetupdate="targetUpdated" :errors="_.get(errors, 'target', {})">
+      <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :errors="_.get(errors, 'target', {})">
       </target>
       <div v-for="(molecule, idx) in molecules">
         <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type" :datatype="data_type"
@@ -141,6 +141,13 @@
                         v-on:input="update" :errors="errors.eccentricity"/>
           <custom-field v-model="meananom" label="Mean Anomoly" field="meananom"
                         v-on:input="update" :errors="errors.meananom"/>
+        </div>
+        <div class="spectra" v-show="datatype === 'SPECTRA'">
+          <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
+                         :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
+          </custom-select>
+          <custom-field v-model="rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
+          </custom-field>
         </div>
       </form>
     </div>
