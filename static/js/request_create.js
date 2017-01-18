@@ -1,12 +1,12 @@
 /* globals _ $ Vue moment */
 
 var instrumentTypeMap = {
-  '2M0-SCICAM-SPECTRAL': {'type': 'IMAGE', 'class': '2m0'},
-  '2M0-FLOYDS-SCICAM': {'type': 'SPECTRA', 'class': '2m0'},
-  '0M8-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m8'},
-  '1M0-SCICAM-SINISTRO': {'type': 'IMAGE', 'class': '1m0'},
-  '0M4-SCICAM-SBIG': {'type': 'IMAGE', 'class': '0m4'},
-  '0M8-NRES-SCICAM': {'type': 'SPECTRA', 'class': '0m8'}
+  '2M0-SCICAM-SPECTRAL': {type: 'IMAGE', class: '2m0', filters: [], binnings: [], default_binning: null},
+  '2M0-FLOYDS-SCICAM': {type: 'SPECTRA', class: '2m0', filters: [], binnings: [], default_binning: null},
+  '0M8-SCICAM-SBIG': {type: 'IMAGE', class: '0m8', filters: [], binnings: [], default_binning: null},
+  '1M0-SCICAM-SINISTRO': {type: 'IMAGE', class: '1m0', filters: [], binnings: [], default_binning: null},
+  '0M4-SCICAM-SBIG': {type: 'IMAGE', class: '0m4', filters: [], binnings: [], default_binning: null},
+  '0M8-NRES-SCICAM': {type: 'SPECTRA', class: '0m8', filters: [], binnings: [], default_binning: null}
 };
 
 Vue.component('userrequest', {
@@ -42,12 +42,12 @@ Vue.component('userrequest', {
         },
         molecules:[{
           type: 'EXPOSE',
-          instrument_type: undefined,
-          fitler: '',
+          instrument_type: '',
+          filter: '',
           exposure_time: 30,
           exposure_count: 1,
-          bin_x: 1,
-          bin_y: 1,
+          bin_x: null,
+          bin_y: null,
           fill_window: false,
           acquire_mode: undefined,
           acquire_radius_arcsec: undefined,
@@ -118,7 +118,8 @@ Vue.component('request', {
       return rep;
     },
     availableInstrumentOptions: function(){
-      var options = [];
+      var defaultText = this.data_type ? 'Please select an instrument' : 'Please select a data type';
+      var options = [{value: '', text: defaultText}];
       for(var i in this.iavailable_instruments){
         var instrument_type = this.iavailable_instruments[i];
         if(instrumentTypeMap[instrument_type].type === this.data_type){
@@ -128,9 +129,23 @@ Vue.component('request', {
       return options;
     }
   },
+  watch: {
+    instrument_type: function(value){
+      $.getJSON('/api/instrument/' + value + '/', function(data){
+        vm.instrumentTypeMap[value].filters = data.filters;
+        vm.instrumentTypeMap[value].binnings = data.binnings;
+        vm.instrumentTypeMap[value].default_binning = data.default_binning;
+      });
+    }
+  },
   methods: {
     update: function(){
       this.$emit('requestupdate', {'id': this.index, 'data': this.toRep});
+    },
+    moleculeUpdated: function(data){
+      Vue.set(this.molecules, data.id, data.data);
+      console.log('moleculeupdated')
+      this.update();
     },
     windowUpdated: function(data){
       Vue.set(this.windows, data.id, data.data);
@@ -145,9 +160,66 @@ Vue.component('request', {
     addWindow: function(idx){
       var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
       this.windows.push(newWindow);
+      this.update();
     },
+    addMolecule: function(idx){
+      var newMolecule = JSON.parse(JSON.stringify(this.molecules[idx]));
+      this.molecules.push(newMolecule);
+      this.update();
+    }
   },
   template: '#request-template'
+});
+
+Vue.component('molecule', {
+  props: ['imolecule', 'index', 'errors', 'selectedinstrument'],
+  data: function(){
+    return this.imolecule;
+  },
+  computed: {
+    toRep: function(){
+      return this.$data;
+    },
+    filterOptions: function(){
+      var options = [];
+      var filters = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'filters'], []);
+      filters.forEach(function(filter){
+        options.push({value: filter, text: filter});
+      });
+      return options;
+    },
+    binningsOptions: function(){
+      var options = [];
+      var binnings = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'binnings'], []);
+      binnings.forEach(function(binning){
+        options.push({value: binning, text: binning});
+      });
+      return options;
+    },
+  },
+  methods: {
+    update: function(){
+      this.$emit('moleculeupdate', {'id': this.index, 'data': this.toRep});
+    },
+    binningsUpdated: function(){
+      this.bin_y = this.bin_x;
+      this.update();
+    }
+  },
+  watch: {
+    selectedinstrument: function(value){
+      this.instrument_type = value;
+      // wait for options to update, then set default
+      var that = this;
+      setTimeout(function(){
+        var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
+        that.bin_x = default_binning;
+        that.bin_y = default_binning;
+        that.update();
+      }, 100);
+    }
+  },
+  template: '#molecule-template'
 });
 
 Vue.component('target', {
@@ -220,6 +292,7 @@ Vue.component('custom-select', {
 var vm = new Vue({
   el: '#vueapp',
   data:{
+    instrumentTypeMap: instrumentTypeMap,
     userrequest: {},
     errors: []
   },
