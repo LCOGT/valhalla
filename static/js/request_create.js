@@ -222,6 +222,9 @@ Vue.component('molecule', {
         that.bin_y = default_binning;
         that.update();
       }, 100);
+    },
+    datatype: function(value){
+      this.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
     }
   },
   template: '#molecule-template'

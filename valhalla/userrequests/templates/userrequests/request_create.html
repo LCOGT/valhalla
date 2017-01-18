@@ -71,10 +71,25 @@
       <h2>Configuration {{ index + 1}}</h2>
       <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
       <form class="form-horizontal">
-        <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update" :errors="errors.filter" :options="filterOptions">
+        <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
+                       :errors="errors.filter" :options="filterOptions">
         </custom-select>
-        <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated" :errors="errors.bin_x" :options="binningsOptions">
+        <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
+                       :errors="errors.bin_x" :options="binningsOptions">
         </custom-select>
+        <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
+                      :errors="errors.exposure_count">
+        </custom-field>
+        <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
+                      :errors="errors.exposure_time">
+        </custom-field>
+        <div class="spectra" v-show="datatype === 'SPECTRA'">
+          <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
+                         :options="[{value: 'SPECTRUM', text: 'Spectrum'},
+                                    {value: 'LAMP_FLAT', text: 'Lamp Flat'},
+                                    {value: 'ARC', text:'Arc'}]">
+          </custom-select>
+        </div>
       </form>
     </div>
   </div>
