@@ -57,16 +57,20 @@
 <script type="text/x-template" id="request-template">
   <div class="row request">
     <div class="col-md-12">
-        <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
-          <div class="panel-heading">
-            <span class="panel-title">
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="panel-title col-sm-9">
               Request: {{ data_type }} observation on a {{ instrument_name || 'Non-Instrument'}}
-            </span>
-            <span class="panel-actions pull-right">
-              <a v-on:click="$parent.removeRequest(index)"><i class="fa fa-times"></i> Remove</a>
-              <a v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i> Copy</a>
-            </span>
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1">
+                <i class="fa fa-trash"></i> Remove
+              </a>
+              <a class="btn btn-success btn-sm" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i> Copy</a>
+            </div>
           </div>
+        </div>
         <div class="panel-body">
           <form class="form-horizontal">
              <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
@@ -101,14 +105,18 @@
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
-          <span class="panel-title">
-            Configuration {{ index + 1 }}: {{ exposure_count }} X {{ exposure_time }}sec with a {{ filter || 'No filter'}}
-            filter and binning {{ bin_x || 'no binning' }}
-          </span>
-          <span class="panel-actions pull-right">
-            <a v-on:click="$parent.removeMolecule(index)"><i class="fa fa-times"></i> Remove</a>
-            <a v-on:click="$parent.addMolecule(index)"><i class="fa fa-copy"></i> Copy</a>
-          </span>
+          <div class="row">
+            <div class="panel-title col-sm-9">
+              Configuration {{ index + 1 }}: {{ exposure_count }} X {{ exposure_time }}sec with a {{ filter || 'No filter'}}
+              filter and binning {{ bin_x || 'no binning' }}
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1">
+                <i class="fa fa-trash"></i> Remove
+              </a>
+              <a class="btn btn-success btn-sm" v-on:click="$parent.addMolecule(index)"><i class="fa fa-copy"></i> Copy</a>
+            </div>
+          </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
@@ -210,13 +218,17 @@
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
-          <span class="panel-title">
-            Window {{ index + 1}}: From {{ start }} to {{ end }}
-          </span>
-          <span class="panel-actions pull-right">
-            <a v-on:click="$parent.removeWindow(index)"><i class="fa fa-times"></i> Remove</a>
-            <a v-on:click="$parent.addWindow(index)"><i class="fa fa-copy"></i> Copy</a>
-          </span>
+          <div class="row">
+            <div class="panel-title col-sm-9">
+              Window {{ index + 1}}: From {{ start }} to {{ end }}
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-sm btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1">
+                <i class="fa fa-times"></i> Remove
+              </a>
+              <a class="btn btn-sm btn-success" v-on:click="$parent.addWindow(index)"><i class="fa fa-copy"></i> Copy</a>
+            </div>
+          </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>

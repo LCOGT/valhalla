@@ -179,3 +179,11 @@ a:hover {
 .spacer {
     margin-bottom: 10px;
 }
+
+.panel-title {
+  font-size: 1.2em;
+}
+
+.panel-actions {
+  text-align: right;
+}
