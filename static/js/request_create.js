@@ -22,7 +22,7 @@ Vue.component('userrequest', {
       observation_type: 'NORMAL',
       requests: [{
         data_type: 'IMAGE',
-        instrument_type: '',
+        instrument_name: '',
         target: {
           name: '',
           type: 'SIDEREAL',
@@ -44,7 +44,7 @@ Vue.component('userrequest', {
         },
         molecules:[{
           type: 'EXPOSE',
-          instrument_type: '',
+          instrument_name: '',
           filter: '',
           exposure_time: 30,
           exposure_count: 1,
@@ -128,9 +128,9 @@ Vue.component('request', {
       var defaultText = this.data_type ? 'Please select an instrument' : 'Please select a data type';
       var options = [{value: '', text: defaultText}];
       for(var i in this.iavailable_instruments){
-        var instrument_type = this.iavailable_instruments[i];
-        if(instrumentTypeMap[instrument_type].type === this.data_type){
-          options.push({value: instrument_type, text: instrument_type});
+        var instrument_name = this.iavailable_instruments[i];
+        if(instrumentTypeMap[instrument_name].type === this.data_type){
+          options.push({value: instrument_name, text: instrument_name});
         }
       }
       return options;
@@ -138,9 +138,9 @@ Vue.component('request', {
   },
   watch: {
     data_type: function(){
-      this.instrument_type = '';
+      this.instrument_name = '';
     },
-    instrument_type: function(value){
+    instrument_name: function(value){
       if(value){
         this.location.telescope_class = vm.instrumentTypeMap[value].class;
         $.getJSON('/api/instrument/' + value + '/', function(data){
@@ -204,7 +204,16 @@ Vue.component('molecule', {
   },
   computed: {
     toRep: function(){
-      return this.$data;
+      var rep = {};
+      var that = this;
+      var fields = ['filter', 'bin_x', 'bin_y', 'exposure_count', 'exposure_time', 'instrument_name', 'type'];
+      if(this.datatype === 'SPECTRUM'){
+        fields = fields.concat(['acquire_radius_arcsec', 'acquire_mode']);
+      }
+      fields.forEach(function(x){
+        rep[x] = that[x];
+      });
+      return rep;
     },
     filterOptions: function(){
       var options = [];
@@ -234,7 +243,7 @@ Vue.component('molecule', {
   },
   watch: {
     selectedinstrument: function(value){
-      this.instrument_type = value;
+      this.instrument_name = value;
       // wait for options to update, then set default
       var that = this;
       setTimeout(function(){

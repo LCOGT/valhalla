@@ -50,7 +50,7 @@
         <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
           <div class="panel-heading">
             <span class="panel-title">
-              Request: {{ data_type }} observation on a {{ instrument_type || 'Non-Instrument'}}
+              Request: {{ data_type }} observation on a {{ instrument_name || 'Non-Instrument'}}
             </span>
           </div>
         <div class="panel-body">
@@ -58,14 +58,14 @@
              <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
                             :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
             </custom-select>
-            <custom-select v-model="instrument_type" label="Instrument"
-                           :errors="errors.instrument_type" :options="availableInstrumentOptions">
+            <custom-select v-model="instrument_name" label="Instrument"
+                           :errors="errors.instrument_name" :options="availableInstrumentOptions">
             </custom-select>
           </form>
           <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :errors="_.get(errors, 'target', {})">
           </target>
           <div v-for="(molecule, idx) in molecules">
-            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type" :datatype="data_type"
+            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type"
                       v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
             </molecule>
             <button class="btn btn-default" v-on:click="addMolecule(idx)">Copy Configuration</button>
