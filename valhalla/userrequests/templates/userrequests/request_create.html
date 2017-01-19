@@ -47,8 +47,8 @@
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-            <div class="row" v-show="show">
-              <div class="col-md-6 compose-help">
+            <div class="row">
+              <div class="col-md-6 compose-help" v-show="show">
                 <dl>
                   <dt>Total Duration</dt>
                   <dd>The amount of time that will be debited from your proposal for this request.</dd>
@@ -66,9 +66,9 @@
                   </dd>
                 </dl>
               </div>
-              <div class="col-md-6">
+              <div :class="show ? 'col-md-6' : 'col-md-12'">
                 <form class="form-horizontal">
-                  <div class="row duration">
+                  <div class="row duration" v-show="show">
                     <span class="col-md-4"><strong>Total Duration</strong></span>
                     <span class="col-md-8">{{ $parent.durationDisplay }}</span>
                   </div>
@@ -85,6 +85,7 @@
                   <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
                                 v-on:input="update" :errors="errors.ipp_value">
                   </custom-field>
+                  <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ $parent.durationDisplay }}</strong></div>
                 </form>
               </div>
             </div>
@@ -123,8 +124,8 @@
         </div>
         <div class="panel-body" style="background-color: rgb(254, 252, 249)">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row" v-show="show">
-            <div class="col-md-6 compose-help">
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Data Type</dt>
                 <dd>Choose <strong>Expose</strong> for imaging a target. Choose <strong>Spectra</strong> for use of a spectrograph.</dd>
@@ -132,7 +133,7 @@
                 <dd>Please choose the instrument you would like to observe with. <a target="_blank" href="https://lco.global/observatory/instruments/">Learn more about LCO instrumentation</a>.</dd>
               </dl>
             </div>
-            <div class="col-md-6">
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
                  <custom-select v-model="data_type" label="Data" v-on:input="update" :errors="errors.data_type"
                                 :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
@@ -186,14 +187,14 @@
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row" v-show="show">
-            <div class="col-md-6 compose-help">
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Filter/Slit</dt>
                 <dd>The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.</dd>
               </dl>
             </div>
-            <div class="col-md-6">
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
                 <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
                                :errors="null" :options="filterOptions">
@@ -250,8 +251,8 @@
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row" v-show="show">
-            <div class="col-md-6 compose-help">
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Name</dt>
                 <dd>The name of the target. If it is a known object, we will attempt to fill in coordinates</dd>
@@ -259,7 +260,7 @@
                 <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
               </dl>
             </div>
-            <div class="col-md-6">
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
                 <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name">
                 </custom-field>
@@ -348,8 +349,8 @@
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row" v-show="show">
-            <div class="col-md-6 compose-help">
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Start</dt>
                 <dd>The lower limit of the time window.</dd>
@@ -357,7 +358,7 @@
                 <dd>The Upper end of fthe time window.</dd>
               </dl>
             </div>
-            <div class="col-md-6">
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
                 <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
@@ -391,8 +392,8 @@
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row" v-show="show">
-            <div class="col-md-6 compose-help">
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Max Airmass</dt>
                 <dd>The maximum airmass at which this request should be considered for the target.</dd>
@@ -400,7 +401,7 @@
                 <dd>The minimum distance (in degrees) the target can be to the moon before the request is no longer considered</dd>
               </dl>
             </div>
-            <div class="col-md-6">
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
                 <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
                               :errors="errors.max_airmass">
@@ -418,27 +419,33 @@
 </script>
 
 <script type="text/x-template" id="custom-field">
-  <div class="form-group" :class="{ 'has-error': errors }">
-    <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
-    <div class="col-sm-8">
-      <input :id="field" class="form-control" v-bind:value="value"
-             v-on:input="update($event.target.value)" :name="field"/>
-      <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+  <span>
+    <div class="form-group" :class="{ 'has-error': errors }" v-show="$parent.show">
+      <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
+      <div class="col-sm-8">
+        <input :id="field" class="form-control" v-bind:value="value"
+               v-on:input="update($event.target.value)" :name="field"/>
+        <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+      </div>
     </div>
-  </div>
+    <span class="collapse-inline" v-show="!$parent.show">{{ label }}: <strong>{{ value || '...' }}</strong></span>
+  </span>
 </script>
 
 <script type="text/x-template" id="custom-select">
-  <div class="form-group" :class="{ 'has-error': errors }">
-    <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
-    <div class="col-sm-8">
-      <select :id="field" v-bind:value="value" v-on:change="update($event.target.value)"
-              :name="field" class="form-control">
-        <option v-for="option in options" :value="option.value">{{ option.text }}</option>
-      </select>
-      <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+  <span>
+    <div class="form-group" :class="{ 'has-error': errors }" v-show="$parent.show">
+      <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
+      <div class="col-sm-8">
+        <select :id="field" v-bind:value="value" v-on:change="update($event.target.value)"
+                :name="field" class="form-control">
+          <option v-for="option in options" :value="option.value">{{ option.text }}</option>
+        </select>
+        <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+      </div>
     </div>
-  </div>
+    <div class="collapse-inline" v-show="!$parent.show">{{ label }}: <strong>{{ value || '...' }}</strong></div>
+  </span>
 </script>
 
 {% endverbatim %}
