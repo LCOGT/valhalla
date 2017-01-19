@@ -189,3 +189,7 @@ a:hover {
 .panel-actions {
   text-align: right;
 }
+
+.fa-2x {
+  vertical-align: middle;
+}

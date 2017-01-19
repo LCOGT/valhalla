@@ -6,8 +6,8 @@
 <div id="vueapp">
   <div id="tabs">
     <ul class="nav nav-tabs">
-      <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a>Form</a></li>
-      <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a>Api View</a></li>
+      <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
+      <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
     </ul>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
