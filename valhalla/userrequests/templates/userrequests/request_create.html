@@ -9,29 +9,37 @@
 </div>
 
 <script type="text/x-template" id="userrequest-template">
-  <div class="row userrequest">
+  <div class="row userrequestc">
     <div class="col-md-12">
-    <h1>General Info</h1>
-    <form class="form-horizontal">
-      <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
-      </custom-field>
-      <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
-                     :errors="errors.proposal" :options="proposalOptions">
-      </custom-select>
-      <custom-select v-model="observation_type" label="Priority" field="observation_type" v-on:input="update"
-                    :errors="errors.observation_type"
-                    :options="[{value: 'NORMAL', text: 'Normal'},
-                               {value:'TARGET_OF_OPPORTUNITY', text: 'Target Of Opportunity'}]">
-      </custom-select>
-      <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
-                    v-on:input="update" :errors="errors.ipp_value">
-      </custom-field>
-    </form>
-    <div v-for="(request, idx) in requests">
-      <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments"
-               v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
-     </request>
-      <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+        <div class="panel-heading">
+          <span class="panel-title">General Info: {{ group_id || 'unnamed request' }} on {{ proposal || 'No Proposal' }}</span>
+          <span class="panel-actions pull-right"><i class="fa fa-times"></i> Remove</span>
+        </div>
+        <div class="panel-body">
+          <form class="form-horizontal">
+            <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
+            </custom-field>
+            <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
+                           :errors="errors.proposal" :options="proposalOptions">
+            </custom-select>
+            <custom-select v-model="observation_type" label="Priority" field="observation_type" v-on:input="update"
+                          :errors="errors.observation_type"
+                          :options="[{value: 'NORMAL', text: 'Normal'},
+                                     {value:'TARGET_OF_OPPORTUNITY', text: 'Target Of Opportunity'}]">
+            </custom-select>
+            <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
+                          v-on:input="update" :errors="errors.ipp_value">
+            </custom-field>
+          </form>
+          <div v-for="(request, idx) in requests">
+            <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments"
+                     v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
+           </request>
+            <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </script>
@@ -39,30 +47,41 @@
 <script type="text/x-template" id="request-template">
   <div class="row request">
     <div class="col-md-12">
-      <h1>Request</h1>
-      <form class="form-horizontal">
-         <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
-                        :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
-        </custom-select>
-        <custom-select v-model="instrument_type" label="Instrument"
-                       :errors="errors.instrument_type" :options="availableInstrumentOptions">
-        </custom-select>
-      </form>
-      <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :errors="_.get(errors, 'target', {})">
-      </target>
-      <div v-for="(molecule, idx) in molecules">
-        <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type" :datatype="data_type"
-                  v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
-        </molecule>
-        <button class="btn btn-default" v-on:click="addMolecule(idx)">Copy Configuration</button>
+        <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+          <div class="panel-heading">
+            <span class="panel-title">
+              Request: {{ data_type }} observation on a {{ instrument_type || 'Non-Instrument'}}
+            </span>
+          </div>
+        <div class="panel-body">
+          <form class="form-horizontal">
+             <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
+                            :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
+            </custom-select>
+            <custom-select v-model="instrument_type" label="Instrument"
+                           :errors="errors.instrument_type" :options="availableInstrumentOptions">
+            </custom-select>
+          </form>
+          <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :errors="_.get(errors, 'target', {})">
+          </target>
+          <div v-for="(molecule, idx) in molecules">
+            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_type" :datatype="data_type"
+                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
+            </molecule>
+            <button class="btn btn-default" v-on:click="addMolecule(idx)">Copy Configuration</button>
+            <button v-show="molecules.length > 1" class="btn btn-default" v-on:click="removeMolecule(idx)">Remove Molecule</button>
+          </div>
+          <div v-for="(window, idx) in windows">
+            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
+                    :errors="_.get(errors, ['windows', idx], [])">
+            </window>
+            <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
+            <button v-show="windows.length > 1" class="btn btn-default" v-on:click="removeWindow(idx)">Remove Window</button>
+          </div>
+          <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :errors="_.get(errors, 'constraints', {})">
+          </constraints>
+        </div>
       </div>
-      <div v-for="(window, idx) in windows">
-        <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
-                :errors="_.get(errors, ['windows', idx], [])">
-        </window>
-        <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
-      </div>
-      <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :errors="_.get(errors, 'constraints', {})">
     </div>
   </div>
 </script>
@@ -70,37 +89,46 @@
 <script type="text/x-template" id="molecule-template">
   <div class="row target">
     <div class="col-md-12">
-      <h2>Configuration {{ index + 1}}</h2>
-      <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-      <form class="form-horizontal">
-        <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
-                       :errors="errors.filter" :options="filterOptions">
-        </custom-select>
-        <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
-                       :errors="errors.bin_x" :options="binningsOptions">
-        </custom-select>
-        <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
-                      :errors="errors.exposure_count">
-        </custom-field>
-        <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
-                      :errors="errors.exposure_time">
-        </custom-field>
-        <div class="spectra" v-show="datatype === 'SPECTRA'">
-          <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
-                         :options="[{value: 'SPECTRUM', text: 'Spectrum'},
-                                    {value: 'LAMP_FLAT', text: 'Lamp Flat'},
-                                    {value: 'ARC', text:'Arc'}]">
-          </custom-select>
-          <custom-select v-model="acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                         :options="[{value: 'OFF', text: 'Off'},
-                                    {value: 'WCS', text: 'WCS'},
-                                    {value: 'BRIGHTEST', text: 'Brightest'}]">
-          </custom-select>
-          <custom-field v-show="acquire_mode === 'BRIGHTEST'" v-model="acquire_radius_arcsec" field="acquire_radius_arcsec"
-                        label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec">
-          </custom-field>
+      <div class="panel panel-default" :class="{'panel-danger': _.isEmpty(errors)}">
+        <div class="panel-heading">
+          <span class="panel-title">
+            Configuration {{ index + 1 }}: {{ exposure_count }} X {{ exposure_time }}sec with a {{ filter || 'No filter'}}
+            filter and binning {{ bin_x || 'no binning' }}
+          </span>
         </div>
-      </form>
+        <div class="panel-body">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal">
+            <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
+                           :errors="errors.filter" :options="filterOptions">
+            </custom-select>
+            <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
+                           :errors="errors.bin_x" :options="binningsOptions">
+            </custom-select>
+            <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
+                          :errors="errors.exposure_count">
+            </custom-field>
+            <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
+                          :errors="errors.exposure_time">
+            </custom-field>
+            <div class="spectra" v-show="datatype === 'SPECTRA'">
+              <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
+                             :options="[{value: 'SPECTRUM', text: 'Spectrum'},
+                                        {value: 'LAMP_FLAT', text: 'Lamp Flat'},
+                                        {value: 'ARC', text:'Arc'}]">
+              </custom-select>
+              <custom-select v-model="acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
+                             :options="[{value: 'OFF', text: 'Off'},
+                                        {value: 'WCS', text: 'WCS'},
+                                        {value: 'BRIGHTEST', text: 'Brightest'}]">
+              </custom-select>
+              <custom-field v-show="acquire_mode === 'BRIGHTEST'" v-model="acquire_radius_arcsec" field="acquire_radius_arcsec"
+                            label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec">
+              </custom-field>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </script>
@@ -108,49 +136,57 @@
 <script type="text/x-template" id="target-template">
   <div class="row target">
     <div class="col-md-12">
-      <h2>Target</h2>
-      <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-      <form class="form-horizontal">
-        <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name" />
-        <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
-                       :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]"/>
-        <div class="sidereal" v-show="type === 'SIDEREAL'">
-          <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra"/>
-          <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec"/>
-          <custom-field v-model="proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
-                        v-on:input="update" :errors="errors.proper_motion_ra"/>
-          <custom-field v-model="proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
-                        v-on:input="update" :errors="errors.proper_motion_dec"/>
-          <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"/>
-          <custom-field v-model="parallax" label="Parallax" field="parallax" v-on:input="update"
-                        :errors="errors.parallax"/>
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+        <div class="panel-heading">
+          <span class="panel-title">
+            Target: Observing {{ name || 'No target' }}
+          </span>
         </div>
-        <div class="non-sidereal" v-show="type === 'NON_SIDEREAL'">
-          <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
-                         :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
-                                    {value: 'MPC_COMET', text: 'MPC Comet'}]"/>
-          <custom-field v-model="epoch" label="Epoch (MJD)" field="epoch" v-on:input="update" :errors="errors.epoch"/>
-          <custom-field v-model="orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
-                        :errors="errors.orbinc"/>
-          <custom-field v-model="longascnode" label="Longitude of Ascending Node" field="longascnode"
-                        v-on:input="update" :errors="errors.longascnode"/>
-          <custom-field v-model="argofperih" label="Argument of Perihelion" field="argofperih"
-                        v-on:input="update" :errors="errors.argofperih"/>
-          <custom-field v-model="meandist" label="Mean Distance (AU)" field="meandist"
-                        v-on:input="update" :errors="errors.meandist"/>
-          <custom-field v-model="eccentricity" label="Eccentricity" field="eccentricity"
-                        v-on:input="update" :errors="errors.eccentricity"/>
-          <custom-field v-model="meananom" label="Mean Anomoly" field="meananom"
-                        v-on:input="update" :errors="errors.meananom"/>
+        <div class="panel-body">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal">
+            <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name" />
+            <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
+                           :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]"/>
+            <div class="sidereal" v-show="type === 'SIDEREAL'">
+              <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra"/>
+              <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec"/>
+              <custom-field v-model="proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
+                            v-on:input="update" :errors="errors.proper_motion_ra"/>
+              <custom-field v-model="proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
+                            v-on:input="update" :errors="errors.proper_motion_dec"/>
+              <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"/>
+              <custom-field v-model="parallax" label="Parallax" field="parallax" v-on:input="update"
+                            :errors="errors.parallax"/>
+            </div>
+            <div class="non-sidereal" v-show="type === 'NON_SIDEREAL'">
+              <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
+                             :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
+                                        {value: 'MPC_COMET', text: 'MPC Comet'}]"/>
+              <custom-field v-model="epoch" label="Epoch (MJD)" field="epoch" v-on:input="update" :errors="errors.epoch"/>
+              <custom-field v-model="orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
+                            :errors="errors.orbinc"/>
+              <custom-field v-model="longascnode" label="Longitude of Ascending Node" field="longascnode"
+                            v-on:input="update" :errors="errors.longascnode"/>
+              <custom-field v-model="argofperih" label="Argument of Perihelion" field="argofperih"
+                            v-on:input="update" :errors="errors.argofperih"/>
+              <custom-field v-model="meandist" label="Mean Distance (AU)" field="meandist"
+                            v-on:input="update" :errors="errors.meandist"/>
+              <custom-field v-model="eccentricity" label="Eccentricity" field="eccentricity"
+                            v-on:input="update" :errors="errors.eccentricity"/>
+              <custom-field v-model="meananom" label="Mean Anomoly" field="meananom"
+                            v-on:input="update" :errors="errors.meananom"/>
+            </div>
+            <div class="spectra" v-show="datatype === 'SPECTRA'">
+              <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
+                             :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
+              </custom-select>
+              <custom-field v-model="rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
+              </custom-field>
+            </div>
+          </form>
         </div>
-        <div class="spectra" v-show="datatype === 'SPECTRA'">
-          <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
-                         :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
-          </custom-select>
-          <custom-field v-model="rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
-          </custom-field>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </script>
@@ -158,13 +194,21 @@
 <script type="text/x-template" id="window-template">
   <div class="row window">
     <div class="col-md-12">
-      <h2>Window {{ index + 1}}</h2>
-      <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-      <form class="form-horizontal">
-        <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
-        </custom-field>
-        <custom-field v-model="end" label="End" field="end" v-on:input="update" :errors="errors.end"></custon-field>
-      </form>
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+        <div class="panel-heading">
+          <span class="panel-title">
+            Window {{ index + 1}}: From {{ start }} to {{ end }}
+          </span>
+        </div>
+        <div class="panel-body">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal">
+            <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
+            </custom-field>
+            <custom-field v-model="end" label="End" field="end" v-on:input="update" :errors="errors.end"></custon-field>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </script>
@@ -172,16 +216,24 @@
 <script type="text/x-template" id="constraints-template">
   <div class="row constraints">
     <div class="col-md-12">
-      <h2>Constraints</h2>
-      <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-      <form class="form-horizontal">
-        <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
-                      :errors="errors.max_airmass">
-        </custom-field>
-        <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
-                      :errors="errors.min_lunar_distance">
-        </custom-field>
-      </form>
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+        <div class="panel-heading">
+          <span class="panel-title">
+            Constraints: Max Airmass: {{ max_airmass }} Min Lunar Distance: {{ min_lunar_distance }}
+          </span>
+        </div>
+        <div class="panel-body">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal">
+            <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
+                          :errors="errors.max_airmass">
+            </custom-field>
+            <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
+                          :errors="errors.min_lunar_distance">
+            </custom-field>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </script>

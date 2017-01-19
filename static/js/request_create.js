@@ -86,7 +86,7 @@ Vue.component('userrequest', {
     },
     proposalOptions: function(){
       return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
-    }
+    },
   },
   methods: {
     update: function(){
@@ -100,7 +100,12 @@ Vue.component('userrequest', {
     addRequest: function(idx){
       var newRequest = JSON.parse(JSON.stringify(this.requests[idx]));
       this.requests.push(newRequest);
+      this.update();
     },
+    removeRequest: function(idx){
+      this.requests.splice(idx, 1);
+      this.update();
+    }
   },
   template: '#userrequest-template'
 });
@@ -178,6 +183,14 @@ Vue.component('request', {
     addMolecule: function(idx){
       var newMolecule = JSON.parse(JSON.stringify(this.molecules[idx]));
       this.molecules.push(newMolecule);
+      this.update();
+    },
+    removeWindow: function(idx){
+      this.windows.splice(idx, 1);
+      this.update();
+    },
+    removeMolecule: function(idx){
+      this.molecules.splice(idx, 1);
       this.update();
     }
   },
@@ -333,7 +346,7 @@ var vm = new Vue({
   data:{
     instrumentTypeMap: instrumentTypeMap,
     userrequest: {},
-    errors: []
+    errors: {}
   },
   methods: {
     validate: function(){
