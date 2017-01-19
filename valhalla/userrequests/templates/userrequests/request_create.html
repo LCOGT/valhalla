@@ -25,10 +25,20 @@
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
-          <span class="panel-title">General Info: {{ group_id || 'unnamed request' }} on {{ proposal || 'No Proposal' }}</span>
+          <div class="row">
+            <div class="panel-title col-sm-9">
+              General Info: {{ group_id || 'unnamed request' }} on {{ proposal || 'No Proposal' }}
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="panel-body">
-          <form class="form-horizontal">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal" v-show="show">
             <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
             </custom-field>
             <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
@@ -64,15 +74,19 @@
               Request: {{ data_type }} observation on a {{ instrument_name || 'Non-Instrument'}}
             </div>
             <div class="panel-actions col-sm-3">
-              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1">
-                <i class="fa fa-trash"></i> Remove
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-success btn-sm" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i> Copy</a>
+              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1">
+                <i class="fa fa-trash"></i>
+              </a>
+              <a class="btn btn-success btn-sm" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i></a>
             </div>
           </div>
         </div>
         <div class="panel-body">
-          <form class="form-horizontal">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <form class="form-horizontal" v-show="show">
              <custom-select v-model="data_type" label="Data Type" v-on:input="update" :errors="errors.data_type"
                             :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
             </custom-select>
@@ -111,16 +125,19 @@
               filter and binning {{ bin_x || 'no binning' }}
             </div>
             <div class="panel-actions col-sm-3">
-              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1">
-                <i class="fa fa-trash"></i> Remove
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-success btn-sm" v-on:click="$parent.addMolecule(index)"><i class="fa fa-copy"></i> Copy</a>
+              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1">
+                <i class="fa fa-trash"></i>
+              </a>
+              <a class="btn btn-success btn-sm" v-on:click="$parent.addMolecule(index)"><i class="fa fa-copy"></i></a>
             </div>
           </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <form class="form-horizontal">
+          <form class="form-horizontal" v-show="show">
             <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
                            :errors="null" :options="filterOptions">
             </custom-select>
@@ -160,13 +177,20 @@
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
-          <span class="panel-title">
-            Target: Observing {{ name || 'No target' }}
-          </span>
+          <div class="row">
+            <div class="panel-title col-sm-9">
+              Target: Observing {{ name || 'No target' }}
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <form class="form-horizontal">
+          <form class="form-horizontal" v-show="show">
             <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name" />
             <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
                            :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]"/>
@@ -223,16 +247,19 @@
               Window {{ index + 1}}: From {{ start }} to {{ end }}
             </div>
             <div class="panel-actions col-sm-3">
-              <a class="btn btn-sm btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1">
-                <i class="fa fa-times"></i> Remove
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-sm btn-success" v-on:click="$parent.addWindow(index)"><i class="fa fa-copy"></i> Copy</a>
+              <a class="btn btn-sm btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1">
+                <i class="fa fa-times"></i>
+              </a>
+              <a class="btn btn-sm btn-success" v-on:click="$parent.addWindow(index)"><i class="fa fa-copy"></i></a>
             </div>
           </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <form class="form-horizontal">
+          <form class="form-horizontal" v-show="show">
             <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
             </custom-field>
             <custom-field v-model="end" label="End" field="end" v-on:input="update" :errors="errors.end"></custon-field>
@@ -248,13 +275,20 @@
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
-          <span class="panel-title">
-            Constraints: Max Airmass: {{ max_airmass }} Min Lunar Distance: {{ min_lunar_distance }}
-          </span>
+          <div class="row">
+            <div class="panel-title col-sm-9">
+              Constraints: Max Airmass: {{ max_airmass }} Min Lunar Distance: {{ min_lunar_distance }}
+            </div>
+            <div class="panel-actions col-sm-3">
+              <a class="btn btn-info btn-sm" v-on:click="show = !show">
+                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="panel-body">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <form class="form-horizontal">
+          <form class="form-horizontal" v-show="show">
             <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
                           :errors="errors.max_airmass">
             </custom-field>

@@ -13,6 +13,7 @@ Vue.component('userrequest', {
   props: ['errors'],
   data: function(){
     return {
+      show: true,
       proposals: [],
       available_instruments: [],
       group_id: '',
@@ -113,7 +114,9 @@ Vue.component('userrequest', {
 Vue.component('request', {
   props: ['irequest', 'index', 'errors', 'iavailable_instruments'],
   data: function(){
-    return this.irequest;
+    var initial = _.cloneDeep(this.irequest);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -200,7 +203,9 @@ Vue.component('request', {
 Vue.component('molecule', {
   props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype'],
   data: function(){
-    return this.imolecule;
+    var initial = _.cloneDeep(this.imolecule);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -263,7 +268,9 @@ Vue.component('molecule', {
 Vue.component('target', {
   props: ['itarget', 'errors', 'datatype'],
   data: function(){
-    return this.itarget;
+    var initial = _.cloneDeep(this.itarget);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -297,7 +304,9 @@ Vue.component('target', {
 Vue.component('window', {
   props: ['iwindow', 'index', 'errors'],
   data: function(){
-    return this.iwindow;
+    var initial = _.cloneDeep(this.iwindow);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -315,7 +324,9 @@ Vue.component('window', {
 Vue.component('constraints', {
   props: ['iconstraints', 'errors'],
   data: function(){
-    return this.iconstraints;
+    var initial = _.cloneDeep(this.iconstraints);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
