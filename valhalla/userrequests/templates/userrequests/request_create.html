@@ -4,8 +4,20 @@
 {% block content %}
 {% verbatim %}
 <div id="vueapp">
-  {{ userrequest }}
-  <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+  <div id="tabs">
+    <ul class="nav nav-tabs">
+      <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a>Form</a></li>
+      <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a>Api View</a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane" :class="{ active: tab === 1 }">
+        <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+      </div>
+      <div class="tab-pane" :class="{ active: tab === 2 }">
+        <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="text/x-template" id="userrequest-template">
@@ -14,7 +26,6 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <span class="panel-title">General Info: {{ group_id || 'unnamed request' }} on {{ proposal || 'No Proposal' }}</span>
-          <span class="panel-actions pull-right"><i class="fa fa-times"></i> Remove</span>
         </div>
         <div class="panel-body">
           <form class="form-horizontal">
@@ -36,7 +47,6 @@
             <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments"
                      v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
            </request>
-            <button class="btn btn-default" v-on:click="addRequest(idx)">Copy Request</button>
           </div>
         </div>
       </div>
@@ -51,6 +61,10 @@
           <div class="panel-heading">
             <span class="panel-title">
               Request: {{ data_type }} observation on a {{ instrument_name || 'Non-Instrument'}}
+            </span>
+            <span class="panel-actions pull-right">
+              <a v-on:click="$parent.removeRequest(index)"><i class="fa fa-times"></i> Remove</a>
+              <a v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i> Copy</a>
             </span>
           </div>
         <div class="panel-body">
@@ -68,15 +82,11 @@
             <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type"
                       v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
             </molecule>
-            <button class="btn btn-default" v-on:click="addMolecule(idx)">Copy Configuration</button>
-            <button v-show="molecules.length > 1" class="btn btn-default" v-on:click="removeMolecule(idx)">Remove Molecule</button>
           </div>
           <div v-for="(window, idx) in windows">
             <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
-            <button class="btn btn-default" v-on:click="addWindow(idx)">Copy Window</button>
-            <button v-show="windows.length > 1" class="btn btn-default" v-on:click="removeWindow(idx)">Remove Window</button>
           </div>
           <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :errors="_.get(errors, 'constraints', {})">
           </constraints>
@@ -89,11 +99,15 @@
 <script type="text/x-template" id="molecule-template">
   <div class="row target">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': _.isEmpty(errors)}">
+      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <span class="panel-title">
             Configuration {{ index + 1 }}: {{ exposure_count }} X {{ exposure_time }}sec with a {{ filter || 'No filter'}}
             filter and binning {{ bin_x || 'no binning' }}
+          </span>
+          <span class="panel-actions pull-right">
+            <a v-on:click="$parent.removeMolecule(index)"><i class="fa fa-times"></i> Remove</a>
+            <a v-on:click="$parent.addMolecule(index)"><i class="fa fa-copy"></i> Copy</a>
           </span>
         </div>
         <div class="panel-body">
@@ -198,6 +212,10 @@
         <div class="panel-heading">
           <span class="panel-title">
             Window {{ index + 1}}: From {{ start }} to {{ end }}
+          </span>
+          <span class="panel-actions pull-right">
+            <a v-on:click="$parent.removeWindow(index)"><i class="fa fa-times"></i> Remove</a>
+            <a v-on:click="$parent.addWindow(index)"><i class="fa fa-copy"></i> Copy</a>
           </span>
         </div>
         <div class="panel-body">

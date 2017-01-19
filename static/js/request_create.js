@@ -353,6 +353,7 @@ Vue.component('custom-select', {
 var vm = new Vue({
   el: '#vueapp',
   data:{
+    tab: 1,
     instrumentTypeMap: instrumentTypeMap,
     userrequest: {},
     errors: {}
