@@ -122,7 +122,7 @@
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <form class="form-horizontal">
             <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
-                           :errors="errors.filter" :options="filterOptions">
+                           :errors="null" :options="filterOptions">
             </custom-select>
             <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
                            :errors="errors.bin_x" :options="binningsOptions">
