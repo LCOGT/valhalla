@@ -365,9 +365,16 @@ var vm = new Vue({
   el: '#vueapp',
   data:{
     tab: 1,
+    duration: 0,
     instrumentTypeMap: instrumentTypeMap,
     userrequest: {},
     errors: {}
+  },
+  computed: {
+    durationDisplay: function(){
+      var duration =  moment.duration(this.duration, 'seconds');
+      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
+    }
   },
   methods: {
     validate: function(){
@@ -379,6 +386,7 @@ var vm = new Vue({
         contentType: 'application/json',
         success: function(data){
           that.errors = data.errors;
+          that.duration = data.duration;
         }
       });
     },

@@ -197,3 +197,12 @@ a:hover {
 .compose-help {
     font-size: 0.9em;
 }
+
+#tabs > ul {
+    border-bottom: 0px;
+}
+
+.duration {
+    text-align: right;
+    margin-bottom: 10px;
+}

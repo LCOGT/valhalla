@@ -5,16 +5,24 @@
 {% verbatim %}
 <div id="vueapp">
   <div id="tabs">
-    <ul class="nav nav-tabs">
+    <ul class="nav nav-tabs col-md-6">
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
       <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
     </ul>
+    <div class="col-md-6 panel-actions">
+      <a class="btn btn-success">Submit</a>
+      <a class="btn btn-info">Save Draft</a>
+    </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
         <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
       </div>
       <div class="tab-pane" :class="{ active: tab === 2 }">
-        <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
+        <div class="row">
+          <div class="col-md-12">
+            <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -42,6 +50,8 @@
             <div class="row" v-show="show">
               <div class="col-md-6 compose-help">
                 <dl>
+                  <dt>Total Duration</dt>
+                  <dd>The amount of time that will be debited from your proposal for this request.</dd>
                   <dt>Title</dt>
                   <dd>Provide a meaningful title for this observation request.</dd>
                   <dt>Proposal</dt>
@@ -58,6 +68,10 @@
               </div>
               <div class="col-md-6">
                 <form class="form-horizontal">
+                  <div class="row duration">
+                    <span class="col-md-4"><strong>Total Duration</strong></span>
+                    <span class="col-md-8">{{ $parent.durationDisplay }}</span>
+                  </div>
                   <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
                   </custom-field>
                   <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
@@ -405,8 +419,8 @@
 
 <script type="text/x-template" id="custom-field">
   <div class="form-group" :class="{ 'has-error': errors }">
-    <label :for="field" class="col-sm-3 control-label">{{ label }}</label>
-    <div class="col-sm-7">
+    <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
+    <div class="col-sm-8">
       <input :id="field" class="form-control" v-bind:value="value"
              v-on:input="update($event.target.value)" :name="field"/>
       <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
@@ -416,8 +430,8 @@
 
 <script type="text/x-template" id="custom-select">
   <div class="form-group" :class="{ 'has-error': errors }">
-    <label :for="field" class="col-sm-3 control-label">{{ label }}</label>
-    <div class="col-sm-7">
+    <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
+    <div class="col-sm-8">
       <select :id="field" v-bind:value="value" v-on:change="update($event.target.value)"
               :name="field" class="form-control">
         <option v-for="option in options" :value="option.value">{{ option.text }}</option>
