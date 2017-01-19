@@ -26,10 +26,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              General Info: {{ group_id || 'unnamed request' }} on {{ proposal || 'No Proposal' }}
+            <div class="col-sm-2"><i class="fa fa-id-card-o fa-2x"></i></div>
+            <div class="panel-title col-sm-8" v-on:click="show = !show">
+              General Info
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
@@ -70,10 +71,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              Request: {{ data_type }} observation on a {{ instrument_name || 'Non-Instrument'}}
+            <div class="col-sm-2"><i class="fa fa-wpexplorer fa-2x"></i></div>
+            <div class="panel-title col-sm-8">
+              Request
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
@@ -120,11 +122,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              Configuration {{ index + 1 }}: {{ exposure_count }} X {{ exposure_time }}sec with a {{ filter || 'No filter'}}
-              filter and binning {{ bin_x || 'no binning' }}
+            <div class="col-sm-2"><i class="fa fa-cogs fa-2x"></i></div>
+            <div class="panel-title col-sm-8">
+              Configuration
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
@@ -178,10 +180,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              Target: Observing {{ name || 'No target' }}
+            <div class="col-sm-2"><i class="fa fa-crosshairs fa-2x"></i></div>
+            <div class="panel-title col-sm-8">
+              Target
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
@@ -243,10 +246,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              Window {{ index + 1}}: From {{ start }} to {{ end }}
+            <div class="col-sm-2"><i class="fa fa-calendar fa-2x"></i></div>
+            <div class="panel-title col-sm-8">
+              Window
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
@@ -276,10 +280,11 @@
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
           <div class="row">
-            <div class="panel-title col-sm-9">
-              Constraints: Max Airmass: {{ max_airmass }} Min Lunar Distance: {{ min_lunar_distance }}
+            <div class="col-sm-2"><i class="fa fa-lock fa-2x"></i></div>
+            <div class="panel-title col-sm-8">
+              Constraints
             </div>
-            <div class="panel-actions col-sm-3">
+            <div class="panel-actions col-sm-2">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
                 <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
