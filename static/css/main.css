@@ -193,3 +193,7 @@ a:hover {
 .fa-2x {
   vertical-align: middle;
 }
+
+.compose-help {
+    font-size: 0.9em;
+}
