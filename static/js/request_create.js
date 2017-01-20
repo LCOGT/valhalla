@@ -419,5 +419,5 @@ var vm = new Vue({
 
 $('body').scrollspy({
   target: '.bs-docs-sidebar',
-  offset: 80
+  offset: 180
 });

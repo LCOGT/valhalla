@@ -36,7 +36,7 @@
 </div>
 
 <script type="text/x-template" id="userrequest-template">
-  <div class="row userrequestc">
+  <div class="row userrequestc" id="general">
     <div class="col-md-12">
       <div class="panel panel-default">
         <div class="panel-heading panel-heading-compact">
@@ -519,6 +519,7 @@
 <script type="text/x-template" id="sidenav-template">
   <nav class="bs-docs-sidebar">
     <ul id="sidebar" class="nav nav-stacked">
+      <li><a href="#general">General Info</a></li>
       <li v-for="(request, index) in userrequest.requests">
         <a :href="'#request' + index">Request #{{ index + 1}}</a>
         <ul class="nav nav-stacked">
