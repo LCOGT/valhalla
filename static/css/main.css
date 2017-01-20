@@ -11,7 +11,12 @@ a:hover {
     color: #337ab7;
     text-decoration: none;
 }
-
+.nav > li > a:focus, .nav > li > a:hover {
+    background-color: inherit;
+}
+.downPage .nav>li>a:hover {
+    color: inherit;
+}
 .panel-body-compact {
     padding-bottom: 5px;
 }
@@ -91,7 +96,6 @@ a:hover {
 }
 
 .filter-block {
-    background-color: #eee;
     padding: 10px;
     margin-bottom: 20px;
 }
