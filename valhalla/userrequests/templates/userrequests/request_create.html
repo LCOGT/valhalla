@@ -38,10 +38,13 @@
 <script type="text/x-template" id="userrequest-template">
   <div class="row userrequestc">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-id-card-o fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-id-card-o fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               General Info
             </div>
@@ -112,10 +115,13 @@
 <script type="text/x-template" id="request-template">
   <div class="row request" :id="'request' + index">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-wpexplorer fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-wpexplorer fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               Request #{{ index + 1}}
             </div>
@@ -126,7 +132,7 @@
               <a class="btn btn-danger btn-sm" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
                 <i class="fa fa-trash"></i>
               </a>
-              <a class="btn btn-success btn-sm" title="Copy" v-on:click="$parent.addRequest(index)" title="Copy"><i class="fa fa-copy"></i></a>
+              <a class="btn btn-success btn-sm" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i></a>
             </div>
           </div>
         </div>
@@ -175,10 +181,13 @@
 <script type="text/x-template" id="molecule-template">
   <div class="row target" :id="'molecule' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-cogs fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-cogs fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               Configuration #{{ index + 1 }}
             </div>
@@ -243,10 +252,13 @@
 <script type="text/x-template" id="target-template">
   <div class="row target" :id="'target' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-crosshairs fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-crosshairs fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               Target
             </div>
@@ -337,10 +349,13 @@
 <script type="text/x-template" id="window-template">
   <div class="row window" :id="'window' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-calendar fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-calendar fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               Window #{{ index + 1}}
             </div>
@@ -384,10 +399,13 @@
 <script type="text/x-template" id="constraints-template">
   <div class="row constraints" :id="'constraints' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
+      <div class="panel panel-default">
         <div class="panel-heading">
           <div class="row">
-            <div class="col-xs-4"><i class="fa fa-lock fa-2x"></i></div>
+            <div class="col-xs-4">
+              <i class="fa fa-lock fa-2x"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
             <div class="panel-title col-xs-4">
               Constraints
             </div>
