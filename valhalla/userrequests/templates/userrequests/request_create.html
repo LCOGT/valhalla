@@ -209,6 +209,18 @@
               <dl>
                 <dt>Filter/Slit</dt>
                 <dd>The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.</dd>
+                <dt>Binning</dt>
+                <dd>The binning used to readout the camera. The recommended binning will be selected by default.</dd>
+                <dt>Exposure Count</dt>
+                <dd>The number of exposures to take with this configuration.</dd>
+                <dt>Exposure Time</dt>
+                <dd>The time in seconds for each exposure in this configuration<./dd>
+              </dl>
+              <dl v-show="datatype === 'SPECTRA'">
+                <dt>Type</dt>
+                <dd>The type of exposure (allows for calibrations).</dd>
+                <dt>Acquire Mode</dt>
+                <dd>How the target is acquired.</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
@@ -279,6 +291,36 @@
                 <dt>Type</dt>
                 <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
               </dl>
+              <dl v-show="type === 'SIDEREAL'">
+                <dt>Right Ascension</dt>
+                <dd>In decimal degrees or hours:minutes:seconds</dd>
+                <dt>Declination</dt>
+                <dd>In Degrees</dd>
+                <dt>Proper Motion RA</dt>
+                <dd>(+/-0.33 mas/year)</dd>
+                <dt>Proper Motion Dec</dt>
+                <dd>(+/-0.33 mas/year)</dd>
+                <dt>Epoch</dt>
+                <dd>Julian Years</dd>
+                <dt>Parallax</dt>
+                <dd>("+0.45 mas")</dd>
+              </dl>
+              <dl v-show="type === 'NON_SIDEREAL'">
+                <dt>Scheme</dt>
+                <dd>The orbital elements scheme to use with this target</dd>
+                <dt>Epoch</dt>
+                <dd>Modified Julian Days</dd>
+                <dt>Longitude of Ascending Node</dt>
+                <dd>Andle in Degrees</dd>
+                <dt>Argument of Perihelion</dt>
+                <dd>Angle in Degrees</dd>
+                <dt>Mean Distance</dt>
+                <dd>Astronomical Units</dd>
+                <dt>Eccentricity</dt>
+                <dd>0 to 0.99</dd>
+                <dt>Mean Anomaly</dt>
+                <dd>Angle in Degrees</dd>
+              </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
@@ -309,7 +351,7 @@
                                  :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
                                             {value: 'MPC_COMET', text: 'MPC Comet'}]">
                   </custom-select>
-                  <custom-field v-model="epoch" label="Epoch (MJD)" field="epoch" v-on:input="update" :errors="errors.epoch">
+                  <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
                   </custom-field>
                   <custom-field v-model="orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
                                 :errors="errors.orbinc">
