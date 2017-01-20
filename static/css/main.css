@@ -12,6 +12,18 @@ a:hover {
     text-decoration: none;
 }
 
+.panel-body-compact {
+    padding-bottom: 5px;
+}
+
+.panel-heading-compact {
+    padding: 5px 15px;
+}
+
+.btn-xs {
+    padding: 2px 4px;
+}
+
 .noauth {
     line-height: 1.4em;
 }
@@ -184,6 +196,7 @@ a:hover {
   font-size: 1.2em;
   text-align: center;
   height: 30px;
+  padding-top: 5px;
 }
 
 .panel-actions {

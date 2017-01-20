@@ -39,23 +39,23 @@
   <div class="row userrequestc">
     <div class="col-md-12">
       <div class="panel panel-default">
-        <div class="panel-heading">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-id-card-o fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-id-card-o fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               General Info
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
             <div class="row">
               <div class="col-md-6 compose-help" v-show="show">
@@ -116,27 +116,27 @@
   <div class="row request" :id="'request' + index">
     <div class="col-md-12">
       <div class="panel panel-default">
-        <div class="panel-heading">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-wpexplorer fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-wpexplorer fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               Request #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
-                <i class="fa fa-trash"></i>
+              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
+                <i class="fa fa-trash fa-fw"></i>
               </a>
-              <a class="btn btn-success btn-sm" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy"></i></a>
+              <a class="btn btn-success btn-xs" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy fa-fw"></i></a>
             </div>
           </div>
         </div>
-        <div class="panel-body" style="background-color: rgb(254, 252, 249)">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
@@ -181,28 +181,28 @@
 <script type="text/x-template" id="molecule-template">
   <div class="row target" :id="'molecule' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
+      <div class="panel panel-info">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-cogs fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-cogs fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               Configuration #{{ index + 1 }}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-danger btn-sm" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1" title="Remove">
-                <i class="fa fa-trash"></i>
+              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1" title="Remove">
+                <i class="fa fa-trash fa-fw"></i>
               </a>
-              <a class="btn btn-success btn-sm" v-on:click="$parent.addMolecule(index)" title="Copy"><i class="fa fa-copy"></i></a>
+              <a class="btn btn-success btn-xs" v-on:click="$parent.addMolecule(index)" title="Copy"><i class="fa fa-copy fa-fw"></i></a>
             </div>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
@@ -252,24 +252,24 @@
 <script type="text/x-template" id="target-template">
   <div class="row target" :id="'target' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
+      <div class="panel panel-success">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-crosshairs fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-crosshairs fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               Target
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
@@ -349,28 +349,28 @@
 <script type="text/x-template" id="window-template">
   <div class="row window" :id="'window' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
+      <div class="panel panel-warning">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-calendar fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-calendar fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               Window #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
-              <a class="btn btn-sm btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1" title="remove">
-                <i class="fa fa-times"></i>
+              <a class="btn btn-xs btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1" title="remove">
+                <i class="fa fa-trash fa-fw"></i>
               </a>
-              <a class="btn btn-sm btn-success" v-on:click="$parent.addWindow(index)" title="copy"><i class="fa fa-copy"></i></a>
+              <a class="btn btn-xs btn-success" v-on:click="$parent.addWindow(index)" title="copy"><i class="fa fa-copy fa-fw"></i></a>
             </div>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
@@ -399,24 +399,24 @@
 <script type="text/x-template" id="constraints-template">
   <div class="row constraints" :id="'constraints' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
+      <div class="panel panel-danger">
+        <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
-              <i class="fa fa-lock fa-2x"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x text-danger" v-show="!_.isEmpty(errors)"></i>
+              <i class="fa fa-lock fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
               Constraints
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-sm" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
           </div>
         </div>
-        <div class="panel-body">
+        <div class="panel-body panel-body-compact">
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
