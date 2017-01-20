@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Create New Request {% endblock %}
+{% block extra_css %}
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
+{% endblock %}
 {% block content %}
 {% verbatim %}
 <div id="vueapp">
@@ -214,7 +217,7 @@
                 <dt>Exposure Count</dt>
                 <dd>The number of exposures to take with this configuration.</dd>
                 <dt>Exposure Time</dt>
-                <dd>The time in seconds for each exposure in this configuration<./dd>
+                <dd>The time in seconds for each exposure in this configuration</dd>
               </dl>
               <dl v-show="datatype === 'SPECTRA'">
                 <dt>Type</dt>
@@ -420,14 +423,14 @@
                 <dt>Start</dt>
                 <dd>The lower limit of the time window.</dd>
                 <dt>End</dt>
-                <dd>The Upper end of fthe time window.</dd>
+                <dd>The Upper end of the time window.</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
-                <custom-field v-model="start" label="Start" field="start" v-on:input="update" :errors="errors.start">
+                <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" label="End" field="end" v-on:input="update" :errors="errors.end">
+                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
                 </custon-field>
               </form>
             </div>
@@ -492,7 +495,7 @@
       <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
       <div class="col-sm-8">
         <input :id="field" class="form-control" v-bind:value="value"
-               v-on:input="update($event.target.value)" :name="field"/>
+               v-on:input="update($event.target.value)" :name="field" :type="type || 'text'"/>
         <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
       </div>
     </div>
@@ -547,6 +550,7 @@
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.8/vue.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
 <script src="{% static 'js/request_create.js' %}"></script>
 {% endblock %}

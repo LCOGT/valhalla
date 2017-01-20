@@ -1,5 +1,7 @@
 /* globals _ $ Vue moment */
 
+var datetimeFormat = 'YYYY-M-D HH:mm:ss';
+
 var instrumentTypeMap = {
   '2M0-SCICAM-SPECTRAL': {type: 'IMAGE', class: '2m0', filters: [], binnings: [], default_binning: null},
   '2M0-FLOYDS-SCICAM': {type: 'SPECTRA', class: '2m0', filters: [], binnings: [], default_binning: null},
@@ -63,8 +65,8 @@ Vue.component('userrequest', {
           acquire_radius_arcsec: null,
         }],
         windows:[{
-          start: moment().format('YYYY-M-D HH:mm:ss'),
-          end: moment().format('YYYY-M-D HH:mm:ss')
+          start: moment().format(datetimeFormat),
+          end: moment().format(datetimeFormat)
         }],
         location:{
           telescope_class: ''
@@ -358,7 +360,19 @@ Vue.component('constraints', {
 });
 
 Vue.component('custom-field', {
-  props: ['value', 'label', 'field', 'errors'],
+  props: ['value', 'label', 'field', 'errors', 'type'],
+  mounted: function(){
+    if(this.type === 'datetime'){
+      var that = this;
+      $('#' + this.field).datetimepicker({
+        format: datetimeFormat,
+        minDate: moment().subtract(1, 'days'),
+        keyBinds: {left: null, right: null, up: null, down: null}
+      }).on('dp.change', function(e){
+        that.update(moment(e.date).format(datetimeFormat));
+      });
+    }
+  },
   methods: {
     update: function(value){
       this.$emit('input', value);
