@@ -26,8 +26,7 @@ Vue.component('userrequest', {
       available_instruments: [],
       group_id: '',
       proposal: '',
-      operator: 'SINGLE',
-      ipp_value: 1,
+      ipp_value: 1.05,
       observation_type: 'NORMAL',
       requests: [{
         data_type: 'IMAGE',
@@ -97,6 +96,9 @@ Vue.component('userrequest', {
     proposalOptions: function(){
       return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
     },
+    operator: function(){
+      return this.requests.length > 1 ? 'MANY' : 'SINGLE';
+    }
   },
   methods: {
     update: function(){

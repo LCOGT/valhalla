@@ -10,8 +10,8 @@
       <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
     </ul>
     <div class="col-md-5 panel-actions">
-      <a class="btn btn-success">Submit</a>
-      <a class="btn btn-info">Save Draft</a>
+      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
+      <a class="btn btn-info" title="Save"><i class="fa fa-save"></i> Save Draft</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
