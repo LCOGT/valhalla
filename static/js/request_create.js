@@ -396,7 +396,7 @@ var vm = new Vue({
     }
   },
   methods: {
-    validate: function(){
+    validate: _.debounce(function(){
       var that = this;
       $.ajax({
         type: 'POST',
@@ -408,7 +408,7 @@ var vm = new Vue({
           that.duration = data.duration;
         }
       });
-    },
+    }, 200),
     userrequestUpdated: function(data){
       console.log('userrequest updated');
       this.userrequest = data;
