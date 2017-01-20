@@ -97,9 +97,10 @@
               </div>
             </div>
             <div v-for="(request, idx) in requests">
-              <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments"
+              <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
                      v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
               </request>
+              <div class="request-margin"></div>
             </div>
           </div>
         </div>
@@ -116,7 +117,7 @@
           <div class="row">
             <div class="col-xs-4"><i class="fa fa-wpexplorer fa-2x"></i></div>
             <div class="panel-title col-xs-4">
-              Request
+              Request #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
@@ -151,19 +152,19 @@
               </form>
             </div>
           </div>
-          <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :errors="_.get(errors, 'target', {})">
+          <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
           </target>
           <div v-for="(molecule, idx) in molecules">
-            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type"
+            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
                       v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
-            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated"
+            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
-          <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :errors="_.get(errors, 'constraints', {})">
+          <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
           </constraints>
         </div>
       </div>
@@ -179,7 +180,7 @@
           <div class="row">
             <div class="col-xs-4"><i class="fa fa-cogs fa-2x"></i></div>
             <div class="panel-title col-xs-4">
-              Configuration
+              Configuration #{{ index + 1 }}
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
@@ -341,7 +342,7 @@
           <div class="row">
             <div class="col-xs-4"><i class="fa fa-calendar fa-2x"></i></div>
             <div class="panel-title col-xs-4">
-              Window
+              Window #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-info btn-sm" v-on:click="show = !show">
@@ -459,16 +460,16 @@
   <nav class="bs-docs-sidebar">
     <ul id="sidebar" class="nav nav-stacked">
       <li v-for="(request, index) in userrequest.requests">
-        <a :href="'#request' + index">Request {{ index + 1}}</a>
+        <a :href="'#request' + index">Request #{{ index + 1}}</a>
         <ul class="nav nav-stacked">
           <li>
             <a :href="'#target' + index">Target</a>
           </li>
           <li v-for="(molecule, molIndex) in request.molecules">
-            <a :href="'#molecule' + index + molIndex"> Configutation {{ molIndex + 1}}</a>
+            <a :href="'#molecule' + index + molIndex"> Configutation #{{ molIndex + 1}}</a>
           </li>
           <li v-for="(window, winIndex) in request.windows">
-            <a :href="'#window' + index + winIndex">Window {{ winIndex + 1}}</a>
+            <a :href="'#window' + index + winIndex">Window #{{ winIndex + 1}}</a>
           </li>
           <li>
             <a :href="'#constraints' + index">Constraints</a>

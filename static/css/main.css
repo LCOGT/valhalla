@@ -214,6 +214,10 @@ a:hover {
     margin-bottom: 15px;
 }
 
+.request-margin {
+    height: 40px;
+}
+
 /* sidebar */
 .bs-docs-sidebar {
     margin-top: 20px;

@@ -9,6 +9,14 @@ var instrumentTypeMap = {
   '0M8-NRES-SCICAM': {type: 'SPECTRA', class: '0m8', filters: [], binnings: [], default_binning: null}
 };
 
+var collapseMixin = {
+  watch: {
+    parentshow: function(value){
+      this.show = value;
+    }
+  }
+};
+
 Vue.component('userrequest', {
   props: ['errors'],
   data: function(){
@@ -113,7 +121,8 @@ Vue.component('userrequest', {
 });
 
 Vue.component('request', {
-  props: ['irequest', 'index', 'errors', 'iavailable_instruments'],
+  props: ['irequest', 'index', 'errors', 'iavailable_instruments', 'parentshow'],
+  mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.irequest);
     initial.show = true;
@@ -202,7 +211,8 @@ Vue.component('request', {
 });
 
 Vue.component('molecule', {
-  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype'],
+  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow'],
+  mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.imolecule);
     initial.show = true;
@@ -267,7 +277,8 @@ Vue.component('molecule', {
 });
 
 Vue.component('target', {
-  props: ['itarget', 'errors', 'datatype'],
+  props: ['itarget', 'errors', 'datatype', 'parentshow'],
+  mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.itarget);
     initial.show = true;
@@ -303,7 +314,8 @@ Vue.component('target', {
 });
 
 Vue.component('window', {
-  props: ['iwindow', 'index', 'errors'],
+  props: ['iwindow', 'index', 'errors', 'parentshow'],
+  mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.iwindow);
     initial.show = true;
@@ -323,7 +335,8 @@ Vue.component('window', {
 });
 
 Vue.component('constraints', {
-  props: ['iconstraints', 'errors'],
+  props: ['iconstraints', 'errors', 'parentshow'],
+  mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.iconstraints);
     initial.show = true;
