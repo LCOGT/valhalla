@@ -74,6 +74,7 @@ Vue.component('userrequest', {
     $.getJSON('/api/profile/', function(data){
       that.proposals = data.proposals;
       that.available_instruments = data.available_instrument_types;
+      that.update();
     });
   },
   computed:{
@@ -361,6 +362,11 @@ Vue.component('custom-select', {
   template: '#custom-select'
 });
 
+Vue.component('sidenav', {
+  props: ['userrequest'],
+  template: '#sidenav-template'
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
@@ -396,4 +402,9 @@ var vm = new Vue({
       this.validate();
     }
   }
+});
+
+$('body').scrollspy({
+  target: '.bs-docs-sidebar',
+  offset: 80
 });

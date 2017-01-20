@@ -9,13 +9,20 @@
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
       <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
     </ul>
-    <div class="col-md-6 panel-actions">
+    <div class="col-md-5 panel-actions">
       <a class="btn btn-success">Submit</a>
       <a class="btn btn-info">Save Draft</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
-        <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+        <div class="row">
+          <div class="col-md-11 col-sm-12 col-sm-12">
+            <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+          </div>
+          <div class="col-md-1 hidden-sm hidden-xs">
+            <sidenav :userrequest="userrequest"></sidenav>
+          </div>
+        </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 2 }">
         <div class="row">
@@ -102,7 +109,7 @@
 </script>
 
 <script type="text/x-template" id="request-template">
-  <div class="row request">
+  <div class="row request" :id="'request' + index">
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
@@ -165,7 +172,7 @@
 </script>
 
 <script type="text/x-template" id="molecule-template">
-  <div class="row target">
+  <div class="row target" :id="'molecule' + $parent.index + index">
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
@@ -233,7 +240,7 @@
 </script>
 
 <script type="text/x-template" id="target-template">
-  <div class="row target">
+  <div class="row target" :id="'target' + $parent.index">
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
@@ -327,7 +334,7 @@
 </script>
 
 <script type="text/x-template" id="window-template">
-  <div class="row window">
+  <div class="row window" :id="'window' + $parent.index + index">
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
@@ -374,7 +381,7 @@
 </script>
 
 <script type="text/x-template" id="constraints-template">
-  <div class="row constraints">
+  <div class="row constraints" :id="'constraints' + $parent.index">
     <div class="col-md-12">
       <div class="panel panel-default" :class="{'panel-danger': !_.isEmpty(errors)}">
         <div class="panel-heading">
@@ -447,6 +454,31 @@
     <div class="collapse-inline" v-show="!$parent.show">{{ label }}: <strong>{{ value || '...' }}</strong></div>
   </span>
 </script>
+
+<script type="text/x-template" id="sidenav-template">
+  <nav class="bs-docs-sidebar">
+    <ul id="sidebar" class="nav nav-stacked">
+      <li v-for="(request, index) in userrequest.requests">
+        <a :href="'#request' + index">Request {{ index + 1}}</a>
+        <ul class="nav nav-stacked">
+          <li>
+            <a :href="'#target' + index">Target</a>
+          </li>
+          <li v-for="(molecule, molIndex) in request.molecules">
+            <a :href="'#molecule' + index + molIndex"> Configutation {{ molIndex + 1}}</a>
+          </li>
+          <li v-for="(window, winIndex) in request.windows">
+            <a :href="'#window' + index + winIndex">Window {{ winIndex + 1}}</a>
+          </li>
+          <li>
+            <a :href="'#constraints' + index">Constraints</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</script>
+
 
 {% endverbatim %}
 {% endblock %}
