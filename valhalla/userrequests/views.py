@@ -9,7 +9,6 @@ from django.utils import timezone
 from dateutil.parser import parse
 from datetime import timedelta
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
 
 from valhalla.common.configdb import ConfigDB
 from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
