@@ -90,8 +90,10 @@ class InstrumentInformationView(APIView):
 
     def get(self, request, instrument_type):
         configdb = ConfigDB()
+        filters = configdb.get_filters(instrument_type)
+        filter_map = configdb.get_filter_map()
         return Response({
-            'filters': configdb.get_filters(instrument_type),
+            'filters': {filter: filter_map[filter] for filter in filters},
             'binnings': configdb.get_binnings(instrument_type),
             'default_binning': configdb.get_default_binning(instrument_type),
         })

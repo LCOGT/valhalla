@@ -7,6 +7,7 @@ import json
 import os
 
 CONFIGDB_TEST_FILE = os.path.join(settings.BASE_DIR, 'valhalla/common/test_data/configdb.json')
+FILTERWHEELS_FILE = os.path.join(settings.BASE_DIR, 'valhalla/common/test_data/filterwheels.json')
 
 
 class ConfigDBTestMixin(object):
@@ -16,6 +17,10 @@ class ConfigDBTestMixin(object):
         responses.add(
             responses.GET, settings.CONFIGDB_URL + '/sites/',
             json=json.loads(open(CONFIGDB_TEST_FILE).read()), status=200
+        )
+        responses.add(
+            responses.GET, settings.CONFIGDB_URL + '/filterwheels/',
+            json=json.loads(open(FILTERWHEELS_FILE).read()), status=200
         )
         super().setUp()
 

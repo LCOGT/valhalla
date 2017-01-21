@@ -25,29 +25,29 @@ class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope
 class ConfigDB(object):
 
     def __init__(self):
-        self.site_data = self._get_configdb_data()
+        self.site_data = self._get_configdb_data('sites')
 
-    def _get_configdb_data(self):
+    def _get_configdb_data(self, resource):
         ''' Gets all the data from configdb (the sites structure with everything in it)
         :return: list of dictionaries of site data
         '''
 
-        site_data = cache.get('site_data')
-        if not site_data:
+        data = cache.get(resource)
+        if not data:
             try:
-                r = requests.get(settings.CONFIGDB_URL + '/sites/')
+                r = requests.get(settings.CONFIGDB_URL + '/{}/'.format(resource))
                 r.raise_for_status()
             except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
                 msg = "{}: {}".format(e.__class__.__name__, CONFIGDB_ERROR_MSG)
                 raise ConfigDBException(msg)
             try:
-                site_data = r.json()['results']
+                data = r.json()['results']
             except KeyError:
                 raise ConfigDBException(CONFIGDB_ERROR_MSG)
             # cache the results for 15 minutes
-            cache.set('site_data', site_data, 900)
+            cache.set(resource, data, 900)
 
-        return site_data
+        return data
 
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
@@ -122,6 +122,16 @@ class ConfigDB(object):
                     available_filters.add(camera_filter.lower())
 
         return available_filters
+
+    def get_filter_map(self):
+        filter_map = {}
+        for fw in self._get_configdb_data('filterwheels'):
+            for filter in fw['filters']:
+                filter_map[filter['code'].lower()] = {
+                    'type': filter.get('filter_type', 'Engineering'),
+                    'name': filter.get('name', filter['code'])
+                }
+        return filter_map
 
     def get_binnings(self, instrument_type):
         '''

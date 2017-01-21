@@ -430,7 +430,8 @@
               <form class="form-horizontal" >
                 <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
+                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update"
+                :errors="_.get(errors.end, 'end') || errors.end"> <!-- Validation wtf -->
                 </custon-field>
               </form>
             </div>

@@ -236,11 +236,13 @@ Vue.component('molecule', {
       return rep;
     },
     filterOptions: function(){
-      var options = [];
+      var options = [{value: '', text: ''}];
       var filters = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'filters'], []);
-      filters.forEach(function(filter){
-        options.push({value: filter, text: filter});
-      });
+      for(var filter in filters){
+        if(filters[filter].type === 'Standard'){ // TODO select on mode
+          options.push({value: filter, text: filters[filter].name});
+        }
+      }
       return options;
     },
     binningsOptions: function(){
