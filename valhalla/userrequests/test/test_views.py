@@ -103,4 +103,3 @@ class TestInstrumentInformation(ConfigDBTestMixin, TestCase):
             reverse('api:instrument_information', kwargs={'instrument_type': '1M0-SCICAM-SBIG'})
         )
         self.assertIn('air', response.json()['filters'])
-        self.assertTrue(True)

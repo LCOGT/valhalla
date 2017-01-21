@@ -288,6 +288,7 @@ Vue.component('target', {
   data: function(){
     var initial = _.cloneDeep(this.itarget);
     initial.show = true;
+    initial.lookingUP = false;
     return initial;
   },
   computed: {
@@ -315,6 +316,21 @@ Vue.component('target', {
     update: function(){
       this.$emit('targetupdate', {'data': this.toRep});
     }
+  },
+  watch: {
+    name: _.debounce(function(name){
+      this.lookingUP = true;
+      var that = this;
+      $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
+        that.ra = data.ra.decimal;
+        that.dec = data.dec.decimal;
+        that.proper_motion_ra = data.pmra;
+        that.proper_motion_dec = data.pmdec;
+        that.update();
+      }).always(function(){
+        that.lookingUP = false;
+      });
+    }, 500)
   },
   template: '#target-template'
 });

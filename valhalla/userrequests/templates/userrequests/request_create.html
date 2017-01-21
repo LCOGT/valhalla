@@ -329,6 +329,11 @@
               <form class="form-horizontal">
                 <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name">
                 </custom-field>
+                <div class="row" v-show="lookingUP">
+                    <span class="col-md-12" style="text-align: right">
+                      <i class="fa fa-spinner fa-spin fa-fw"></i> Looking up coordinates...
+                    </span>
+                </div>
                 <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
                                :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
                 </custom-select>
