@@ -1,0 +1,9 @@
+local_settings.py
+db.sqlite3
+scratch/
+.tox/
+.git/
+.venv/
+**/*.swp
+**/*.pyc
+**/__pycache__
