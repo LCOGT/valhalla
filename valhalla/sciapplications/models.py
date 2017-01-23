@@ -65,7 +65,7 @@ class ScienceApplication(models.Model):
     submitter = models.ForeignKey(User)
     abstract = models.TextField(blank=True, default='')
     pi = models.EmailField(blank=True, default='')
-    coi = models.CharField(max_length=2000, blank=True, default='')
+    coi = models.TextField(blank=True, default='')
     budget_details = models.TextField(blank=True, default='', help_text='')
     instruments = models.ManyToManyField(Instrument, blank=True)
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
