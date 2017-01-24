@@ -83,7 +83,6 @@ Vue.component('request', {
   data: function(){
     var initial = _.cloneDeep(this.irequest);
     initial.show = true;
-    initial.instrument_name = this.firstAvailableInstrument;
     return initial;
   },
   computed: {
