@@ -60,7 +60,7 @@ Vue.component('userrequest', {
       this.update();
     },
     addRequest: function(idx){
-      var newRequest = JSON.parse(JSON.stringify(this.requests[idx]));
+      var newRequest = _.cloneDeep(this.requests[idx]);
       this.requests.push(newRequest);
       this.update();
     },
@@ -83,6 +83,7 @@ Vue.component('request', {
   data: function(){
     var initial = _.cloneDeep(this.irequest);
     initial.show = true;
+    initial.instrument_name = this.firstAvailableInstrument;
     return initial;
   },
   computed: {
@@ -95,8 +96,7 @@ Vue.component('request', {
       return rep;
     },
     availableInstrumentOptions: function(){
-      var defaultText = this.data_type ? 'Please select an instrument' : 'Please select a data type';
-      var options = [{value: '', text: defaultText}];
+      var options = [];
       for(var i in this.iavailable_instruments){
         var instrument_name = this.iavailable_instruments[i];
         if(instrumentTypeMap[instrument_name].type === this.data_type){
@@ -104,11 +104,17 @@ Vue.component('request', {
         }
       }
       return options;
+    },
+    firstAvailableInstrument: function(){
+      return this.availableInstrumentOptions[0].value;
     }
   },
   watch: {
     data_type: function(){
-      this.instrument_name = '';
+      if(instrumentTypeMap[this.instrument_name].type != this.data_type){
+        this.instrument_name = this.firstAvailableInstrument;
+        this.update();
+      }
     },
     instrument_name: function(value){
       if(value){
@@ -122,6 +128,11 @@ Vue.component('request', {
     },
     irequest: function(value){
       Object.assign(this.$data, value);
+    },
+    iavailable_instruments: function(){
+      if(!this.instrument_name){
+        this.instrument_name = this.firstAvailableInstrument;
+      }
     }
   },
   methods: {
@@ -222,6 +233,7 @@ Vue.component('molecule', {
   watch: {
     selectedinstrument: function(value){
       this.instrument_name = value;
+      this.filter = '';
       // wait for options to update, then set default
       var that = this;
       setTimeout(function(){
@@ -376,6 +388,9 @@ Vue.component('custom-select', {
   methods: {
     update: function(value){
       this.$emit('input', value);
+    },
+    isSelected: function(option){
+      return option === this.value;
     }
   },
   template: '#custom-select'

@@ -155,7 +155,7 @@
                  <custom-select v-model="data_type" label="Data" v-on:input="update" :errors="errors.data_type"
                                 :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
                 </custom-select>
-                <custom-select v-model="instrument_name" label="Instrument"
+                <custom-select v-model="instrument_name" label="Instrument" field="instrument_name"
                                :errors="errors.instrument_name" :options="availableInstrumentOptions">
                 </custom-select>
               </form>
@@ -240,7 +240,7 @@
                 <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                               :errors="errors.exposure_time">
                 </custom-field>
-                <div class="spectra" v-show="datatype === 'SPECTRA'">
+                <div class="spectra" v-if="datatype === 'SPECTRA'">
                   <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
                                  :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                             {value: 'LAMP_FLAT', text: 'Lamp Flat'},
@@ -337,7 +337,7 @@
                 <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
                                :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
                 </custom-select>
-                <div class="sidereal" v-show="type === 'SIDEREAL'">
+                <div class="sidereal" v-if="type === 'SIDEREAL'">
                   <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra">
                   </custom-field>
                   <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec">
@@ -354,7 +354,7 @@
                                 :errors="errors.parallax">
                   </custom-field>
                 </div>
-                <div class="non-sidereal" v-show="type === 'NON_SIDEREAL'">
+                <div class="non-sidereal" v-if="type === 'NON_SIDEREAL'">
                   <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
                                  :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
                                             {value: 'MPC_COMET', text: 'MPC Comet'}]">
@@ -380,7 +380,7 @@
                                 v-on:input="update" :errors="errors.meananom">
                   </custom-field>
                 </div>
-                <div class="spectra" v-show="datatype === 'SPECTRA'">
+                <div class="spectra" v-if="datatype === 'SPECTRA'">
                   <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                                  :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
                   </custom-select>
@@ -516,7 +516,7 @@
       <div class="col-sm-8">
         <select :id="field" v-bind:value="value" v-on:change="update($event.target.value)"
                 :name="field" class="form-control">
-          <option v-for="option in options" :value="option.value">{{ option.text }}</option>
+          <option v-for="option in options" :value="option.value" :selected="isSelected(option.value)">{{ option.text }}</option>
         </select>
         <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
       </div>
