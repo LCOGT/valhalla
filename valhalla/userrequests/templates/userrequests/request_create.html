@@ -11,10 +11,11 @@
     <ul class="nav nav-tabs col-md-6">
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
       <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
+      <li :class="{ active: tab === 3 }" v-on:click="tab = 3"><a><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a></li>
     </ul>
     <div class="col-md-5 panel-actions">
       <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
-      <a class="btn btn-info" title="Save"><i class="fa fa-save"></i> Save Draft</a>
+      <a class="btn btn-info" title="Save" v-on:click="saveDraft"><i class="fa fa-save"></i> Save Draft</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
@@ -31,6 +32,13 @@
         <div class="row">
           <div class="col-md-12">
             <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" :class="{ active: tab === 3 }">
+        <div class="row">
+          <div class="col-md-12">
+            <drafts v-on:loaddraft="loadDraft" :tab="tab"></drafts>
           </div>
         </div>
       </div>
@@ -550,6 +558,20 @@
   </nav>
 </script>
 
+<script type="text/x-template" id="drafts-template">
+  <table class="table table-striped">
+    <thead>
+      <tr><td>Title</td><td>Author</td><td>Proposal</td><td>Last Modified</td></tr>
+    </thead>
+    <tbody>
+      <tr v-for="draft in drafts">
+        <td><a v-on:click="loadDraft(draft.id)">{{ draft.title }}</a></td>
+        <td>{{ draft.author }}</td>
+        <td>{{ draft.proposal }}</td>
+        <td>{{ draft.modified }}</td>
+      </tr>
+  </table>
+</script>
 
 {% endverbatim %}
 {% endblock %}

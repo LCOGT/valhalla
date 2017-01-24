@@ -336,7 +336,11 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
 
 class DraftUserRequestSerializer(serializers.ModelSerializer):
-    author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = DraftUserRequest

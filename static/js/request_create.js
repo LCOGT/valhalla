@@ -400,6 +400,30 @@ Vue.component('sidenav', {
   template: '#sidenav-template'
 });
 
+Vue.component('drafts', {
+  props: ['tab'],
+  data: function(){
+    return {'drafts': []};
+  },
+  methods: {
+    fetchDrafts: function(){
+      var that = this;
+      $.getJSON('/api/drafts/', function(data){
+        that.drafts = data.results;
+      });
+    },
+    loadDraft: function(id){
+      this.$emit('loaddraft', id);
+    }
+  },
+  watch: {
+    tab: function(value){
+      if(value === 3) this.fetchDrafts();
+    }
+  },
+  template: '#drafts-template'
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
@@ -490,11 +514,19 @@ var vm = new Vue({
       this.validate();
     },
     saveDraft: function(){
+      if(!this.userrequest.group_id || !this.userrequest.proposal){
+        alert('Please give your draft a title and proposal');
+        return;
+      }
       var that = this;
       $.ajax({
         type: 'POST',
         url: '/api/drafts/',
-        data: JSON.stringify({proposal: that.userrequest.proposal, content: JSON.stringify(that.userrequest)}),
+        data: JSON.stringify({
+          proposal: that.userrequest.proposal,
+          title: that.userrequest.group_id,
+          content: JSON.stringify(that.userrequest)
+        }),
         contentType: 'application/json',
         success: function(data){
           that.draftId = data.id;
@@ -503,6 +535,8 @@ var vm = new Vue({
       });
     },
     loadDraft: function(id){
+      this.draftId = id;
+      this.tab = 1;
       var that = this;
       $.getJSON('/api/drafts/' + id + '/', function(data){
         that.userrequest = JSON.parse(data.content);

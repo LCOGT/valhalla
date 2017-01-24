@@ -947,11 +947,12 @@ class TestDraftUserRequestApi(APITestCase):
     def test_user_can_create_draft(self):
         data = {
             'proposal': self.proposal.id,
+            'title': 'Test Draft',
             'content': '{"foo": "bar"}'
         }
         response = self.client.post(reverse('api:drafts-list'), data=data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['content'], data['content'])
+        self.assertEqual(response.json()['title'], data['title'])
 
     def test_post_invalid_json(self):
         data = {
