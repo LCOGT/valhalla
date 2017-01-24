@@ -390,3 +390,14 @@ class Constraints(models.Model):
 
     class Meta:
         verbose_name_plural = 'Constraints'
+
+
+class DraftUserRequest(models.Model):
+    author = models.ForeignKey(User)
+    proposal = models.ForeignKey(Proposal)
+    content = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return 'Draft request by: {} for proposal: {}'.format(self.author, self.proposal)
