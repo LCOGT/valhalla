@@ -22,7 +22,9 @@ var collapseMixin = {
 Vue.component('userrequest', {
   props: ['errors', 'iuserrequest'],
   data: function(){
-    return _.cloneDeep(this.iuserrequest);
+    var initial = _.cloneDeep(this.iuserrequest);
+    initial.show = true;
+    return initial;
   },
   created: function(){
     var that = this;
@@ -79,7 +81,10 @@ Vue.component('request', {
   props: ['irequest', 'index', 'errors', 'iavailable_instruments', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    return _.cloneDeep(this.irequest);
+    var initial = _.cloneDeep(this.irequest);
+    initial.show = true;
+    initial.instrument_name = this.firstAvailableInstrument;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -180,7 +185,9 @@ Vue.component('molecule', {
   props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    return _.cloneDeep(this.imolecule);
+    var initial = _.cloneDeep(this.imolecule);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -251,6 +258,7 @@ Vue.component('target', {
   mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.itarget);
+    initial.show = true;
     initial.lookingUP = false;
     return initial;
   },
@@ -305,7 +313,9 @@ Vue.component('window', {
   props: ['iwindow', 'index', 'errors', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    return _.cloneDeep(this.iwindow);
+    var initial = _.cloneDeep(this.iwindow);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -329,7 +339,9 @@ Vue.component('constraints', {
   props: ['iconstraints', 'errors', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    return _.cloneDeep(this.iconstraints);
+    var initial = _.cloneDeep(this.iconstraints);
+    initial.show = true;
+    return initial;
   },
   computed: {
     toRep: function(){
@@ -405,11 +417,9 @@ var vm = new Vue({
       ipp_value: 1.05,
       observation_type: 'NORMAL',
       requests: [{
-        show: true,
         data_type: 'IMAGE',
         instrument_name: '',
         target: {
-          show: true,
           name: '',
           type: 'SIDEREAL',
           ra: 0,
@@ -429,7 +439,6 @@ var vm = new Vue({
           rot_angle: 0
         },
         molecules:[{
-          show: true,
           type: 'EXPOSE',
           instrument_name: '',
           filter: '',
@@ -442,7 +451,6 @@ var vm = new Vue({
           acquire_radius_arcsec: null,
         }],
         windows:[{
-          show: true,
           start: moment().format(datetimeFormat),
           end: moment().format(datetimeFormat)
         }],
@@ -450,7 +458,6 @@ var vm = new Vue({
           telescope_class: ''
         },
         constraints: {
-          show: true,
           max_airmass: 2.0,
           min_lunar_distance: 30.0
         }
