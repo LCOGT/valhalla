@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
@@ -269,8 +268,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # check that the user belongs to the supplied proposal
-        user = User.objects.get(username=data['submitter'])
-        if not user.proposal_set.filter(id=data['proposal']):
+        if data['proposal'] not in data['submitter'].proposal_set.all():
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
