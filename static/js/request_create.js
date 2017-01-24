@@ -20,63 +20,11 @@ var collapseMixin = {
 };
 
 Vue.component('userrequest', {
-  props: ['errors'],
+  props: ['errors', 'iuserrequest'],
   data: function(){
-    return {
-      show: true,
-      proposals: [],
-      available_instruments: [],
-      group_id: '',
-      proposal: '',
-      ipp_value: 1.05,
-      observation_type: 'NORMAL',
-      requests: [{
-        data_type: 'IMAGE',
-        instrument_name: '',
-        target: {
-          name: '',
-          type: 'SIDEREAL',
-          ra: 0,
-          dec: 0,
-          scheme: 'MPC_MINOR_PLANET',
-          proper_motion_ra: 0.0,
-          proper_motion_dec: 0.0,
-          epoch: 2000,
-          parallax: 0,
-          orbinc: 0,
-          longascnode: 0,
-          argofperih: 0,
-          meandist: 0,
-          eccentricity: 0,
-          meananom: 0,
-          rot_mode: 'SKY',
-          rot_angle: 0
-        },
-        molecules:[{
-          type: 'EXPOSE',
-          instrument_name: '',
-          filter: '',
-          exposure_time: 30,
-          exposure_count: 1,
-          bin_x: null,
-          bin_y: null,
-          fill_window: false,
-          acquire_mode: 'OFF',
-          acquire_radius_arcsec: null,
-        }],
-        windows:[{
-          start: moment().format(datetimeFormat),
-          end: moment().format(datetimeFormat)
-        }],
-        location:{
-          telescope_class: ''
-        },
-        constraints: {
-          max_airmass: 2.0,
-          min_lunar_distance: 30.0
-        }
-      }]
-    };
+    var initial = _.cloneDeep(this.iuserrequest);
+    initial.show = true;
+    return initial;
   },
   created: function(){
     var that = this;
@@ -121,6 +69,11 @@ Vue.component('userrequest', {
       this.update();
     }
   },
+  watch: {
+    iuserrequest: function(value){
+      Object.assign(this.$data, value);
+    }
+  },
   template: '#userrequest-template'
 });
 
@@ -136,7 +89,7 @@ Vue.component('request', {
     toRep: function(){
       var rep = {};
       var that = this;
-      ['target', 'molecules', 'windows', 'location', 'constraints'].forEach(function(x){
+      ['target', 'molecules', 'windows', 'location', 'constraints', 'data_type', 'instrument_name'].forEach(function(x){
         rep[x] = that[x];
       });
       return rep;
@@ -166,6 +119,9 @@ Vue.component('request', {
           vm.instrumentTypeMap[value].default_binning = data.default_binning;
         });
       }
+    },
+    irequest: function(value){
+      Object.assign(this.$data, value);
     }
   },
   methods: {
@@ -239,7 +195,7 @@ Vue.component('molecule', {
       var options = [{value: '', text: ''}];
       var filters = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'filters'], []);
       for(var filter in filters){
-        if(filters[filter].type === 'Standard'){ // TODO select on mode
+        if(['Standard', 'Slit', 'VirtualSlit'].indexOf(filters[filter].type) > -1){ // TODO select on mode
           options.push({value: filter, text: filters[filter].name});
         }
       }
@@ -277,6 +233,9 @@ Vue.component('molecule', {
     },
     datatype: function(value){
       this.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+    },
+    imolecule: function(value){
+      Object.assign(this.$data, value);
     }
   },
   template: '#molecule-template'
@@ -330,7 +289,10 @@ Vue.component('target', {
       }).always(function(){
         that.lookingUP = false;
       });
-    }, 500)
+    }, 500),
+    itarget: function(value){
+      Object.assign(this.$data, value);
+    }
   },
   template: '#target-template'
 });
@@ -353,6 +315,11 @@ Vue.component('window', {
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
     }
   },
+  watch: {
+    iwindow: function(value){
+      Object.assign(this.$data, value);
+    }
+  },
   template: '#window-template'
 });
 
@@ -372,6 +339,11 @@ Vue.component('constraints', {
   methods: {
     update: function(){
       this.$emit('constraintsupdate', {'data': this.toRep});
+    }
+  },
+  watch: {
+    iconstraints: function(value){
+      Object.assign(this.$data, value);
     }
   },
   template: '#constraints-template'
@@ -418,9 +390,64 @@ var vm = new Vue({
   el: '#vueapp',
   data:{
     tab: 1,
+    draftId: -1,
     duration: 0,
     instrumentTypeMap: instrumentTypeMap,
-    userrequest: {},
+    userrequest: {
+      show: true,
+      proposals: [],
+      available_instruments: [],
+      group_id: '',
+      proposal: '',
+      ipp_value: 1.05,
+      observation_type: 'NORMAL',
+      requests: [{
+        data_type: 'IMAGE',
+        instrument_name: '',
+        target: {
+          name: '',
+          type: 'SIDEREAL',
+          ra: 0,
+          dec: 0,
+          scheme: 'MPC_MINOR_PLANET',
+          proper_motion_ra: 0.0,
+          proper_motion_dec: 0.0,
+          epoch: 2000,
+          parallax: 0,
+          orbinc: 0,
+          longascnode: 0,
+          argofperih: 0,
+          meandist: 0,
+          eccentricity: 0,
+          meananom: 0,
+          rot_mode: 'SKY',
+          rot_angle: 0
+        },
+        molecules:[{
+          type: 'EXPOSE',
+          instrument_name: '',
+          filter: '',
+          exposure_time: 30,
+          exposure_count: 1,
+          bin_x: null,
+          bin_y: null,
+          fill_window: false,
+          acquire_mode: 'OFF',
+          acquire_radius_arcsec: null,
+        }],
+        windows:[{
+          start: moment().format(datetimeFormat),
+          end: moment().format(datetimeFormat)
+        }],
+        location:{
+          telescope_class: ''
+        },
+        constraints: {
+          max_airmass: 2.0,
+          min_lunar_distance: 30.0
+        }
+      }]
+    },
     errors: {}
   },
   computed: {
@@ -447,6 +474,25 @@ var vm = new Vue({
       console.log('userrequest updated');
       this.userrequest = data;
       this.validate();
+    },
+    saveDraft: function(){
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/drafts/',
+        data: JSON.stringify({proposal: that.userrequest.proposal, content: JSON.stringify(that.userrequest)}),
+        contentType: 'application/json',
+        success: function(data){
+          that.draftId = data.id;
+          console.log('Draft saved ' + that.draftId);
+        }
+      });
+    },
+    loadDraft: function(id){
+      var that = this;
+      $.getJSON('/api/drafts/' + id + '/', function(data){
+        that.userrequest = JSON.parse(data.content);
+      });
     }
   }
 });

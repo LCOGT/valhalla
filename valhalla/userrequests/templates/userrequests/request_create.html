@@ -20,7 +20,7 @@
       <div class="tab-pane" :class="{ active: tab === 1 }">
         <div class="row">
           <div class="col-md-11 col-sm-12 col-sm-12">
-            <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+            <userrequest :errors="errors" :iuserrequest="userrequest" v-on:userrequestupdate="userrequestUpdated"></userrequest>
           </div>
           <div class="col-md-1 hidden-sm hidden-xs">
             <sidenav :userrequest="userrequest"></sidenav>
