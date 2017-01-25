@@ -292,8 +292,8 @@ Vue.component('target', {
       this.lookingUP = true;
       var that = this;
       $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
-        that.ra = data.ra.decimal;
-        that.dec = data.dec.decimal;
+        that.ra = _.get(data, ['ra', 'decimal'], null);
+        that.dec = _.get(data ['dec', 'decimal'], null);
         that.proper_motion_ra = data.pmra;
         that.proper_motion_dec = data.pmdec;
         that.update();
