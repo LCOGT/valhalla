@@ -440,6 +440,12 @@ Vue.component('alert', {
   template: '#alert-template'
 });
 
+Vue.filter('formatDate', function(value){
+  if(value){
+    return moment(String(value)).format(datetimeFormat);
+  }
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
