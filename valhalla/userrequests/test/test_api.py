@@ -930,6 +930,11 @@ class TestDraftUserRequestApi(APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.client.force_login(self.user)
 
+    def test_unauthenticated(self):
+        self.client.logout()
+        response = self.client.get(reverse('api:drafts-list'))
+        self.assertEqual(response.status_code, 403)
+
     def test_user_can_list_drafts(self):
         mixer.cycle(5).blend(DraftUserRequest, author=self.user, proposal=self.proposal)
         response = self.client.get(reverse('api:drafts-list'))
@@ -962,6 +967,17 @@ class TestDraftUserRequestApi(APITestCase):
         response = self.client.post(reverse('api:drafts-list'), data=data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Content must be valid JSON', response.json()['content'])
+
+    def test_post_wrong_proposal(self):
+        other_proposal = mixer.blend(Proposal)
+        data = {
+            'proposal': other_proposal.id,
+            'title': 'I cant do this',
+            'content': '{"foo": "bar"}'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('You are not a member of that proposal', response.json()['non_field_errors'])
 
     def test_user_cannot_duplicate_draft(self):
         mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal, title='dup')
