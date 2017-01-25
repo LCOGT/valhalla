@@ -20,63 +20,11 @@ var collapseMixin = {
 };
 
 Vue.component('userrequest', {
-  props: ['errors'],
+  props: ['errors', 'iuserrequest'],
   data: function(){
-    return {
-      show: true,
-      proposals: [],
-      available_instruments: [],
-      group_id: '',
-      proposal: '',
-      ipp_value: 1.05,
-      observation_type: 'NORMAL',
-      requests: [{
-        data_type: 'IMAGE',
-        instrument_name: '',
-        target: {
-          name: '',
-          type: 'SIDEREAL',
-          ra: 0,
-          dec: 0,
-          scheme: 'MPC_MINOR_PLANET',
-          proper_motion_ra: 0.0,
-          proper_motion_dec: 0.0,
-          epoch: 2000,
-          parallax: 0,
-          orbinc: 0,
-          longascnode: 0,
-          argofperih: 0,
-          meandist: 0,
-          eccentricity: 0,
-          meananom: 0,
-          rot_mode: 'SKY',
-          rot_angle: 0
-        },
-        molecules:[{
-          type: 'EXPOSE',
-          instrument_name: '',
-          filter: '',
-          exposure_time: 30,
-          exposure_count: 1,
-          bin_x: null,
-          bin_y: null,
-          fill_window: false,
-          acquire_mode: 'OFF',
-          acquire_radius_arcsec: null,
-        }],
-        windows:[{
-          start: moment().format(datetimeFormat),
-          end: moment().format(datetimeFormat)
-        }],
-        location:{
-          telescope_class: ''
-        },
-        constraints: {
-          max_airmass: 2.0,
-          min_lunar_distance: 30.0
-        }
-      }]
-    };
+    var initial = _.cloneDeep(this.iuserrequest);
+    initial.show = true;
+    return initial;
   },
   created: function(){
     var that = this;
@@ -112,13 +60,18 @@ Vue.component('userrequest', {
       this.update();
     },
     addRequest: function(idx){
-      var newRequest = JSON.parse(JSON.stringify(this.requests[idx]));
+      var newRequest = _.cloneDeep(this.requests[idx]);
       this.requests.push(newRequest);
       this.update();
     },
     removeRequest: function(idx){
       this.requests.splice(idx, 1);
       this.update();
+    }
+  },
+  watch: {
+    iuserrequest: function(value){
+      Object.assign(this.$data, value);
     }
   },
   template: '#userrequest-template'
@@ -136,14 +89,13 @@ Vue.component('request', {
     toRep: function(){
       var rep = {};
       var that = this;
-      ['target', 'molecules', 'windows', 'location', 'constraints'].forEach(function(x){
+      ['target', 'molecules', 'windows', 'location', 'constraints', 'data_type', 'instrument_name'].forEach(function(x){
         rep[x] = that[x];
       });
       return rep;
     },
     availableInstrumentOptions: function(){
-      var defaultText = this.data_type ? 'Please select an instrument' : 'Please select a data type';
-      var options = [{value: '', text: defaultText}];
+      var options = [];
       for(var i in this.iavailable_instruments){
         var instrument_name = this.iavailable_instruments[i];
         if(instrumentTypeMap[instrument_name].type === this.data_type){
@@ -151,11 +103,17 @@ Vue.component('request', {
         }
       }
       return options;
+    },
+    firstAvailableInstrument: function(){
+      return this.availableInstrumentOptions[0].value;
     }
   },
   watch: {
     data_type: function(){
-      this.instrument_name = '';
+      if(instrumentTypeMap[this.instrument_name].type != this.data_type){
+        this.instrument_name = this.firstAvailableInstrument;
+        this.update();
+      }
     },
     instrument_name: function(value){
       if(value){
@@ -165,6 +123,14 @@ Vue.component('request', {
           vm.instrumentTypeMap[value].binnings = data.binnings;
           vm.instrumentTypeMap[value].default_binning = data.default_binning;
         });
+      }
+    },
+    irequest: function(value){
+      Object.assign(this.$data, value);
+    },
+    iavailable_instruments: function(){
+      if(!this.instrument_name){
+        this.instrument_name = this.firstAvailableInstrument;
       }
     }
   },
@@ -239,7 +205,7 @@ Vue.component('molecule', {
       var options = [{value: '', text: ''}];
       var filters = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'filters'], []);
       for(var filter in filters){
-        if(filters[filter].type === 'Standard'){ // TODO select on mode
+        if(['Standard', 'Slit', 'VirtualSlit'].indexOf(filters[filter].type) > -1){ // TODO select on mode
           options.push({value: filter, text: filters[filter].name});
         }
       }
@@ -266,6 +232,7 @@ Vue.component('molecule', {
   watch: {
     selectedinstrument: function(value){
       this.instrument_name = value;
+      this.filter = '';
       // wait for options to update, then set default
       var that = this;
       setTimeout(function(){
@@ -277,6 +244,9 @@ Vue.component('molecule', {
     },
     datatype: function(value){
       this.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+    },
+    imolecule: function(value){
+      Object.assign(this.$data, value);
     }
   },
   template: '#molecule-template'
@@ -330,7 +300,10 @@ Vue.component('target', {
       }).always(function(){
         that.lookingUP = false;
       });
-    }, 500)
+    }, 500),
+    itarget: function(value){
+      Object.assign(this.$data, value);
+    }
   },
   template: '#target-template'
 });
@@ -353,6 +326,11 @@ Vue.component('window', {
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
     }
   },
+  watch: {
+    iwindow: function(value){
+      Object.assign(this.$data, value);
+    }
+  },
   template: '#window-template'
 });
 
@@ -372,6 +350,11 @@ Vue.component('constraints', {
   methods: {
     update: function(){
       this.$emit('constraintsupdate', {'data': this.toRep});
+    }
+  },
+  watch: {
+    iconstraints: function(value){
+      Object.assign(this.$data, value);
     }
   },
   template: '#constraints-template'
@@ -404,6 +387,9 @@ Vue.component('custom-select', {
   methods: {
     update: function(value){
       this.$emit('input', value);
+    },
+    isSelected: function(option){
+      return option === this.value;
     }
   },
   template: '#custom-select'
@@ -414,14 +400,116 @@ Vue.component('sidenav', {
   template: '#sidenav-template'
 });
 
+Vue.component('drafts', {
+  props: ['tab'],
+  data: function(){
+    return {'drafts': []};
+  },
+  methods: {
+    fetchDrafts: function(){
+      var that = this;
+      $.getJSON('/api/drafts/', function(data){
+        that.drafts = data.results;
+      });
+    },
+    loadDraft: function(id){
+      this.$emit('loaddraft', id);
+    },
+    deleteDraft: function(id){
+      if(confirm('Are you sure you want to delete this draft?')){
+        var that = this;
+        $.ajax({
+          type: 'DELETE',
+          url: '/api/drafts/' + id + '/'
+        }).done(function(){
+          that.fetchDrafts();
+        });
+      }
+    }
+  },
+  watch: {
+    tab: function(value){
+      if(value === 3) this.fetchDrafts();
+    }
+  },
+  template: '#drafts-template'
+});
+
+Vue.component('alert', {
+  props: ['alertclass'],
+  template: '#alert-template'
+});
+
+Vue.filter('formatDate', function(value){
+  if(value){
+    return moment(String(value)).format(datetimeFormat);
+  }
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
     tab: 1,
+    draftId: -1,
     duration: 0,
     instrumentTypeMap: instrumentTypeMap,
-    userrequest: {},
-    errors: {}
+    userrequest: {
+      show: true,
+      proposals: [],
+      available_instruments: [],
+      group_id: '',
+      proposal: '',
+      ipp_value: 1.05,
+      observation_type: 'NORMAL',
+      requests: [{
+        data_type: 'IMAGE',
+        instrument_name: '',
+        target: {
+          name: '',
+          type: 'SIDEREAL',
+          ra: 0,
+          dec: 0,
+          scheme: 'MPC_MINOR_PLANET',
+          proper_motion_ra: 0.0,
+          proper_motion_dec: 0.0,
+          epoch: 2000,
+          parallax: 0,
+          orbinc: 0,
+          longascnode: 0,
+          argofperih: 0,
+          meandist: 0,
+          eccentricity: 0,
+          meananom: 0,
+          rot_mode: 'SKY',
+          rot_angle: 0
+        },
+        molecules:[{
+          type: 'EXPOSE',
+          instrument_name: '',
+          filter: '',
+          exposure_time: 30,
+          exposure_count: 1,
+          bin_x: null,
+          bin_y: null,
+          fill_window: false,
+          acquire_mode: 'OFF',
+          acquire_radius_arcsec: null,
+        }],
+        windows:[{
+          start: moment().format(datetimeFormat),
+          end: moment().format(datetimeFormat)
+        }],
+        location:{
+          telescope_class: ''
+        },
+        constraints: {
+          max_airmass: 2.0,
+          min_lunar_distance: 30.0
+        }
+      }]
+    },
+    errors: {},
+    alerts: []
   },
   computed: {
     durationDisplay: function(){
@@ -447,6 +535,47 @@ var vm = new Vue({
       console.log('userrequest updated');
       this.userrequest = data;
       this.validate();
+    },
+    saveDraft: function(id){
+      if(!this.userrequest.group_id || !this.userrequest.proposal){
+        alert('Please give your draft a title and proposal');
+        return;
+      }
+      var url = '/api/drafts/';
+      var method = 'POST';
+
+      if(id > -1){
+        url += id + '/';
+        method = 'PUT';
+      }
+      var that = this;
+      $.ajax({
+        type: method,
+        url: url,
+        data: JSON.stringify({
+          proposal: that.userrequest.proposal,
+          title: that.userrequest.group_id,
+          content: JSON.stringify(that.userrequest)
+        }),
+        contentType: 'application/json',
+      }).done(function(data){
+        that.draftId = data.id;
+        that.alerts.push({class: 'alert-success', msg: 'Draft id: ' + data.id + ' saved successfully.' });
+        console.log('Draft saved ' + that.draftId);
+      }).fail(function(data){
+        for(var error in data.responseJSON.non_field_errors){
+          that.alerts.push({class: 'alert-danger', msg: data.responseJSON.non_field_errors[error]});
+        }
+      });
+    },
+    loadDraft: function(id){
+      this.draftId = id;
+      this.tab = 1;
+      var that = this;
+      $.getJSON('/api/drafts/' + id + '/', function(data){
+        that.userrequest = JSON.parse(data.content);
+        that.validate();
+      });
     }
   }
 });

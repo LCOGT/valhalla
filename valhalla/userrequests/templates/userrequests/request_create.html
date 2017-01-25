@@ -7,20 +7,36 @@
 {% block content %}
 {% verbatim %}
 <div id="vueapp">
+  <div class="row">
+    <div class="col-md-11">
+      <alert v-for="alert in alerts" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
+    </div>
+  </div>
   <div id="tabs">
     <ul class="nav nav-tabs col-md-6">
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
       <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
+      <li :class="{ active: tab === 3 }" v-on:click="tab = 3"><a><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a></li>
     </ul>
     <div class="col-md-5 panel-actions">
       <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
-      <a class="btn btn-info" title="Save"><i class="fa fa-save"></i> Save Draft</a>
+      <span :class="draftId > -1 ? 'btn-group' : ''">
+        <button class="btn btn-info" title="Save" v-on:click="saveDraft(draftId)">
+          <i class="fa fa-save"></i> Save Draft <span v-show="draftId > -1">#{{ draftId }}</span>
+        </button>
+         <button v-show="draftId > -1" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a v-on:click="saveDraft(-1)">Save as new draft</a></li>
+        </ul>
+      </span>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
         <div class="row">
           <div class="col-md-11 col-sm-12 col-sm-12">
-            <userrequest :errors="errors" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+            <userrequest :errors="errors" :iuserrequest="userrequest" v-on:userrequestupdate="userrequestUpdated"></userrequest>
           </div>
           <div class="col-md-1 hidden-sm hidden-xs">
             <sidenav :userrequest="userrequest"></sidenav>
@@ -31,6 +47,13 @@
         <div class="row">
           <div class="col-md-12">
             <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="tab-pane" :class="{ active: tab === 3 }">
+        <div class="row">
+          <div class="col-md-12">
+            <drafts v-on:loaddraft="loadDraft" :tab="tab"></drafts>
           </div>
         </div>
       </div>
@@ -118,7 +141,7 @@
 <script type="text/x-template" id="request-template">
   <div class="row request" :id="'request' + index">
     <div class="col-md-12">
-      <div class="panel panel-default">
+      <div class="panel panel-warning">
         <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
@@ -155,7 +178,7 @@
                  <custom-select v-model="data_type" label="Data" v-on:input="update" :errors="errors.data_type"
                                 :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
                 </custom-select>
-                <custom-select v-model="instrument_name" label="Instrument"
+                <custom-select v-model="instrument_name" label="Instrument" field="instrument_name"
                                :errors="errors.instrument_name" :options="availableInstrumentOptions">
                 </custom-select>
               </form>
@@ -184,7 +207,7 @@
 <script type="text/x-template" id="molecule-template">
   <div class="row target" :id="'molecule' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-info">
+      <div class="panel panel-default">
         <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
@@ -240,7 +263,7 @@
                 <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                               :errors="errors.exposure_time">
                 </custom-field>
-                <div class="spectra" v-show="datatype === 'SPECTRA'">
+                <div class="spectra" v-if="datatype === 'SPECTRA'">
                   <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
                                  :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                             {value: 'LAMP_FLAT', text: 'Lamp Flat'},
@@ -267,7 +290,7 @@
 <script type="text/x-template" id="target-template">
   <div class="row target" :id="'target' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-success">
+      <div class="panel panel-default">
         <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
@@ -337,7 +360,7 @@
                 <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
                                :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
                 </custom-select>
-                <div class="sidereal" v-show="type === 'SIDEREAL'">
+                <div class="sidereal" v-if="type === 'SIDEREAL'">
                   <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra">
                   </custom-field>
                   <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec">
@@ -354,7 +377,7 @@
                                 :errors="errors.parallax">
                   </custom-field>
                 </div>
-                <div class="non-sidereal" v-show="type === 'NON_SIDEREAL'">
+                <div class="non-sidereal" v-if="type === 'NON_SIDEREAL'">
                   <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
                                  :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
                                             {value: 'MPC_COMET', text: 'MPC Comet'}]">
@@ -380,7 +403,7 @@
                                 v-on:input="update" :errors="errors.meananom">
                   </custom-field>
                 </div>
-                <div class="spectra" v-show="datatype === 'SPECTRA'">
+                <div class="spectra" v-if="datatype === 'SPECTRA'">
                   <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                                  :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
                   </custom-select>
@@ -399,7 +422,7 @@
 <script type="text/x-template" id="window-template">
   <div class="row window" :id="'window' + $parent.index + index">
     <div class="col-md-12">
-      <div class="panel panel-warning">
+      <div class="panel panel-default">
         <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
@@ -450,7 +473,7 @@
 <script type="text/x-template" id="constraints-template">
   <div class="row constraints" :id="'constraints' + $parent.index">
     <div class="col-md-12">
-      <div class="panel panel-danger">
+      <div class="panel panel-default">
         <div class="panel-heading panel-heading-compact">
           <div class="row">
             <div class="col-xs-4">
@@ -516,7 +539,7 @@
       <div class="col-sm-8">
         <select :id="field" v-bind:value="value" v-on:change="update($event.target.value)"
                 :name="field" class="form-control">
-          <option v-for="option in options" :value="option.value">{{ option.text }}</option>
+          <option v-for="option in options" :value="option.value" :selected="isSelected(option.value)">{{ option.text }}</option>
         </select>
         <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
       </div>
@@ -550,6 +573,30 @@
   </nav>
 </script>
 
+<script type="text/x-template" id="drafts-template">
+  <table class="table table-striped">
+    <thead>
+      <tr><td>Load</td><td>Title</td><td>Id</td><td>Author</td><td>Proposal</td><td>Last Modified</td><td>Delete</td></tr>
+    </thead>
+    <tbody>
+      <tr v-for="draft in drafts">
+        <td><button class="btn btn-info" v-on:click="loadDraft(draft.id)"><i class="fa fa-download"></i></button></td>
+        <td>{{ draft.title }}</td>
+        <td>{{ draft.id }}</td>
+        <td>{{ draft.author }}</td>
+        <td>{{ draft.proposal }}</td>
+        <td>{{ draft.modified | formatDate  }}</td>
+        <td><button class="btn btn-danger" v-on:click="deleteDraft(draft.id)"><i class="fa fa-trash"></i></button></td>
+      </tr>
+  </table>
+</script>
+
+<script type="text/x-template" id="alert-template">
+  <div class="alert alert-dismissiable" :class="alertclass" role="alert">
+    <slot></slot>
+    <button class="close" data-dismiss="alert"><i class="fa fa-times"></i></button>
+  </div>
+</script>
 
 {% endverbatim %}
 {% endblock %}

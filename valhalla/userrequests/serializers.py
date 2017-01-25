@@ -4,9 +4,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
 from datetime import timedelta
+from json import JSONDecodeError
+import json
 
 from valhalla.proposals.models import TimeAllocation
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
+from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import ConfigDB
@@ -330,3 +333,28 @@ class UserRequestSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(_('You must specify at least 1 request'))
         return value
+
+
+class DraftUserRequestSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = DraftUserRequest
+        fields = '__all__'
+        read_only_fields = ('author',)
+
+    def validate(self, data):
+        if data['proposal'] not in data['author'].proposal_set.all():
+            raise serializers.ValidationError('You are not a member of that proposal')
+        return data
+
+    def validate_content(self, data):
+        try:
+            json.loads(data)
+        except JSONDecodeError:
+            raise serializers.ValidationError('Content must be valid JSON')
+        return data

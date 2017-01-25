@@ -1,4 +1,4 @@
-from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
@@ -921,3 +921,94 @@ class TestBlocksApi(APITestCase):
     def test_no_connection(self, request_patch):
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
         self.assertFalse(result.json())
+
+
+class TestDraftUserRequestApi(APITestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+
+    def test_unauthenticated(self):
+        self.client.logout()
+        response = self.client.get(reverse('api:drafts-list'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_can_list_drafts(self):
+        mixer.cycle(5).blend(DraftUserRequest, author=self.user, proposal=self.proposal)
+        response = self.client.get(reverse('api:drafts-list'))
+        self.assertContains(response, self.proposal.id)
+        self.assertEqual(response.json()['count'], 5)
+
+    def test_user_can_list_proposal_drafts(self):
+        other_user = mixer.blend(User)
+        mixer.blend(Membership, user=other_user, proposal=self.proposal)
+        mixer.cycle(5).blend(DraftUserRequest, author=other_user, proposal=self.proposal)
+        response = self.client.get(reverse('api:drafts-list'))
+        self.assertContains(response, self.proposal.id)
+        self.assertEqual(response.json()['count'], 5)
+
+    def test_user_can_create_draft(self):
+        data = {
+            'proposal': self.proposal.id,
+            'title': 'Test Draft',
+            'content': '{"foo": "bar"}'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['title'], data['title'])
+
+    def test_post_invalid_json(self):
+        data = {
+            'proposal': self.proposal.id,
+            'content': 'foo: bar'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Content must be valid JSON', response.json()['content'])
+
+    def test_post_wrong_proposal(self):
+        other_proposal = mixer.blend(Proposal)
+        data = {
+            'proposal': other_proposal.id,
+            'title': 'I cant do this',
+            'content': '{"foo": "bar"}'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('You are not a member of that proposal', response.json()['non_field_errors'])
+
+    def test_user_cannot_duplicate_draft(self):
+        mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal, title='dup')
+        data = {
+            'proposal': self.proposal.id,
+            'title': 'dup',
+            'content': '{"foo": "bar"}'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('The fields author, proposal, title must make a unique set.', str(response.content))
+
+    def test_user_can_update_draft(self):
+        draft = mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal)
+        data = {
+            'proposal': self.proposal.id,
+            'title': 'an updated draft',
+            'content': '{"updated": true}'
+        }
+        response = self.client.put(reverse('api:drafts-detail', args=(draft.id,)), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(DraftUserRequest.objects.get(id=draft.id).title, 'an updated draft')
+
+    def test_user_can_delete_draft(self):
+        draft = mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal)
+        response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
+        self.assertEqual(response.status_code, 204)
+
+    def test_user_cannot_delete_other_draft(self):
+        other_user = mixer.blend(User)
+        other_proposal = mixer.blend(Proposal)
+        draft = mixer.blend(DraftUserRequest, author=other_user, proposal=other_proposal)
+        response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
+        self.assertEqual(response.status_code, 404)

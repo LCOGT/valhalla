@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 
-from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet
+from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView
 from valhalla.userrequests.views import UserRequestListView, InstrumentInformationView
 from valhalla.accounts.views import ProfileApiView
@@ -16,6 +16,7 @@ import valhalla.userrequests.urls as userrequest_urls
 router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
 router.register(r'user_requests', UserRequestViewSet, 'user_requests')
+router.register(r'drafts', DraftUserRequestViewSet, 'drafts')
 
 api_urlpatterns = [
     url(r'^', include(router.urls)),

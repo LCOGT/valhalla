@@ -2,10 +2,10 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 
-from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
-from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
+from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer, DraftUserRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
@@ -79,3 +79,14 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
         if request.GET.get('canceled'):
             return Response([b for b in blocks if not b['canceled']])
         return Response(blocks)
+
+
+class DraftUserRequestViewSet(viewsets.ModelViewSet):
+    serializer_class = DraftUserRequestSerializer
+    ordering = ('-modified',)
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated():
+            return DraftUserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        else:
+            return DraftUserRequest.objects.none()
