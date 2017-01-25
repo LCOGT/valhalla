@@ -47,13 +47,13 @@
         <div class="row">
             <div class="col-md-12">
                 <h3>Active Proposals</h3>
-                {% for proposal in user.proposal_set.all %}
+                {% for proposal in user.profile.current_proposals %}
                 <p><a href="{% url 'proposals:detail' pk=proposal.id %}">{{ proposal }}</a>
                 <br/>
                 <small>{{ proposal.title }}</small>
                 </p>
                 {% empty %}
-                <p>{% trans 'You have no proposals' %}</p>
+                <p>{% trans 'You have no current proposals' %}</p>
                 <p>
                     <a href="{% url 'sciapplications:index' %}">
                     {% trans 'Submit a proposal' %}

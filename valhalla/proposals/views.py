@@ -23,7 +23,7 @@ class ProposalListView(LoginRequiredMixin, ListView):
     model = Proposal
 
     def get_queryset(self):
-        return self.request.user.proposal_set.all()
+        return self.request.user.proposal_set.filter(active=True)
 
 
 class InviteCreateView(LoginRequiredMixin, View):

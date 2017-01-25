@@ -6,6 +6,8 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from oauth2_provider.models import AccessToken, Application
 
+from valhalla.proposals.models import Proposal
+
 logger = logging.getLogger()
 
 
@@ -33,6 +35,10 @@ class Profile(models.Model):
             )
             access_token.save()
         return access_token.token
+
+    @property
+    def current_proposals(self):
+        return Proposal.current_proposals().filter(active=True, membership__user=self.user).distinct()
 
     def __str__(self):
         return '{0} {1} at {2}'.format(self.user, self.title, self.institution)

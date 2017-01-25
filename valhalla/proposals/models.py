@@ -14,6 +14,10 @@ class Semester(models.Model):
     end = models.DateTimeField()
     proposals = models.ManyToManyField("Proposal", through="TimeAllocation")
 
+    @classmethod
+    def current_semesters(cls):
+        return cls.objects.filter(start__lte=timezone.now(), end__gte=timezone.now())
+
     def __str__(self):
         return self.id
 
@@ -43,6 +47,10 @@ class Proposal(models.Model):
     @property
     def cis(self):
         return self.users.filter(membership__role=Membership.CI)
+
+    @classmethod
+    def current_proposals(cls):
+        return cls.objects.filter(semester__in=Semester.current_semesters())
 
     def add_users(self, emails, role):
         for email in emails:
