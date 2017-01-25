@@ -152,13 +152,13 @@
               Request #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
-              </a>
               <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy fa-fw"></i></a>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -218,13 +218,13 @@
               Configuration #{{ index + 1 }}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
-              </a>
               <a class="btn btn-danger btn-xs" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1" title="Remove">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" v-on:click="$parent.addMolecule(index)" title="Copy"><i class="fa fa-copy fa-fw"></i></a>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -433,13 +433,13 @@
               Window #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
-                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
-              </a>
               <a class="btn btn-xs btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1" title="remove">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-xs btn-success" v-on:click="$parent.addWindow(index)" title="copy"><i class="fa fa-copy fa-fw"></i></a>
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
             </div>
           </div>
         </div>
