@@ -1,15 +1,16 @@
 from django.views import View
 from django.views.generic.detail import DetailView
-from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.validators import validate_email
 from django.http import Http404, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django_filters.views import FilterView
 from django.utils.translation import ugettext as _
 
 from valhalla.proposals.models import Proposal, Membership
+from valhalla.proposals.filters import ProposalFilter
 
 
 class ProposalDetailView(LoginRequiredMixin, DetailView):
@@ -19,11 +20,13 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
         return self.request.user.proposal_set.all()
 
 
-class ProposalListView(LoginRequiredMixin, ListView):
+class ProposalListView(LoginRequiredMixin, FilterView):
+    filterset_class = ProposalFilter
+    template_name = 'proposals/proposal_list.html'
     model = Proposal
 
     def get_queryset(self):
-        return self.request.user.proposal_set.filter(active=True)
+        return self.request.user.proposal_set.all()
 
 
 class InviteCreateView(LoginRequiredMixin, View):

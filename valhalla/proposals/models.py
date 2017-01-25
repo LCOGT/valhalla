@@ -71,6 +71,7 @@ class Proposal(models.Model):
     def __str__(self):
         return self.id
 
+
 TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class'])
 
 

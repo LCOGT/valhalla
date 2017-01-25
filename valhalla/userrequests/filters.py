@@ -2,13 +2,11 @@ import django_filters
 from rest_framework import filters
 from valhalla.userrequests.models import UserRequest, Request
 
-USERREQUEST_STATE_FILTER_CHOICES = (('', '----------'),) + UserRequest.STATE_CHOICES
-
 
 class UserRequestFilter(filters.FilterSet):
     created_after = django_filters.DateTimeFilter(name='created', lookup_expr='gte')
     created_before = django_filters.DateTimeFilter(name='created', lookup_expr='lte')
-    state = django_filters.ChoiceFilter(choices=USERREQUEST_STATE_FILTER_CHOICES)
+    state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains')
 
     class Meta:
