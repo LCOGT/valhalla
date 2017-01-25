@@ -974,6 +974,17 @@ class TestDraftUserRequestApi(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('The fields author, proposal, title must make a unique set.', str(response.content))
 
+    def test_user_can_update_draft(self):
+        draft = mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal)
+        data = {
+            'proposal': self.proposal.id,
+            'title': 'an updated draft',
+            'content': '{"updated": true}'
+        }
+        response = self.client.put(reverse('api:drafts-detail', args=(draft.id,)), data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(DraftUserRequest.objects.get(id=draft.id).title, 'an updated draft')
+
     def test_user_can_delete_draft(self):
         draft = mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal)
         response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
@@ -985,5 +996,3 @@ class TestDraftUserRequestApi(APITestCase):
         draft = mixer.blend(DraftUserRequest, author=other_user, proposal=other_proposal)
         response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
         self.assertEqual(response.status_code, 404)
-
-

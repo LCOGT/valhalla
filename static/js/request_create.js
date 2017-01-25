@@ -414,6 +414,17 @@ Vue.component('drafts', {
     },
     loadDraft: function(id){
       this.$emit('loaddraft', id);
+    },
+    deleteDraft: function(id){
+      if(confirm('Are you sure you want to delete this draft?')){
+        var that = this;
+        $.ajax({
+          type: 'DELETE',
+          url: '/api/drafts/' + id + '/'
+        }).done(function(){
+          that.fetchDrafts();
+        });
+      }
     }
   },
   watch: {
@@ -519,15 +530,22 @@ var vm = new Vue({
       this.userrequest = data;
       this.validate();
     },
-    saveDraft: function(){
+    saveDraft: function(id){
       if(!this.userrequest.group_id || !this.userrequest.proposal){
         alert('Please give your draft a title and proposal');
         return;
       }
+      var url = '/api/drafts/';
+      var method = 'POST';
+
+      if(id > -1){
+        url += id + '/';
+        method = 'PUT';
+      }
       var that = this;
       $.ajax({
-        type: 'POST',
-        url: '/api/drafts/',
+        type: method,
+        url: url,
         data: JSON.stringify({
           proposal: that.userrequest.proposal,
           title: that.userrequest.group_id,
@@ -539,7 +557,9 @@ var vm = new Vue({
         that.alerts.push({class: 'alert-success', msg: 'Draft id: ' + data.id + ' saved successfully.' });
         console.log('Draft saved ' + that.draftId);
       }).fail(function(data){
-        that.alerts.push({class: 'alert-danger', msg: data.responseJSON.non_field_errors[0] });
+        for(var error in data.responseJSON.non_field_errors){
+          that.alerts.push({class: 'alert-danger', msg: data.responseJSON.non_field_errors[error]});
+        }
       });
     },
     loadDraft: function(id){
@@ -548,6 +568,7 @@ var vm = new Vue({
       var that = this;
       $.getJSON('/api/drafts/' + id + '/', function(data){
         that.userrequest = JSON.parse(data.content);
+        that.validate();
       });
     }
   }
