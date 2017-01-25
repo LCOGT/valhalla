@@ -7,6 +7,11 @@
 {% block content %}
 {% verbatim %}
 <div id="vueapp">
+  <div class="row">
+    <div class="col-md-11">
+      <alert v-for="alert in alerts" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
+    </div>
+  </div>
   <div id="tabs">
     <ul class="nav nav-tabs col-md-6">
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
@@ -571,6 +576,13 @@
         <td>{{ draft.modified }}</td>
       </tr>
   </table>
+</script>
+
+<script type="text/x-template" id="alert-template">
+  <div class="alert alert-dismissiable" :class="alertclass" role="alert">
+    <slot></slot>
+    <button class="close" data-dismiss="alert"><i class="fa fa-times"></i></button>
+  </div>
 </script>
 
 {% endverbatim %}

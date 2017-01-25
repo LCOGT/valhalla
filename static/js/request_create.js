@@ -424,6 +424,11 @@ Vue.component('drafts', {
   template: '#drafts-template'
 });
 
+Vue.component('alert', {
+  props: ['alertclass'],
+  template: '#alert-template'
+});
+
 var vm = new Vue({
   el: '#vueapp',
   data:{
@@ -486,7 +491,8 @@ var vm = new Vue({
         }
       }]
     },
-    errors: {}
+    errors: {},
+    alerts: []
   },
   computed: {
     durationDisplay: function(){
@@ -528,10 +534,12 @@ var vm = new Vue({
           content: JSON.stringify(that.userrequest)
         }),
         contentType: 'application/json',
-        success: function(data){
-          that.draftId = data.id;
-          console.log('Draft saved ' + that.draftId);
-        }
+      }).done(function(data){
+        that.draftId = data.id;
+        that.alerts.push({class: 'alert-success', msg: 'Draft id: ' + data.id + ' saved successfully.' });
+        console.log('Draft saved ' + that.draftId);
+      }).fail(function(data){
+        that.alerts.push({class: 'alert-danger', msg: data.responseJSON.non_field_errors[0] });
       });
     },
     loadDraft: function(id){

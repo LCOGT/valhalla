@@ -963,6 +963,17 @@ class TestDraftUserRequestApi(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('Content must be valid JSON', response.json()['content'])
 
+    def test_user_cannot_duplicate_draft(self):
+        mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal, title='dup')
+        data = {
+            'proposal': self.proposal.id,
+            'title': 'dup',
+            'content': '{"foo": "bar"}'
+        }
+        response = self.client.post(reverse('api:drafts-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('The fields author, proposal, title must make a unique set.', str(response.content))
+
     def test_user_can_delete_draft(self):
         draft = mixer.blend(DraftUserRequest, author=self.user, proposal=self.proposal)
         response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
@@ -974,3 +985,5 @@ class TestDraftUserRequestApi(APITestCase):
         draft = mixer.blend(DraftUserRequest, author=other_user, proposal=other_proposal)
         response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
         self.assertEqual(response.status_code, 404)
+
+
