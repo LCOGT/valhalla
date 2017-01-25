@@ -58,7 +58,7 @@
     <div class="col-md-10">
       <div class="row">
         <div class="col-md-12">
-          <strong><a class="text-{{ request.state|state_to_bs }} userrequest-title" href="#"> #{{ request.id }}</a></strong>
+          <strong><a class="userrequest-title" onClick=showDetails({{request.id}})> #{{ request.id }}</a></strong>
         </div>
       </div>
       <div class="row">
@@ -177,15 +177,10 @@
         </div>
       </div>
     </div>
-  </div>
-  <div class="request-show row" id="request-show-{{ request.id }}" onClick="showDetails({{request.id}})">
     <div class="col-md-12">
-      <p class="text-center">Details
-      <i class="fa fa-arrow-down text-center"></i>
-      </p>
+      <span><center><a onClick="showDetails({{ request.id }})">Hide <i class="fa fa-arrow-up"></i></a></center></span>
     </div>
   </div>
-  <div class="spacer"></div>
 </section>
 {% endfor %}
 {% if page_obj.count > 20 %}
@@ -249,9 +244,13 @@
   $('.block-info').on('shown.bs.popover', function(e){
     var target = $(e.target);
     $.getJSON('{% url "api:requests-list" %}' + target.data('requestid') + '/blocks/?canceled=false', function(data){
-      data = data.reverse(); // get the latest non cancled block
-      content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' +
+      if(data.length > 0){
+        data = data.reverse(); // get the latest non cancled block
+        content = 'Scheduled for<br/>' + data[0].start + ' <i class="fa fa-arrow-down"></i> ' +
         data[0].end + '<br/>Site: ' + data[0].site;
+      }else{
+        content = 'No information found.';
+      }
       target.data('bs.popover').tip().find('.popover-content').html(content);
     });
   });

@@ -175,7 +175,6 @@ a:hover {
 .request-detail {
     border-left: 1px solid #EFF0EC;
     border-right: 1px solid #EFF0EC;
-    min-height: 560px;
 }
 
 .request-show {
