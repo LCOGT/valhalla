@@ -33,10 +33,12 @@ class ProposalAdmin(admin.ModelAdmin):
     list_filter = ('active', 'tag', 'public')
     raw_id_fields = ('users',)
     inlines = [TimeAllocationAdminInline]
+    search_fields = ['id', 'title']
 admin.site.register(Proposal, ProposalAdmin)
 
 
 class MembershipAdmin(admin.ModelAdmin):
     list_display = ('proposal', 'user', 'role')
     list_filter = ('role',)
+    search_fields = ['proposal__id', 'user__username', 'user__email']
 admin.site.register(Membership, MembershipAdmin)
