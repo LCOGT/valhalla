@@ -14,8 +14,10 @@
                     <td>Telescope Class</td>
                     <td>Standard</td>
                     <td>Standard Used</td>
-                    <td>Target of Opportunity</td>
-                    <td>Target of Opportunity Used</td>
+                    <td>Rapid Response</td>
+                    <td>Rapid Response Used</td>
+                    <td>IPP Limit</td>
+                    <td>IPP Time Available</td>
                     <td>Semester</td>
                 </tr>
             </thead>
@@ -24,9 +26,11 @@
                 <tr>
                     <td>{{ ta.telescope_class }}</td>
                     <td>{{ ta.std_allocation }}</td>
-                    <td>{{ ta.std_time_used }}</td>
+                    <td>{{ ta.std_time_used|floatformat}}</td>
                     <td>{{ ta.too_allocation }}</td>
-                    <td>{{ ta.too_time_used }}</td>
+                    <td>{{ ta.too_time_used|floatformat }}</td>
+                    <td>{{ ta.ipp_limit }}</td>
+                    <td>{{ ta.ipp_time_available|floatformat }}</td>
                     <td>{{ ta.semester }}</td>
                 </tr>
                 {% endfor %}
