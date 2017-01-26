@@ -127,28 +127,24 @@ class CadenceRequestView(APIView):
     ''' Takes a request within a window and with cadence parameters and returns a set of requests
         using the cadence spacing specified.
     '''
-    permission_classes = (AllowAny,)
-
     def post(self, request):
-        cadence_requests = []
-        for req in request.data['requests']:
-            cadence_request_serializer = CadenceRequestSerializer(data=req)
-            if cadence_request_serializer.is_valid():
-                cadence_requests.extend(get_cadence_requests(cadence_request_serializer.validated_data))
+        expanded_requests = []
+        for req in request.data.get('requests', []):
+            if req.get('cadence'):
+                cadence_request_serializer = CadenceRequestSerializer(data=req)
+                if cadence_request_serializer.is_valid():
+                    expanded_requests.extend(get_cadence_requests(cadence_request_serializer.validated_data))
+                else:
+                    return Response(cadence_request_serializer.errors, status=400)
             else:
-                request_serializer = RequestSerializer(data=req)
-                if request_serializer.is_valid():
-                    cadence_requests.append(request_serializer.validated_data)
-
+                expanded_requests.append(req)
 
         # now replace the originally sent requests with the cadence requests and send it back
-        cadence_ur = request.data.copy()
-        cadence_ur['requests'] = cadence_requests
-        cadence_ur_serializer = UserRequestSerializer(data=cadence_ur, context={'request': request})
-        if not cadence_ur_serializer.is_valid():
-            return Response(cadence_ur_serializer.errors)
-        return Response(cadence_ur_serializer)
+        request.data['requests'] = expanded_requests
 
-
-
-
+        if(len(request.data['requests']) > 1):
+            request.data['operator'] = 'MANY'
+        ur_serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        if not ur_serializer.is_valid():
+            return Response(ur_serializer.errors, status=400)
+        return Response(request.data)

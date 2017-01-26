@@ -466,6 +466,10 @@ class TestWindowApi(ConfigDBTestMixin, APITestCase):
         bad_data['requests'][0]['windows'] = []
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['windows']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
 
 
 class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
@@ -473,31 +477,70 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        semester = mixer.blend(
+            Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
         self.client.force_login(self.user)
 
-        mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-
-        self.cadence = {'start': '2016-09-29T21:12:18Z',
-                        'end': '2016-10-29T21:12:19Z',
-                        'period': 24.0,
-                        'jitter': 12.0}
+        self.generic_payload['requests'][0]['windows'] = []
+        self.generic_payload['requests'][0]['cadence'] = {
+            'start': '2016-09-01T21:12:18Z',
+            'end': '2016-09-03T22:12:19Z',
+            'period': 24.0,
+            'jitter': 12.0
+        }
 
     def test_post_userrequest_cadence_and_windows_is_invalid(self):
         bad_data = self.generic_payload.copy()
-        bad_data['requests'][0]['cadence'] = self.cadence.copy()
+        bad_data['windows'] = [{'start': '2016-09-29T21:12:18Z', 'end': '2016-10-29T21:12:19Z'}]
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.json()['requests'][0]['cadence'])
+
+    def test_post_userrequest_cadence_is_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['windows'] = []
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        del bad_data['windows']
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
-    def test_post_userrequest_cadence_valid(self):
-        good_data = self.generic_payload.copy()
-        good_data['requests'][0]['windows'] = []
-        good_data['requests'][0]['cadence'] = self.cadence.copy()
+    def test_post_cadence_valid(self):
+        response = self.client.post(reverse('api:expand_cadence_requests'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['requests']), 2)
 
-        response = self.client.post(reverse('api:expand_cadence_requests'), data=good_data)
-        print(response.json())
-        print(response.status_code)
+    def test_cadence_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence']['jitter'] = 'bug'
+        response = self.client.post(reverse('api:expand_cadence_requests'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['cadence']['jitter'], ['A valid number is required.'])
+
+    def test_cadence_invalid_period(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence']['period'] = -666
+        response = self.client.post(reverse('api:expand_cadence_requests'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['cadence']['period'], ['Ensure this value is greater than or equal to 0.02.'])
+
+    def test_post_userrequest_after_valid_cadence(self):
+        response = self.client.post(reverse('api:expand_cadence_requests'), data=self.generic_payload)
+        second_response = self.client.post(reverse('api:user_requests-list'), data=response.json())
+        self.assertEqual(second_response.status_code, 201)
+        self.assertGreater(self.user.userrequest_set.all().count(), 0)
 
 
 class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
