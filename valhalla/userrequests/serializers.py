@@ -15,7 +15,26 @@ from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSidere
 from valhalla.common.configdb import ConfigDB
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
                                                   get_time_allocation_key)
-from valhalla.common.rise_set_utils import get_rise_set_intervals
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
+
+
+class CadenceSerializer(serializers.Serializer):
+    start = serializers.DateTimeField()
+    end = serializers.DateTimeField()
+    period = serializers.FloatField()
+    jitter = serializers.FloatField()
+
+    def validate_end(self, value):
+        if value < timezone.now():
+            error_dict = {'end': [_('Cadence end time must be in the future')]}
+            raise serializers.ValidationError(error_dict)
+        return value
+
+    def validate(self, data):
+        if data['start'] >= data['end']:
+            msg = _("Cadence end '{}' cannot be earlier than cadence start '{}'.").format(data['start'], data['end'])
+            raise serializers.ValidationError(msg)
+        return data
 
 
 class ConstraintsSerializer(serializers.ModelSerializer):
@@ -195,6 +214,12 @@ class RequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))
         return value
 
+    def validate_windows(self, value):
+        if not value:
+            raise serializers.ValidationError(_('You must specify at least 1 window'))
+
+        return value
+
     def validate(self, data):
         # Target special validation
         if data['molecules'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
@@ -217,18 +242,27 @@ class RequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(msg)
 
         # check that the requests window has enough rise_set visible time to accomodate the requests duration
-        duration = get_request_duration(data)
-        rise_set_intervals = get_rise_set_intervals(data)
-        largest_interval = timedelta(seconds=0)
-        for interval in rise_set_intervals:
-            largest_interval = max((interval[1] - interval[0]), largest_interval)
-        if largest_interval.total_seconds() <= duration:
-            raise serializers.ValidationError(
-                _("The request duration {} did not fit into any visible intervals. "
-                  "The largest visible interval within your window was {}").format(
-                    duration / 3600.0, largest_interval.total_seconds() / 3600.0))
+        if len(data['window_set']) > 0:
+            duration = get_request_duration(data)
+            rise_set_intervals = get_rise_set_intervals(data)
+            largest_interval = get_largest_interval(rise_set_intervals)
+            if largest_interval.total_seconds() <= duration:
+                raise serializers.ValidationError(
+                    _("The request duration {} did not fit into any visible intervals. "
+                      "The largest visible interval within your window was {}").format(
+                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
 
         return data
+
+
+class CadenceRequestSerializer(RequestSerializer):
+    cadence = CadenceSerializer()
+
+    def validate_windows(self, value):
+        if value:
+            raise serializers.ValidationError(_('Cadence requests may not contain windows'))
+
+        return value
 
 
 class UserRequestSerializer(serializers.ModelSerializer):

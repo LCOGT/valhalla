@@ -16,7 +16,8 @@ from valhalla.common.telescope_states import (get_telescope_states, get_telescop
 
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.filters import UserRequestFilter
-
+from valhalla.userrequests.cadence import get_cadence_requests
+from valhalla.userrequests.serializers import CadenceRequestSerializer, UserRequestSerializer, RequestSerializer
 
 def get_start_end_paramters(request):
     try:
@@ -120,3 +121,34 @@ class RequestListView(LoginRequiredMixin, FilterView):
 
 class RequestCreateView(LoginRequiredMixin, TemplateView):
     template_name = 'userrequests/request_create.html'
+
+
+class CadenceRequestView(APIView):
+    ''' Takes a request within a window and with cadence parameters and returns a set of requests
+        using the cadence spacing specified.
+    '''
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        cadence_requests = []
+        for req in request.data['requests']:
+            cadence_request_serializer = CadenceRequestSerializer(data=req)
+            if cadence_request_serializer.is_valid():
+                cadence_requests.extend(get_cadence_requests(cadence_request_serializer.validated_data))
+            else:
+                request_serializer = RequestSerializer(data=req)
+                if request_serializer.is_valid():
+                    cadence_requests.append(request_serializer.validated_data)
+
+
+        # now replace the originally sent requests with the cadence requests and send it back
+        cadence_ur = request.data.copy()
+        cadence_ur['requests'] = cadence_requests
+        cadence_ur_serializer = UserRequestSerializer(data=cadence_ur, context={'request': request})
+        if not cadence_ur_serializer.is_valid():
+            return Response(cadence_ur_serializer.errors)
+        return Response(cadence_ur_serializer)
+
+
+
+

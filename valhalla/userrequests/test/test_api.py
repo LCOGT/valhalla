@@ -461,6 +461,44 @@ class TestWindowApi(ConfigDBTestMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_userrequest_no_windows_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'] = []
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+
+class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
+
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
+
+        self.cadence = {'start': '2016-09-29T21:12:18Z',
+                        'end': '2016-10-29T21:12:19Z',
+                        'period': 24.0,
+                        'jitter': 12.0}
+
+    def test_post_userrequest_cadence_and_windows_is_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence'] = self.cadence.copy()
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_userrequest_cadence_valid(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['windows'] = []
+        good_data['requests'][0]['cadence'] = self.cadence.copy()
+
+        response = self.client.post(reverse('api:expand_cadence_requests'), data=good_data)
+        print(response.json())
+        print(response.status_code)
+
 
 class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
