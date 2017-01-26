@@ -286,7 +286,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertEqual(time_allocation.ipp_time_available, 5.0)
         # also verify that the child request state has changed to window_expired as well
-        self.assertEqual(user_request.request_set.first().state, 'CANCELED')
+        self.assertEqual(user_request.requests.first().state, 'CANCELED')
 
     def test_user_request_credit_ipp_on_expiration(self):
         user_request = self._build_user_request(self.generic_payload.copy())
@@ -299,7 +299,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertEqual(time_allocation.ipp_time_available, 5.0)
         # also verify that the child request state has changed to window_expired as well
-        self.assertEqual(user_request.request_set.first().state, 'WINDOW_EXPIRED')
+        self.assertEqual(user_request.requests.first().state, 'WINDOW_EXPIRED')
 
     def test_user_request_debit_ipp_on_creation_fail(self):
         self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
@@ -324,7 +324,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
         self.assertLess(time_allocation_2m0.ipp_time_available, 5.0)
         # now set one request to completed, then set the user request to unschedulable
-        request = user_request.request_set.first()
+        request = user_request.requests.first()
         request.state = 'COMPLETED'
         request.save()
         user_request.state = 'WINDOW_EXPIRED'
@@ -377,7 +377,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         debitted_ipp_value = time_allocation.ipp_time_available
         self.assertLess(debitted_ipp_value, 5.0)
         # now change requests state to expired
-        request = user_request.request_set.first()
+        request = user_request.requests.first()
         request.state = 'WINDOW_EXPIRED'
         request.save()
         # verify that now that the TimeAllocation has its original ipp value
@@ -397,7 +397,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         debitted_ipp_value = time_allocation.ipp_time_available
         self.assertLess(debitted_ipp_value, 5.0)
         # now change requests state to expired
-        request = user_request.request_set.first()
+        request = user_request.requests.first()
         request.state = 'WINDOW_EXPIRED'
         request.save()
         # verify that now that the TimeAllocation has its original ipp value
@@ -421,7 +421,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertLess(time_allocation.ipp_time_available, 5.0)
         # now change requests state to canceled
-        request = user_request.request_set.first()
+        request = user_request.requests.first()
         request.state = 'CANCELED'
         request.save()
         # verify that now that the TimeAllocation has its original ipp value
@@ -436,7 +436,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
         self.assertEqual(time_allocation.ipp_time_available, 5.0)
         # now change requests state to canceled
-        request = user_request.request_set.first()
+        request = user_request.requests.first()
         request.state = 'COMPLETED'
         request.save()
         # verify that now that the TimeAllocation has its original ipp value

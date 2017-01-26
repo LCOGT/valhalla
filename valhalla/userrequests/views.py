@@ -110,7 +110,7 @@ class RequestListView(LoginRequiredMixin, FilterView):
             pk=self.kwargs['ur'],
             proposal__in=self.request.user.proposal_set.all()
         )
-        return user_request.request_set.all()
+        return user_request.requests.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

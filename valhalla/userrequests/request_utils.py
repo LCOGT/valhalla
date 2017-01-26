@@ -9,7 +9,7 @@ from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_int
 
 
 def get_telescope_states_for_request(request):
-    instrument_type = request.molecule_set.first().instrument_name
+    instrument_type = request.molecules.first().instrument_name
     rs_target = get_rise_set_target(model_to_dict(request.target))
     constraints = request.constraints
     configdb = ConfigDB()
@@ -26,7 +26,7 @@ def get_telescope_states_for_request(request):
             site_intervals[site] = get_rise_set_interval_for_target_and_site(
               rise_set_target=rs_target,
               site_detail=details,
-              windows=[model_to_dict(w) for w in request.window_set.all()],
+              windows=[model_to_dict(w) for w in request.windows.all()],
               airmass=constraints.max_airmass,
               moon_distance=constraints.min_lunar_distance)
     # If you have no sites, return the empty dict here
@@ -59,7 +59,7 @@ def date_range_from_interval(start_time, end_time, dt=timedelta(minutes=15)):
 
 
 def get_airmasses_for_request_at_sites(request):
-    instrument_type = request.molecule_set.first().instrument_name
+    instrument_type = request.molecules.first().instrument_name
     constraints = request.constraints
 
     configdb = ConfigDB()
@@ -82,7 +82,7 @@ def get_airmasses_for_request_at_sites(request):
             intervals = get_rise_set_interval_for_target_and_site(
               rise_set_target=rs_target,
               site_detail=site_details,
-              windows=[model_to_dict(w) for w in request.window_set.all()],
+              windows=[model_to_dict(w) for w in request.windows.all()],
               airmass=constraints.max_airmass,
               moon_distance=constraints.min_lunar_distance
             )

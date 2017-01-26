@@ -110,7 +110,7 @@
               <tr><td>{% trans 'Start' %}</td><td>{% trans 'End' %}</td></tr>
             </thead>
             <tbody>
-              {% for window in request.window_set.all %}
+              {% for window in request.windows.all %}
               <tr><td>{{ window.start }}</td><td>{{ window.end }}</td></tr>
               {% endfor %}
             </tbody>
@@ -123,7 +123,7 @@
               <tr><td>Inst.</td><td>Filter</td><td>Exposures</td></tr>
             </thead>
             <tbody>
-              {% for molecule in request.molecule_set.all %}
+              {% for molecule in request.molecules.all %}
               <tr>
                 <td>{{ molecule.instrument_name }}</td>
                 <td>{{ molecule.filter }}</td>

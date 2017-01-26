@@ -15,7 +15,7 @@ def get_rise_set_intervals(request_dict):
     airmass = request_dict['constraints']['max_airmass']
     moon_distance = request_dict['constraints']['min_lunar_distance']
     location = request_dict['location']
-    instrument_type = request_dict['molecule_set'][0]['instrument_name']
+    instrument_type = request_dict['molecules'][0]['instrument_name']
 
     configdb = ConfigDB()
     site_details = configdb.get_sites_with_instrument_type_and_location(
@@ -24,7 +24,7 @@ def get_rise_set_intervals(request_dict):
     intervals = []
     for site_detail in site_details.values():
         intervals.extend(get_rise_set_interval_for_target_and_site(
-            target, site_detail, request_dict['window_set'], airmass, moon_distance)
+            target, site_detail, request_dict['windows'], airmass, moon_distance)
         )
 
     intervals = coalesce_adjacent_intervals(intervals)

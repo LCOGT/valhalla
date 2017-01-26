@@ -65,7 +65,7 @@ def on_userrequest_state_change(old_userrequest, new_userrequest):
             requests_to_credit = new_userrequest.requests_set.filter(state__in=['PENDING', 'SCHEDULED'])
             modify_ipp_time_from_requests(new_userrequest.ipp_value, requests_to_credit, 'credit')
     elif new_userrequest.state in TERMINAL_STATES:
-        for r in new_userrequest.request_set.filter(state__in=['PENDING', 'SCHEDULED']):
+        for r in new_userrequest.requests.filter(state__in=['PENDING', 'SCHEDULED']):
             r.state = new_userrequest.state
             r.save()
 

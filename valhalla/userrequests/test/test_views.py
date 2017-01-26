@@ -31,7 +31,7 @@ class UserRequestList(TestCase):
         response = self.client.get(reverse('index'))
         for ur in self.userrequests:
             self.assertContains(response, ur.group_id)
-            for request in ur.request_set.all():
+            for request in ur.requests.all():
                 self.assertContains(response, request.id)
 
     def test_userrequest_no_auth(self):
@@ -49,7 +49,7 @@ class UserRequestList(TestCase):
         response = self.client.get(
             reverse('index') + '?title={}'.format(self.userrequests[0].group_id)
         )
-        self.assertContains(response, self.userrequests[0].request_set.all()[0].id)
+        self.assertContains(response, self.userrequests[0].requests.all()[0].id)
         self.assertNotContains(response, self.userrequests[1].group_id)
         self.assertNotContains(response, self.userrequests[2].group_id)
 

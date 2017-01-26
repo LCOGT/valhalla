@@ -34,7 +34,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     def validate(self, request):
         serializer = UserRequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            duration = sum([get_request_duration(req) for req in serializer.validated_data['request_set']])
+            duration = sum([get_request_duration(req) for req in serializer.validated_data['requests']])
             errors = []
         else:
             errors = serializer.errors

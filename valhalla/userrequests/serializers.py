@@ -176,8 +176,8 @@ class RequestSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     constraints = ConstraintsSerializer()
     target = TargetSerializer()
-    molecules = MoleculeSerializer(many=True, source='molecule_set')
-    windows = WindowSerializer(many=True, source='window_set')
+    molecules = MoleculeSerializer(many=True)
+    windows = WindowSerializer(many=True)
 
     class Meta:
         model = Request
@@ -197,7 +197,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Target special validation
-        if data['molecule_set'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
+        if data['molecules'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
             if 'acquire_mode' not in data['target']:
                 # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
                 data['target']['acquire_mode'] = 'ON'
@@ -206,7 +206,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
         # check if the instrument specified is allowed
         valid_instruments = configdb.get_active_instrument_types(data['location'])
-        for molecule in data['molecule_set']:
+        for molecule in data['molecules']:
             if molecule['instrument_name'] not in valid_instruments:
                 msg = _("Invalid instrument name '{}' at site={}, obs={}, tel={}. \n").format(
                     molecule['instrument_name'], data['location'].get('site', 'Any'),
@@ -232,7 +232,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
-    requests = RequestSerializer(many=True, source='request_set', required=True)
+    requests = RequestSerializer(many=True)
     submitter = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -244,15 +244,15 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        request_data = validated_data.pop('request_set')
+        request_data = validated_data.pop('requests')
 
         user_request = UserRequest.objects.create(**validated_data)
 
         for r in request_data:
             target_data = r.pop('target')
             constraints_data = r.pop('constraints')
-            window_data = r.pop('window_set')
-            molecule_data = r.pop('molecule_set')
+            window_data = r.pop('windows')
+            molecule_data = r.pop('molecules')
             location_data = r.pop('location')
 
             request = Request.objects.create(user_request=user_request, **r)
@@ -278,20 +278,20 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         # validation on the operator matching the number of requests
         if data['operator'] == 'SINGLE':
-            if len(data['request_set']) > 1:
+            if len(data['requests']) > 1:
                 raise serializers.ValidationError(
                     _("'Single' type user requests must have exactly one child request.")
                 )
-        elif len(data['request_set']) == 1:
+        elif len(data['requests']) == 1:
             raise serializers.ValidationError(
                 _("'{}' type user requests must have more than one child request.".format(data['operator'].title()))
             )
 
         try:
             request_durations = []
-            for request in data['request_set']:
-                min_window_time = min([window['start'] for window in request['window_set']])
-                max_window_time = max([window['end'] for window in request['window_set']])
+            for request in data['requests']:
+                min_window_time = min([window['start'] for window in request['windows']])
+                max_window_time = max([window['end'] for window in request['windows']])
                 tak = get_time_allocation_key(request['location']['telescope_class'],
                                               data['proposal'],
                                               min_window_time,

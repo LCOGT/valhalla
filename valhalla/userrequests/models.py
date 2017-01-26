@@ -59,18 +59,16 @@ class UserRequest(models.Model):
 
     @property
     def as_dict(self):
-        from valhalla.userrequests.serializers import UserRequestSerializer
-        r_dict = UserRequestSerializer(self).data
-        r_dict['request_set'] = r_dict['requests']
-        return r_dict
+        serializers = import_module('valhalla.userrequests.serializers')
+        return serializers.UserRequestSerializer(self).data
 
     @property
     def min_window_time(self):
-        return min([request.min_window_time for request in self.request_set.all()])
+        return min([request.min_window_time for request in self.requests.all()])
 
     @property
     def max_window_time(self):
-        return max([request.max_window_time for request in self.request_set.all()])
+        return max([request.max_window_time for request in self.requests.all()])
 
     @property
     def timeallocations(self):
@@ -83,7 +81,7 @@ class UserRequest(models.Model):
     def total_duration(self):
         return get_total_duration_dict(
             self.operator,
-            [(r.time_allocation_key, r.duration) for r in self.request_set.all()]
+            [(r.time_allocation_key, r.duration) for r in self.requests.all()]
         )
 
 
@@ -96,7 +94,7 @@ class Request(models.Model):
         ('CANCELED', 'CANCELED'),
     )
 
-    user_request = models.ForeignKey(UserRequest)
+    user_request = models.ForeignKey(UserRequest, related_name='requests')
     observation_note = models.CharField(max_length=255, default='', blank=True)
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
     modified = models.DateTimeField(auto_now=True, db_index=True)
@@ -119,10 +117,7 @@ class Request(models.Model):
     @property
     def as_dict(self):
         serializers = import_module('valhalla.userrequests.serializers')
-        r_dict = serializers.RequestSerializer(self).data
-        r_dict['window_set'] = r_dict['windows']
-        r_dict['molecule_set'] = r_dict['molecules']
-        return r_dict
+        return serializers.RequestSerializer(self).data
 
     @cached_property
     def duration(self):
@@ -130,11 +125,11 @@ class Request(models.Model):
 
     @property
     def min_window_time(self):
-        return min([window.start for window in self.window_set.all()])
+        return min([window.start for window in self.windows.all()])
 
     @property
     def max_window_time(self):
-        return max([window.end for window in self.window_set.all()])
+        return max([window.end for window in self.windows.all()])
 
     @property
     def time_allocation_key(self):
@@ -281,7 +276,7 @@ class Target(models.Model):
 
 
 class Window(models.Model):
-    request = models.ForeignKey(Request)
+    request = models.ForeignKey(Request, related_name='windows')
     start = models.DateTimeField()
     end = models.DateTimeField()
 
@@ -314,7 +309,7 @@ class Molecule(models.Model):
         ('BRIGHTEST', 'BRIGHTEST'),
     )
 
-    request = models.ForeignKey(Request)
+    request = models.ForeignKey(Request, related_name='molecules')
 
     # The type of molecule being requested.
     # Valid types are: DARK, BIAS, EXPOSE, SKY_FLAT, HARTMANN, STANDARD,
