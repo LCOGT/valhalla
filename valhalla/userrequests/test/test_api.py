@@ -518,26 +518,26 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_post_cadence_valid(self):
-        response = self.client.post(reverse('api:expand_cadence_requests'), data=self.generic_payload)
+        response = self.client.post(reverse('api:user_requests-cadence'), data=self.generic_payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()['requests']), 2)
 
     def test_cadence_invalid(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['cadence']['jitter'] = 'bug'
-        response = self.client.post(reverse('api:expand_cadence_requests'), data=bad_data)
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['cadence']['jitter'], ['A valid number is required.'])
 
     def test_cadence_invalid_period(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['cadence']['period'] = -666
-        response = self.client.post(reverse('api:expand_cadence_requests'), data=bad_data)
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['cadence']['period'], ['Ensure this value is greater than or equal to 0.02.'])
 
     def test_post_userrequest_after_valid_cadence(self):
-        response = self.client.post(reverse('api:expand_cadence_requests'), data=self.generic_payload)
+        response = self.client.post(reverse('api:user_requests-cadence'), data=self.generic_payload)
         second_response = self.client.post(reverse('api:user_requests-list'), data=response.json())
         self.assertEqual(second_response.status_code, 201)
         self.assertGreater(self.user.userrequest_set.all().count(), 0)
