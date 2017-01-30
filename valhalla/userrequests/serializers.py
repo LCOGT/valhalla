@@ -14,7 +14,7 @@ from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationEr
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import ConfigDB
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
-                                                  get_time_allocation_key)
+                                                  get_time_allocation_key, get_molecule_duration, get_num_exposures)
 from valhalla.common.rise_set_utils import get_rise_set_intervals
 
 
@@ -25,6 +25,8 @@ class ConstraintsSerializer(serializers.ModelSerializer):
 
 
 class MoleculeSerializer(serializers.ModelSerializer):
+    fill_window = serializers.BooleanField(required=False)
+
     class Meta:
         model = Molecule
         exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
@@ -193,6 +195,10 @@ class RequestSerializer(serializers.ModelSerializer):
         # Make sure each molecule has the same instrument name
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))
+
+        if sum(['fill_window' in mol for mol in value]) > 1:
+            raise serializers.ValidationError(_('Only one molecule can have `fill_window` set'))
+
         return value
 
     def validate(self, data):
@@ -222,6 +228,15 @@ class RequestSerializer(serializers.ModelSerializer):
         largest_interval = timedelta(seconds=0)
         for interval in rise_set_intervals:
             largest_interval = max((interval[1] - interval[0]), largest_interval)
+
+        for molecule in data['molecules']:
+            if 'fill_window' in molecule:
+                molecule_duration = get_molecule_duration(molecule_dict=molecule)
+                num_exposures = get_num_exposures(molecule, largest_interval - timedelta(seconds=duration - molecule_duration))
+                molecule['exposure_count'] = num_exposures
+                del molecule['fill_window']
+                duration = get_request_duration(data)
+
         if largest_interval.total_seconds() <= duration:
             raise serializers.ValidationError(
                 _("The request duration {} did not fit into any visible intervals. "

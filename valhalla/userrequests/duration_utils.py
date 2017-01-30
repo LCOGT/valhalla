@@ -26,6 +26,16 @@ def get_molecule_duration(molecule_dict):
     return duration
 
 
+def get_num_exposures(molecule_dict, time_available):
+    configdb = ConfigDB()
+    total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
+    mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
+    exposure_time = time_available.total_seconds() - PER_MOLECULE_GAP - PER_MOLECULE_STARTUP_TIME
+    num_exposures = exposure_time // mol_duration_per_exp
+
+    return max(1, num_exposures)
+
+
 def get_request_duration(request_dict):
     # calculate the total time needed by the request, based on its instrument and exposures
     configdb = ConfigDB()
