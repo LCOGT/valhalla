@@ -192,10 +192,11 @@
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
-            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show"
+            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:togglecadence="toggleCadence" v-show="!showCadence"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
+          <cadence v-show="showCadence" v-on:togglecadence="toggleCadence"></cadence>
           <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
           </constraints>
         </div>
@@ -447,6 +448,13 @@
           <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
+              <div class="cadence-info" v-show="index < 1">
+                <dl>
+                  <dt>Observe at a Cadence</dt>
+                  <dd>You may choose to repeat this observation request at a regular schedule, or cadence.</dd>
+                </dl>
+                <p><strong>Or:</strong></p>
+              </div>
               <dl>
                 <dt>Start</dt>
                 <dd>The lower limit of the time window.</dd>
@@ -455,6 +463,7 @@
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
+              <button class="btn btn-info col-md-offset-4 col-md-8 cadence-button" v-show="index < 1 && show" v-on:click="$emit('togglecadence', true)">Create a Cadence</button>
               <form class="form-horizontal" >
                 <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
@@ -507,6 +516,60 @@
                               :errors="errors.max_airmass">
                 </custom-field>
                 <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
+                              :errors="errors.min_lunar_distance">
+                </custom-field>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="cadence-template">
+  <div class="row cadence" :id="'cadence' + $parent.index">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading panel-heading-compact">
+          <div class="row">
+            <div class="col-xs-4">
+              <i class="fa fa-calendar fa-2x fa-fw"></i>
+              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
+            </div>
+            <div class="panel-title col-xs-4">
+              Cadence
+            </div>
+            <div class="panel-actions col-xs-4">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="panel-body panel-body-compact">
+          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+          <div class="row">
+            <div class="col-md-6 compose-help" v-show="show">
+              <p>You are supplying a cadence for this request. To switch to a single observation using a window, choose "Use Windows"</p>
+              <dl>
+                <dt>Start</dt>
+                <dd>TODO</dd>
+                <dt>End</dt>
+                <dd>TODO</dd>
+                <dt>Period</dt>
+                <dd>TODO</dd>
+                <td>Jitter</td>
+                <dd>Todo</dd>
+              </dl>
+            </div>
+            <div :class="show ? 'col-md-6' : 'col-md-12'">
+              <button class="btn btn-info col-md-offset-4 col-md-8 cadence-button" v-on:click="$emit('togglecadence', false)" v-show="show">Use Windows</button>
+              <form class="form-horizontal">
+                <custom-field v-model="period" label="Period" field="period" v-on:input="update"
+                              :errors="errors.max_airmass">
+                </custom-field>
+                <custom-field v-model="jitter" label="Jitter" field="jitter" v-on:input="update"
                               :errors="errors.min_lunar_distance">
                 </custom-field>
               </form>

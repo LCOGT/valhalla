@@ -234,6 +234,10 @@ a:hover {
     height: 40px;
 }
 
+.cadence-button {
+    margin-bottom: 50px;
+}
+
 /* sidebar */
 .bs-docs-sidebar {
     margin-top: 20px;

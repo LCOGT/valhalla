@@ -83,6 +83,7 @@ Vue.component('request', {
   data: function(){
     var initial = _.cloneDeep(this.irequest);
     initial.show = true;
+    initial.showCadence = false;
     return initial;
   },
   computed: {
@@ -175,6 +176,10 @@ Vue.component('request', {
     removeMolecule: function(idx){
       this.molecules.splice(idx, 1);
       this.update();
+    },
+    toggleCadence: function(value){
+      console.log('composing cadence');
+      this.showCadence = value;
     }
   },
   template: '#request-template'
@@ -358,6 +363,25 @@ Vue.component('constraints', {
     }
   },
   template: '#constraints-template'
+});
+
+Vue.component('cadence', {
+  data: function(){
+    return {
+      show: true,
+      jitter: 2,
+      period: 24,
+      start: moment.now(),
+      end: moment.now(),
+      errors: [],
+    }
+  },
+  methods: {
+    update: function(){
+      console.log(this.$data);
+    }
+  },
+  template: '#cadence-template'
 });
 
 Vue.component('custom-field', {
