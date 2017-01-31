@@ -517,6 +517,15 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_cadence_end_before_start_invalid(self):
+        bad_data = self.generic_payload.copy()
+        end = bad_data['requests'][0]['cadence']['end']
+        bad_data['requests'][0]['cadence']['end'] = bad_data['requests'][0]['cadence']['start']
+        bad_data['requests'][0]['cadence']['start'] = end
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('cannot be earlier than cadence start', str(response.content))
+
     def test_post_cadence_valid(self):
         response = self.client.post(reverse('api:user_requests-cadence'), data=self.generic_payload)
         self.assertEqual(response.status_code, 200)

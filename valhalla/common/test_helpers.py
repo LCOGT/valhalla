@@ -34,6 +34,8 @@ class SetTimeMixin(object):
         self.time_patcher = patch('valhalla.userrequests.serializers.timezone.now')
         self.mock_now = self.time_patcher.start()
         self.mock_now.return_value = datetime(2016, 9, 1, tzinfo=timezone.utc)
+        super().setUp()
 
     def tearDown(self):
+        super().tearDown()
         self.time_patcher.stop()
