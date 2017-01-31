@@ -845,6 +845,27 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
         self.assertEqual(response.status_code, 201)
 
+    def test_fill_window_two_molecules_one_false_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        good_data['requests'][0]['molecules'][1]['fill_window'] = False
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_one_blank_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
     def test_fill_window_two_molecules_first_fills_the_window(self):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
