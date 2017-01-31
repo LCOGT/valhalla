@@ -879,9 +879,9 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_fill_window_not_enough_time_fails(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['windows'][0] = {
-                                                    'start': '2016-09-29T21:12:18Z',
-                                                    'end': '2016-09-29T21:21:19Z'
-                                                 }
+            'start': '2016-09-29T21:12:18Z',
+            'end': '2016-09-29T21:21:19Z'
+        }
         bad_data['requests'][0]['molecules'][0]['fill_window'] = True
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('did not fit into any visible intervals', str(response.content))
@@ -890,9 +890,9 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_fill_window_confined_window_fills_the_window(self):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['windows'][0] = {
-                                                    'start': '2016-09-29T23:12:18Z',
-                                                    'end': '2016-09-29T23:21:19Z'
-                                                 }
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
         good_data['requests'][0]['molecules'][0]['fill_window'] = True
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         ur = response.json()
@@ -902,9 +902,9 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_fill_window_confined_window_2_fills_the_window(self):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['windows'][0] = {
-                                                    'start': '2016-09-29T23:12:18Z',
-                                                    'end': '2016-09-29T23:21:19Z'
-                                                 }
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
         good_data['requests'][0]['molecules'][0]['exposure_time'] = 50
         good_data['requests'][0]['molecules'][0]['fill_window'] = True
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
