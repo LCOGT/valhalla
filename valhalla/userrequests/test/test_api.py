@@ -1012,3 +1012,41 @@ class TestDraftUserRequestApi(APITestCase):
         draft = mixer.blend(DraftUserRequest, author=other_user, proposal=other_proposal)
         response = self.client.delete(reverse('api:drafts-detail', args=(draft.id,)))
         self.assertEqual(response.status_code, 404)
+
+
+class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.request = {
+            'target': {
+                'name': 'fake target',
+                'type': 'SIDEREAL',
+                'dec': 20,
+                'ra': 34.4,
+            },
+            'molecules': [{
+                'type': 'EXPOSE',
+                'instrument_name': '1M0-SCICAM-SBIG',
+                'filter': 'air',
+                'exposure_time': 100,
+                'exposure_count': 1,
+                'bin_x': 1,
+                'bin_y': 1,
+            }],
+            'windows': [{
+                'start': '2016-09-29T21:12:18Z',
+                'end': '2016-10-29T21:12:19Z'
+            }],
+            'location': {
+                'telescope_class': '1m0',
+            },
+            'constraints': {
+                'max_airmass': 2.0,
+                'min_lunar_distance': 30.0,
+            }
+        }
+
+    def test_airmass(self):
+        response = self.client.post(reverse('api:airmass'), data=self.request)
+        self.assertIn('tst', response.json()['airmass_data'])
+        self.assertTrue(response.json()['airmass_data']['tst']['times'])

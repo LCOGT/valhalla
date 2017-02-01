@@ -7,8 +7,7 @@ from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer, DraftUserRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration
-from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
-                                                 get_telescope_states_for_request)
+from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites, get_telescope_states_for_request)
 
 
 class UserRequestViewSet(viewsets.ModelViewSet):
@@ -64,7 +63,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
 
     @detail_route()
     def airmass(self, request, pk=None):
-        return Response(get_airmasses_for_request_at_sites(self.get_object()))
+        return Response(get_airmasses_for_request_at_sites(self.get_object().as_dict))
 
     @detail_route()
     def telescope_states(self, request, pk=None):

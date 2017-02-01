@@ -286,8 +286,9 @@ class Target(models.Model):
     def as_dict(self):
         return model_to_dict(self)
 
+    @property
     def rise_set_target(self):
-        return get_rise_set_target(self)
+        return get_rise_set_target(self.as_dict)
 
 
 class Window(models.Model):
