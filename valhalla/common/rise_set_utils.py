@@ -1,4 +1,5 @@
 from math import cos, radians
+from datetime import timedelta
 from rise_set.astrometry import make_ra_dec_target, make_satellite_target, make_minor_planet_target, make_comet_target
 from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
@@ -30,6 +31,14 @@ def get_rise_set_intervals(request_dict):
     intervals = coalesce_adjacent_intervals(intervals)
 
     return intervals
+
+
+def get_largest_interval(intervals):
+    largest_interval = timedelta(seconds=0)
+    for interval in intervals:
+        largest_interval = max((interval[1] - interval[0]), largest_interval)
+
+    return largest_interval
 
 
 def get_rise_set_interval_for_target_and_site(rise_set_target, site_detail, windows, airmass, moon_distance):

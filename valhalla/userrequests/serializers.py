@@ -3,7 +3,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.utils import timezone
-from datetime import timedelta
+from django.core.validators import MinValueValidator
 from json import JSONDecodeError
 import json
 
@@ -15,7 +15,25 @@ from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSidere
 from valhalla.common.configdb import ConfigDB
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
                                                   get_time_allocation_key)
-from valhalla.common.rise_set_utils import get_rise_set_intervals
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
+
+
+class CadenceSerializer(serializers.Serializer):
+    start = serializers.DateTimeField()
+    end = serializers.DateTimeField()
+    period = serializers.FloatField(validators=[MinValueValidator(0.02)])
+    jitter = serializers.FloatField(validators=[MinValueValidator(0.02)])
+
+    def validate_end(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError('End time must be in the future')
+        return value
+
+    def validate(self, data):
+        if data['start'] >= data['end']:
+            msg = _("Cadence end '{}' cannot be earlier than cadence start '{}'.").format(data['start'], data['end'])
+            raise serializers.ValidationError(msg)
+        return data
 
 
 class ConstraintsSerializer(serializers.ModelSerializer):
@@ -138,10 +156,8 @@ class WindowSerializer(serializers.ModelSerializer):
         return data
 
     def validate_end(self, value):
-        # if end time is earlier than current time, through windows in future error
         if value < timezone.now():
-            error_dict = {'end': [_('Window end time must be in the future')]}
-            raise serializers.ValidationError(error_dict)
+            raise serializers.ValidationError('Window end time must be in the future')
         return value
 
 
@@ -178,6 +194,7 @@ class RequestSerializer(serializers.ModelSerializer):
     target = TargetSerializer()
     molecules = MoleculeSerializer(many=True)
     windows = WindowSerializer(many=True)
+    cadence = CadenceSerializer(required=False)
 
     class Meta:
         model = Request
@@ -193,6 +210,17 @@ class RequestSerializer(serializers.ModelSerializer):
         # Make sure each molecule has the same instrument name
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))
+        return value
+
+    def validate_windows(self, value):
+        if not value:
+            raise serializers.ValidationError(_('You must specify at least 1 window'))
+
+        return value
+
+    def validate_cadence(self, value):
+        if value:
+            raise serializers.ValidationError(_('Please use the cadence endpoint to expand your cadence request'))
         return value
 
     def validate(self, data):
@@ -217,18 +245,30 @@ class RequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(msg)
 
         # check that the requests window has enough rise_set visible time to accomodate the requests duration
-        duration = get_request_duration(data)
-        rise_set_intervals = get_rise_set_intervals(data)
-        largest_interval = timedelta(seconds=0)
-        for interval in rise_set_intervals:
-            largest_interval = max((interval[1] - interval[0]), largest_interval)
-        if largest_interval.total_seconds() <= duration:
-            raise serializers.ValidationError(
-                _("The request duration {} did not fit into any visible intervals. "
-                  "The largest visible interval within your window was {}").format(
-                    duration / 3600.0, largest_interval.total_seconds() / 3600.0))
+        if data['windows']:
+            duration = get_request_duration(data)
+            rise_set_intervals = get_rise_set_intervals(data)
+            largest_interval = get_largest_interval(rise_set_intervals)
+            if largest_interval.total_seconds() <= duration:
+                raise serializers.ValidationError(
+                    _("The request duration {} did not fit into any visible intervals. "
+                      "The largest visible interval within your window was {}").format(
+                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
 
         return data
+
+
+class CadenceRequestSerializer(RequestSerializer):
+    cadence = CadenceSerializer()
+
+    def validate_cadence(self, value):
+        return value
+
+    def validate_windows(self, value):
+        if value:
+            raise serializers.ValidationError(_('Cadence requests may not contain windows'))
+
+        return value
 
 
 class UserRequestSerializer(serializers.ModelSerializer):
@@ -301,6 +341,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 request_durations.append((tak, duration))
 
             total_duration_dict = get_total_duration_dict(data['operator'], request_durations)
+            # TODO Add 10% rule
             # check the proposal has a time allocation with enough time for all requests depending on operator
             for tak, duration in total_duration_dict.items():
                 time_allocation = TimeAllocation.objects.get(
