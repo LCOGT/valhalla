@@ -4,7 +4,14 @@ from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_i
 from datetime import timedelta
 
 
-def get_cadence_requests(request_dict):
+def expand_cadence_request(request_dict):
+    '''
+    Takes in a valid cadence request (valid request with cadence block), and expands the request into a list of requests
+    with their windows determined by the cadence parameters. Only valid requests that pass rise-set are returned, with
+    failing requests silently left out of the returned list.
+    :param request_dict: a valid request dictionary with cadence information.
+    :return: Expanded list of requests with valid windows within the cadence.
+    '''
     cadence = request_dict['cadence']
     # now expand the request into a list of requests with the proper windows from the cadence block
     cadence_requests = []

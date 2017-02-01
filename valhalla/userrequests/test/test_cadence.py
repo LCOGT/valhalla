@@ -3,7 +3,7 @@ from mixer.backend.django import mixer
 import datetime
 
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
-from valhalla.userrequests.cadence import get_cadence_requests
+from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.models import Request, Molecule, Target, Constraints, Location
 
 
@@ -29,7 +29,7 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
             'jitter': 12.0
         }
 
-        requests = get_cadence_requests(r_dict)
+        requests = expand_cadence_request(r_dict)
         self.assertEqual(len(requests), 2)
 
     def test_correct_number_of_requests_large_cadence(self):
@@ -41,7 +41,7 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
             'jitter': 12.0
         }
 
-        requests = get_cadence_requests(r_dict)
+        requests = expand_cadence_request(r_dict)
         self.assertEqual(len(requests), 26)
 
     def test_correct_number_of_requests_bounded_window(self):
@@ -53,7 +53,7 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
             'jitter': 12.0
         }
 
-        requests = get_cadence_requests(r_dict)
+        requests = expand_cadence_request(r_dict)
         self.assertEqual(len(requests), 1)
 
     def test_correct_number_of_requests_overlapping_windows(self):
@@ -65,5 +65,5 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
             'jitter': 2.0
         }
 
-        requests = get_cadence_requests(r_dict)
+        requests = expand_cadence_request(r_dict)
         self.assertEqual(len(requests), 5)

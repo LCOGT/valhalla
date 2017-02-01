@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
-from valhalla.userrequests.cadence import get_cadence_requests
+from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer, DraftUserRequestSerializer, CadenceRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
@@ -49,7 +49,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             if req.get('cadence'):
                 cadence_request_serializer = CadenceRequestSerializer(data=req)
                 if cadence_request_serializer.is_valid():
-                    expanded_requests.extend(get_cadence_requests(cadence_request_serializer.validated_data))
+                    expanded_requests.extend(expand_cadence_request(cadence_request_serializer.validated_data))
                 else:
                     return Response(cadence_request_serializer.errors, status=400)
             else:
