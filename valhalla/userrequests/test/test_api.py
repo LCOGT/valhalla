@@ -828,6 +828,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
+        self.extra_molecule = copy.deepcopy(self.generic_payload['requests'][0]['molecules'][0])
 
     def test_default_ag_mode_for_spectrograph(self):
         good_data = self.generic_payload.copy()
@@ -915,6 +916,91 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
         self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_on_more_than_one_molecule_fails(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        bad_data['requests'][0]['molecules'][0]['fill_window'] = True
+        bad_data['requests'][0]['molecules'][1]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Only one molecule can have `fill_window` set', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_one_molecule_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_one_false_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        good_data['requests'][0]['molecules'][1]['fill_window'] = False
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_one_blank_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_first_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_not_enough_time_fails(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T21:12:18Z',
+            'end': '2016-09-29T21:21:19Z'
+        }
+        bad_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_confined_window_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 3)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_confined_window_2_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 50
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 5)
+        self.assertEqual(response.status_code, 201)
 
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
