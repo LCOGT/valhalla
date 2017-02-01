@@ -126,8 +126,11 @@
               </div>
             </div>
             <div v-for="(request, idx) in requests">
+              <modal :show="showCadence" v-on:close="showCadence = false" v-on:submit="acceptCadence">
+                {{ cadenceRequests }}
+              </modal>
               <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
-                     v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
+                     v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence" :errors="_.get(errors, ['requests', idx], [])">
               </request>
               <div class="request-margin"></div>
             </div>
@@ -192,7 +195,7 @@
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
-            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show"
+            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
@@ -452,15 +455,32 @@
                 <dd>The lower limit of the time window.</dd>
                 <dt>End</dt>
                 <dd>The Upper end of the time window.</dd>
+                <dt>Cadence</dt>
+                <dd>Instead of a single request that may occur once any time within this time window, you may instead observe several
+                times periodically within it. Press "generate cadence" to apply the chosen cadence.
+                <strong>This will remove all previously created windows.</strong></dd>
+                <dt v-show="cadence">Period</dt>
+                <dd v-show="cadence">In fractional hours</dd>
+                <dt v-show="cadence">Jitter</dt>
+                <dd v-show="cadence">In fractional hours</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
                 <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update"
-                :errors="_.get(errors.end, 'end') || errors.end"> <!-- Validation wtf -->
-                </custon-field>
+                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
+                </custom-field>
+                <div class="checkbox col-sm-8 col-sm-offset-4">
+                  <label>
+                    <input type="checkbox" v-model="cadence">Observe as a cadence
+                  </label>
+                </div>
+                <custom-field v-model="period" label="Period" field="period" v-on:input="update" :errors="errors.period" v-show="cadence">
+                </custom-field>
+                <custom-field v-model="jitter" label="Jitter" field="jitter" v-on:input="update" :errors="errors.jitter" v-show="cadence">
+                </custom-field>
+                <a class="btn btn-info col-sm-8 col-sm-offset-4" v-on:click="genCadence" v-show="cadence">Generate Cadence</a>
               </form>
             </div>
           </div>
@@ -589,6 +609,24 @@
         <td><button class="btn btn-danger" v-on:click="deleteDraft(draft.id)"><i class="fa fa-trash"></i></button></td>
       </tr>
   </table>
+</script>
+
+<script type="text/x-template" id="modal-template">
+  <div class="vueModal">
+    <div class="modal" tabindex="-1" v-bind:class="{ in: open }" v-bind:style="modalStyle">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <slot></slot>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-default" v-on:click="close">Close</a>
+            <a class="btn btn-primary" v-on:click="submit">Accept</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </script>
 
 <script type="text/x-template" id="alert-template">

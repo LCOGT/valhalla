@@ -24,6 +24,9 @@ Vue.component('userrequest', {
   data: function(){
     var initial = _.cloneDeep(this.iuserrequest);
     initial.show = true;
+    initial.showCadence = false;
+    initial.cadenceRequests = [];
+    initial.cadenceRequestId = -1;
     return initial;
   },
   created: function(){
@@ -66,6 +69,46 @@ Vue.component('userrequest', {
     },
     removeRequest: function(idx){
       this.requests.splice(idx, 1);
+      this.update();
+    },
+    expandCadence: function(data){
+      if(this.errors.length > 0){
+        alert('Please fix the following errors: ' + JSON.stringify(this.errors));
+        return false;
+      }
+      console.log('cadence received from request ' + data.id);
+      this.cadenceRequestId = data.id;
+      var payload = this.toRep;
+      payload.requests[data.id].windows = [];
+      payload.requests[data.id].cadence = data.cadence;
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/cadence/',
+        data: JSON.stringify(payload),
+        contentType: 'application/json',
+        success: function(data){
+          that.cadenceRequests = data.requests;
+        }
+      });
+      this.showCadence = true;
+    },
+    acceptCadence: function(){
+      // this is a bit hacky because the UI representation of a request doesnt match what the api expects/returns
+      var that = this;
+      for(var r in this.cadenceRequests){
+        // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
+        // that the cadence was generated from and replace the window from what is returned.
+        var newRequest = _.cloneDeep(that.requests[that.cadenceRequestId]);
+        newRequest.windows = that.cadenceRequests[r].windows;
+        delete newRequest.cadence;
+        that.requests.push(newRequest);
+      }
+      // finally we remove the original request
+      this.removeRequest(that.cadenceRequestId);
+      if(this.requests.length > 1){
+        this.operator = 'MANY';
+      }
       this.update();
     }
   },
@@ -175,6 +218,11 @@ Vue.component('request', {
     removeMolecule: function(idx){
       this.molecules.splice(idx, 1);
       this.update();
+    },
+    cadence: function(data){
+      console.log('cadence recieved from window');
+      console.log(data);
+      this.$emit('cadence', {'id': this.index, 'request': this.toRep, 'cadence': data});
     }
   },
   template: '#request-template'
@@ -314,6 +362,9 @@ Vue.component('window', {
   data: function(){
     var initial = _.cloneDeep(this.iwindow);
     initial.show = true;
+    initial.cadence = false;
+    initial.period = 24.0;
+    initial.jitter = 12.0;
     return initial;
   },
   computed: {
@@ -324,6 +375,10 @@ Vue.component('window', {
   methods: {
     update: function(){
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
+    },
+    genCadence: function(){
+      console.log('cadence emitted from window');
+      this.$emit('cadence', {'start': this.start, 'end': this.end, 'period': this.period, 'jitter': this.jitter});
     }
   },
   watch: {
@@ -358,6 +413,37 @@ Vue.component('constraints', {
     }
   },
   template: '#constraints-template'
+});
+
+Vue.component('modal', {
+  props: ['show'],
+  data: function(){
+    return {
+      open: false
+    };
+  },
+  methods: {
+    close: function(){
+      this.open = false;
+      this.$emit('close');
+    },
+    submit: function(){
+      this.open = false;
+      this.$emit('submit');
+    }
+  },
+  watch: {
+    show: function(value){
+      console.log('in here');
+      this.open = value;
+    }
+  },
+  computed: {
+    modalStyle: function(){
+      return this.open ? { 'padding-left': '0px;', display: 'block' } : {};
+    }
+  },
+  template: '#modal-template'
 });
 
 Vue.component('custom-field', {
