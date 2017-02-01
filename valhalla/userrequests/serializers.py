@@ -16,7 +16,7 @@ from valhalla.common.configdb import ConfigDB
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
                                                   get_time_allocation_key, get_molecule_duration, get_num_exposures)
 from datetime import timedelta
-from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
+from valhalla.common.rise_set_utils import get_rise_set_intervals
 
 
 class CadenceSerializer(serializers.Serializer):
