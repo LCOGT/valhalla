@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from importlib import import_module
+from django.forms.models import model_to_dict
 import requests
 import logging
 
@@ -59,8 +60,9 @@ class UserRequest(models.Model):
 
     @property
     def as_dict(self):
-        serializers = import_module('valhalla.userrequests.serializers')
-        return serializers.UserRequestSerializer(self).data
+        ret_dict = model_to_dict(self)
+        ret_dict['requests'] = [r.as_dict for r in self.requests.all()]
+        return ret_dict
 
     @property
     def min_window_time(self):
@@ -116,8 +118,13 @@ class Request(models.Model):
 
     @property
     def as_dict(self):
-        serializers = import_module('valhalla.userrequests.serializers')
-        return serializers.RequestSerializer(self).data
+        ret_dict = model_to_dict(self)
+        ret_dict['target'] = self.target.as_dict
+        ret_dict['molecules'] = [m.as_dict for m in self.molecules.all()]
+        ret_dict['location'] = self.location.as_dict
+        ret_dict['constraints'] = self.constraints.as_dict
+        ret_dict['windows'] = [w.as_dict for w in self.windows.all()]
+        return ret_dict
 
     @cached_property
     def duration(self):
@@ -170,6 +177,10 @@ class Location(models.Model):
     site = models.CharField(max_length=20, default='', blank=True)
     observatory = models.CharField(max_length=20, default='', blank=True)
     telescope = models.CharField(max_length=20, default='', blank=True)
+
+    @property
+    def as_dict(self):
+        return model_to_dict(self)
 
     def __str__(self):
         return '{}.{}.{}'.format(self.site, self.observatory, self.telescope)
@@ -271,6 +282,10 @@ class Target(models.Model):
     def __str__(self):
         return 'Target {}: {} type'.format(self.id, self.type)
 
+    @property
+    def as_dict(self):
+        return model_to_dict(self)
+
     def rise_set_target(self):
         return get_rise_set_target(self)
 
@@ -279,6 +294,10 @@ class Window(models.Model):
     request = models.ForeignKey(Request, related_name='windows')
     start = models.DateTimeField()
     end = models.DateTimeField()
+
+    @property
+    def as_dict(self):
+        return model_to_dict(self)
 
     def __str__(self):
         return 'Window {}: {} to {}'.format(self.id, self.start, self.end)
@@ -363,8 +382,7 @@ class Molecule(models.Model):
 
     @property
     def as_dict(self):
-        serializers = import_module('valhalla.userrequests.serializers')  # avoid cyclic import
-        return serializers.MoleculeSerializer(self).data
+        return model_to_dict(self)
 
     @cached_property
     def duration(self):
@@ -378,6 +396,10 @@ class Constraints(models.Model):
     max_lunar_phase = models.FloatField(null=True, blank=True)
     max_seeing = models.FloatField(null=True, blank=True)
     min_transparency = models.FloatField(null=True, blank=True)
+
+    @property
+    def as_dict(self):
+        return model_to_dict(self)
 
     def __str__(self):
         return 'Constraints {}: {} max airmass, {} min_lunar_distance'.format(self.id, self.max_airmass,

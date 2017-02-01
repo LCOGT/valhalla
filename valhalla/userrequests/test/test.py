@@ -2,10 +2,9 @@ from django.utils import timezone
 from unittest.case import TestCase
 from mixer.backend.django import mixer
 from datetime import datetime
-from unittest.mock import patch
 import math
 
-from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location
+from valhalla.userrequests.models import Request, Molecule, Target, UserRequest, Window, Location, Constraints
 from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 from valhalla.common.configdb import ConfigDBException
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
@@ -24,52 +23,38 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
                                                ipp_time_available=5.0)
 
         self.ur_single = mixer.blend(UserRequest, proposal=self.proposal, operator='SINGLE')
-
-        self.request = mixer.blend(Request, user_request=self.ur_single)
-
         self.ur_many = mixer.blend(UserRequest, proposal=self.proposal)
 
-        self.request_1 = mixer.blend(Request, user_request=self.ur_many)
-        self.request_2 = mixer.blend(Request, user_request=self.ur_many)
-        self.request_3 = mixer.blend(Request, user_request=self.ur_many)
+        self.request = mixer.blend(Request, user_request=self.ur_single)
+        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur_many)
 
         self.molecule_expose = mixer.blend(
             Molecule, request=self.request, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
             exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah'
         )
 
-        self.molecule_expose_1 = mixer.blend(
-            Molecule, request=self.request_1, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-            exposure_time=1000, exposure_count=1, type='EXPOSE', filter='uv'
+        self.molecule_exposes = mixer.cycle(3).blend(
+            Molecule, request=(r for r in self.requests), filter=(f for f in ['uv', 'uv', 'ir']),
+            bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG', exposure_time=1000, exposure_count=1, type='EXPOSE'
         )
 
-        self.molecule_expose_2 = mixer.blend(
-            Molecule, request=self.request_2, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-            exposure_time=10, exposure_count=5, type='EXPOSE', filter='uv'
+        mixer.blend(
+            Window, request=self.request, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+            end=datetime(2016, 10, 29, tzinfo=timezone.utc)
         )
-
-        self.molecule_expose_3 = mixer.blend(
-            Molecule, request=self.request_3, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
-            exposure_time=3, exposure_count=3, type='EXPOSE', filter='ir'
+        mixer.cycle(3).blend(
+            Window, request=(r for r in self.requests), start=datetime(2016, 9, 29, tzinfo=timezone.utc),
+            end=datetime(2016, 10, 29, tzinfo=timezone.utc)
         )
-        mixer.blend(Window, request=self.request, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
-                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
-        mixer.blend(Window, request=self.request_1, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
-                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
-        mixer.blend(Window, request=self.request_2, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
-                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
-        mixer.blend(Window, request=self.request_3, start=datetime(2016, 9, 29, tzinfo=timezone.utc),
-                    end=datetime(2016, 10, 29, tzinfo=timezone.utc))
 
         mixer.blend(Target, request=self.request)
-        mixer.blend(Target, request=self.request_1)
-        mixer.blend(Target, request=self.request_2)
-        mixer.blend(Target, request=self.request_3)
+        mixer.cycle(3).blend(Target, request=(r for r in self.requests))
 
         mixer.blend(Location, request=self.request, telescope_class='1m0')
-        mixer.blend(Location, request=self.request_1, telescope_class='1m0')
-        mixer.blend(Location, request=self.request_2, telescope_class='1m0')
-        mixer.blend(Location, request=self.request_3, telescope_class='1m0')
+        mixer.cycle(3).blend(Location, request=(r for r in self.requests), telescope_class='1m0')
+
+        mixer.blend(Constraints, request=self.request)
+        mixer.cycle(3).blend(Constraints, request=(r for r in self.requests))
 
     def test_single_ur_total_duration(self):
         request_duration = self.request.duration
@@ -81,24 +66,28 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.ur_many.operator = 'MANY'
         self.ur_many.save()
 
-        highest_duration = max(self.request_1.duration, self.request_2.duration, self.request_3.duration)
+        highest_duration = max(r.duration for r in self.requests)
         total_duration = self.ur_many.total_duration
-        tak = self.request_1.time_allocation_key
+        tak = self.requests[0].time_allocation_key
         self.assertEqual(highest_duration, total_duration[tak])
 
     def test_and_ur_takes_sum_of_durations(self):
         self.ur_many.operator = 'AND'
         self.ur_many.save()
 
-        sum_duration = self.request_1.duration + self.request_2.duration + self.request_3.duration
+        sum_duration = sum(r.duration for r in self.requests)
         total_duration = self.ur_many.total_duration
-        tak = self.request_1.time_allocation_key
+        tak = self.requests[0].time_allocation_key
         self.assertEqual(sum_duration, total_duration[tak])
 
 
 class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
     def setUp(self):
         super().setUp()
+        self.request = mixer.blend(Request)
+        mixer.blend(Target, request=self.request)
+        mixer.blend(Location, request=self.request)
+        mixer.blend(Constraints, request=self.request)
         self.target_acquire_on = mixer.blend(Target, acquire_mode='ON', type='SIDEREAL')
 
         self.target_acquire_off = mixer.blend(Target, acquire_mode='OFF', type='SIDEREAL')
@@ -139,11 +128,9 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         )
 
     def test_ccd_single_molecule_request_duration(self):
-        request = mixer.blend(Request)
-        mixer.blend(Target, request=request)
-        self.molecule_expose.request = request
+        self.molecule_expose.request = self.request
         self.molecule_expose.save()
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(2*600 + 90 + 2*14.5 + 2*1 + 2 + 5 + 11))
 
@@ -153,15 +140,13 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, (2*600 + 2*14.5 + 2 + 5 + 11))
 
     def test_ccd_multiple_molecule_request_duration(self):
-        request = mixer.blend(Request)
-        mixer.blend(Target, request=request)
-        self.molecule_expose_1.request = request
+        self.molecule_expose_1.request = self.request
         self.molecule_expose_1.save()
-        self.molecule_expose_2.request = request
+        self.molecule_expose_2.request = self.request
         self.molecule_expose_2.save()
-        self.molecule_expose_3.request = request
+        self.molecule_expose_3.request = self.request
         self.molecule_expose_3.save()
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(1000 + 5*10 + 3*3 + 90 + 9*14.5 + 9*1 + 2*2 + 3*5 + 3*11))
 
@@ -173,20 +158,20 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, (1000 + 5*10 + 3*3 + 9*14.5 + 9*1 + 3*5 + 3*11))
 
     def test_floyds_single_molecule_request_duration_with_acquire_on(self):
-        request = mixer.blend(Request, target=self.target_acquire_on)
-        self.molecule_spectrum.request = request
+        self.request.target = self.target_acquire_on
+        self.molecule_spectrum.request = self.request
         self.molecule_spectrum.save()
 
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(1800 + 240 + 25 + 0.5 + 30 + 30 + 60 + 5 + 11))
 
     def test_floyds_single_molecule_request_duration_with_acquire_off(self):
-        request = mixer.blend(Request, target=self.target_acquire_off)
-        self.molecule_spectrum.request = request
+        self.request.target = self.target_acquire_off
+        self.molecule_spectrum.request = self.request
         self.molecule_spectrum.save()
 
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(1800 + 240 + 25 + 0.5 + 30 + 5 + 11))
 
@@ -196,28 +181,28 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, (1800 + 25 + 0.5 + 5 + 11))
 
     def test_floyds_multiple_molecule_request_duration_with_acquire_on(self):
-        request = mixer.blend(Request, target=self.target_acquire_on)
-        self.molecule_lampflat.request = request
+        self.request.target = self.target_acquire_on
+        self.molecule_lampflat.request = self.request
         self.molecule_lampflat.save()
-        self.molecule_arc.request = request
+        self.molecule_arc.request = self.request
         self.molecule_arc.save()
-        self.molecule_spectrum.request = request
+        self.molecule_spectrum.request = self.request
         self.molecule_spectrum.save()
 
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(1800 + 60 + 2*30 + 240 + 4*25 + 4*0.5 + 30*3 + 30 + 60 + 3*5 + 3*11))
 
     def test_floyds_multiple_molecule_request_duration_with_acquire_off(self):
-        request = mixer.blend(Request, target=self.target_acquire_off)
-        self.molecule_lampflat.request = request
+        self.request.target = self.target_acquire_off
+        self.molecule_lampflat.request = self.request
         self.molecule_lampflat.save()
-        self.molecule_arc.request = request
+        self.molecule_arc.request = self.request
         self.molecule_arc.save()
-        self.molecule_spectrum.request = request
+        self.molecule_spectrum.request = self.request
         self.molecule_spectrum.save()
 
-        duration = request.duration
+        duration = self.request.duration
 
         self.assertEqual(duration, math.ceil(1800 + 60 + 2*30 + 240 + 4*25 + 4*0.5 + 30*3 + 3*5 + 3*11))
 
