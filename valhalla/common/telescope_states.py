@@ -25,13 +25,13 @@ def get_es_data(query):
     event_data = []
     query_size = 10000
     data = es.search(index="telescope_events", body=query, size=query_size, scroll='1m',
-                     _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'], sort=['timestamp'])
+                     _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'], sort=['timestamp'])  # noqa
     event_data.extend(data['hits']['hits'])
     total_events = data['hits']['total']
     events_read = min(query_size, total_events)
     scroll_id = data.get('_scroll_id', 0)
     while events_read < total_events:
-        data = es.scroll(scroll_id=scroll_id, scroll='1m')
+        data = es.scroll(scroll_id=scroll_id, scroll='1m') # noqa
         scroll_id = data.get('_scroll_id', 0)
         event_data.extend(data['hits']['hits'])
         events_read += len(data['hits']['hits'])

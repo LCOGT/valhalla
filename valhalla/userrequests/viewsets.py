@@ -6,7 +6,8 @@ from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
-from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer, DraftUserRequestSerializer, CadenceRequestSerializer
+from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
+from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
