@@ -20,7 +20,7 @@ var collapseMixin = {
 };
 
 Vue.component('userrequest', {
-  props: ['errors', 'iuserrequest'],
+  props: ['errors', 'iuserrequest', 'duration_data'],
   data: function(){
     var initial = _.cloneDeep(this.iuserrequest);
     initial.show = true;
@@ -38,8 +38,12 @@ Vue.component('userrequest', {
     toRep: function(){
       var rep = {};
       var that = this;
-      ['group_id', 'proposal', 'operator', 'ipp_value', 'observation_type', 'requests'].forEach(function(x){
+      ['group_id', 'proposal', 'operator', 'ipp_value', 'observation_type'].forEach(function(x){
         rep[x] = that[x];
+      });
+      rep['requests'] = [];
+      this.$refs.request.forEach(function(element, index, array){
+        rep['requests'].push(element.toRep)
       });
       return rep;
     },
@@ -48,6 +52,10 @@ Vue.component('userrequest', {
     },
     operator: function(){
       return this.requests.length > 1 ? 'MANY' : 'SINGLE';
+    },
+    durationDisplay: function(){
+      var duration =  moment.duration(this.duration_data.duration, 'seconds');
+      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
     }
   },
   methods: {
@@ -56,7 +64,7 @@ Vue.component('userrequest', {
     },
     requestUpdated: function(data){
       console.log('request updated');
-      Vue.set(this.requests, data.id, data.data);
+//      Vue.set(this.requests, data.id, data.data);
       this.update();
     },
     addRequest: function(idx){
@@ -78,7 +86,7 @@ Vue.component('userrequest', {
 });
 
 Vue.component('request', {
-  props: ['irequest', 'index', 'errors', 'iavailable_instruments', 'parentshow'],
+  props: ['irequest', 'index', 'errors', 'iavailable_instruments', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.irequest);
@@ -89,9 +97,20 @@ Vue.component('request', {
     toRep: function(){
       var rep = {};
       var that = this;
-      ['target', 'molecules', 'windows', 'location', 'constraints', 'data_type', 'instrument_name'].forEach(function(x){
+      ['location', 'data_type', 'instrument_name'].forEach(function(x){
         rep[x] = that[x];
       });
+      rep['molecules'] = [];
+      this.$refs.molecule.forEach(function(element, index, array){
+        rep['molecules'].push(element.toRep)
+      });
+      rep['windows'] = [];
+      this.$refs.window.forEach(function(element, index, array){
+        rep['windows'].push(element.toRep)
+      });
+      rep['target'] = this.$refs.target.toRep;
+      rep['constraints'] = this.$refs.constraints.toRep;
+
       return rep;
     },
     availableInstrumentOptions: function(){
@@ -139,22 +158,22 @@ Vue.component('request', {
       this.$emit('requestupdate', {'id': this.index, 'data': this.toRep});
     },
     moleculeUpdated: function(data){
-      Vue.set(this.molecules, data.id, data.data);
+      //Vue.set(this.molecules, data.id, data.data);
       console.log('moleculeupdated');
       this.update();
     },
     windowUpdated: function(data){
-      Vue.set(this.windows, data.id, data.data);
+      //Vue.set(this.windows, data.id, data.data);
       console.log('windowUpdated');
       this.update();
     },
     targetUpdated: function(data){
-      this.target = data.data;
+      //this.target = data.data;
       console.log('targetUpdated');
       this.update();
     },
     constraintsUpdated: function(data){
-      this.constraints = data.data;
+      //this.constraints = data.data;
       console.log('constraintsUpdated');
       this.update();
     },
@@ -181,7 +200,7 @@ Vue.component('request', {
 });
 
 Vue.component('molecule', {
-  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow'],
+  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
     var initial = _.cloneDeep(this.imolecule);
@@ -335,16 +354,14 @@ Vue.component('window', {
 });
 
 Vue.component('constraints', {
-  props: ['iconstraints', 'errors', 'parentshow'],
+  props: ['constraints', 'errors', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    var initial = _.cloneDeep(this.iconstraints);
-    initial.show = true;
-    return initial;
+    return {'show': true};
   },
   computed: {
     toRep: function(){
-      return {'max_airmass': this.max_airmass, 'min_lunar_distance': this.min_lunar_distance};
+      return {'max_airmass': this.constraints.max_airmass, 'min_lunar_distance': this.constraints.min_lunar_distance};
     }
   },
   methods: {
@@ -352,11 +369,11 @@ Vue.component('constraints', {
       this.$emit('constraintsupdate', {'data': this.toRep});
     }
   },
-  watch: {
-    iconstraints: function(value){
-      Object.assign(this.$data, value);
-    }
-  },
+//  watch: {
+//    iconstraints: function(value){
+//      Object.assign(this.$data, value);
+//    }
+//  },
   template: '#constraints-template'
 });
 
@@ -451,7 +468,6 @@ var vm = new Vue({
   data:{
     tab: 1,
     draftId: -1,
-    duration: 0,
     instrumentTypeMap: instrumentTypeMap,
     userrequest: {
       show: true,
@@ -509,13 +525,8 @@ var vm = new Vue({
       }]
     },
     errors: {},
+    duration_data: {},
     alerts: []
-  },
-  computed: {
-    durationDisplay: function(){
-      var duration =  moment.duration(this.duration, 'seconds');
-      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
-    }
   },
   methods: {
     validate: _.debounce(function(){
@@ -523,17 +534,17 @@ var vm = new Vue({
       $.ajax({
         type: 'POST',
         url: '/api/user_requests/validate/',
-        data: JSON.stringify(that.userrequest),
+        data: JSON.stringify(that.$refs.userrequest.toRep),
         contentType: 'application/json',
         success: function(data){
           that.errors = data.errors;
-          that.duration = data.duration;
+          that.duration_data = data.request_durations;
         }
       });
     }, 200),
     userrequestUpdated: function(data){
       console.log('userrequest updated');
-      this.userrequest = data;
+//      this.userrequest = data;
       this.validate();
     },
     saveDraft: function(id){

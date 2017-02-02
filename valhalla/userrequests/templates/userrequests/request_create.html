@@ -36,7 +36,8 @@
       <div class="tab-pane" :class="{ active: tab === 1 }">
         <div class="row">
           <div class="col-md-11 col-sm-12 col-sm-12">
-            <userrequest :errors="errors" :iuserrequest="userrequest" v-on:userrequestupdate="userrequestUpdated"></userrequest>
+            <userrequest ref="userrequest" :errors="errors" :duration_data="duration_data" :iuserrequest.sync="userrequest"
+                         v-on:userrequestupdate="userrequestUpdated"></userrequest>
           </div>
           <div class="col-md-1 hidden-sm hidden-xs">
             <sidenav :userrequest="userrequest"></sidenav>
@@ -106,7 +107,7 @@
                 <form class="form-horizontal">
                   <div class="row duration" v-show="show">
                     <span class="col-md-4"><strong>Total Duration</strong></span>
-                    <span class="col-md-8">{{ $parent.durationDisplay }}</span>
+                    <span class="col-md-8">{{ durationDisplay }}</span>
                   </div>
                   <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
                   </custom-field>
@@ -121,13 +122,14 @@
                   <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
                                 v-on:input="update" :errors="errors.ipp_value">
                   </custom-field>
-                  <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ $parent.durationDisplay }}</strong></div>
+                  <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
                 </form>
               </div>
             </div>
             <div v-for="(request, idx) in requests">
-              <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
-                     v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])">
+              <request ref="request" :index="idx" :irequest.sync="request" :iavailable_instruments="available_instruments" :parentshow="show"
+                     v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"
+                       :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})">
               </request>
               <div class="request-margin"></div>
             </div>
@@ -184,19 +186,20 @@
               </form>
             </div>
           </div>
-          <target :itarget="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
+          <target ref="target" :itarget.sync="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
           </target>
           <div v-for="(molecule, idx) in molecules">
-            <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
-                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
+            <molecule ref="molecule" :index="idx" :imolecule.sync="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
+                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])"
+                      :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})">
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
-            <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show"
+            <window ref="window" :index="idx" :iwindow.sync="window" v-on:windowupdate="windowUpdated" :parentshow="show"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
-          <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
+          <constraints ref="constraints" :constraints.sync="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
           </constraints>
         </div>
       </div>
@@ -257,9 +260,14 @@
                 <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
                                :errors="errors.bin_x" :options="binningsOptions">
                 </custom-select>
-                <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
-                              :errors="errors.exposure_count">
-                </custom-field>
+                <div class="input-group">
+                  <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
+                                :errors="errors.exposure_count">
+                  </custom-field>
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="button">Fill</button>
+                  </span>
+                </div>
                 <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                               :errors="errors.exposure_time">
                 </custom-field>
@@ -345,7 +353,7 @@
                 <dt>Eccentricity</dt>
                 <dd>0 to 0.99</dd>
                 <dt>Mean Anomaly</dt>
-                <dd>Angle in Degrees</dd>
+                <dd>fAngle in Degrees</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
@@ -460,7 +468,7 @@
                 </custom-field>
                 <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update"
                 :errors="_.get(errors.end, 'end') || errors.end"> <!-- Validation wtf -->
-                </custon-field>
+                </custom-field>
               </form>
             </div>
           </div>
@@ -503,10 +511,10 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
+                <custom-field v-model="constraints.max_airmass" label="Max Airmass" field="constraints.max_airmass" v-on:input="update"
                               :errors="errors.max_airmass">
                 </custom-field>
-                <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
+                <custom-field v-model="constraints.min_lunar_distance" label="Min. Lunar Distance" field="constraints.min_lunar_distance" v-on:input="update"
                               :errors="errors.min_lunar_distance">
                 </custom-field>
               </form>

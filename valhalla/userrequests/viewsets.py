@@ -2,13 +2,14 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration
+from valhalla.userrequests.duration_utils import get_request_duration, get_molecule_duration
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -35,13 +36,22 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'])
     def validate(self, request):
         serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        req_durations = {}
         if serializer.is_valid():
-            duration = sum([get_request_duration(req) for req in serializer.validated_data['requests']])
-            errors = []
+            req_durations['requests'] = []
+            for req in serializer.validated_data['requests']:
+                req_info = {'duration': get_request_duration(req)}
+                mol_durations = [{'duration': get_molecule_duration(mol)} for mol in req['molecules']]
+                req_info['molecules'] = mol_durations
+                req_info['largest_interval'] = get_largest_interval(get_rise_set_intervals(req)).total_seconds()
+                req_durations['requests'].append(req_info)
+            req_durations['duration'] = sum([req['duration'] for req in req_durations['requests']])
+            errors = {}
         else:
             errors = serializer.errors
-            duration = 0
-        return Response({'duration': duration, 'errors': errors})
+
+        return Response({'request_durations': req_durations,
+                         'errors': errors})
 
     @list_route(methods=['post'])
     def cadence(self, request):
