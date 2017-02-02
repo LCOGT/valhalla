@@ -117,6 +117,8 @@ Vue.component('userrequest', {
       if(this.requests.length > 1){
         this.operator = 'MANY';
       }
+      this.cadenceRequests = [];
+      this.cadenceRequestId = -1;
       this.update();
     }
   },
@@ -249,7 +251,7 @@ Vue.component('molecule', {
       var rep = {};
       var that = this;
       var fields = ['filter', 'bin_x', 'bin_y', 'exposure_count', 'exposure_time', 'instrument_name', 'type'];
-      if(this.datatype === 'SPECTRUM'){
+      if(this.datatype === 'SPECTRA'){
         fields = fields.concat(['acquire_radius_arcsec', 'acquire_mode']);
       }
       fields.forEach(function(x){
