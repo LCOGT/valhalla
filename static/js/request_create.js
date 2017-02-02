@@ -72,8 +72,8 @@ Vue.component('userrequest', {
       this.update();
     },
     expandCadence: function(data){
-      if(this.errors.length > 0){
-        alert('Please fix the following errors: ' + JSON.stringify(this.errors));
+      if(!_.isEmpty(this.errors)){
+        alert('Please make sure your request is valid before generating a cadence');
         return false;
       }
       this.cadenceRequestId = data.id;
@@ -115,6 +115,7 @@ Vue.component('userrequest', {
       if(this.requests.length > 1) this.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
+      this.showCadence = false;
       this.update();
     }
   },
