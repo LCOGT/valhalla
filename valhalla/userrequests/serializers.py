@@ -388,7 +388,9 @@ class UserRequestSerializer(serializers.ModelSerializer):
             # validate the ipp debitting that will take place later
             validate_ipp(data, total_duration_dict)
         except ObjectDoesNotExist:
-            raise serializers.ValidationError(_("Time Allocation not found."))
+            raise serializers.ValidationError(
+                _("You do not have sufficient time allocated on the resource you're requesting on this proposal.")
+            )
         except TimeAllocationError as e:
             raise serializers.ValidationError(repr(e))
 
