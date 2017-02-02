@@ -15,23 +15,30 @@
   </div>
   <div id="tabs">
     <ul class="nav nav-tabs col-md-6">
-      <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
-      <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
-      <li :class="{ active: tab === 3 }" v-on:click="tab = 3"><a><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a></li>
+      <li :class="{ active: tab === 1 }" v-on:click="tab = 1">
+        <a title="Observing request form."><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a>
+      </li>
+      <li :class="{ active: tab === 2 }" v-on:click="tab = 2">
+        <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> Api View</a>
+      </li>
+      <li :class="{ active: tab === 3 }" v-on:click="tab = 3">
+        <a title="Your saved observing requests."><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a>
+      </li>
     </ul>
     <div class="col-md-5 panel-actions">
-      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
       <span :class="draftId > -1 ? 'btn-group' : ''">
-        <button class="btn btn-info" title="Save" v-on:click="saveDraft(draftId)">
+        <button class="btn btn-info" title="Save a draft of this observing request. The request will not be submitted"
+                v-on:click="saveDraft(draftId)">
           <i class="fa fa-save"></i> Save Draft <span v-show="draftId > -1">#{{ draftId }}</span>
         </button>
-         <button v-show="draftId > -1" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         <button v-show="draftId > -1" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
           <li><a v-on:click="saveDraft(-1)">Save as new draft</a></li>
         </ul>
       </span>
+      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
@@ -602,6 +609,9 @@
       <tr><td>Load</td><td>Title</td><td>Id</td><td>Author</td><td>Proposal</td><td>Last Modified</td><td>Delete</td></tr>
     </thead>
     <tbody>
+      <tr v-show="drafts.length < 1">
+        <td colspan="7">You have no draft observing requests.</td>
+      </tr>
       <tr v-for="draft in drafts">
         <td><button class="btn btn-info" v-on:click="loadDraft(draft.id)"><i class="fa fa-download"></i></button></td>
         <td>{{ draft.title }}</td>
