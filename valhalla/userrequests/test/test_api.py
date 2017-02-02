@@ -160,7 +160,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['molecules'][0]['telescope_name'] = '2M0-FLOYDS-SCICAM'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Time Allocation not found', str(response.content))
+        self.assertIn('You do not have sufficient time', str(response.content))
 
     def test_post_userrequest_not_enough_time_allocation_for_instrument(self):
         bad_data = self.generic_payload.copy()

@@ -3,6 +3,7 @@
 {% block title %}Create New Request {% endblock %}
 {% block extra_css %}
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.18.1/vis.min.css">
 {% endblock %}
 {% block content %}
 {% verbatim %}
@@ -14,23 +15,30 @@
   </div>
   <div id="tabs">
     <ul class="nav nav-tabs col-md-6">
-      <li :class="{ active: tab === 1 }" v-on:click="tab = 1"><a><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a></li>
-      <li :class="{ active: tab === 2 }" v-on:click="tab = 2"><a><i class="fa fa-fw fa-code fa-2x"></i> Api View</a></li>
-      <li :class="{ active: tab === 3 }" v-on:click="tab = 3"><a><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a></li>
+      <li :class="{ active: tab === 1 }" v-on:click="tab = 1">
+        <a title="Observing request form."><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a>
+      </li>
+      <li :class="{ active: tab === 2 }" v-on:click="tab = 2">
+        <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> Api View</a>
+      </li>
+      <li :class="{ active: tab === 3 }" v-on:click="tab = 3">
+        <a title="Your saved observing requests."><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a>
+      </li>
     </ul>
     <div class="col-md-5 panel-actions">
-      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
       <span :class="draftId > -1 ? 'btn-group' : ''">
-        <button class="btn btn-info" title="Save" v-on:click="saveDraft(draftId)">
+        <button class="btn btn-info" title="Save a draft of this observing request. The request will not be submitted"
+                v-on:click="saveDraft(draftId)">
           <i class="fa fa-save"></i> Save Draft <span v-show="draftId > -1">#{{ draftId }}</span>
         </button>
-         <button v-show="draftId > -1" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+         <button v-show="draftId > -1" type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
           <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
           <li><a v-on:click="saveDraft(-1)">Save as new draft</a></li>
         </ul>
       </span>
+      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">
@@ -127,8 +135,14 @@
               </div>
             </div>
             <div v-for="(request, idx) in requests">
-              <request ref="request" :index="idx" :irequest.sync="request" :iavailable_instruments="available_instruments" :parentshow="show"
-                     v-on:requestupdate="requestUpdated" :errors="_.get(errors, ['requests', idx], [])"
+              <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence" header="Generated Cadence">
+                <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
+                Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
+                <cadence :data="cadenceRequests"></cadence>
+              </modal>
+              <request ref="request" :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
+                       v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
+                       :errors="_.get(errors, ['requests', idx], [])"
                        :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})">
               </request>
               <div class="request-margin"></div>
@@ -195,7 +209,7 @@
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
-            <window ref="window" :index="idx" :iwindow.sync="window" v-on:windowupdate="windowUpdated" :parentshow="show"
+            <window ref="window" :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
@@ -460,15 +474,32 @@
                 <dd>The lower limit of the time window.</dd>
                 <dt>End</dt>
                 <dd>The Upper end of the time window.</dd>
+                <dt>Cadence</dt>
+                <dd>Instead of a single request that may occur once any time within this time window, you may instead observe several
+                times periodically within it. Press "generate cadence" to apply the chosen cadence.
+                <strong>This will remove all previously created windows.</strong></dd>
+                <dt v-show="cadence">Period</dt>
+                <dd v-show="cadence">In fractional hours</dd>
+                <dt v-show="cadence">Jitter</dt>
+                <dd v-show="cadence">In fractional hours</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
                 <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update"
-                :errors="_.get(errors.end, 'end') || errors.end"> <!-- Validation wtf -->
+                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
                 </custom-field>
+                <div class="checkbox col-sm-8 col-sm-offset-4">
+                  <label>
+                    <input type="checkbox" v-model="cadence">Observe as a cadence
+                  </label>
+                </div>
+                <custom-field v-model="period" label="Period" field="period" v-on:input="update" :errors="errors.period" v-show="cadence">
+                </custom-field>
+                <custom-field v-model="jitter" label="Jitter" field="jitter" v-on:input="update" :errors="errors.jitter" v-show="cadence">
+                </custom-field>
+                <a class="btn btn-info col-sm-8 col-sm-offset-4" v-on:click="genCadence" v-show="cadence">Generate Cadence</a>
               </form>
             </div>
           </div>
@@ -587,6 +618,9 @@
       <tr><td>Load</td><td>Title</td><td>Id</td><td>Author</td><td>Proposal</td><td>Last Modified</td><td>Delete</td></tr>
     </thead>
     <tbody>
+      <tr v-show="drafts.length < 1">
+        <td colspan="7">You have no draft observing requests.</td>
+      </tr>
       <tr v-for="draft in drafts">
         <td><button class="btn btn-info" v-on:click="loadDraft(draft.id)"><i class="fa fa-download"></i></button></td>
         <td>{{ draft.title }}</td>
@@ -597,6 +631,27 @@
         <td><button class="btn btn-danger" v-on:click="deleteDraft(draft.id)"><i class="fa fa-trash"></i></button></td>
       </tr>
   </table>
+</script>
+
+<script type="text/x-template" id="modal-template">
+  <div class="vueModal">
+    <div class="modal" tabindex="-1" v-bind:class="{ in: open }" v-bind:style="modalStyle">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            {{ header }}
+          </div>
+          <div class="modal-body">
+            <slot></slot>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-default" v-on:click="close">Cancel</a>
+            <a class="btn btn-primary" v-on:click="submit">Accept</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </script>
 
 <script type="text/x-template" id="alert-template">
@@ -613,5 +668,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.8/vue.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.18.1/vis.min.js"></script>
 <script src="{% static 'js/request_create.js' %}"></script>
 {% endblock %}
