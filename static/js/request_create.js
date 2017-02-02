@@ -89,8 +89,7 @@ Vue.component('userrequest', {
         contentType: 'application/json',
         success: function(data){
           for(var r in data.requests){
-            var request = data.requests[r];
-            that.cadenceRequests.push({id: r, content: '', start: request.windows[0].start, end: request.windows[0].end});
+            that.cadenceRequests.push(data.requests[r]);
           }
         }
       });
@@ -108,15 +107,13 @@ Vue.component('userrequest', {
         // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
         // that the cadence was generated from and replace the window from what is returned.
         var newRequest = _.cloneDeep(that.requests[that.cadenceRequestId]);
-        newRequest.windows = [{start: that.cadenceRequests[r].start, end: that.cadenceRequests[r].end}];
+        newRequest.windows = that.cadenceRequests[r].windows;
         delete newRequest.cadence;
         that.requests.push(newRequest);
       }
       // finally we remove the original request
       this.removeRequest(that.cadenceRequestId);
-      if(this.requests.length > 1){
-        this.operator = 'MANY';
-      }
+      if(this.requests.length > 1) this.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
       this.update();
@@ -430,12 +427,22 @@ Vue.component('cadence', {
   data: function(){
     return {
       options: {},
-      items: new vis.DataSet(this.data)
+      items: this.toVis
     };
   },
+  computed:{
+    toVis: function(){
+      var visData = [];
+      for(var r in this.data){
+        var request = this.data[r];
+        visData.push({'id': r, content: r, start: request.windows[0].start, end: request.windows[0].end});
+      }
+      return new vis.DataSet(visData);
+    }
+  },
   watch: {
-    data: function(value){
-      this.timeline.setItems(new vis.DataSet(value));
+    data: function(){
+      this.timeline.setItems(this.toVis);
       this.timeline.fit();
     }
   },
