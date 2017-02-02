@@ -76,7 +76,6 @@ Vue.component('userrequest', {
         alert('Please fix the following errors: ' + JSON.stringify(this.errors));
         return false;
       }
-      console.log('cadence received from request ' + data.id);
       this.cadenceRequestId = data.id;
       var payload = this.toRep;
       payload.requests[data.id].windows = [];
@@ -227,8 +226,6 @@ Vue.component('request', {
       this.update();
     },
     cadence: function(data){
-      console.log('cadence recieved from window');
-      console.log(data);
       this.$emit('cadence', {'id': this.index, 'request': this.toRep, 'cadence': data});
     }
   },
@@ -384,7 +381,6 @@ Vue.component('window', {
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
     },
     genCadence: function(){
-      console.log('cadence emitted from window');
       this.$emit('cadence', {'start': this.start, 'end': this.end, 'period': this.period, 'jitter': this.jitter});
     }
   },
@@ -435,7 +431,7 @@ Vue.component('cadence', {
       var visData = [];
       for(var r in this.data){
         var request = this.data[r];
-        visData.push({'id': r, content: r, start: request.windows[0].start, end: request.windows[0].end});
+        visData.push({'id': r, content: '' + (Number(r) + 1), start: request.windows[0].start, end: request.windows[0].end});
       }
       return new vis.DataSet(visData);
     }
@@ -453,7 +449,7 @@ Vue.component('cadence', {
 });
 
 Vue.component('modal', {
-  props: ['show'],
+  props: ['show', 'header'],
   data: function(){
     return {
       open: false
@@ -471,7 +467,6 @@ Vue.component('modal', {
   },
   watch: {
     show: function(value){
-      console.log('in here');
       this.open = value;
     }
   },
