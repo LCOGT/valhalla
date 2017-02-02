@@ -1,4 +1,4 @@
-/* globals _ $ Vue moment */
+/* globals _ $ Vue moment vis */
 
 var datetimeFormat = 'YYYY-M-D HH:mm:ss';
 
@@ -24,6 +24,9 @@ Vue.component('userrequest', {
   data: function(){
     var initial = _.cloneDeep(this.iuserrequest);
     initial.show = true;
+    initial.showCadence = false;
+    initial.cadenceRequests = [];
+    initial.cadenceRequestId = -1;
     return initial;
   },
   created: function(){
@@ -66,6 +69,53 @@ Vue.component('userrequest', {
     },
     removeRequest: function(idx){
       this.requests.splice(idx, 1);
+      this.update();
+    },
+    expandCadence: function(data){
+      if(!_.isEmpty(this.errors)){
+        alert('Please make sure your request is valid before generating a cadence');
+        return false;
+      }
+      this.cadenceRequestId = data.id;
+      var payload = this.toRep;
+      payload.requests[data.id].windows = [];
+      payload.requests[data.id].cadence = data.cadence;
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/cadence/',
+        data: JSON.stringify(payload),
+        contentType: 'application/json',
+        success: function(data){
+          for(var r in data.requests){
+            that.cadenceRequests.push(data.requests[r]);
+          }
+        }
+      });
+      this.showCadence = true;
+    },
+    cancelCadence: function(){
+      this.cadenceRequests = [];
+      this.cadenceRequestId = -1;
+      this.showCadence = false;
+    },
+    acceptCadence: function(){
+      // this is a bit hacky because the UI representation of a request doesnt match what the api expects/returns
+      var that = this;
+      for(var r in this.cadenceRequests){
+        // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
+        // that the cadence was generated from and replace the window from what is returned.
+        var newRequest = _.cloneDeep(that.requests[that.cadenceRequestId]);
+        newRequest.windows = that.cadenceRequests[r].windows;
+        delete newRequest.cadence;
+        that.requests.push(newRequest);
+      }
+      // finally we remove the original request
+      this.removeRequest(that.cadenceRequestId);
+      if(this.requests.length > 1) this.operator = 'MANY';
+      this.cadenceRequests = [];
+      this.cadenceRequestId = -1;
+      this.showCadence = false;
       this.update();
     }
   },
@@ -175,6 +225,9 @@ Vue.component('request', {
     removeMolecule: function(idx){
       this.molecules.splice(idx, 1);
       this.update();
+    },
+    cadence: function(data){
+      this.$emit('cadence', {'id': this.index, 'request': this.toRep, 'cadence': data});
     }
   },
   template: '#request-template'
@@ -193,8 +246,9 @@ Vue.component('molecule', {
       var rep = {};
       var that = this;
       var fields = ['filter', 'bin_x', 'bin_y', 'exposure_count', 'exposure_time', 'instrument_name', 'type'];
-      if(this.datatype === 'SPECTRUM'){
-        fields = fields.concat(['acquire_radius_arcsec', 'acquire_mode']);
+      if(this.datatype === 'SPECTRA'){
+        fields.push('acquire_mode');
+        if(this.acquire_mode === 'BRIGHTEST') fields.push('acquire_radius_arcsec');
       }
       fields.forEach(function(x){
         rep[x] = that[x];
@@ -314,6 +368,9 @@ Vue.component('window', {
   data: function(){
     var initial = _.cloneDeep(this.iwindow);
     initial.show = true;
+    initial.cadence = false;
+    initial.period = 24.0;
+    initial.jitter = 12.0;
     return initial;
   },
   computed: {
@@ -324,6 +381,9 @@ Vue.component('window', {
   methods: {
     update: function(){
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
+    },
+    genCadence: function(){
+      this.$emit('cadence', {'start': this.start, 'end': this.end, 'period': this.period, 'jitter': this.jitter});
     }
   },
   watch: {
@@ -358,6 +418,66 @@ Vue.component('constraints', {
     }
   },
   template: '#constraints-template'
+});
+
+Vue.component('cadence', {
+  props: ['data'],
+  data: function(){
+    return {
+      options: {},
+      items: this.toVis
+    };
+  },
+  computed:{
+    toVis: function(){
+      var visData = [];
+      for(var r in this.data){
+        var request = this.data[r];
+        visData.push({'id': r, content: '' + (Number(r) + 1), start: request.windows[0].start, end: request.windows[0].end});
+      }
+      return new vis.DataSet(visData);
+    }
+  },
+  watch: {
+    data: function(){
+      this.timeline.setItems(this.toVis);
+      this.timeline.fit();
+    }
+  },
+  mounted: function(){
+    this.timeline = new vis.Timeline(this.$el, this.items, this.options);
+  },
+  template: '<div class="cadencetimeline"></div>'
+});
+
+Vue.component('modal', {
+  props: ['show', 'header'],
+  data: function(){
+    return {
+      open: false
+    };
+  },
+  methods: {
+    close: function(){
+      this.open = false;
+      this.$emit('close');
+    },
+    submit: function(){
+      this.open = false;
+      this.$emit('submit');
+    }
+  },
+  watch: {
+    show: function(value){
+      this.open = value;
+    }
+  },
+  computed: {
+    modalStyle: function(){
+      return this.open ? { 'padding-left': '0px;', display: 'block' } : {};
+    }
+  },
+  template: '#modal-template'
 });
 
 Vue.component('custom-field', {
