@@ -1,5 +1,6 @@
 from unittest.case import TestCase
 from mixer.backend.django import mixer
+from django.utils import timezone
 import datetime
 
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
@@ -23,8 +24,8 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
     def test_correct_number_of_requests_small_cadence(self):
         r_dict = self.req.as_dict
         r_dict['cadence'] = {
-            'start': datetime.datetime(2016, 9, 1),
-            'end': datetime.datetime(2016, 9, 3),
+            'start': datetime.datetime(2016, 9, 1, tzinfo=timezone.utc),
+            'end': datetime.datetime(2016, 9, 3, tzinfo=timezone.utc),
             'period': 24.0,
             'jitter': 12.0
         }
@@ -35,8 +36,8 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
     def test_correct_number_of_requests_large_cadence(self):
         r_dict = self.req.as_dict
         r_dict['cadence'] = {
-            'start': datetime.datetime(2016, 9, 1),
-            'end': datetime.datetime(2016, 10, 1),
+            'start': datetime.datetime(2016, 9, 1, tzinfo=timezone.utc),
+            'end': datetime.datetime(2016, 10, 1, tzinfo=timezone.utc),
             'period': 24.0,
             'jitter': 12.0
         }
@@ -47,8 +48,8 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
     def test_correct_number_of_requests_bounded_window(self):
         r_dict = self.req.as_dict
         r_dict['cadence'] = {
-            'start': datetime.datetime(2016, 9, 1),
-            'end': datetime.datetime(2016, 9, 2),
+            'start': datetime.datetime(2016, 9, 1, tzinfo=timezone.utc),
+            'end': datetime.datetime(2016, 9, 2, tzinfo=timezone.utc),
             'period': 24.0,
             'jitter': 12.0
         }
@@ -59,8 +60,8 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
     def test_correct_number_of_requests_overlapping_windows(self):
         r_dict = self.req.as_dict
         r_dict['cadence'] = {
-            'start': datetime.datetime(2016, 9, 1),
-            'end': datetime.datetime(2016, 9, 2),
+            'start': datetime.datetime(2016, 9, 1, tzinfo=timezone.utc),
+            'end': datetime.datetime(2016, 9, 2, tzinfo=timezone.utc),
             'period': 1.0,
             'jitter': 2.0
         }
