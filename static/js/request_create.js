@@ -246,7 +246,8 @@ Vue.component('molecule', {
       var that = this;
       var fields = ['filter', 'bin_x', 'bin_y', 'exposure_count', 'exposure_time', 'instrument_name', 'type'];
       if(this.datatype === 'SPECTRA'){
-        fields = fields.concat(['acquire_radius_arcsec', 'acquire_mode']);
+        fields.push('acquire_mode');
+        if(this.acquire_mode === 'BRIGHTEST') fields.push('acquire_radius_arcsec');
       }
       fields.forEach(function(x){
         rep[x] = that[x];
