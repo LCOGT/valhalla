@@ -1,6 +1,7 @@
 from valhalla.userrequests.duration_utils import get_request_duration
 from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 
+from django.utils import timezone
 from datetime import timedelta
 
 
@@ -27,12 +28,11 @@ def expand_cadence_request(request_dict):
         request_dict['windows'] = [{'start': window_start, 'end': window_end}]
         intervals = get_rise_set_intervals(request_dict)
         largest_interval = get_largest_interval(intervals)
-        if largest_interval.total_seconds() >= request_duration:
-            # this cadence window passes rise_set, so add it to the list
+        if largest_interval.total_seconds() >= request_duration and window_end > timezone.now():
+            # this cadence window passes rise_set and is in the future so add it to the list
             request_copy = request_dict.copy()
             del request_copy['cadence']
             cadence_requests.append(request_copy)
 
         request_window_start += timedelta(hours=cadence['period'])
     return cadence_requests
-
