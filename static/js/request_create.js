@@ -1,4 +1,4 @@
-/* globals _ $ Vue moment */
+/* globals _ $ Vue moment vis */
 
 var datetimeFormat = 'YYYY-M-D HH:mm:ss';
 
@@ -88,10 +88,18 @@ Vue.component('userrequest', {
         data: JSON.stringify(payload),
         contentType: 'application/json',
         success: function(data){
-          that.cadenceRequests = data.requests;
+          for(var r in data.requests){
+            var request = data.requests[r];
+            that.cadenceRequests.push({id: r, content: '', start: request.windows[0].start, end: request.windows[0].end});
+          }
         }
       });
       this.showCadence = true;
+    },
+    cancelCadence: function(){
+      this.cadenceRequests = [];
+      this.cadenceRequestId = -1;
+      this.showCadence = false;
     },
     acceptCadence: function(){
       // this is a bit hacky because the UI representation of a request doesnt match what the api expects/returns
@@ -100,7 +108,7 @@ Vue.component('userrequest', {
         // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
         // that the cadence was generated from and replace the window from what is returned.
         var newRequest = _.cloneDeep(that.requests[that.cadenceRequestId]);
-        newRequest.windows = that.cadenceRequests[r].windows;
+        newRequest.windows = [{start: that.cadenceRequests[r].start, end: that.cadenceRequests[r].end}];
         delete newRequest.cadence;
         that.requests.push(newRequest);
       }
@@ -413,6 +421,26 @@ Vue.component('constraints', {
     }
   },
   template: '#constraints-template'
+});
+
+Vue.component('cadence', {
+  props: ['data'],
+  data: function(){
+    return {
+      options: {},
+      items: new vis.DataSet(this.data)
+    };
+  },
+  watch: {
+    data: function(value){
+      this.timeline.setItems(new vis.DataSet(value));
+      this.timeline.fit();
+    }
+  },
+  mounted: function(){
+    this.timeline = new vis.Timeline(this.$el, this.items, this.options);
+  },
+  template: '<div class="cadencetimeline"></div>'
 });
 
 Vue.component('modal', {
