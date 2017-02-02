@@ -293,3 +293,7 @@ a:hover {
 .bs-docs-sidebar .nav>.active>ul.nav {
     display: block;
 }
+
+tr.semester {
+    background-color: #f9f9f9;
+}
