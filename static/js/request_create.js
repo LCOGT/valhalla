@@ -72,15 +72,15 @@ Vue.component('userrequest', {
       this.update();
     },
     expandCadence: function(data){
-      console.log('expanding cadence')
       if(!_.isEmpty(this.errors)){
         alert('Please make sure your request is valid before generating a cadence');
         return false;
       }
       this.cadenceRequestId = data.id;
-      var payload = this.toRep;
-      payload.requests[data.id].windows = [];
-      payload.requests[data.id].cadence = data.cadence;
+      var payload = JSON.parse(JSON.stringify(this.toRep));
+      payload.requests = [data.request];
+      payload.requests[0].windows = [];
+      payload.requests[0].cadence = data.cadence;
       var that = this;
       $.ajax({
         type: 'POST',
@@ -113,7 +113,6 @@ Vue.component('userrequest', {
       }
       // finally we remove the original request
       this.removeRequest(that.cadenceRequestId);
-      if(this.requests.length > 1) this.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
       this.showCadence = false;
