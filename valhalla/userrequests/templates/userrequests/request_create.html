@@ -83,7 +83,7 @@
               General Info
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
@@ -169,7 +169,7 @@
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy fa-fw"></i></a>
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
@@ -235,7 +235,7 @@
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" v-on:click="$parent.addMolecule(index)" title="Copy"><i class="fa fa-copy fa-fw"></i></a>
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
@@ -314,7 +314,7 @@
               Target
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
@@ -450,7 +450,7 @@
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-xs btn-success" v-on:click="$parent.addWindow(index)" title="copy"><i class="fa fa-copy fa-fw"></i></a>
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
@@ -514,7 +514,7 @@
               Constraints
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" title="minimize/maximize">
+              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
                 <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
               </a>
             </div>
