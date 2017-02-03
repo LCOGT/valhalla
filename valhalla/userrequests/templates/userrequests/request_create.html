@@ -374,9 +374,9 @@
                                :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
                 </custom-select>
                 <div class="sidereal" v-if="type === 'SIDEREAL'">
-                  <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra">
+                  <custom-field v-model="ra" label="Right Ascension" type="sex" field="ra" v-on:blur="updateRA" :errors="errors.ra">
                   </custom-field>
-                  <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec">
+                  <custom-field v-model="dec" label="Declination" type="sex" field="dec" v-on:blur="updateDec" :errors="errors.dec">
                   </custom-field>
                   <custom-field v-model="proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
                                 v-on:input="update" :errors="errors.proper_motion_ra">
@@ -553,7 +553,7 @@
     <div class="form-group" :class="{ 'has-error': errors }" v-show="$parent.show">
       <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
       <div class="col-sm-8">
-        <input :id="field" class="form-control" v-bind:value="value"
+        <input :id="field" class="form-control" v-bind:value="value" v-on:blur="blur($event.target.value)"
                v-on:input="update($event.target.value)" :name="field" :type="type || 'text'"/>
         <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
       </div>
@@ -659,6 +659,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.1.8/vue.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://s3-us-west-2.amazonaws.com/cdn.lcogt.net/script/utils.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.18.1/vis.min.js"></script>
 <script src="{% static 'js/request_create.js' %}"></script>
 {% endblock %}

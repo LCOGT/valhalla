@@ -1,4 +1,4 @@
-/* globals _ $ Vue moment vis */
+/* globals _ $ Vue moment vis Utils */
 
 var datetimeFormat = 'YYYY-M-D HH:mm:ss';
 
@@ -339,6 +339,14 @@ Vue.component('target', {
   methods: {
     update: function(){
       this.$emit('targetupdate', {'data': this.toRep});
+    },
+    updateRA: function(){
+      this.ra = Utils.sexagesimalRaToDecimal(this.ra);
+      this.update();
+    },
+    updateDec: function(){
+      this.dec = Utils.sexagesimalDecToDecimal(this.dec);
+      this.update();
     }
   },
   watch: {
@@ -483,8 +491,8 @@ Vue.component('modal', {
 Vue.component('custom-field', {
   props: ['value', 'label', 'field', 'errors', 'type'],
   mounted: function(){
+    var that = this;
     if(this.type === 'datetime'){
-      var that = this;
       $('#' + this.field).datetimepicker({
         format: datetimeFormat,
         minDate: moment().subtract(1, 'days'),
@@ -497,6 +505,9 @@ Vue.component('custom-field', {
   methods: {
     update: function(value){
       this.$emit('input', value);
+    },
+    blur: function(value){
+      this.$emit('blur', value);
     }
   },
   template: '#custom-field'
