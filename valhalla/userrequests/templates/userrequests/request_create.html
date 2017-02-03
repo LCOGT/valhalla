@@ -38,7 +38,7 @@
           <li><a v-on:click="saveDraft(-1)">Save as new draft</a></li>
         </ul>
       </span>
-      <a class="btn btn-success" title="Submit"><i class="fa fa-check"></i> Submit</a>
+      <a class="btn btn-success" title="Submit" v-on:click="submit" :disabled="!_.isEmpty(errors)" ><i class="fa fa-check"></i> Submit</a>
     </div>
     <div class="tab-content">
       <div class="tab-pane" :class="{ active: tab === 1 }">

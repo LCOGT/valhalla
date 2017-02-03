@@ -662,6 +662,18 @@ var vm = new Vue({
         }
       });
     }, 200),
+    submit: function(){
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/',
+        data: JSON.stringify(that.userrequest),
+        contentType: 'application/json',
+        success: function(data){
+          window.location = '/requests/' + data.id;
+        }
+      });
+    },
     userrequestUpdated: function(data){
       console.log('userrequest updated');
       this.userrequest = data;
