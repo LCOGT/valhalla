@@ -17,19 +17,23 @@ def get_num_filter_changes(molecules):
     return len(list(itertools.groupby([mol.get('filter', '') for mol in molecules])))
 
 
-def get_molecule_duration(molecule_dict):
+def get_molecule_duration_per_exposure(molecule_dict):
     configdb = ConfigDB()
     total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
-    mol_duration = molecule_dict['exposure_count'] * (molecule_dict['exposure_time'] + total_overhead_per_exp)
+    mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
+    return mol_duration_per_exp
+
+
+def get_molecule_duration(molecule_dict):
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
+    mol_duration = molecule_dict['exposure_count'] * mol_duration_per_exp
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
     return duration
 
 
 def get_num_exposures(molecule_dict, time_available):
-    configdb = ConfigDB()
-    total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
-    mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
     exposure_time = time_available.total_seconds() - PER_MOLECULE_GAP - PER_MOLECULE_STARTUP_TIME
     num_exposures = exposure_time // mol_duration_per_exp
 

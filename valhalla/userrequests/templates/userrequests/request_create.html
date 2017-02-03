@@ -44,7 +44,7 @@
       <div class="tab-pane" :class="{ active: tab === 1 }">
         <div class="row">
           <div class="col-md-11 col-sm-12 col-sm-12">
-            <userrequest ref="userrequest" :errors="errors" :duration_data="duration_data" :iuserrequest.sync="userrequest"
+            <userrequest ref="userrequest" :errors="errors" :duration_data="duration_data" :userrequest="userrequest"
                          v-on:userrequestupdate="userrequestUpdated"></userrequest>
           </div>
           <div class="col-md-1 hidden-sm hidden-xs">
@@ -117,32 +117,32 @@
                     <span class="col-md-4"><strong>Total Duration</strong></span>
                     <span class="col-md-8">{{ durationDisplay }}</span>
                   </div>
-                  <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
+                  <custom-field v-model="userrequest.group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
                   </custom-field>
-                  <custom-select v-model="proposal" label="Proposal" field="proposal" v-on:input="update"
+                  <custom-select v-model="userrequest.proposal" label="Proposal" field="proposal" v-on:input="update"
                                  :errors="errors.proposal" :options="proposalOptions">
                   </custom-select>
-                  <custom-select v-model="observation_type" label="Priority" field="observation_type" v-on:input="update"
+                  <custom-select v-model="userrequest.observation_type" label="Priority" field="observation_type" v-on:input="update"
                                 :errors="errors.observation_type"
                                 :options="[{value: 'NORMAL', text: 'Normal'},
                                            {value:'TARGET_OF_OPPORTUNITY', text: 'Target Of Opportunity'}]">
                   </custom-select>
-                  <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
+                  <custom-field v-model="userrequest.ipp_value" label="Ipp Value" field="ipp_value"
                                 v-on:input="update" :errors="errors.ipp_value">
                   </custom-field>
                   <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
                 </form>
               </div>
             </div>
-            <div v-for="(request, idx) in requests">
+            <div v-for="(request, idx) in userrequest.requests">
               <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence" header="Generated Cadence">
                 <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
                 Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
                 <cadence :data="cadenceRequests"></cadence>
               </modal>
-              <request ref="request" :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
+              <request ref="request" :index="idx" :request="request" :iavailable_instruments="available_instruments" :parentshow="show"
                        v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
-                       :errors="_.get(errors, ['requests', idx], [])"
+                       :errors="_.get(errors, ['requests', idx], {})"
                        :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})">
               </request>
               <div class="request-margin"></div>
@@ -168,7 +168,7 @@
               Request #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
+              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.userrequest.requests.length > 1" title="Delete">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy fa-fw"></i></a>
@@ -200,20 +200,21 @@
               </form>
             </div>
           </div>
-          <target ref="target" :itarget.sync="target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
+          <target ref="target" :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
           </target>
-          <div v-for="(molecule, idx) in molecules">
-            <molecule ref="molecule" :index="idx" :imolecule.sync="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
-                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])"
+          <div v-for="(molecule, idx) in request.molecules">
+            <molecule ref="molecule" :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
+                      v-on:moleculeupdate="moleculeUpdated" v-on:moleculefillwindow="moleculeFillWindow"
+                      :errors="_.get(errors, ['molecules', idx], {})"
                       :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})">
             </molecule>
           </div>
-          <div v-for="(window, idx) in windows">
-            <window ref="window" :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
+          <div v-for="(window, idx) in request.windows">
+            <window ref="window" :index="idx" :window="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
                     :errors="_.get(errors, ['windows', idx], [])">
             </window>
           </div>
-          <constraints ref="constraints" :constraints.sync="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
+          <constraints ref="constraints" :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
           </constraints>
         </div>
       </div>
@@ -235,7 +236,7 @@
               Configuration #{{ index + 1 }}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1" title="Remove">
+              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeMolecule(index)" v-show="$parent.request.molecules.length > 1" title="Remove">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-success btn-xs" v-on:click="$parent.addMolecule(index)" title="Copy"><i class="fa fa-copy fa-fw"></i></a>
@@ -268,35 +269,35 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
+                <custom-select v-model="molecule.filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
                                :errors="null" :options="filterOptions">
                 </custom-select>
-                <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
+                <custom-select v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
                                :errors="errors.bin_x" :options="binningsOptions">
                 </custom-select>
                 <div class="input-group">
-                  <custom-field v-model="exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
+                  <custom-field v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                                 :errors="errors.exposure_count">
                   </custom-field>
                   <span class="input-group-btn">
-                    <button class="btn btn-default" type="button">Fill</button>
+                    <button class="btn btn-default" type="button" v-on:click="fillWindow">Fill</button>
                   </span>
                 </div>
-                <custom-field v-model="exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
+                <custom-field v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                               :errors="errors.exposure_time">
                 </custom-field>
                 <div class="spectra" v-if="datatype === 'SPECTRA'">
-                  <custom-select v-model="type" label="Type" v-on:input="update" :errors="errors.type"
+                  <custom-select v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                                  :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                             {value: 'LAMP_FLAT', text: 'Lamp Flat'},
                                             {value: 'ARC', text:'Arc'}]">
                   </custom-select>
-                  <custom-select v-model="acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
+                  <custom-select v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
                                  :options="[{value: 'OFF', text: 'Off'},
                                             {value: 'WCS', text: 'WCS'},
                                             {value: 'BRIGHTEST', text: 'Brightest'}]">
                   </custom-select>
-                  <custom-field v-show="acquire_mode === 'BRIGHTEST'" v-model="acquire_radius_arcsec" field="acquire_radius_arcsec"
+                  <custom-field v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
                                 label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec">
                   </custom-field>
                 </div>
@@ -339,7 +340,7 @@
                 <dt>Type</dt>
                 <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
               </dl>
-              <dl v-show="type === 'SIDEREAL'">
+              <dl v-show="target.type === 'SIDEREAL'">
                 <dt>Right Ascension</dt>
                 <dd>In decimal degrees or hours:minutes:seconds</dd>
                 <dt>Declination</dt>
@@ -353,7 +354,7 @@
                 <dt>Parallax</dt>
                 <dd>("+0.45 mas")</dd>
               </dl>
-              <dl v-show="type === 'NON_SIDEREAL'">
+              <dl v-show="target.type === 'NON_SIDEREAL'">
                 <dt>Scheme</dt>
                 <dd>The orbital elements scheme to use with this target</dd>
                 <dt>Epoch</dt>
@@ -372,64 +373,64 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name">
+                <custom-field v-model="target.name" label="Name" field="name" v-on:input="update" :errors="errors.name">
                 </custom-field>
                 <div class="row" v-show="lookingUP">
                     <span class="col-md-12" style="text-align: right">
                       <i class="fa fa-spinner fa-spin fa-fw"></i> Looking up coordinates...
                     </span>
                 </div>
-                <custom-select v-model="type" label="Type" field="type" v-on:input="update" :errors="errors.type"
+                <custom-select v-model="target.type" label="Type" field="type" v-on:input="update" :errors="errors.type"
                                :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
                 </custom-select>
-                <div class="sidereal" v-if="type === 'SIDEREAL'">
-                  <custom-field v-model="ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra">
+                <div class="sidereal" v-if="target.type === 'SIDEREAL'">
+                  <custom-field v-model="target.ra" label="Right Ascension" field="ra" v-on:input="update" :errors="errors.ra">
                   </custom-field>
-                  <custom-field v-model="dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec">
+                  <custom-field v-model="target.dec" label="Declination" field="dec" v-on:input="update" :errors="errors.dec">
                   </custom-field>
-                  <custom-field v-model="proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
+                  <custom-field v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
                                 v-on:input="update" :errors="errors.proper_motion_ra">
                   </custom-field>
-                  <custom-field v-model="proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
+                  <custom-field v-model="target.proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
                                 v-on:input="update" :errors="errors.proper_motion_dec">
                   </custom-field>
-                  <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
+                  <custom-field v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
                   </custom-field>
-                  <custom-field v-model="parallax" label="Parallax" field="parallax" v-on:input="update"
+                  <custom-field v-model="target.parallax" label="Parallax" field="parallax" v-on:input="update"
                                 :errors="errors.parallax">
                   </custom-field>
                 </div>
-                <div class="non-sidereal" v-if="type === 'NON_SIDEREAL'">
-                  <custom-select v-model="scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
+                <div class="non-sidereal" v-if="target.type === 'NON_SIDEREAL'">
+                  <custom-select v-model="target.scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
                                  :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
                                             {value: 'MPC_COMET', text: 'MPC Comet'}]">
                   </custom-select>
-                  <custom-field v-model="epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
+                  <custom-field v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
                   </custom-field>
-                  <custom-field v-model="orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
+                  <custom-field v-model="target.orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
                                 :errors="errors.orbinc">
                   </custom-field>
-                  <custom-field v-model="longascnode" label="Longitude of Ascending Node" field="longascnode"
+                  <custom-field v-model="target.longascnode" label="Longitude of Ascending Node" field="longascnode"
                                 v-on:input="update" :errors="errors.longascnode">
                   </custom-field>
-                  <custom-field v-model="argofperih" label="Argument of Perihelion" field="argofperih"
+                  <custom-field v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
                                 v-on:input="update" :errors="errors.argofperih">
                   </custom-field>
-                  <custom-field v-model="meandist" label="Mean Distance (AU)" field="meandist"
+                  <custom-field v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
                                 v-on:input="update" :errors="errors.meandist">
                   </custom-field>
-                  <custom-field v-model="eccentricity" label="Eccentricity" field="eccentricity"
+                  <custom-field v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
                                 v-on:input="update" :errors="errors.eccentricity">
                   </custom-field>
-                  <custom-field v-model="meananom" label="Mean Anomoly" field="meananom"
+                  <custom-field v-model="target.meananom" label="Mean Anomoly" field="meananom"
                                 v-on:input="update" :errors="errors.meananom">
                   </custom-field>
                 </div>
                 <div class="spectra" v-if="datatype === 'SPECTRA'">
-                  <custom-select v-model="rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
+                  <custom-select v-model="target.rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                                  :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
                   </custom-select>
-                  <custom-field v-model="rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
+                  <custom-field v-model="target.rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
                   </custom-field>
                 </div>
               </form>
@@ -455,7 +456,7 @@
               Window #{{ index + 1}}
             </div>
             <div class="panel-actions col-xs-4">
-              <a class="btn btn-xs btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1" title="remove">
+              <a class="btn btn-xs btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.request.windows.length > 1" title="remove">
                 <i class="fa fa-trash fa-fw"></i>
               </a>
               <a class="btn btn-xs btn-success" v-on:click="$parent.addWindow(index)" title="copy"><i class="fa fa-copy fa-fw"></i></a>
@@ -486,9 +487,9 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
-                <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
+                <custom-field v-model="window.start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
+                <custom-field v-model="window.end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
                 </custom-field>
                 <div class="checkbox col-sm-8 col-sm-offset-4">
                   <label>
@@ -542,10 +543,10 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-field v-model="constraints.max_airmass" label="Max Airmass" field="constraints.max_airmass" v-on:input="update"
+                <custom-field v-model="constraints.max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
                               :errors="errors.max_airmass">
                 </custom-field>
-                <custom-field v-model="constraints.min_lunar_distance" label="Min. Lunar Distance" field="constraints.min_lunar_distance" v-on:input="update"
+                <custom-field v-model="constraints.min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"
                               :errors="errors.min_lunar_distance">
                 </custom-field>
               </form>

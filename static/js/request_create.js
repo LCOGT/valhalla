@@ -20,14 +20,16 @@ var collapseMixin = {
 };
 
 Vue.component('userrequest', {
-  props: ['errors', 'iuserrequest', 'duration_data'],
+  props: ['errors', 'userrequest', 'duration_data'],
   data: function(){
-    var initial = _.cloneDeep(this.iuserrequest);
-    initial.show = true;
-    initial.showCadence = false;
-    initial.cadenceRequests = [];
-    initial.cadenceRequestId = -1;
-    return initial;
+    return {
+        show: true,
+        showCadence: false,
+        cadenceRequests: [],
+        available_instruments: [],
+        proposals: [],
+        cadenceRequestId: -1
+    };
   },
   created: function(){
     var that = this;
@@ -38,23 +40,11 @@ Vue.component('userrequest', {
     });
   },
   computed:{
-    toRep: function(){
-      var rep = {};
-      var that = this;
-      ['group_id', 'proposal', 'operator', 'ipp_value', 'observation_type'].forEach(function(x){
-        rep[x] = that[x];
-      });
-      rep['requests'] = [];
-      this.$refs.request.forEach(function(element, index, array){
-        rep['requests'].push(element.toRep)
-      });
-      return rep;
-    },
     proposalOptions: function(){
       return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
     },
-    operator: function(){
-      return this.requests.length > 1 ? 'MANY' : 'SINGLE';
+    'userrequest.operator': function(){
+      return this.userrequest.requests.length > 1 ? 'MANY' : 'SINGLE';
     },
     durationDisplay: function(){
       var duration =  moment.duration(this.duration_data.duration, 'seconds');
@@ -63,20 +53,19 @@ Vue.component('userrequest', {
   },
   methods: {
     update: function(){
-      this.$emit('userrequestupdate', this.toRep);
+      this.$emit('userrequestupdate');
     },
     requestUpdated: function(data){
       console.log('request updated');
-//      Vue.set(this.requests, data.id, data.data);
       this.update();
     },
     addRequest: function(idx){
-      var newRequest = _.cloneDeep(this.requests[idx]);
-      this.requests.push(newRequest);
+      var newRequest = _.cloneDeep(this.userrequest.requests[idx]);
+      this.userrequest.requests.push(newRequest);
       this.update();
     },
     removeRequest: function(idx){
-      this.requests.splice(idx, 1);
+      this.userrequest.requests.splice(idx, 1);
       this.update();
     },
     expandCadence: function(data){
@@ -85,7 +74,7 @@ Vue.component('userrequest', {
         return false;
       }
       this.cadenceRequestId = data.id;
-      var payload = this.toRep;
+      var payload = this.userrequest;
       payload.requests[data.id].windows = [];
       payload.requests[data.id].cadence = data.cadence;
       var that = this;
@@ -113,56 +102,32 @@ Vue.component('userrequest', {
       for(var r in this.cadenceRequests){
         // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
         // that the cadence was generated from and replace the window from what is returned.
-        var newRequest = _.cloneDeep(that.requests[that.cadenceRequestId]);
+        var newRequest = _.cloneDeep(that.userrequests.requests[that.cadenceRequestId]);
         newRequest.windows = that.cadenceRequests[r].windows;
         delete newRequest.cadence;
         that.requests.push(newRequest);
       }
       // finally we remove the original request
       this.removeRequest(that.cadenceRequestId);
-      if(this.requests.length > 1) this.operator = 'MANY';
+      if(this.userrequests.requests.length > 1) this.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
       this.showCadence = false;
       this.update();
     }
   },
-  watch: {
-    iuserrequest: function(value){
-      Object.assign(this.$data, value);
-    }
-  },
   template: '#userrequest-template'
 });
 
 Vue.component('request', {
-  props: ['irequest', 'index', 'errors', 'iavailable_instruments', 'parentshow', 'duration_data'],
+  props: ['request', 'index', 'errors', 'iavailable_instruments', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
-    var initial = _.cloneDeep(this.irequest);
-    initial.show = true;
-    return initial;
+    return {show: true,
+            data_type: 'IMAGE',
+            instrument_name: ''};
   },
   computed: {
-    toRep: function(){
-      var rep = {};
-      var that = this;
-      ['location', 'data_type', 'instrument_name'].forEach(function(x){
-        rep[x] = that[x];
-      });
-      rep['molecules'] = [];
-      this.$refs.molecule.forEach(function(element, index, array){
-        rep['molecules'].push(element.toRep)
-      });
-      rep['windows'] = [];
-      this.$refs.window.forEach(function(element, index, array){
-        rep['windows'].push(element.toRep)
-      });
-      rep['target'] = this.$refs.target.toRep;
-      rep['constraints'] = this.$refs.constraints.toRep;
-
-      return rep;
-    },
     availableInstrumentOptions: function(){
       var options = [];
       for(var i in this.iavailable_instruments){
@@ -186,16 +151,13 @@ Vue.component('request', {
     },
     instrument_name: function(value){
       if(value){
-        this.location.telescope_class = vm.instrumentTypeMap[value].class;
+        this.request.location.telescope_class = vm.instrumentTypeMap[value].class;
         $.getJSON('/api/instrument/' + value + '/', function(data){
           vm.instrumentTypeMap[value].filters = data.filters;
           vm.instrumentTypeMap[value].binnings = data.binnings;
           vm.instrumentTypeMap[value].default_binning = data.default_binning;
         });
       }
-    },
-    irequest: function(value){
-      Object.assign(this.$data, value);
     },
     iavailable_instruments: function(){
       if(!this.instrument_name){
@@ -205,75 +167,68 @@ Vue.component('request', {
   },
   methods: {
     update: function(){
-      this.$emit('requestupdate', {'id': this.index, 'data': this.toRep});
+      this.$emit('requestupdate', {'id': this.index});
+    },
+    moleculeFillWindow: function(data){
+      console.log('moleculefillwindow');
+      if('largest_interval' in this.duration_data){
+        var molecule_duration = this.duration_data.molecules[data.id].duration;
+        var num_exposures = Math.floor((this.duration_data.largest_interval-molecule_duration) / molecule_duration);
+        this.request.molecules[data.id].exposure_count = Math.max(1, num_exposures);
+        this.update();
+      }
     },
     moleculeUpdated: function(data){
-      //Vue.set(this.molecules, data.id, data.data);
       console.log('moleculeupdated');
       this.update();
     },
     windowUpdated: function(data){
-      //Vue.set(this.windows, data.id, data.data);
       console.log('windowUpdated');
       this.update();
     },
     targetUpdated: function(data){
-      //this.target = data.data;
       console.log('targetUpdated');
       this.update();
     },
     constraintsUpdated: function(data){
-      //this.constraints = data.data;
       console.log('constraintsUpdated');
       this.update();
     },
     addWindow: function(idx){
-      var newWindow = JSON.parse(JSON.stringify(this.windows[idx]));
-      this.windows.push(newWindow);
+      var newWindow = JSON.parse(JSON.stringify(this.request.windows[idx]));
+      this.request.windows.push(newWindow);
       this.update();
     },
     addMolecule: function(idx){
-      var newMolecule = JSON.parse(JSON.stringify(this.molecules[idx]));
-      this.molecules.push(newMolecule);
+      var newMolecule = JSON.parse(JSON.stringify(this.request.molecules[idx]));
+      this.request.molecules.push(newMolecule);
       this.update();
     },
     removeWindow: function(idx){
-      this.windows.splice(idx, 1);
+      this.request.windows.splice(idx, 1);
       this.update();
     },
     removeMolecule: function(idx){
-      this.molecules.splice(idx, 1);
+      this.request.molecules.splice(idx, 1);
       this.update();
     },
     cadence: function(data){
-      this.$emit('cadence', {'id': this.index, 'request': this.toRep, 'cadence': data});
+      this.$emit('cadence', {'id': this.index, 'cadence': data});
     }
   },
   template: '#request-template'
 });
 
 Vue.component('molecule', {
-  props: ['imolecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow', 'duration_data'],
+  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
-    var initial = _.cloneDeep(this.imolecule);
-    initial.show = true;
-    return initial;
+    var acquire_params = {acquire_mode: 'OFF',
+          acquire_radius_arcsec: null
+          }
+    return {'show': true, acquire_params: acquire_params};
   },
   computed: {
-    toRep: function(){
-      var rep = {};
-      var that = this;
-      var fields = ['filter', 'bin_x', 'bin_y', 'exposure_count', 'exposure_time', 'instrument_name', 'type'];
-      if(this.datatype === 'SPECTRA'){
-        fields.push('acquire_mode');
-        if(this.acquire_mode === 'BRIGHTEST') fields.push('acquire_radius_arcsec');
-      }
-      fields.forEach(function(x){
-        rep[x] = that[x];
-      });
-      return rep;
-    },
     filterOptions: function(){
       var options = [{value: '', text: ''}];
       var filters = _.get(this.$root.instrumentTypeMap, [this.selectedinstrument, 'filters'], []);
@@ -295,119 +250,148 @@ Vue.component('molecule', {
   },
   methods: {
     update: function(){
-      this.$emit('moleculeupdate', {'id': this.index, 'data': this.toRep});
+      this.$emit('moleculeupdate', {'id': this.index});
     },
     binningsUpdated: function(){
-      this.bin_y = this.bin_x;
+      this.molecule.bin_y = this.molecule.bin_x;
       this.update();
+    },
+    fillWindow: function(){
+      this.$emit('moleculefillwindow', {'id': this.index});
     }
   },
   watch: {
     selectedinstrument: function(value){
-      this.instrument_name = value;
-      this.filter = '';
+      this.molecule.instrument_name = value;
+      this.molecule.filter = '';
       // wait for options to update, then set default
       var that = this;
       setTimeout(function(){
         var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
-        that.bin_x = default_binning;
-        that.bin_y = default_binning;
+        that.molecule.bin_x = default_binning;
+        that.molecule.bin_y = default_binning;
         that.update();
       }, 100);
     },
     datatype: function(value){
-      this.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+      this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+      if (this.datatype === 'SPECTRA'){
+        this.molecule.acquire_mode = this.acquire_params.acquire_mode;
+        if (this.molecule.acquire_mode === 'BRIGHTEST'){
+            this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+        }
+      }
+      else{
+        this.acquire_params.acquire_mode = this.molecule.acquire_mode;
+        this.molecule.acquire_mode = undefined;
+        this.molecule.acquire_radius_arcsec = undefined;
+      }
     },
-    imolecule: function(value){
-      Object.assign(this.$data, value);
+    'molecule.acquire_mode': function(value){
+        if(this.molecule.acquire_mode === 'BRIGHTEST'){
+            this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+        }
+        else{
+            if(typeof this.molecule.acquire_radius_arcsec != undefined){
+                this.acquire_params.acquire_radius_arcsec = this.molecule.acquire_radius_arcsec;
+                this.molecule.acquire_radius_arcsec = undefined;
+            }
+        }
     }
   },
   template: '#molecule-template'
 });
 
 Vue.component('target', {
-  props: ['itarget', 'errors', 'datatype', 'parentshow'],
+  props: ['target', 'errors', 'datatype', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    var initial = _.cloneDeep(this.itarget);
-    initial.show = true;
-    initial.lookingUP = false;
-    return initial;
-  },
-  computed: {
-    toRep: function(){
-      var rep = {'name': this.name, 'type': this.type};
-      var that = this;
-      if(this.type === 'SIDEREAL'){
-        ['ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'epoch', 'parallax'].forEach(function(x){
-          rep[x] = that[x];
-        });
-      }else if(this.type === 'NON_SIDEREAL'){
-        ['scheme', 'epoch', 'orbinc', 'longascnode', 'argofperih', 'meandist', 'eccentricity', 'meananom'].forEach(function(x){
-          rep[x] = that[x];
-        });
-      }
-      if(this.datatype === 'SPECTRA'){
-        ['rot_mode', 'rot_angle'].forEach(function(x){
-          rep[x] = that[x];
-        });
-      }
-      return rep;
-    }
+    var ns_target_params = {scheme: 'MPC_MINOR_PLANET',
+          orbinc: 0,
+          longascnode: 0,
+          argofperih: 0,
+          meandist: 0,
+          eccentricity: 0,
+          meananom: 0
+          }
+    var rot_target_params = {rot_mode: 'SKY', rot_angle: 0}
+    var sid_target_params = _.cloneDeep(this.target);
+    delete sid_target_params['name']
+    delete sid_target_params['epoch']
+    delete sid_target_params['type']
+    return {show: true, lookingUP: false, ns_target_params: ns_target_params, sid_target_params: sid_target_params, rot_target_params: rot_target_params};
   },
   methods: {
     update: function(){
-      this.$emit('targetupdate', {'data': this.toRep});
+      this.$emit('targetupdate', {});
     }
   },
   watch: {
-    name: _.debounce(function(name){
+    'target.name': _.debounce(function(name){
       this.lookingUP = true;
       var that = this;
       $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
-        that.ra = _.get(data, ['ra', 'decimal'], null);
-        that.dec = _.get(data, ['dec', 'decimal'], null);
-        that.proper_motion_ra = data.pmra;
-        that.proper_motion_dec = data.pmdec;
+        that.target.ra = _.get(data, ['ra', 'decimal'], null);
+        that.target.dec = _.get(data, ['dec', 'decimal'], null);
+        that.target.proper_motion_ra = data.pmra;
+        that.target.proper_motion_dec = data.pmdec;
         that.update();
       }).always(function(){
         that.lookingUP = false;
       });
     }, 500),
-    itarget: function(value){
-      Object.assign(this.$data, value);
+    'datatype': function(value){
+        if(this.datatype === 'SPECTRA'){
+            for (var param in this.rot_target_params){
+                this.target[param] = this.rot_target_params[param];
+            }
+        }
+        else{
+            for (var param in this.rot_target_params){
+                this.rot_target_params[param] = this.target[param];
+                this.target[param] = undefined;
+            }
+        }
+    },
+    'target.type': function(value){
+        that = this;
+        if(this.target.type === 'SIDEREAL'){
+            for (var param in this.ns_target_params){
+                that.ns_target_params[param] = that.target[param];
+                that.target[param] = undefined;
+            }
+            for (var param in this.sid_target_params){
+                that.target[param] = that.sid_target_params[param];
+            }
+        }else if(this.target.type === 'NON_SIDEREAL'){
+            for (var param in this.sid_target_params){
+                that.sid_target_params[param] = that.target[param];
+                that.target[param] = undefined;
+            }
+            for (var param in this.ns_target_params){
+                that.target[param] = that.ns_target_params[param];
+            }
+        }
     }
   },
   template: '#target-template'
 });
 
 Vue.component('window', {
-  props: ['iwindow', 'index', 'errors', 'parentshow'],
+  props: ['window', 'index', 'errors', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    var initial = _.cloneDeep(this.iwindow);
-    initial.show = true;
-    initial.cadence = false;
-    initial.period = 24.0;
-    initial.jitter = 12.0;
-    return initial;
-  },
-  computed: {
-    toRep: function(){
-      return {'start': this.start, 'end': this.end};
-    }
+    return {show: true,
+        cadence: false,
+        period: 24.0,
+        jitter: 12.0};
   },
   methods: {
     update: function(){
       this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
     },
     genCadence: function(){
-      this.$emit('cadence', {'start': this.start, 'end': this.end, 'period': this.period, 'jitter': this.jitter});
-    }
-  },
-  watch: {
-    iwindow: function(value){
-      Object.assign(this.$data, value);
+      this.$emit('cadence', {'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter});
     }
   },
   template: '#window-template'
@@ -419,21 +403,11 @@ Vue.component('constraints', {
   data: function(){
     return {'show': true};
   },
-  computed: {
-    toRep: function(){
-      return {'max_airmass': this.constraints.max_airmass, 'min_lunar_distance': this.constraints.min_lunar_distance};
-    }
-  },
   methods: {
     update: function(){
       this.$emit('constraintsupdate', {'data': this.toRep});
     }
   },
-//  watch: {
-//    iconstraints: function(value){
-//      Object.assign(this.$data, value);
-//    }
-//  },
   template: '#constraints-template'
 });
 
@@ -590,34 +564,21 @@ var vm = new Vue({
     draftId: -1,
     instrumentTypeMap: instrumentTypeMap,
     userrequest: {
-      show: true,
-      proposals: [],
-      available_instruments: [],
       group_id: '',
       proposal: '',
       ipp_value: 1.05,
+      operator: 'SINGLE',
       observation_type: 'NORMAL',
       requests: [{
-        data_type: 'IMAGE',
-        instrument_name: '',
         target: {
           name: '',
           type: 'SIDEREAL',
           ra: 0,
           dec: 0,
-          scheme: 'MPC_MINOR_PLANET',
           proper_motion_ra: 0.0,
           proper_motion_dec: 0.0,
           epoch: 2000,
           parallax: 0,
-          orbinc: 0,
-          longascnode: 0,
-          argofperih: 0,
-          meandist: 0,
-          eccentricity: 0,
-          meananom: 0,
-          rot_mode: 'SKY',
-          rot_angle: 0
         },
         molecules:[{
           type: 'EXPOSE',
@@ -628,8 +589,6 @@ var vm = new Vue({
           bin_x: null,
           bin_y: null,
           fill_window: false,
-          acquire_mode: 'OFF',
-          acquire_radius_arcsec: null,
         }],
         windows:[{
           start: moment().format(datetimeFormat),
@@ -654,7 +613,7 @@ var vm = new Vue({
       $.ajax({
         type: 'POST',
         url: '/api/user_requests/validate/',
-        data: JSON.stringify(that.$refs.userrequest.toRep),
+        data: JSON.stringify(that.userrequest),
         contentType: 'application/json',
         success: function(data){
           that.errors = data.errors;
@@ -664,7 +623,6 @@ var vm = new Vue({
     }, 200),
     userrequestUpdated: function(data){
       console.log('userrequest updated');
-//      this.userrequest = data;
       this.validate();
     },
     saveDraft: function(id){

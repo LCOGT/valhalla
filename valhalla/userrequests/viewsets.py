@@ -9,7 +9,8 @@ from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration, get_molecule_duration
+from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration_per_exposure,
+                                                  PER_MOLECULE_GAP, PER_MOLECULE_STARTUP_TIME)
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -41,9 +42,10 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             req_durations['requests'] = []
             for req in serializer.validated_data['requests']:
                 req_info = {'duration': get_request_duration(req)}
-                mol_durations = [{'duration': get_molecule_duration(mol)} for mol in req['molecules']]
+                mol_durations = [{'duration': get_molecule_duration_per_exposure(mol)} for mol in req['molecules']]
                 req_info['molecules'] = mol_durations
                 req_info['largest_interval'] = get_largest_interval(get_rise_set_intervals(req)).total_seconds()
+                req_info['largest_interval'] -= (PER_MOLECULE_STARTUP_TIME + PER_MOLECULE_GAP)
                 req_durations['requests'].append(req_info)
             req_durations['duration'] = sum([req['duration'] for req in req_durations['requests']])
             errors = {}
