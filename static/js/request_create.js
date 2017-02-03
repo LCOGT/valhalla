@@ -257,8 +257,8 @@ Vue.component('molecule', {
       this.molecule.bin_y = this.molecule.bin_x;
       this.update();
     },
-    onFillWindow: function(){
-    console.log("onFillWindow");
+    fillWindow: function(){
+    console.log("fillWindow");
       this.$emit('moleculefillwindow', {'id': this.index});
     }
   },
@@ -493,20 +493,6 @@ Vue.component('custom-field', {
     }
   },
   template: '#custom-field'
-});
-
-Vue.component('custom-button-field', {
-  props: ['value', 'label', 'field', 'errors', 'button_action', 'button_label'],
-  methods: {
-    update: function(value){
-      this.$emit('input', value);
-    },
-    buttonEvent: function(value){
-      console.log(value);
-      this.$emit(value.button_action);
-    }
-  },
-  template: '#custom-button-field'
 });
 
 Vue.component('custom-select', {
