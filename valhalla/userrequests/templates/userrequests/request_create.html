@@ -264,7 +264,7 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit'" v-on:input="update"
+                <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
                                :errors="null" :options="filterOptions">
                 </custom-select>
                 <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
@@ -477,9 +477,9 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal" >
-                <custom-field v-model="start" type="datetime" label="Start" field="start" v-on:input="update" :errors="errors.start">
+                <custom-field v-model="start" type="datetime" label="Start (UT)" field="start" v-on:input="update" :errors="errors.start">
                 </custom-field>
-                <custom-field v-model="end" type="datetime" label="End" field="end" v-on:input="update" :errors="errors.end">
+                <custom-field v-model="end" type="datetime" label="End (UT)" field="end" v-on:input="update" :errors="errors.end">
                 </custom-field>
                 <div class="checkbox col-sm-8 col-sm-offset-4">
                   <label>
