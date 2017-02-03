@@ -76,22 +76,22 @@ class MoleculeSerializer(serializers.ModelSerializer):
         if configdb.is_spectrograph(data['instrument_name']):
             if data['spectra_slit'] not in available_filters:
                 raise serializers.ValidationError(
-                    _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
+                    {'filter': _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
                         data['spectra_slit'], data['instrument_name'], ", ".join(available_filters)
-                    )
+                    )}
                 )
         elif data['type'].lower() in types_that_require_filter:
-            if 'filter' not in data:
+            if not data.get('filter'):
                 raise serializers.ValidationError(
-                    _("Molecule type {} with instrument {} must specify a filter.").format(
+                    {'filter': _("Molecule type {} with instrument {} must specify a filter.").format(
                         data['type'], data['instrument_name']
-                    )
+                    )}
                 )
             elif data['filter'] not in available_filters:
                 raise serializers.ValidationError(
-                    _("Invalid filter {} for instrument {}. Valid filters are: {}").format(
+                    {'filter': _("Invalid filter {} for instrument {}. Valid filters are: {}").format(
                         data['filter'], data['instrument_name'], ", ".join(available_filters)
-                    )
+                    )}
                 )
 
         # check that the binning is available for the instrument type specified

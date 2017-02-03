@@ -144,7 +144,7 @@
                 <cadence :data="cadenceRequests"></cadence>
               </modal>
               <request :index="idx" :irequest="request" :iavailable_instruments="available_instruments" :parentshow="show"
-                     v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence" :errors="_.get(errors, ['requests', idx], [])">
+                     v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence" :errors="_.get(errors, ['requests', idx], {})">
               </request>
               <div class="request-margin"></div>
             </div>
@@ -206,12 +206,12 @@
           </target>
           <div v-for="(molecule, idx) in molecules">
             <molecule :index="idx" :imolecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
-                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], [])">
+                      v-on:moleculeupdate="moleculeUpdated" :errors="_.get(errors, ['molecules', idx], {})">
             </molecule>
           </div>
           <div v-for="(window, idx) in windows">
             <window :index="idx" :iwindow="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
-                    :errors="_.get(errors, ['windows', idx], [])">
+                    :errors="_.get(errors, ['windows', idx], {})">
             </window>
           </div>
           <constraints :iconstraints="constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
@@ -271,7 +271,7 @@
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
                 <custom-select v-model="filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
-                               :errors="null" :options="filterOptions">
+                               :errors="errors.filter" :options="filterOptions">
                 </custom-select>
                 <custom-select v-model="bin_x" label="Binning" v-on:input="binningsUpdated"
                                :errors="errors.bin_x" :options="binningsOptions">
