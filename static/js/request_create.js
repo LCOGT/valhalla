@@ -173,7 +173,8 @@ Vue.component('request', {
       console.log('moleculefillwindow');
       if('largest_interval' in this.duration_data){
         var molecule_duration = this.duration_data.molecules[data.id].duration;
-        var num_exposures = Math.floor((this.duration_data.largest_interval-molecule_duration) / molecule_duration);
+        var available_time = this.duration_data.largest_interval - this.duration_data.duration + molecule_duration;
+        var num_exposures = Math.floor(available_time / molecule_duration);
         this.request.molecules[data.id].exposure_count = Math.max(1, num_exposures);
         this.update();
       }
@@ -256,7 +257,8 @@ Vue.component('molecule', {
       this.molecule.bin_y = this.molecule.bin_x;
       this.update();
     },
-    fillWindow: function(){
+    onFillWindow: function(){
+    console.log("onFillWindow");
       this.$emit('moleculefillwindow', {'id': this.index});
     }
   },
@@ -491,6 +493,20 @@ Vue.component('custom-field', {
     }
   },
   template: '#custom-field'
+});
+
+Vue.component('custom-button-field', {
+  props: ['value', 'label', 'field', 'errors', 'button_action', 'button_label'],
+  methods: {
+    update: function(value){
+      this.$emit('input', value);
+    },
+    buttonEvent: function(value){
+      console.log(value);
+      this.$emit(value.button_action);
+    }
+  },
+  template: '#custom-button-field'
 });
 
 Vue.component('custom-select', {

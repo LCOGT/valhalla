@@ -275,14 +275,9 @@
                 <custom-select v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
                                :errors="errors.bin_x" :options="binningsOptions">
                 </custom-select>
-                <div class="input-group">
-                  <custom-field v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
-                                :errors="errors.exposure_count">
-                  </custom-field>
-                  <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" v-on:click="fillWindow">Fill</button>
-                  </span>
-                </div>
+                <custom-button-field v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
+                                :errors="errors.exposure_count" button_label="Fill" v-on:fillwindow="onFillWindow" button_action="fillwindow">
+                </custom-button-field>
                 <custom-field v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                               :errors="errors.exposure_time">
                 </custom-field>
@@ -565,6 +560,25 @@
       <div class="col-sm-8">
         <input :id="field" class="form-control" v-bind:value="value"
                v-on:input="update($event.target.value)" :name="field" :type="type || 'text'"/>
+        <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
+      </div>
+    </div>
+    <span class="collapse-inline" v-show="!$parent.show">{{ label }}: <strong>{{ value || '...' }}</strong></span>
+  </span>
+</script>
+
+<script type="text/x-template" id="custom-button-field">
+  <span>
+    <div class="form-group" :class="{ 'has-error': errors }" v-show="$parent.show">
+      <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
+      <div class="col-sm-8">
+        <div class="input-group">
+          <input :id="field" class="form-control" type="text" v-bind:value="value"
+                 v-on:input="update($event.target.value)" :name="field"/>
+          <div class="input-group-btn">
+            <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="buttonEvent({button_action})">{{button_label}}</button>
+          </div>
+        </div>
         <span class="help-block text-danger" v-for="error in errors">{{ error }}</span>
       </div>
     </div>
