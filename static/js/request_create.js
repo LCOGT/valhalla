@@ -72,6 +72,7 @@ Vue.component('userrequest', {
       this.update();
     },
     expandCadence: function(data){
+      console.log('expanding cadence')
       if(!_.isEmpty(this.errors)){
         alert('Please make sure your request is valid before generating a cadence');
         return false;
@@ -493,7 +494,7 @@ Vue.component('custom-field', {
   mounted: function(){
     var that = this;
     if(this.type === 'datetime'){
-      $('#' + this.field).datetimepicker({
+      $(this.$el).find('input').datetimepicker({
         format: datetimeFormat,
         minDate: moment().subtract(1, 'days'),
         keyBinds: {left: null, right: null, up: null, down: null}
