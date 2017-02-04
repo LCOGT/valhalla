@@ -1,4 +1,4 @@
-/* globals _ $ Vue moment vis */
+/* globals _ $ Vue moment vis Utils */
 
 var datetimeFormat = 'YYYY-M-D HH:mm:ss';
 
@@ -41,7 +41,7 @@ Vue.component('userrequest', {
   },
   computed:{
     proposalOptions: function(){
-      return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
+      return _.sortBy(_.map(this.proposals, function(p){return {'value': p, 'text': p};}), 'text');
     },
     'userrequest.operator': function(){
       return this.userrequest.requests.length > 1 ? 'MANY' : 'SINGLE';
@@ -75,6 +75,7 @@ Vue.component('userrequest', {
       }
       this.cadenceRequestId = data.id;
       var payload = this.userrequest;
+      payload.requests = [data.request];
       payload.requests[data.id].windows = [];
       payload.requests[data.id].cadence = data.cadence;
       var that = this;
@@ -109,7 +110,7 @@ Vue.component('userrequest', {
       }
       // finally we remove the original request
       this.removeRequest(that.cadenceRequestId);
-      if(this.userrequests.requests.length > 1) this.operator = 'MANY';
+      if(this.userrequest.requests.length > 1) this.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
       this.showCadence = false;
@@ -136,7 +137,7 @@ Vue.component('request', {
           options.push({value: instrument_name, text: instrument_name});
         }
       }
-      return options;
+      return _.sortBy(options, 'text').reverse();
     },
     firstAvailableInstrument: function(){
       return this.availableInstrumentOptions[0].value;
@@ -215,7 +216,7 @@ Vue.component('request', {
       this.update();
     },
     cadence: function(data){
-      this.$emit('cadence', {'id': this.index, 'cadence': data});
+      this.$emit('cadence', {'id': this.index, 'request':this.request, 'cadence': data});
     }
   },
   template: '#request-template'
@@ -239,7 +240,7 @@ Vue.component('molecule', {
           options.push({value: filter, text: filters[filter].name});
         }
       }
-      return options;
+      return _.sortBy(options, 'text');
     },
     binningsOptions: function(){
       var options = [];
@@ -327,6 +328,14 @@ Vue.component('target', {
   methods: {
     update: function(){
       this.$emit('targetupdate', {});
+    },
+    updateRA: function(){
+      this.ra = Utils.sexagesimalRaToDecimal(this.ra);
+      this.update();
+    },
+    updateDec: function(){
+      this.dec = Utils.sexagesimalDecToDecimal(this.dec);
+      this.update();
     }
   },
   watch: {
@@ -477,9 +486,9 @@ Vue.component('modal', {
 Vue.component('custom-field', {
   props: ['value', 'label', 'field', 'errors', 'type'],
   mounted: function(){
+    var that = this;
     if(this.type === 'datetime'){
-      var that = this;
-      $('#' + this.field).datetimepicker({
+      $(this.$el).find('input').datetimepicker({
         format: datetimeFormat,
         minDate: moment().subtract(1, 'days'),
         keyBinds: {left: null, right: null, up: null, down: null}
@@ -491,6 +500,9 @@ Vue.component('custom-field', {
   methods: {
     update: function(value){
       this.$emit('input', value);
+    },
+    blur: function(value){
+      this.$emit('blur', value);
     }
   },
   template: '#custom-field'
@@ -624,6 +636,18 @@ var vm = new Vue({
         }
       });
     }, 200),
+    submit: function(){
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/user_requests/',
+        data: JSON.stringify(that.userrequest),
+        contentType: 'application/json',
+        success: function(data){
+          window.location = '/requests/' + data.id;
+        }
+      });
+    },
     userrequestUpdated: function(data){
       console.log('userrequest updated');
       this.validate();
