@@ -47,7 +47,7 @@ Vue.component('userrequest', {
       return rep;
     },
     proposalOptions: function(){
-      return _.map(this.proposals, function(p){return {'value': p, 'text': p};});
+      return _.sortBy(_.map(this.proposals, function(p){return {'value': p, 'text': p};}), 'text');
     },
     operator: function(){
       return this.requests.length > 1 ? 'MANY' : 'SINGLE';
@@ -152,7 +152,7 @@ Vue.component('request', {
           options.push({value: instrument_name, text: instrument_name});
         }
       }
-      return options;
+      return _.sortBy(options, 'text').reverse();
     },
     firstAvailableInstrument: function(){
       return this.availableInstrumentOptions[0].value;
@@ -263,7 +263,7 @@ Vue.component('molecule', {
           options.push({value: filter, text: filters[filter].name});
         }
       }
-      return options;
+      return _.sortBy(options, 'text');
     },
     binningsOptions: function(){
       var options = [];
