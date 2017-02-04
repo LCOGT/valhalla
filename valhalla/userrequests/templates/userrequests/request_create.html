@@ -278,7 +278,7 @@
                 <custom-field v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                                 :errors="errors.exposure_count">
                   <div class="input-group-btn" slot="inlineButton">
-                    <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow">Fill</button>
+                    <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow" :disabled="duration_data.duration > 0 ? false : true"><b>Fill</b></button>
                   </div>
                 </custom-field>
                 <custom-field v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
