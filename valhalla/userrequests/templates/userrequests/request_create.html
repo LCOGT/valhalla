@@ -84,7 +84,7 @@
               <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
-              General Info
+              General Information
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
@@ -169,7 +169,7 @@
               <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
-              Request #{{ index + 1}}
+              Request <span v-show="index > 0">#{{ index + 1}}</span>
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.requests.length > 1" title="Delete">
@@ -235,7 +235,7 @@
               <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
-              Configuration #{{ index + 1 }}
+              Configuration <span v-show="index > 0">#{{ index + 1 }}</span>
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-danger btn-xs" v-on:click="$parent.removeMolecule(index)" v-show="$parent.molecules.length > 1" title="Remove">
@@ -450,7 +450,7 @@
               <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
             </div>
             <div class="panel-title col-xs-4">
-              Window #{{ index + 1}}
+              Window <span v-show="index > 0">#{{ index + 1}}</span>
             </div>
             <div class="panel-actions col-xs-4">
               <a class="btn btn-xs btn-danger" v-on:click="$parent.removeWindow(index)" v-show="$parent.windows.length > 1" title="remove">
