@@ -98,16 +98,18 @@
             <div class="row">
               <div class="col-md-6 compose-help" v-show="show">
                 <dl>
-                  <dt>Total Duration</dt>
-                  <dd>The amount of time that will be debited from your proposal for this request.</dd>
+                  <dt>Duration of Observing Request</dt>
+                  <dd>Time that will be deducted from your proposal when this request is completed.</dd>
                   <dt>Title</dt>
-                  <dd>Provide a meaningful title for this observation request.</dd>
+                  <dd>Provide a name for this observing request.</dd>
                   <dt>Proposal</dt>
-                  <dd>Select the proposal for which this observation should be associated with.</dd>
+                  <dd>Select the proposal for which this observation will be made.</dd>
                   <dt>Priority</dt>
-                  <dd>Select whether this request requires rapid response. RR requests will interrupt currently running observations.</dd>
-                  <dt>Ipp Value</dt>
-                  <dd>Select the Inter Proposal Priority for this request.
+                  <dd>Select whether this request should be executed immediately (i.e. within 12 min of submission).
+                      <a href="https://lco.global/documentation/">More information about Rapid Response mode.
+                  </dd>
+                  <dt>Ipp Factor</dt>
+                  <dd>Provide an InterProposal Priority factor for this request.
                       <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
                          More information about IPP.
                       </a>
@@ -117,7 +119,7 @@
               <div :class="show ? 'col-md-6' : 'col-md-12'">
                 <form class="form-horizontal">
                   <div class="row duration" v-show="show">
-                    <span class="col-md-4"><strong>Total Duration</strong></span>
+                    <span class="col-md-4"><strong>Duration</strong></span>
                     <span class="col-md-8">{{ $parent.durationDisplay }}</span>
                   </div>
                   <custom-field v-model="group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
@@ -127,10 +129,10 @@
                   </custom-select>
                   <custom-select v-model="observation_type" label="Priority" field="observation_type" v-on:input="update"
                                 :errors="errors.observation_type"
-                                :options="[{value: 'NORMAL', text: 'Normal'},
-                                           {value:'TARGET_OF_OPPORTUNITY', text: 'Target Of Opportunity'}]">
+                                :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
+                                           {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]">
                   </custom-select>
-                  <custom-field v-model="ipp_value" label="Ipp Value" field="ipp_value"
+                  <custom-field v-model="ipp_value" label="Ipp Factor" field="ipp_value"
                                 v-on:input="update" :errors="errors.ipp_value">
                   </custom-field>
                   <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ $parent.durationDisplay }}</strong></div>
@@ -185,16 +187,15 @@
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
               <dl>
-                <dt>Data Type</dt>
-                <dd>Choose <strong>Expose</strong> for imaging a target. Choose <strong>Spectra</strong> for use of a spectrograph.</dd>
                 <dt>Instrument</dt>
-                <dd>Please choose the instrument you would like to observe with. <a target="_blank" href="https://lco.global/observatory/instruments/">Learn more about LCO instrumentation</a>.</dd>
+                <dd>Select the instrument with which this observation will be made.
+                <a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments</a>.</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                 <custom-select v-model="data_type" label="Data" v-on:input="update" :errors="errors.data_type"
-                                :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectra'}]">
+                 <custom-select v-model="data_type" label="Observation Type" v-on:input="update" :errors="errors.data_type"
+                                :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
                 </custom-select>
                 <custom-select v-model="instrument_name" label="Instrument" field="instrument_name"
                                :errors="errors.instrument_name" :options="availableInstrumentOptions">
@@ -255,11 +256,11 @@
                 <dt>Filter/Slit</dt>
                 <dd>The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.</dd>
                 <dt>Binning</dt>
-                <dd>The binning used to readout the camera. The recommended binning will be selected by default.</dd>
+                <dd>Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.</dd>
                 <dt>Exposure Count</dt>
-                <dd>The number of exposures to take with this configuration.</dd>
+                <dd>Number of exposures to make with this configuration.</dd>
                 <dt>Exposure Time</dt>
-                <dd>The time in seconds for each exposure in this configuration</dd>
+                <dd>Seconds</dd>
               </dl>
               <dl v-show="datatype === 'SPECTRA'">
                 <dt>Type</dt>
@@ -332,24 +333,22 @@
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
               <dl>
-                <dt>Name</dt>
-                <dd>The name of the target. If it is a known object, we will attempt to fill in coordinates</dd>
                 <dt>Type</dt>
                 <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
               </dl>
               <dl v-show="type === 'SIDEREAL'">
                 <dt>Right Ascension</dt>
-                <dd>In decimal degrees or hours:minutes:seconds</dd>
+                <dd>Decimal degrees or HH:MM:SS.S</dd>
                 <dt>Declination</dt>
-                <dd>In Degrees</dd>
+                <dd>Decimal degrees of DD:MM:SS.S</dd>
                 <dt>Proper Motion RA</dt>
-                <dd>(+/-0.33 mas/year)</dd>
+                <dd>&plusmn;0.33 mas/year</dd>
                 <dt>Proper Motion Dec</dt>
-                <dd>(+/-0.33 mas/year)</dd>
+                <dd>&plusmn;0.33 mas/year</dd>
                 <dt>Epoch</dt>
                 <dd>Julian Years</dd>
                 <dt>Parallax</dt>
-                <dd>("+0.45 mas")</dd>
+                <dd>+0.45 mas</dd>
               </dl>
               <dl v-show="type === 'NON_SIDEREAL'">
                 <dt>Scheme</dt>
@@ -370,7 +369,7 @@
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-field v-model="name" label="Name" field="name" v-on:input="update" :errors="errors.name">
+                <custom-field v-model="name" label="Target Name" field="name" v-on:input="update" :errors="errors.name">
                 </custom-field>
                 <div class="row" v-show="lookingUP">
                     <span class="col-md-12" style="text-align: right">
@@ -470,17 +469,17 @@
             <div class="col-md-6 compose-help" v-show="show">
               <dl>
                 <dt>Start</dt>
-                <dd>The lower limit of the time window.</dd>
+                <dd>Time when the observing window opens.</dd>
                 <dt>End</dt>
-                <dd>The Upper end of the time window.</dd>
+                <dd>Time when the observing window closes.</dd>
                 <dt>Cadence</dt>
-                <dd>Instead of a single request that may occur once any time within this time window, you may instead observe several
-                times periodically within it. Press "generate cadence" to apply the chosen cadence.
-                <strong>This will remove all previously created windows.</strong></dd>
+                <dd>Option to specify periodic observations within this window.
+                <strong>This will remove all previously created windows.</strong>
+                </dd>
                 <dt v-show="cadence">Period</dt>
-                <dd v-show="cadence">In fractional hours</dd>
+                <dd v-show="cadence">Fractional hours</dd>
                 <dt v-show="cadence">Jitter</dt>
-                <dd v-show="cadence">In fractional hours</dd>
+                <dd v-show="cadence">Acceptable deviation (before or after) from strict period.</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
@@ -534,15 +533,15 @@
           <div class="row">
             <div class="col-md-6 compose-help" v-show="show">
               <dl>
-                <dt>Max Airmass</dt>
-                <dd>The maximum airmass at which this request should be considered for the target.</dd>
-                <dt>Min Lunar Distance</dt>
-                <dd>The minimum distance (in degrees) the target can be to the moon before the request is no longer considered</dd>
+                <dt>Maximum Airmass</dt>
+                <dd>Airmass = 1 at zenith.</dd>
+                <dt>Minimum Lunar Separation</dt>
+                <dd>Minimum acceptable angular separation between the target and the moon.</dd>
               </dl>
             </div>
             <div :class="show ? 'col-md-6' : 'col-md-12'">
               <form class="form-horizontal">
-                <custom-field v-model="max_airmass" label="Max Airmass" field="max_airmass" v-on:input="update"
+                <custom-field v-model="max_airmass" label="Maximum Airmass" field="max_airmass" v-on:input="update"
                               :errors="errors.max_airmass">
                 </custom-field>
                 <custom-field v-model="min_lunar_distance" label="Min. Lunar Distance" field="min_lunar_distance" v-on:input="update"

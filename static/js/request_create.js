@@ -645,7 +645,7 @@ var vm = new Vue({
   computed: {
     durationDisplay: function(){
       var duration =  moment.duration(this.duration, 'seconds');
-      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
+      return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec.';
     }
   },
   methods: {
