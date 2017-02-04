@@ -172,9 +172,10 @@ Vue.component('request', {
     moleculeFillWindow: function(data){
       console.log('moleculefillwindow');
       if('largest_interval' in this.duration_data){
+        var num_exposures = this.request.molecules[data.id].exposure_count;
         var molecule_duration = this.duration_data.molecules[data.id].duration;
-        var available_time = this.duration_data.largest_interval - this.duration_data.duration + molecule_duration;
-        var num_exposures = Math.floor(available_time / molecule_duration);
+        var available_time = this.duration_data.largest_interval - this.duration_data.duration + (molecule_duration*num_exposures);
+        num_exposures = Math.floor(available_time / molecule_duration);
         this.request.molecules[data.id].exposure_count = Math.max(1, num_exposures);
         this.update();
       }
