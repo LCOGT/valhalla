@@ -74,7 +74,7 @@ Vue.component('userrequest', {
         return false;
       }
       this.cadenceRequestId = data.id;
-      var payload = this.userrequest;
+      var payload = _.cloneDeep(this.userrequest);
       payload.requests = [data.request];
       payload.requests[0].windows = [];
       payload.requests[0].cadence = data.cadence;
@@ -103,14 +103,14 @@ Vue.component('userrequest', {
       for(var r in this.cadenceRequests){
         // all that changes in the cadence is the window, so instead of parsing what is returned we just copy the request
         // that the cadence was generated from and replace the window from what is returned.
-        var newRequest = _.cloneDeep(that.userrequests.requests[that.cadenceRequestId]);
+        var newRequest = _.cloneDeep(that.userrequest.requests[that.cadenceRequestId]);
         newRequest.windows = that.cadenceRequests[r].windows;
         delete newRequest.cadence;
-        that.requests.push(newRequest);
+        that.userrequest.requests.push(newRequest);
       }
       // finally we remove the original request
       this.removeRequest(that.cadenceRequestId);
-      if(this.userrequest.requests.length > 1) this.operator = 'MANY';
+      if(this.userrequest.requests.length > 1) this.userrequest.operator = 'MANY';
       this.cadenceRequests = [];
       this.cadenceRequestId = -1;
       this.showCadence = false;
