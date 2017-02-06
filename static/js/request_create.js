@@ -165,9 +165,9 @@ Vue.component('request', {
         this.instrument_name = this.firstAvailableInstrument;
       }
     },
-    'request.molecules.0.instrument_name': function(){
-      this.data_type = instrumentTypeMap[this.request.molecules[0].instrument_name].type;
-      this.instrument_name = this.request.molecules[0].instrument_name;
+    'request.molecules.0.instrument_name': function(value){
+      this.data_type = instrumentTypeMap[value].type;
+      this.instrument_name = value;
     }
   },
   methods: {
@@ -270,16 +270,18 @@ Vue.component('molecule', {
   },
   watch: {
     selectedinstrument: function(value){
-      this.molecule.instrument_name = value;
-      this.molecule.filter = '';
-      // wait for options to update, then set default
-      var that = this;
-      setTimeout(function(){
-        var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
-        that.molecule.bin_x = default_binning;
-        that.molecule.bin_y = default_binning;
-        that.update();
-      }, 100);
+      if(this.molecule.instrument_name != value){
+          this.molecule.instrument_name = value;
+          this.molecule.filter = '';
+          // wait for options to update, then set default
+          var that = this;
+          setTimeout(function(){
+            var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
+            that.molecule.bin_x = default_binning;
+            that.molecule.bin_y = default_binning;
+            that.update();
+          }, 100);
+      }
     },
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
