@@ -23,12 +23,12 @@ Vue.component('userrequest', {
   props: ['errors', 'userrequest', 'duration_data'],
   data: function(){
     return {
-        show: true,
-        showCadence: false,
-        cadenceRequests: [],
-        available_instruments: [],
-        proposals: [],
-        cadenceRequestId: -1
+      show: true,
+      showCadence: false,
+      cadenceRequests: [],
+      available_instruments: [],
+      proposals: [],
+      cadenceRequestId: -1
     };
   },
   created: function(){
@@ -269,31 +269,31 @@ Vue.component('molecule', {
       this.update();
     },
     fillWindow: function(){
-      console.log("fillWindow");
+      console.log('fillWindow');
       this.$emit('moleculefillwindow', this.index);
     }
   },
   watch: {
     selectedinstrument: function(value){
       if(this.molecule.instrument_name != value){
-          this.molecule.instrument_name = value;
-          this.molecule.filter = '';
-          // wait for options to update, then set default
-          var that = this;
-          setTimeout(function(){
-            var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
-            that.molecule.bin_x = default_binning;
-            that.molecule.bin_y = default_binning;
-            that.update();
-          }, 100);
+        this.molecule.instrument_name = value;
+        this.molecule.filter = '';
+        // wait for options to update, then set default
+        var that = this;
+        setTimeout(function(){
+          var default_binning = _.get(that.$root.instrumentTypeMap, [that.selectedinstrument, 'default_binning'], null);
+          that.molecule.bin_x = default_binning;
+          that.molecule.bin_y = default_binning;
+          that.update();
+        }, 100);
       }
     },
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
-      if (this.datatype === 'SPECTRA'){
+      if (value === 'SPECTRA'){
         this.molecule.acquire_mode = this.acquire_params.acquire_mode;
         if (this.molecule.acquire_mode === 'BRIGHTEST'){
-            this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+          this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
         }
       }
       else{
@@ -303,15 +303,15 @@ Vue.component('molecule', {
       }
     },
     'molecule.acquire_mode': function(value){
-        if(value === 'BRIGHTEST'){
-            this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+      if(value === 'BRIGHTEST'){
+        this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+      }
+      else{
+        if(typeof this.molecule.acquire_radius_arcsec != undefined){
+          this.acquire_params.acquire_radius_arcsec = this.molecule.acquire_radius_arcsec;
+          this.molecule.acquire_radius_arcsec = undefined;
         }
-        else{
-            if(typeof this.molecule.acquire_radius_arcsec != undefined){
-                this.acquire_params.acquire_radius_arcsec = this.molecule.acquire_radius_arcsec;
-                this.molecule.acquire_radius_arcsec = undefined;
-            }
-        }
+      }
     }
   },
   template: '#molecule-template'
@@ -329,12 +329,12 @@ Vue.component('target', {
       meandist: 0,
       eccentricity: 0,
       meananom: 0
-    }
-    var rot_target_params = {rot_mode: 'SKY', rot_angle: 0}
+    };
+    var rot_target_params = {rot_mode: 'SKY', rot_angle: 0};
     var sid_target_params = _.cloneDeep(this.target);
-    delete sid_target_params['name']
-    delete sid_target_params['epoch']
-    delete sid_target_params['type']
+    delete sid_target_params['name'];
+    delete sid_target_params['epoch'];
+    delete sid_target_params['type'];
     return {show: true, lookingUP: false, ns_target_params: ns_target_params, sid_target_params: sid_target_params, rot_target_params: rot_target_params};
   },
   methods: {
@@ -365,37 +365,36 @@ Vue.component('target', {
       });
     }, 500),
     'datatype': function(value){
-        if(this.datatype === 'SPECTRA'){
-            for (var param in this.rot_target_params){
-                this.target[param] = this.rot_target_params[param];
-            }
+      if(value === 'SPECTRA'){
+        for(var x in this.rot_target_params){
+          this.target[x] = this.rot_target_params[x];
         }
-        else{
-            for (var param in this.rot_target_params){
-                this.rot_target_params[param] = this.target[param];
-                this.target[param] = undefined;
-            }
+      }else{
+        for(var y in this.rot_target_params){
+          this.rot_target_params[y] = this.target[y];
+          this.target[y] = undefined;
         }
+      }
     },
     'target.type': function(value){
-        that = this;
-        if(this.target.type === 'SIDEREAL'){
-            for (var param in this.ns_target_params){
-                that.ns_target_params[param] = that.target[param];
-                that.target[param] = undefined;
-            }
-            for (var param in this.sid_target_params){
-                that.target[param] = that.sid_target_params[param];
-            }
-        }else if(this.target.type === 'NON_SIDEREAL'){
-            for (var param in this.sid_target_params){
-                that.sid_target_params[param] = that.target[param];
-                that.target[param] = undefined;
-            }
-            for (var param in this.ns_target_params){
-                that.target[param] = that.ns_target_params[param];
-            }
+      var that = this;
+      if(this.target.type === 'SIDEREAL'){
+        for(var x in this.ns_target_params){
+          that.ns_target_params[x] = that.target[x];
+          that.target[x] = undefined;
         }
+        for(var y in this.sid_target_params){
+          that.target[y] = that.sid_target_params[y];
+        }
+      }else if(value === 'NON_SIDEREAL'){
+        for(var z in this.sid_target_params){
+          that.sid_target_params[z] = that.target[z];
+          that.target[z] = undefined;
+        }
+        for(var a in this.ns_target_params){
+          that.target[a] = that.ns_target_params[a];
+        }
+      }
     }
   },
   template: '#target-template'
@@ -662,7 +661,7 @@ var vm = new Vue({
         }
       });
     },
-    userrequestUpdated: function(data){
+    userrequestUpdated: function(){
       console.log('userrequest updated');
       this.validate();
     },
