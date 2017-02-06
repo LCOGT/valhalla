@@ -164,6 +164,10 @@ Vue.component('request', {
       if(!this.instrument_name){
         this.instrument_name = this.firstAvailableInstrument;
       }
+    },
+    'request.molecules.0.instrument_name': function(){
+      this.data_type = instrumentTypeMap[this.request.molecules[0].instrument_name].type;
+      this.instrument_name = this.request.molecules[0].instrument_name;
     }
   },
   methods: {
