@@ -8,7 +8,7 @@ from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration
+from valhalla.userrequests.duration_utils import get_request_duration_dict
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -35,13 +35,15 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'])
     def validate(self, request):
         serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        req_durations = {}
         if serializer.is_valid():
-            duration = sum([get_request_duration(req) for req in serializer.validated_data['requests']])
-            errors = []
+            req_durations = get_request_duration_dict(serializer.validated_data['requests'])
+            errors = {}
         else:
             errors = serializer.errors
-            duration = 0
-        return Response({'duration': duration, 'errors': errors})
+
+        return Response({'request_durations': req_durations,
+                         'errors': errors})
 
     @list_route(methods=['post'])
     def cadence(self, request):
