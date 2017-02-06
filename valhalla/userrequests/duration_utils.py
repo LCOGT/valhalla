@@ -3,6 +3,7 @@ import itertools
 from math import ceil
 
 from valhalla.common.configdb import ConfigDB
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
@@ -30,6 +31,20 @@ def get_molecule_duration(molecule_dict):
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
     return duration
+
+
+def get_request_duration_dict(request_dict):
+    req_durations = {'requests': []}
+    for req in request_dict:
+        req_info = {'duration': get_request_duration(req)}
+        mol_durations = [{'duration': get_molecule_duration_per_exposure(mol)} for mol in req['molecules']]
+        req_info['molecules'] = mol_durations
+        req_info['largest_interval'] = get_largest_interval(get_rise_set_intervals(req)).total_seconds()
+        req_info['largest_interval'] -= (PER_MOLECULE_STARTUP_TIME + PER_MOLECULE_GAP)
+        req_durations['requests'].append(req_info)
+    req_durations['duration'] = sum([req['duration'] for req in req_durations['requests']])
+
+    return req_durations
 
 
 def get_num_exposures(molecule_dict, time_available):

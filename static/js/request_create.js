@@ -55,7 +55,7 @@ Vue.component('userrequest', {
     update: function(){
       this.$emit('userrequestupdate');
     },
-    requestUpdated: function(data){
+    requestUpdated: function(){
       console.log('request updated');
       this.update();
     },
@@ -76,8 +76,8 @@ Vue.component('userrequest', {
       this.cadenceRequestId = data.id;
       var payload = this.userrequest;
       payload.requests = [data.request];
-      payload.requests[data.id].windows = [];
-      payload.requests[data.id].cadence = data.cadence;
+      payload.requests[0].windows = [];
+      payload.requests[0].cadence = data.cadence;
       var that = this;
       $.ajax({
         type: 'POST',
@@ -124,9 +124,11 @@ Vue.component('request', {
   props: ['request', 'index', 'errors', 'iavailable_instruments', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
-    return {show: true,
-            data_type: 'IMAGE',
-            instrument_name: ''};
+    return {
+      show: true,
+      data_type: 'IMAGE',
+      instrument_name: ''
+    };
   },
   computed: {
     availableInstrumentOptions: function(){
@@ -172,32 +174,32 @@ Vue.component('request', {
   },
   methods: {
     update: function(){
-      this.$emit('requestupdate', {'id': this.index});
+      this.$emit('requestupdate');
     },
-    moleculeFillWindow: function(data){
+    moleculeFillWindow: function(molecule_id){
       console.log('moleculefillwindow');
       if('largest_interval' in this.duration_data){
-        var num_exposures = this.request.molecules[data.id].exposure_count;
-        var molecule_duration = this.duration_data.molecules[data.id].duration;
+        var num_exposures = this.request.molecules[molecule_id].exposure_count;
+        var molecule_duration = this.duration_data.molecules[molecule_id].duration;
         var available_time = this.duration_data.largest_interval - this.duration_data.duration + (molecule_duration*num_exposures);
         num_exposures = Math.floor(available_time / molecule_duration);
-        this.request.molecules[data.id].exposure_count = Math.max(1, num_exposures);
+        this.request.molecules[molecule_id].exposure_count = Math.max(1, num_exposures);
         this.update();
       }
     },
-    moleculeUpdated: function(data){
+    moleculeUpdated: function(){
       console.log('moleculeupdated');
       this.update();
     },
-    windowUpdated: function(data){
+    windowUpdated: function(){
       console.log('windowUpdated');
       this.update();
     },
-    targetUpdated: function(data){
+    targetUpdated: function(){
       console.log('targetUpdated');
       this.update();
     },
-    constraintsUpdated: function(data){
+    constraintsUpdated: function(){
       console.log('constraintsUpdated');
       this.update();
     },
@@ -230,10 +232,13 @@ Vue.component('molecule', {
   props: ['molecule', 'index', 'errors', 'selectedinstrument', 'datatype', 'parentshow', 'duration_data'],
   mixins: [collapseMixin],
   data: function(){
-    var acquire_params = {acquire_mode: 'OFF',
-          acquire_radius_arcsec: null
-          }
-    return {'show': true, acquire_params: acquire_params};
+    return {
+      show: true,
+      acquire_params: {
+        acquire_mode: 'OFF',
+        acquire_radius_arcsec: null
+      }
+    };
   },
   computed: {
     filterOptions: function(){
@@ -257,15 +262,15 @@ Vue.component('molecule', {
   },
   methods: {
     update: function(){
-      this.$emit('moleculeupdate', {'id': this.index});
+      this.$emit('moleculeupdate');
     },
     binningsUpdated: function(){
       this.molecule.bin_y = this.molecule.bin_x;
       this.update();
     },
     fillWindow: function(){
-    console.log("fillWindow");
-      this.$emit('moleculefillwindow', {'id': this.index});
+      console.log("fillWindow");
+      this.$emit('moleculefillwindow', this.index);
     }
   },
   watch: {
@@ -298,7 +303,7 @@ Vue.component('molecule', {
       }
     },
     'molecule.acquire_mode': function(value){
-        if(this.molecule.acquire_mode === 'BRIGHTEST'){
+        if(value === 'BRIGHTEST'){
             this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
         }
         else{
@@ -316,14 +321,15 @@ Vue.component('target', {
   props: ['target', 'errors', 'datatype', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    var ns_target_params = {scheme: 'MPC_MINOR_PLANET',
-          orbinc: 0,
-          longascnode: 0,
-          argofperih: 0,
-          meandist: 0,
-          eccentricity: 0,
-          meananom: 0
-          }
+    var ns_target_params = {
+      scheme: 'MPC_MINOR_PLANET',
+      orbinc: 0,
+      longascnode: 0,
+      argofperih: 0,
+      meandist: 0,
+      eccentricity: 0,
+      meananom: 0
+    }
     var rot_target_params = {rot_mode: 'SKY', rot_angle: 0}
     var sid_target_params = _.cloneDeep(this.target);
     delete sid_target_params['name']
@@ -399,14 +405,16 @@ Vue.component('window', {
   props: ['window', 'index', 'errors', 'parentshow'],
   mixins: [collapseMixin],
   data: function(){
-    return {show: true,
-        cadence: false,
-        period: 24.0,
-        jitter: 12.0};
+    return {
+      show: true,
+      cadence: false,
+      period: 24.0,
+      jitter: 12.0
+    };
   },
   methods: {
     update: function(){
-      this.$emit('windowupdate', {'id': this.index, 'data': this.toRep});
+      this.$emit('windowupdate');
     },
     genCadence: function(){
       this.$emit('cadence', {'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter});
@@ -423,7 +431,7 @@ Vue.component('constraints', {
   },
   methods: {
     update: function(){
-      this.$emit('constraintsupdate', {'data': this.toRep});
+      this.$emit('constraintsupdate');
     }
   },
   template: '#constraints-template'
