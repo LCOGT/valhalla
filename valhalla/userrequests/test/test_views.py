@@ -99,7 +99,5 @@ class TestTelescopeStates(TelescopeStatesFromFile):
 
 class TestInstrumentInformation(ConfigDBTestMixin, TestCase):
     def test_instrument_information(self):
-        response = self.client.get(
-            reverse('api:instrument_information', kwargs={'instrument_type': '1M0-SCICAM-SBIG'})
-        )
-        self.assertIn('air', response.json()['filters'])
+        response = self.client.get(reverse('api:instruments_information'))
+        self.assertIn('1M0-SCICAM-SBIG', response.json())

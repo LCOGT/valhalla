@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'bootstrap3',
     'oauth2_provider',
     'corsheaders',
+    'webpack_loader',
     'valhalla.accounts',
     'valhalla.userrequests',
     'valhalla.proposals',
@@ -141,6 +142,13 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'bundles/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    }
+}
 
 ACCOUNT_ACTIVATION_DAYS = 7
 LOGIN_REDIRECT_URL = '/'
