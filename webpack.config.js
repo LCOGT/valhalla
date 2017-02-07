@@ -1,5 +1,6 @@
 var path = require('path');
 var BundleTracker = require('webpack-bundle-tracker');
+var webpack = require('webpack');
 
 module.exports = {
   entry: {
@@ -47,3 +48,23 @@ module.exports = {
     new BundleTracker({filename: './webpack-stats.json'}),
   ],
 };
+
+if (process.env.NODE_ENV === 'production') {
+  // http://vue-loader.vuejs.org/en/workflow/production.html
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"production"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true,
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: true
+    }),
+  ]);
+}

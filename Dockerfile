@@ -2,6 +2,7 @@ FROM python:3.6
 MAINTAINER Austin Riba <ariba@lco.global>
 
 EXPOSE 8000
+ENV NODE_ENV production
 WORKDIR /valhalla
 CMD python manage.py runserver 0.0.0.0:8000
 

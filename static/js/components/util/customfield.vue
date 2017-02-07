@@ -21,7 +21,7 @@ import moment from 'moment';
 import $ from 'jquery';
 import {datetimeFormat} from '../../utils';
 import 'eonasdan-bootstrap-datetimepicker';
-import 'style-loader!eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
+import 'vue-style-loader!eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
 export default {
   props: ['value', 'label', 'field', 'errors', 'type'],
   mounted: function(){
