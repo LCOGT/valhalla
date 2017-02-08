@@ -60,8 +60,8 @@ export default {
   data: function(){
     return {
       show: true,
-      data_type: 'IMAGE',
-      instrument_name: ''
+      data_type: this.instrumentToDataType(this.request.molecules[0].instrument_name),
+      instrument_name: this.request.molecules[0].instrument_name
     };
   },
   computed: {
@@ -95,15 +95,17 @@ export default {
       if(!this.instrument_name){
         this.instrument_name = this.firstAvailableInstrument;
       }
-    },
-    'request.molecules.0.instrument_name': function(value){
-      this.data_type = this.available_instruments[value].type;
-      this.instrument_name = value;
     }
   },
   methods: {
     update: function(){
       this.$emit('requestupdate');
+    },
+    instrumentToDataType: function(value){
+      if(!_.isEmpty(this.available_instruments) && value) {
+        return this.available_instruments[value].type;
+      }
+      return 'IMAGE';
     },
     moleculeFillWindow: function(molecule_id){
       console.log('moleculefillwindow');
