@@ -54,8 +54,9 @@
             </molecule>
           </div>
           <div v-for="(window, idx) in request.windows">
-            <window :index="idx" :window="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
-                    :errors="_.get(errors, ['windows', idx], {})">
+            <window :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
+                    :errors="_.get(errors, ['windows', idx], {})" :parentshow="show"
+                    v-on:remove="removeWindow(idx)" v-on:copy="addWindow(idx)">
             </window>
           </div>
           <constraints :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">

@@ -22,13 +22,7 @@ a:hover {
 .downPage .nav>li>a:hover {
     color: inherit;
 }
-.panel-body-compact {
-    padding-bottom: 5px;
-}
 
-.panel-heading-compact {
-    padding: 5px 15px;
-}
 
 .btn-xs {
     padding: 2px 4px;
@@ -198,21 +192,6 @@ a:hover {
 
 .spacer {
     margin-bottom: 10px;
-}
-
-.panel-title {
-  font-size: 1.2em;
-  text-align: center;
-  height: 30px;
-  padding-top: 5px;
-}
-
-.panel-actions {
-  text-align: right;
-}
-
-.fa-2x {
-  vertical-align: middle;
 }
 
 .compose-help {
