@@ -1,8 +1,16 @@
 module.exports = {
     "env": {
-        "browser": true
+        "browser": true,
     },
     "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module"
+    },
+    "plugins": ["html"],
+    "settings": {
+        "html/html-extensions": [".html", ".vue"]
+    },
     "rules": {
         "indent": [
             "error",

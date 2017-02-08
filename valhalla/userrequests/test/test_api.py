@@ -160,7 +160,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['molecules'][0]['telescope_name'] = '2M0-FLOYDS-SCICAM'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Time Allocation not found', str(response.content))
+        self.assertIn('You do not have sufficient time', str(response.content))
 
     def test_post_userrequest_not_enough_time_allocation_for_instrument(self):
         bad_data = self.generic_payload.copy()
@@ -461,6 +461,96 @@ class TestWindowApi(ConfigDBTestMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_userrequest_no_windows_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'] = []
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['windows']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+
+class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        semester = mixer.blend(
+            Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        self.client.force_login(self.user)
+
+        self.generic_payload = copy.deepcopy(generic_payload)
+        self.generic_payload['proposal'] = self.proposal.id
+        self.generic_payload['requests'][0]['windows'] = []
+        self.generic_payload['requests'][0]['cadence'] = {
+            'start': '2016-09-01T21:12:18Z',
+            'end': '2016-09-03T22:12:19Z',
+            'period': 24.0,
+            'jitter': 12.0
+        }
+
+    def test_post_userrequest_cadence_and_windows_is_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['windows'] = [{'start': '2016-09-29T21:12:18Z', 'end': '2016-10-29T21:12:19Z'}]
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertTrue(response.json()['requests'][0]['cadence'])
+
+    def test_post_userrequest_cadence_is_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['windows'] = []
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        del bad_data['windows']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_cadence_end_before_start_invalid(self):
+        bad_data = self.generic_payload.copy()
+        end = bad_data['requests'][0]['cadence']['end']
+        bad_data['requests'][0]['cadence']['end'] = bad_data['requests'][0]['cadence']['start']
+        bad_data['requests'][0]['cadence']['start'] = end
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('cannot be earlier than cadence start', str(response.content))
+
+    def test_post_cadence_valid(self):
+        response = self.client.post(reverse('api:user_requests-cadence'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()['requests']), 2)
+
+    def test_cadence_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence']['jitter'] = 'bug'
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['cadence']['jitter'], ['A valid number is required.'])
+
+    def test_cadence_invalid_period(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence']['period'] = -666
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['cadence']['period'], ['Ensure this value is greater than or equal to 0.02.'])
+
+    def test_post_userrequest_after_valid_cadence(self):
+        response = self.client.post(reverse('api:user_requests-cadence'), data=self.generic_payload)
+        second_response = self.client.post(reverse('api:user_requests-list'), data=response.json())
+        self.assertEqual(second_response.status_code, 201)
+        self.assertGreater(self.user.userrequest_set.all().count(), 0)
+
 
 class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -738,6 +828,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
+        self.extra_molecule = copy.deepcopy(self.generic_payload['requests'][0]['molecules'][0])
 
     def test_default_ag_mode_for_spectrograph(self):
         good_data = self.generic_payload.copy()
@@ -825,6 +916,91 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
         self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_on_more_than_one_molecule_fails(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        bad_data['requests'][0]['molecules'][0]['fill_window'] = True
+        bad_data['requests'][0]['molecules'][1]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Only one molecule can have `fill_window` set', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_one_molecule_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_one_false_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        good_data['requests'][0]['molecules'][1]['fill_window'] = False
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_one_blank_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_two_molecules_first_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(self.extra_molecule.copy())
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        initial_exposure_count = good_data['requests'][0]['molecules'][0]['exposure_count']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertGreater(ur['requests'][0]['molecules'][0]['exposure_count'], initial_exposure_count)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_not_enough_time_fails(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T21:12:18Z',
+            'end': '2016-09-29T21:21:19Z'
+        }
+        bad_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+    def test_fill_window_confined_window_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 3)
+        self.assertEqual(response.status_code, 201)
+
+    def test_fill_window_confined_window_2_fills_the_window(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['windows'][0] = {
+            'start': '2016-09-29T23:12:18Z',
+            'end': '2016-09-29T23:21:19Z'
+        }
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 50
+        good_data['requests'][0]['molecules'][0]['fill_window'] = True
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 5)
+        self.assertEqual(response.status_code, 201)
 
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):

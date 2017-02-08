@@ -3,6 +3,7 @@ import itertools
 from math import ceil
 
 from valhalla.common.configdb import ConfigDB
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
@@ -17,13 +18,41 @@ def get_num_filter_changes(molecules):
     return len(list(itertools.groupby([mol.get('filter', '') for mol in molecules])))
 
 
-def get_molecule_duration(molecule_dict):
+def get_molecule_duration_per_exposure(molecule_dict):
     configdb = ConfigDB()
     total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
-    mol_duration = molecule_dict['exposure_count'] * (molecule_dict['exposure_time'] + total_overhead_per_exp)
+    mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
+    return mol_duration_per_exp
+
+
+def get_molecule_duration(molecule_dict):
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
+    mol_duration = molecule_dict['exposure_count'] * mol_duration_per_exp
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
     return duration
+
+
+def get_request_duration_dict(request_dict):
+    req_durations = {'requests': []}
+    for req in request_dict:
+        req_info = {'duration': get_request_duration(req)}
+        mol_durations = [{'duration': get_molecule_duration_per_exposure(mol)} for mol in req['molecules']]
+        req_info['molecules'] = mol_durations
+        req_info['largest_interval'] = get_largest_interval(get_rise_set_intervals(req)).total_seconds()
+        req_info['largest_interval'] -= (PER_MOLECULE_STARTUP_TIME + PER_MOLECULE_GAP)
+        req_durations['requests'].append(req_info)
+    req_durations['duration'] = sum([req['duration'] for req in req_durations['requests']])
+
+    return req_durations
+
+
+def get_num_exposures(molecule_dict, time_available):
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
+    exposure_time = time_available.total_seconds() - PER_MOLECULE_GAP - PER_MOLECULE_STARTUP_TIME
+    num_exposures = exposure_time // mol_duration_per_exp
+
+    return max(1, num_exposures)
 
 
 def get_request_duration(request_dict):

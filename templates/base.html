@@ -10,8 +10,8 @@
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-        <link href='https://cdn.lco.global/mainstyle/css/affogato-1.0.0.css' rel="stylesheet">
-        <link href='https://cdn.lco.global/mainstyle/css/lco-1.0.0.css' rel="stylesheet">
+        <link href='https://s3-us-west-2.amazonaws.com/cdn.lcogt.net/mainstyle/css/affogato-1.0.0.css' rel="stylesheet">
+        <link href='https://s3-us-west-2.amazonaws.com/cdn.lcogt.net/mainstyle/css/lco-1.0.0.css' rel="stylesheet">
         <link href="{% static 'css/main.css' %}" rel="stylesheet">
         {% block extra_css %}
         {% endblock %}
@@ -76,9 +76,11 @@
             {% endblock %}
         </div>
     </body>
+    {% block javascript %}
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    {% endblock %}
     {% block extra_javascript %}
     {% endblock %}
 </html>

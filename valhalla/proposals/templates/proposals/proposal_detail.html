@@ -8,31 +8,49 @@
         <h3>{{ object }} <small>{{ object.title }}</small></h3>
         <p>{{ object.abstract }}</p>
         <h4>Time Allocation</h4>
-        <table class='table table-striped'>
+        <table class="table">
             <thead>
                 <tr>
-                    <td>Telescope Class</td>
-                    <td>Standard</td>
-                    <td>Standard Used</td>
-                    <td>Rapid Response</td>
-                    <td>Rapid Response Used</td>
-                    <td>IPP Limit</td>
-                    <td>IPP Time Available</td>
                     <td>Semester</td>
+                    <td>Telescope Class</td>
+                    <td>Type</td>
+                    <td>Used</td>
+                    <td>Total</td>
                 </tr>
             </thead>
             <tbody>
-                {% for ta in object.timeallocation_set.all %}
-                <tr>
-                    <td>{{ ta.telescope_class }}</td>
-                    <td>{{ ta.std_allocation }}</td>
-                    <td>{{ ta.std_time_used|floatformat}}</td>
-                    <td>{{ ta.too_allocation }}</td>
-                    <td>{{ ta.too_time_used|floatformat }}</td>
-                    <td>{{ ta.ipp_limit }}</td>
-                    <td>{{ ta.ipp_time_available|floatformat }}</td>
-                    <td>{{ ta.semester }}</td>
-                </tr>
+                {% regroup object.timeallocation_set.all by semester as timeallocations %}
+                {% for ta in timeallocations reversed %}
+                    <tr class="semester">
+                        <td colspan="5">{{ ta.grouper }}</td>
+                    </tr>
+                    {% for ta in ta.list %}
+                        <tr>
+                            <td></td>
+                            <td colspan="4">{{ ta.telescope_class }}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>Standard</td>
+                            <td>{{ ta.std_time_used|floatformat}}</td>
+                            <td>{{ ta.std_allocation }}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>Rapid Response</td>
+                            <td>{{ ta.too_time_used|floatformat }}</td>
+                            <td>{{ ta.too_allocation }}</td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>IPP</td>
+                            <td>{{ ta.ipp_time_available|floatformat }}</td>
+                            <td>{{ ta.ipp_limit }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
         </table>

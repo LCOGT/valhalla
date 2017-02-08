@@ -97,18 +97,23 @@ class AirmassView(APIView):
             return Response(serializer.errors)
 
 
-class InstrumentInformationView(APIView):
+class InstrumentsInformationView(APIView):
     permission_classes = (AllowAny,)
 
-    def get(self, request, instrument_type):
+    def get(self, request):
         configdb = ConfigDB()
-        filters = configdb.get_filters(instrument_type)
-        filter_map = configdb.get_filter_map()
-        return Response({
-            'filters': {filter: filter_map[filter] for filter in filters},
-            'binnings': configdb.get_binnings(instrument_type),
-            'default_binning': configdb.get_default_binning(instrument_type),
-        })
+        info = {}
+        for instrument_type in configdb.get_active_instrument_types({}):
+            filters = configdb.get_filters(instrument_type)
+            filter_map = configdb.get_filter_map()
+            info[instrument_type] = {
+                'type': 'SPECTRA' if configdb.is_spectrograph(instrument_type) else 'IMAGE',
+                'class': instrument_type[0:3],
+                'filters': {filter: filter_map[filter] for filter in filters},
+                'binnings': configdb.get_binnings(instrument_type),
+                'default_binning': configdb.get_default_binning(instrument_type),
+            }
+        return Response(info)
 
 
 class RequestListView(LoginRequiredMixin, FilterView):

@@ -126,10 +126,10 @@ class ConfigDB(object):
     def get_filter_map(self):
         filter_map = {}
         for fw in self._get_configdb_data('filterwheels'):
-            for filter in fw['filters']:
-                filter_map[filter['code'].lower()] = {
-                    'type': filter.get('filter_type', 'Engineering'),
-                    'name': filter.get('name', filter['code'])
+            for f in fw['filters']:
+                filter_map[f['code'].lower()] = {
+                    'type': f.get('filter_type', 'Engineering'),
+                    'name': f.get('name', f['code'])
                 }
         return filter_map
 

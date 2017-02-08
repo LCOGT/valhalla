@@ -1,3 +1,10 @@
+# local node modules
+node_modules/
+
+# Webpack stuff
+webpack-stats.json
+static/bundles/
+
 # Scratch files
 scratch/
 
@@ -71,6 +78,9 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+
+# PyCharm
+.idea/
 
 # PyBuilder
 target/
