@@ -75,10 +75,11 @@
   import userrequest from './components/userrequest.vue';
   import drafts from './components/drafts.vue';
   import sidenav from './components/sidenav.vue';
+  import alert from './components/util/alert.vue';
   import {datetimeFormat} from './utils.js';
   export default {
     name: 'app',
-    components: {userrequest, drafts, sidenav},
+    components: {userrequest, drafts, sidenav, alert},
     data: function(){
       return {
         tab: 1,

@@ -146,7 +146,7 @@ export default {
       }
       this.cadenceRequestId = data.id;
       var payload = _.cloneDeep(this.userrequest);
-      payload.requests = [data.request];
+      payload.requests = [_.cloneDeep(data.request)];
       payload.requests[0].windows = [];
       payload.requests[0].cadence = data.cadence;
       var that = this;
