@@ -81,7 +81,7 @@ export default {
   },
   watch: {
     data_type: function(){
-      if (this.available_instruments[this.instrument_name].type != this.data_type) {
+      if(this.available_instruments[this.instrument_name].type != this.data_type){
         this.instrument_name = this.firstAvailableInstrument;
         this.update();
       }
