@@ -150,8 +150,6 @@ export default {
     },
     addRequest: function(idx){
       var newRequest = _.cloneDeep(this.userrequest.requests[idx]);
-      console.log(newRequest)
-      console.log(newRequest.data_type)
       this.userrequest.requests.push(newRequest);
       this.update();
     },
