@@ -70,6 +70,7 @@
   import moment from 'moment';
   import _ from 'lodash';
   import $ from 'jquery';
+  import Vue from 'vue';
 
   import userrequest from './components/userrequest.vue';
   import drafts from './components/drafts.vue';
@@ -194,7 +195,10 @@
         this.tab = 1;
         var that = this;
         $.getJSON('/api/drafts/' + id + '/', function(data){
-          that.userrequest = JSON.parse(data.content);
+          that.userrequest = {};
+          Vue.nextTick(function() {
+            that.userrequest = JSON.parse(data.content);
+          });
           that.validate();
         });
       }

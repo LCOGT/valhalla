@@ -132,12 +132,14 @@ export default {
     proposalOptions: function(){
       return _.sortBy(_.map(this.proposals, function(p){return {'value': p, 'text': p};}), 'text');
     },
-    'userrequest.operator': function(){
-      return this.userrequest.requests.length > 1 ? 'MANY' : 'SINGLE';
-    },
     durationDisplay: function(){
       var duration =  moment.duration(this.duration_data.duration, 'seconds');
       return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
+    }
+  },
+  watch: {
+    'userrequest.requests.length': function(value){
+      this.userrequest.operator = value > 1 ? 'MANY' : 'SINGLE';
     }
   },
   methods: {
