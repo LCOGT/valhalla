@@ -3,6 +3,7 @@
 </template>
 <script>
 import vis from 'vis';
+import 'vue-style-loader!vis/dist/vis.css';
 export default {
   props: ['data'],
   data: function(){
