@@ -76,9 +76,11 @@
             {% endblock %}
         </div>
     </body>
+    {% block javascript %}
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    {% endblock %}
     {% block extra_javascript %}
     {% endblock %}
 </html>
