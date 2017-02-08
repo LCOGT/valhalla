@@ -1,69 +1,46 @@
 <template>
-  <div class="row request" :id="'request' + index">
-    <div class="col-md-12">
-      <div class="panel panel-warning">
-        <div class="panel-heading panel-heading-compact">
-          <div class="row">
-            <div class="col-xs-4">
-              <i class="fa fa-wpexplorer fa-2x fa-fw"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
-              <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
-            </div>
-            <div class="panel-title col-xs-4">
-              Request <span v-show="index > 0">#{{ index + 1}}</span>
-            </div>
-            <div class="panel-actions col-xs-4">
-              <a class="btn btn-danger btn-xs" v-on:click="$parent.removeRequest(index)" v-show="$parent.userrequest.requests.length > 1" title="Delete">
-                <i class="fa fa-trash fa-fw"></i>
-              </a>
-              <a class="btn btn-success btn-xs" title="Copy" v-on:click="$parent.addRequest(index)"><i class="fa fa-copy fa-fw"></i></a>
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
-                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="panel-body panel-body-compact">
-          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-          <div class="row">
-            <div class="col-md-6 compose-help" v-show="show">
-              <dl>
-                <dt>Instrument</dt>
-                <dd>Select the instrument with which this observation will be made.
-                <a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments</a>.</dd>
-              </dl>
-            </div>
-            <div :class="show ? 'col-md-6' : 'col-md-12'">
-              <form class="form-horizontal">
-                 <customselect v-model="data_type" label="Observation Type" v-on:input="update" :errors="errors.data_type"
-                                :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
-                </customselect>
-                <customselect v-model="instrument_name" label="Instrument" field="instrument_name"
-                               :errors="errors.instrument_name" :options="availableInstrumentOptions">
-                </customselect>
-              </form>
-            </div>
-          </div>
-          <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
-          </target>
-          <div v-for="(molecule, idx) in request.molecules">
-            <molecule :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
-                      v-on:moleculeupdate="moleculeUpdated" v-on:moleculefillwindow="moleculeFillWindow" :available_instruments="available_instruments"
-                      :errors="_.get(errors, ['molecules', idx], {})"
-                      :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})">
-            </molecule>
-          </div>
-          <div v-for="(window, idx) in request.windows">
-            <window :index="idx" :window="window" v-on:windowupdate="windowUpdated" :parentshow="show" v-on:cadence="cadence"
-                    :errors="_.get(errors, ['windows', idx], {})">
-            </window>
-          </div>
-          <constraints :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
-          </constraints>
-        </div>
+  <panel :id="'request' + index" :errors="errors" v-on:show="show = $event"
+         :canremove="this.index > 0" :cancopy="true" icon="fa-wpexplorer" title="Request" v-on:remove="$emit('remove')"
+         v-on:copy="$emit('copy')" :show="show">
+    <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+    <div class="row">
+      <div class="col-md-6 compose-help" v-show="show">
+        <dl>
+          <dt>Instrument</dt>
+          <dd>Select the instrument with which this observation will be made.
+          <a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments</a>.</dd>
+        </dl>
+      </div>
+      <div :class="show ? 'col-md-6' : 'col-md-12'">
+        <form class="form-horizontal">
+           <customselect v-model="data_type" label="Observation Type" v-on:input="update" :errors="errors.data_type"
+                          :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
+          </customselect>
+          <customselect v-model="instrument_name" label="Instrument" field="instrument_name"
+                         :errors="errors.instrument_name" :options="availableInstrumentOptions">
+          </customselect>
+        </form>
       </div>
     </div>
-  </div>
+    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
+    </target>
+    <div v-for="(molecule, idx) in request.molecules">
+      <molecule :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
+                v-on:moleculeupdate="moleculeUpdated" v-on:moleculefillwindow="moleculeFillWindow" :available_instruments="available_instruments"
+                :errors="_.get(errors, ['molecules', idx], {})"
+                :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})"
+                v-on:remove="removeMolecule(idx)" v-on:copy="addMolecule(idx)">
+      </molecule>
+    </div>
+    <div v-for="(window, idx) in request.windows">
+      <window :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
+              :errors="_.get(errors, ['windows', idx], {})" :parentshow="show"
+              v-on:remove="removeWindow(idx)" v-on:copy="addWindow(idx)">
+      </window>
+    </div>
+    <constraints :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
+    </constraints>
+  </panel>
 </template>
 <script>
 import _ from 'lodash';
@@ -73,11 +50,12 @@ import target from './target.vue';
 import molecule from './molecule.vue';
 import window from './window.vue';
 import constraints from './constraints.vue';
+import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
   props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data'],
-  components: {target, molecule, window, constraints, customfield, customselect},
+  components: {target, molecule, window, constraints, customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){
     return {
