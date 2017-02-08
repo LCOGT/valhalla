@@ -6,8 +6,8 @@
         <div class="row">
           <div class="col-xs-4">
             <i class="fa fa-2x fa-fw" :class="icon"></i>
-            <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="haserror"></i>
-            <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="!haserror"></i>
+            <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="hasError"></i>
+            <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="!hasError"></i>
           </div>
           <div class="panel-title col-xs-4">
             {{ title }}
@@ -33,8 +33,9 @@
 </div>
 </template>
 <script>
+import _ from 'lodash';
 export default {
-  props: ['id', 'haserror', 'show', 'canremove', 'cancopy', 'icon', 'title'],
+  props: ['id', 'errors', 'show', 'canremove', 'cancopy', 'icon', 'title'],
   methods:{
     remove: function(){
       this.$emit('remove');
@@ -44,6 +45,11 @@ export default {
     },
     clickShow: function(){
       this.$emit('show', !this.show);
+    }
+  },
+  computed:{
+    hasError: function(){
+      return !_.isEmpty(this.errors);
     }
   }
 }

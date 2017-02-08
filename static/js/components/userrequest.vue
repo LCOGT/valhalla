@@ -1,90 +1,69 @@
 <template>
-  <div class="row userrequestc" id="general">
-    <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading panel-heading-compact">
-          <div class="row">
-            <div class="col-xs-4">
-              <i class="fa fa-id-card-o fa-2x fa-fw"></i>
-              <i title="Errors in form" class="fa fa-warning fa-2x fa-fw text-danger" v-show="!_.isEmpty(errors)"></i>
-              <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="_.isEmpty(errors)"></i>
-            </div>
-            <div class="panel-title col-xs-4">
-              General Information
-            </div>
-            <div class="panel-actions col-xs-4">
-              <a class="btn btn-info btn-xs" v-on:click="show = !show" :title="show ? 'Minimize' : 'Maximize'">
-                <i class="fa fa-fw" :class="show ? 'fa-window-minimize' : 'fa-window-maximize'"></i>
-              </a>
-            </div>
-          </div>
+  <panel id="general" :errors="errors" v-on:show="show = $event" :canremove="false" :cancopy="false"
+         icon="fa-id-card-o" title="General Information" :show="show">
+    <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+      <div class="row">
+        <div class="col-md-6 compose-help" v-show="show">
+          <dl>
+            <dt>Duration of Observing Request</dt>
+            <dd>Time that will be deducted from your proposal when this request is completed.</dd>
+            <dt>Title</dt>
+            <dd>Provide a name for this observing request.</dd>
+            <dt>Proposal</dt>
+            <dd>Select the proposal for which this observation will be made.</dd>
+            <dt>Priority</dt>
+            <dd>Select whether this request should be executed immediately (i.e. within 12 min of submission).
+                <a href="https://lco.global/documentation/">
+                   More information about Rapid Response mode.
+                </a>
+            </dd>
+            <dt>Ipp Factor</dt>
+            <dd>Provide an InterProposal Priority factor for this request.
+                <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
+                   More information about IPP.
+                </a>
+            </dd>
+          </dl>
         </div>
-        <div class="panel-body panel-body-compact">
-          <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
-            <div class="row">
-              <div class="col-md-6 compose-help" v-show="show">
-                <dl>
-                  <dt>Duration of Observing Request</dt>
-                  <dd>Time that will be deducted from your proposal when this request is completed.</dd>
-                  <dt>Title</dt>
-                  <dd>Provide a name for this observing request.</dd>
-                  <dt>Proposal</dt>
-                  <dd>Select the proposal for which this observation will be made.</dd>
-                  <dt>Priority</dt>
-                  <dd>Select whether this request should be executed immediately (i.e. within 12 min of submission).
-                      <a href="https://lco.global/documentation/">
-                         More information about Rapid Response mode.
-                      </a>
-                  </dd>
-                  <dt>Ipp Factor</dt>
-                  <dd>Provide an InterProposal Priority factor for this request.
-                      <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
-                         More information about IPP.
-                      </a>
-                  </dd>
-                </dl>
-              </div>
-              <div :class="show ? 'col-md-6' : 'col-md-12'">
-                <form class="form-horizontal">
-                  <div class="row duration" v-show="show">
-                    <span class="col-md-4"><strong>Total Duration</strong></span>
-                    <span class="col-md-8">{{ durationDisplay }}</span>
-                  </div>
-                  <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
-                  </customfield>
-                  <customselect v-model="userrequest.proposal" label="Proposal" field="proposal" v-on:input="update"
-                                 :errors="errors.proposal" :options="proposalOptions">
-                  </customselect>
-                  <customselect v-model="userrequest.observation_type" label="Priority" field="observation_type" v-on:input="update"
-                                :errors="errors.observation_type"
-                                :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
-                                           {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]">
-                  </customselect>
-                  <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
-                                v-on:input="update" :errors="errors.ipp_value">
-                  </customfield>
-                  <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
-                </form>
-              </div>
+        <div :class="show ? 'col-md-6' : 'col-md-12'">
+          <form class="form-horizontal">
+            <div class="row duration" v-show="show">
+              <span class="col-md-4"><strong>Total Duration</strong></span>
+              <span class="col-md-8">{{ durationDisplay }}</span>
             </div>
-            <div v-for="(request, idx) in userrequest.requests">
-              <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence" header="Generated Cadence">
-                <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
-                Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
-                <cadence :data="cadenceRequests"></cadence>
-              </modal>
-              <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
-                       v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
-                       :errors="_.get(errors, ['requests', idx], {})"
-                       :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})">
-              </request>
-              <div class="request-margin"></div>
-            </div>
-          </div>
+            <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
+            </customfield>
+            <customselect v-model="userrequest.proposal" label="Proposal" field="proposal" v-on:input="update"
+                           :errors="errors.proposal" :options="proposalOptions">
+            </customselect>
+            <customselect v-model="userrequest.observation_type" label="Priority" field="observation_type" v-on:input="update"
+                          :errors="errors.observation_type"
+                          :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
+                                     {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]">
+            </customselect>
+            <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
+                          v-on:input="update" :errors="errors.ipp_value">
+            </customfield>
+            <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
+          </form>
         </div>
       </div>
+      <div v-for="(request, idx) in userrequest.requests">
+        <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence" header="Generated Cadence">
+          <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
+          Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
+          <cadence :data="cadenceRequests"></cadence>
+        </modal>
+        <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
+                 v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
+                 :errors="_.get(errors, ['requests', idx], {})"
+                 :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})"
+                 v-on:remove="removeRequest(idx)" v-on:copy="addRequest(idx)">
+        </request>
+        <div class="request-margin"></div>
+      </div>
     </div>
-  </div>
+  </panel>
 </template>
 <script>
 import $ from 'jquery';
@@ -94,12 +73,13 @@ import moment from 'moment';
 import modal from './util/modal.vue';
 import request from './request.vue';
 import cadence from './cadence.vue';
+import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 
 export default {
   props: ['errors', 'userrequest', 'duration_data'],
-  components: {request, cadence, modal, customfield, customselect},
+  components: {request, cadence, modal, customfield, customselect, panel},
   data: function(){
     return {
       show: true,
