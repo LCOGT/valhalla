@@ -39,20 +39,26 @@
         </form>
       </div>
     </div>
+    <airmass v-show="showAirmass" :data="airmassData"></airmass>
   </panel>
 </template>
 <script>
+import _ from 'lodash';
 import {collapseMixin} from '../utils.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+import airmass from './airmass.vue';
+
 export default {
   props: ['window', 'index', 'errors', 'parentshow'],
-  components: {customfield, customselect, panel},
+  components: {customfield, customselect, panel, airmass},
   mixins: [collapseMixin],
   data: function(){
     return {
       show: this.parentshow,
+      airmassData: {},
+      showAirmass: false,
       cadence: false,
       period: 24.0,
       jitter: 12.0
@@ -66,6 +72,28 @@ export default {
       this.$emit('cadence', {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
+    },
+    updateVisibility: function(start, end){
+      var request = _.cloneDeep(this.$parent.$parent.request);
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/airmass/',
+        data: JSON.stringify(request),
+        contentType: 'application/json',
+        success: function(data){
+          that.airmassData = data;
+          that.showAirmass = 'airmass_limit' in data;
+        }
+      });
+    }
+  },
+  watch: {
+    'window.start': function(){
+      this.updateVisibility(this.window.start, this.window.end);
+    },
+    'window.end': function(){
+      this.updateVisibility(this.window.start, this.window.end);
     }
   }
 };
