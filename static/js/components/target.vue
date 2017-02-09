@@ -110,11 +110,11 @@ export default {
       this.$emit('targetupdate', {});
     },
     updateRA: function(){
-      this.ra = sexagesimalRaToDecimal(this.ra);
+      this.target.ra = sexagesimalRaToDecimal(this.target.ra);
       this.update();
     },
     updateDec: function(){
-      this.dec = sexagesimalDecToDecimal(this.dec);
+      this.target.dec = sexagesimalDecToDecimal(this.target.dec);
       this.update();
     }
   },
