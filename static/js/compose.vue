@@ -40,7 +40,7 @@
                            v-on:userrequestupdate="userrequestUpdated"></userrequest>
             </div>
             <div class="col-md-1 hidden-sm hidden-xs">
-              <sidenav :userrequest="userrequest"></sidenav>
+              <sidenav :userrequest="userrequest" :errors="errors"></sidenav>
             </div>
           </div>
         </div>
