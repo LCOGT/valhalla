@@ -90,7 +90,7 @@
                   <i class="fa fa-fw fa-{{ ur.state|state_to_icon }}"></i>
                   {{ ur.state }}
                 </span></p>
-                <p><i class="fa fa-fw fa-calendar"></i> <span id="tooltip-1" title="{{ ur.modified | naturaltime }}">{{ ur.modified }}</span></p>
+                <p><i class="fa fa-fw fa-calendar"></i> <span class="tool-tip" title="{{ ur.modified|naturaltime }}">{{ ur.modified }}</span></p>
               </div>
             </div>
           </div>
@@ -142,7 +142,6 @@
   {{ block.super }}
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js'></script>
-  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
   <script type="text/javascript">
     $('#id_created_after, #id_created_before').datetimepicker({
       'format': 'YYYY-M-D HH:mm:ss'
@@ -150,10 +149,8 @@
     $('#filter').click(function(){
       $('.filter-block').toggle(300);
     })
-  </script>
-  <script type="text/javascript">
     $(function() {
-       $("#tooltip-1").tooltip();
+       $(".tool-tip").tooltip();
     });
   </script>
 {% endblock %}

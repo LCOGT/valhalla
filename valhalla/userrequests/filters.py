@@ -10,7 +10,6 @@ class UserRequestFilter(filters.FilterSet):
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains')
     user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains')
 
-
     class Meta:
         model = UserRequest
         fields = (
