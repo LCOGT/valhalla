@@ -5,6 +5,14 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
+        <ul>
+          <li>
+            Try the
+            <a href="https://lco.global/files/etc/exposure_time_calculator.html">
+              online exposure time calculator.
+            </a>
+          </li>
+        </ul>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">

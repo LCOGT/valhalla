@@ -4,7 +4,7 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
       <div class="row">
         <div class="col-md-6 compose-help" v-show="show">
-          <h3>Total Duration:</h3>
+          <h3>Duration of Observing Request:</h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
           <ul>
@@ -35,7 +35,7 @@
             </customselect>
             <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
                          v-on:input="update" :errors="errors.ipp_value"
-                         desc="Provide an InterProposal Priority factor for this request.">
+                         desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
             <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
           </form>
@@ -107,7 +107,7 @@ export default {
     },
     durationDisplay: function(){
       var duration =  moment.duration(this.duration_data.duration, 'seconds');
-      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
+      return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
     }
   },
   watch: {

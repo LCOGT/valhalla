@@ -12,7 +12,7 @@
           <customfield v-model="constraints.max_airmass" label="Maximum Airmass" field="max_airmass"
                        v-on:input="update" :errors="errors.max_airmass" desc="Airmass = 1 at zenith">
           </customfield>
-          <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Distance"
+          <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Separation"
                        field="min_lunar_distance" v-on:input="update" :errors="errors.min_lunar_distance"
                        desc="Minimum acceptable angular separation between the target and the moon.">
           </customfield>

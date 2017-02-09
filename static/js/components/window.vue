@@ -14,18 +14,18 @@
           <customfield v-model="window.end" type="datetime" label="End (UT)" field="end" v-on:input="update"
                       :errors="errors.end" desc="Time when the observing window closes.">
           </customfield>
-          <div class="checkbox col-sm-8 col-sm-offset-4">
-            <label>
-              <input type="checkbox" v-model="cadence">Observe as a cadence
-            </label>
-          </div>
-          <customfield v-model="period" label="Period" field="period" v-on:input="update" :errors="errors.period"
-                       v-show="cadence" desc="Fractional hours">
+          <customselect v-model="cadence" label="Cadence" field="cadence"
+                        desc="A cadence will replace your current observing window with a set of windows, one for each cycle of the cadence."
+                        :options="[{'text':'None','value':'none'}, {'text':'Simple Period',value:'simple'}]">
+          </customselect>
+          <customfield v-model="period" label="Period" field="period" v-on:input="update"
+                       :errors="errors.period" v-show="cadence === 'simple'" desc="Fractional hours">
           </customfield>
-          <customfield v-model="jitter" label="Jitter" field="jitter" v-on:input="update" :errors="errors.jitter"
-                       v-show="cadence" desc="Acceptable deviation (before or after) from strict period.">
+          <customfield v-model="jitter" label="Jitter" field="jitter" v-on:input="update"
+                       :errors="errors.jitter" v-show="cadence === 'simple'"
+                       desc="Acceptable deviation (before or after) from strict period.">
           </customfield>
-          <a class="btn btn-info col-sm-8 col-sm-offset-4" v-on:click="genCadence" v-show="cadence">Generate Cadence</a>
+          <a class="btn btn-info col-sm-8 col-sm-offset-4" v-on:click="genCadence" v-show="cadence != 'none'">Generate Cadence</a>
         </form>
       </div>
     </div>
@@ -43,7 +43,7 @@ export default {
   data: function(){
     return {
       show: this.parentshow,
-      cadence: false,
+      cadence: 'none',
       period: 24.0,
       jitter: 12.0
     };

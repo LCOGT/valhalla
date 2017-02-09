@@ -47,9 +47,13 @@
         <div class="tab-pane" :class="{ active: tab === 2 }">
           <div class="row">
             <div class="col-md-12">
-              <p>This is the code that can be used to submit this overvation using the Request submission API.
-              Submitting via API allows you to submit observations for scheduling using programming languages like python.</p>
-              <p>For more information see the <a href="https://developers.lco.global/pages/request-service.html">API Documentation</a></p>
+              <p>This is what your request looks like in JSON format.</p>
+              <p>This code can be used to submit this observation through the Request service API.
+              Using the API allows you to generate and submit observations for scheduling using
+              programming languages like python.</p>
+              <p>For more information see the
+                <a target="_blank" href="https://developers.lco.global/pages/request-service.html">API Documentation</a>
+              </p>
               <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
             </div>
           </div>
