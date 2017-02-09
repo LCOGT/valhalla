@@ -4,6 +4,7 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
+        <archive v-if="target.ra && target.dec" :ra="target.ra" :dec="target.dec"></archive>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
@@ -81,12 +82,13 @@ import _ from 'lodash';
 import $ from 'jquery';
 
 import {collapseMixin, sexagesimalRaToDecimal, sexagesimalDecToDecimal} from '../utils.js';
+import archive from './archive.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
   props: ['target', 'errors', 'datatype', 'parentshow'],
-  components: {customfield, customselect, panel},
+  components: {customfield, customselect, panel, archive},
   mixins: [collapseMixin],
   data: function(){
     var ns_target_params = {
