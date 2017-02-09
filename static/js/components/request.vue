@@ -5,11 +5,9 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <dl>
-          <dt>Instrument</dt>
-          <dd>Select the instrument with which this observation will be made.
-          <a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments</a>.</dd>
-        </dl>
+          <ul>
+            <li><a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments.</a></li>
+          </ul>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
@@ -17,7 +15,8 @@
                           :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
           </customselect>
           <customselect v-model="instrument_name" label="Instrument" field="instrument_name"
-                         :errors="errors.instrument_name" :options="availableInstrumentOptions">
+                         :errors="errors.instrument_name" :options="availableInstrumentOptions"
+                         desc="Select the instrument with which this observation will be made.">
           </customselect>
         </form>
       </div>

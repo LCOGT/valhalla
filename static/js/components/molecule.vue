@@ -5,54 +5,42 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <dl>
-          <dt>Filter/Slit</dt>
-          <dd>The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.</dd>
-          <dt>Binning</dt>
-          <dd>Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.</dd>
-          <dt>Exposure Count</dt>
-          <dd>Number of exposures to make with this configuration.</dd>
-          <dt>Exposure Time</dt>
-          <dd>Seconds</dd>
-        </dl>
-        <dl v-show="datatype === 'SPECTRA'">
-          <dt>Type</dt>
-          <dd>The type of exposure (allows for calibrations).</dd>
-          <dt>Acquire Mode</dt>
-          <dd>How the target is acquired.</dd>
-        </dl>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
           <customselect v-model="molecule.filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
-                         :errors="errors.filter" :options="filterOptions">
+                         :errors="errors.filter" :options="filterOptions"
+                         desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
           </customselect>
           <customselect v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
-                         :errors="errors.bin_x" :options="binningsOptions">
+                         :errors="errors.bin_x" :options="binningsOptions"
+                         desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
-                          :errors="errors.exposure_count">
+                       :errors="errors.exposure_count" desc="Number of exposures to make with this configuration.">
             <div class="input-group-btn" slot="inlineButton">
               <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow"
                       :disabled="duration_data.duration > 0 ? false : true"><b>Fill</b></button>
             </div>
           </customfield>
           <customfield v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
-                        :errors="errors.exposure_time">
+                       :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
-                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
+                          desc="The type of exposure (allows for calibrations)."
+                          :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                       {value: 'LAMP_FLAT', text: 'Lamp Flat'},
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                           :options="[{value: 'OFF', text: 'Off'},
-                                      {value: 'WCS', text: 'WCS'},
-                                      {value: 'BRIGHTEST', text: 'Brightest'}]">
+                          desc="How the target is acquired."
+                          :options="[{value: 'OFF', text: 'Off'},
+                                     {value: 'WCS', text: 'WCS'},
+                                     {value: 'BRIGHTEST', text: 'Brightest'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
-                          label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec">
+                         label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">
             </customfield>
           </div>
         </form>
