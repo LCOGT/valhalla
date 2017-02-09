@@ -67,9 +67,12 @@
           </div>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
             <customselect v-model="target.rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
-                           :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]">
+                           :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]"
+                           desc="Defines how the rotator angle moves while tracking the sky.">
             </customselect>
-            <customfield v-model="target.rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update" :errors="errors.rot_angle">
+            <customfield v-model="target.rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update"
+                         :errors="errors.rot_angle" v-if="target.rot_mode === 'SKY'"
+                         desc="Defines the initial angle of the rotator.">
             </customfield>
           </div>
         </form>
