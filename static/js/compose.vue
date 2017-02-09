@@ -114,6 +114,7 @@
               bin_x: null,
               bin_y: null,
               fill_window: false,
+              defocus: 0,
             }],
             windows:[{
               start: moment().format(datetimeFormat),

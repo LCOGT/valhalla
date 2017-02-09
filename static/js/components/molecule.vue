@@ -34,6 +34,9 @@
           <customfield v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
+          <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
+                       :errors="errors.defocus">
+          </customfield>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                           desc="The type of exposure (allows for calibrations)."
