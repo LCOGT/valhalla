@@ -33,9 +33,9 @@
             {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' %}
           </div>
           <div class="form-group">
-            <label class="sr-only control-label" for="id_proposal">Proposal</label>
+            <label class="sr-only control-label" for="id_proposal"> Proposal</label>
             <div class="input-group">
-              <span class="input-group-addon">Proposal:</span>
+              <span class="input-group-addon"><i class="fa fa-fw fa-users"></i> Proposal:</span>
               <select class="form-control input-sm" id="id_proposal" name="proposal" title="">
                 <option value="">---------</option>
                 {% for proposal in user.proposal_set.all %}
@@ -45,10 +45,13 @@
             </div>
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='Created After' bound_css_class='' %}
+            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Created After' bound_css_class='' %}
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='Created Before' bound_css_class='' %}
+            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Created Before' bound_css_class='' %}
+          </div>
+          <div class="form-group">
+            {% bootstrap_field filter.form.user show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-user"></i> User' bound_css_class='' %}
           </div>
           <input type="submit" class="btn btn-info btn-sm" value="Filter"/>
         </form>
@@ -87,7 +90,7 @@
                   <i class="fa fa-fw fa-{{ ur.state|state_to_icon }}"></i>
                   {{ ur.state }}
                 </span></p>
-                <p><i class="fa fa-fw fa-calendar"></i> {{ ur.modified|naturaltime }}</p>
+                <p><i class="fa fa-fw fa-calendar"></i> <span class="tool-tip" title="{{ ur.modified|naturaltime }}">{{ ur.modified }}</span></p>
               </div>
             </div>
           </div>
@@ -146,5 +149,8 @@
     $('#filter').click(function(){
       $('.filter-block').toggle(300);
     })
+    $(function() {
+       $(".tool-tip").tooltip();
+    });
   </script>
 {% endblock %}
