@@ -1,8 +1,10 @@
 <template>
  <span>
     <div class="form-group" :class="{ 'has-error': errors }" v-show="$parent.show">
-      <label :for="field" class="col-sm-4 control-label">{{ label }}</label>
-      <div class="col-sm-8">
+      <label :for="field" class="col-sm-5 control-label">
+        <span class="desc-tooltip" :title="desc">{{ label }}</span>
+      </label>
+      <div class="col-sm-7">
         <div :class="{ 'input-group': this.$slots['inlineButton'] }">
           <input :id="field" class="form-control" v-bind:value="value" v-on:blur="blur($event.target.value)"
                  v-on:input="update($event.target.value)" :name="field" :type="type || 'text'"/>
@@ -22,8 +24,10 @@ import $ from 'jquery';
 import {datetimeFormat} from '../../utils';
 import 'eonasdan-bootstrap-datetimepicker';
 import 'vue-style-loader!eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
+import tooltip from 'bootstrap3';
+
 export default {
-  props: ['value', 'label', 'field', 'errors', 'type'],
+  props: ['value', 'label', 'field', 'errors', 'type', 'desc'],
   mounted: function(){
     var that = this;
     if(this.type === 'datetime'){
@@ -35,6 +39,12 @@ export default {
         that.update(moment(e.date).format(datetimeFormat));
       });
     }
+    $(this.$el).find('label > span').tooltip({
+      html: true,
+      trigger: 'hover click',
+      placement: 'top',
+      delay: { "show": 200, "hide": 100 }
+    });
   },
   methods: {
     update: function(value){

@@ -4,40 +4,6 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <dl>
-          <dt>Type</dt>
-          <dd>Please select whether this is a <strong>sidereal</strong> or <strong>non-sidereal</strong> target.</dd>
-        </dl>
-        <dl v-show="target.type === 'SIDEREAL'">
-          <dt>Right Ascension</dt>
-          <dd>Decimal degrees or HH:MM:SS.S</dd>
-          <dt>Declination</dt>
-          <dd>Decimal degrees of DD:MM:SS.S</dd>
-          <dt>Proper Motion RA</dt>
-          <dd>&plusmn;0.33 mas/year</dd>
-          <dt>Proper Motion Dec</dt>
-          <dd>&plusmn;0.33 mas/year</dd>
-          <dt>Epoch</dt>
-          <dd>Julian Years</dd>
-          <dt>Parallax</dt>
-          <dd>+0.45 mas</dd>
-        </dl>
-        <dl v-show="target.type === 'NON_SIDEREAL'">
-          <dt>Scheme</dt>
-          <dd>The orbital elements scheme to use with this target</dd>
-          <dt>Epoch</dt>
-          <dd>Modified Julian Days</dd>
-          <dt>Longitude of Ascending Node</dt>
-          <dd>Andle in Degrees</dd>
-          <dt>Argument of Perihelion</dt>
-          <dd>Angle in Degrees</dd>
-          <dt>Mean Distance</dt>
-          <dd>Astronomical Units</dd>
-          <dt>Eccentricity</dt>
-          <dd>0 to 0.99</dd>
-          <dt>Mean Anomaly</dt>
-          <dd>Angle in Degrees</dd>
-        </dl>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
@@ -48,50 +14,54 @@
                 <i class="fa fa-spinner fa-spin fa-fw"></i> Looking up coordinates...
               </span>
           </div>
-          <customselect v-model="target.type" label="Type" field="type" v-on:input="update" :errors="errors.type"
-                         :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
+          <customselect v-model="target.type" label="Type" field="type" v-on:input="update"
+                        :errors="errors.type" desc="Please select whether this is a sidereal or non-sidereal target."
+                        :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
           </customselect>
-          <div class="sidereal" v-if="target.type === 'SIDEREAL'">
-            <customfield v-model="target.ra" label="Right Ascension" type="sex" field="ra" v-on:blur="updateRA" :errors="errors.ra">
+          <div class="sidereal" v-show="target.type === 'SIDEREAL'">
+            <customfield v-model="target.ra" label="Right Ascension" type="sex" field="ra" v-on:blur="updateRA" :errors="errors.ra"
+                         desc="Decimal degrees or HH:MM:SS.S">
             </customfield>
-            <customfield v-model="target.dec" label="Declination" type="sex" field="dec" v-on:blur="updateDec" :errors="errors.dec">
+            <customfield v-model="target.dec" label="Declination" type="sex" field="dec" v-on:blur="updateDec" :errors="errors.dec"
+                         desc="Decimal degrees of DD:MM:SS.S">
             </customfield>
             <customfield v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
-                          v-on:input="update" :errors="errors.proper_motion_ra">
+                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year">
             </customfield>
             <customfield v-model="target.proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
-                          v-on:input="update" :errors="errors.proper_motion_dec">
+                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year">
             </customfield>
-            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
+            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch" desc="Julian Years">
             </customfield>
             <customfield v-model="target.parallax" label="Parallax" field="parallax" v-on:input="update"
-                          :errors="errors.parallax">
+                         :errors="errors.parallax" desc="+0.45 mas">
             </customfield>
           </div>
-          <div class="non-sidereal" v-if="target.type === 'NON_SIDEREAL'">
+          <div class="non-sidereal" v-show="target.type === 'NON_SIDEREAL'">
             <customselect v-model="target.scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
-                           :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
-                                      {value: 'MPC_COMET', text: 'MPC Comet'}]">
+                          :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'}, {value: 'MPC_COMET', text: 'MPC Comet'}]"
+                          desc="The orbital elements scheme to use with this target.">
             </customselect>
-            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch">
+            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
+                         desc="Modified Julian Days">
             </customfield>
             <customfield v-model="target.orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
-                          :errors="errors.orbinc">
+                        :errors="errors.orbinc">
             </customfield>
             <customfield v-model="target.longascnode" label="Longitude of Ascending Node" field="longascnode"
-                          v-on:input="update" :errors="errors.longascnode">
+                          v-on:input="update" :errors="errors.longascnode" desc="Angle in Degrees">
             </customfield>
             <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
-                          v-on:input="update" :errors="errors.argofperih">
+                          v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
             </customfield>
             <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
-                          v-on:input="update" :errors="errors.meandist">
+                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
             <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
-                          v-on:input="update" :errors="errors.eccentricity">
+                          v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
             </customfield>
             <customfield v-model="target.meananom" label="Mean Anomoly" field="meananom"
-                          v-on:input="update" :errors="errors.meananom">
+                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
             </customfield>
           </div>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
