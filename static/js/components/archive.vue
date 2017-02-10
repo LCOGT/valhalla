@@ -22,14 +22,14 @@ export default {
   },
   computed: {
     guiLink: function(){
-      return 'https://archive.lco.global/?start=2014-05-01&OBSTYPE=EXPOSE&covers=POINT(' + this.ra + ' ' + this.dec +')';
+      return 'https://archive.lco.global/?start=2014-05-01&covers=POINT(' + this.ra + ' ' + this.dec +')';
     }
   },
   methods:{
     setResultCount: function(){
       var that = this;
       login(function(){
-        $.getJSON('https://archive-api.lco.global/frames/?OBSTYPE=EXPOSE&covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
+        $.getJSON('https://archive-api.lco.global/frames/?covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
           that.resultCount = data.count;
         });
       });
