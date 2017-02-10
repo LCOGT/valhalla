@@ -34,6 +34,7 @@
 </template>
 <script>
 import _ from 'lodash';
+
 import {collapseMixin} from '../utils.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
@@ -47,6 +48,7 @@ export default {
   data: function(){
     return {
       show: this.parentshow,
+      airmassRequest: {},
       airmassData: {},
       showAirmass: false,
       cadence: 'none',
@@ -63,30 +65,26 @@ export default {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
     },
-    updateVisibility: function(start, end){
-      var request = _.cloneDeep(this.$parent.$parent.request);
+    updateVisibility: function(req){
+      var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
-      request['windows'] = [{start:start, end:end}]
-      var that = this;
-      $.ajax({
-        type: 'POST',
-        url: '/api/airmass/',
-        data: JSON.stringify(request),
-        contentType: 'application/json',
-        success: function(data){
-          that.airmassData = data;
-          that.showAirmass = 'airmass_limit' in data;
-        }
-      });
-    }
-  },
-  watch: {
-    'window.start': function(){
-      this.updateVisibility(this.window.start, this.window.end);
+      request['windows'] = [{start:this.window.start, end:this.window.end}]
+      var jsonRequest = JSON.stringify(request);
+      if(this.airmassRequest != jsonRequest) {
+        var that = this;
+        $.ajax({
+          type: 'POST',
+          url: '/api/airmass/',
+          data: jsonRequest,
+          contentType: 'application/json',
+          success: function (data) {
+            that.airmassData = data;
+            that.showAirmass = 'airmass_limit' in data;
+          }
+        });
+        this.airmassRequest = jsonRequest;
+      }
     },
-    'window.end': function(){
-      this.updateVisibility(this.window.start, this.window.end);
-    }
-  }
+  },
 };
 </script>
