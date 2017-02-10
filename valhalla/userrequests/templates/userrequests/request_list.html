@@ -232,7 +232,7 @@
   });
 
   $(document).ready(function(){
-    login('{{ user.profile.archive_bearer_token }}', function(){
+    login(function(){
       $('.thumbnail').each(function(idx, elem){
         getLatestFrame($(elem).data('request'), function(frame){
           setThumb(frame.id, $(elem), 100);

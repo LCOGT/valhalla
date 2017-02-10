@@ -98,8 +98,8 @@
             target: {
               name: '',
               type: 'SIDEREAL',
-              ra: 0,
-              dec: 0,
+              ra: null,
+              dec: null,
               proper_motion_ra: 0.0,
               proper_motion_dec: 0.0,
               epoch: 2000,

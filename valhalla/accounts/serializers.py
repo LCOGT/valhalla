@@ -15,10 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
     proposals = serializers.SerializerMethodField()
     profile = ProfileSerializer()
     available_instrument_types = serializers.SerializerMethodField()
+    tokens = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('username', 'profile', 'proposals', 'available_instrument_types')
+        fields = ('username', 'profile', 'proposals', 'available_instrument_types', 'tokens')
 
     def get_proposals(self, obj):
         return [proposal.id for proposal in obj.profile.current_proposals]
@@ -34,3 +35,6 @@ class UserSerializer(serializers.ModelSerializer):
             for instrument_type in configdb.get_active_instrument_types({'telescope': telescope_class}):
                 instrument_types.add(instrument_type)
         return list(instrument_types)
+
+    def get_tokens(self, obj):
+        return {'archive': obj.profile.archive_bearer_token}

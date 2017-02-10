@@ -9,20 +9,25 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR){
 });
 
 
-login = function(bearer, callback){
-  if(localStorage.getItem('authToken')){
+login = function(callback){
+  if(localStorage.getItem('archiveAuthToken')){
     callback();
   }else{
-    $.ajax({
-      url: archiveRoot + 'api-token-auth/',
-      type: 'post',
-      data: {},
-      headers: {'Authorization': 'Bearer ' + bearer},
-      dataType: 'json',
-      success: function(data){
-        localStorage.setItem('authToken', data.token);
-        callback();
-      }
+    var bearer = '';
+    $.getJSON('/api/profile/', function(data){
+      bearer = data.tokens.archive;
+    }).done(function(){
+      $.ajax({
+        url: archiveRoot + 'api-token-auth/',
+        type: 'post',
+        data: {},
+        headers: {'Authorization': 'Bearer ' + bearer},
+        dataType: 'json',
+        success: function(data){
+          localStorage.setItem('archiveAuthToken', data.token);
+          callback();
+        }
+      });
     });
   }
 };
