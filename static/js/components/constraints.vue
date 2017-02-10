@@ -6,21 +6,15 @@
     </div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <dl>
-          <dt>Maximum Airmass</dt>
-          <dd>Airmass = 1 at zenith.</dd>
-          <dt>Minimum Lunar Separation</dt>
-          <dd>Minimum acceptable angular separation between the target and the moon.</dd>
-        </dl>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
           <customfield v-model="constraints.max_airmass" label="Maximum Airmass" field="max_airmass"
-                        v-on:input="update" :errors="errors.max_airmass">
+                       v-on:input="update" :errors="errors.max_airmass" desc="Airmass = 1 at zenith">
           </customfield>
-          <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Distance"
-                        field="min_lunar_distance" v-on:input="update"
-                        :errors="errors.min_lunar_distance">
+          <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Separation"
+                       field="min_lunar_distance" v-on:input="update" :errors="errors.min_lunar_distance"
+                       desc="Minimum acceptable angular separation between the target and the moon.">
           </customfield>
         </form>
       </div>

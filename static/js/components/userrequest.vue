@@ -4,45 +4,38 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
       <div class="row">
         <div class="col-md-6 compose-help" v-show="show">
-          <dl>
-            <dt>Duration of Observing Request</dt>
-            <dd>Time that will be deducted from your proposal when this request is completed.</dd>
-            <dt>Title</dt>
-            <dd>Provide a name for this observing request.</dd>
-            <dt>Proposal</dt>
-            <dd>Select the proposal for which this observation will be made.</dd>
-            <dt>Priority</dt>
-            <dd>Select whether this request should be executed immediately (i.e. within 12 min of submission).
-                <a href="https://lco.global/documentation/">
-                   More information about Rapid Response mode.
-                </a>
-            </dd>
-            <dt>Ipp Factor</dt>
-            <dd>Provide an InterProposal Priority factor for this request.
-                <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
-                   More information about IPP.
-                </a>
-            </dd>
-          </dl>
+          <h3>Duration of Observing Request:</h3>
+          <h2>{{ durationDisplay }}</h2>
+          <br/>
+          <ul>
+            <li>
+              <a href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
+            </li>
+            <li>
+              <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
+                More information about IPP.
+              </a>
+            </li>
+          </ul>
         </div>
         <div :class="show ? 'col-md-6' : 'col-md-12'">
           <form class="form-horizontal">
-            <div class="row duration" v-show="show">
-              <span class="col-md-4"><strong>Total Duration</strong></span>
-              <span class="col-md-8">{{ durationDisplay }}</span>
-            </div>
-            <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id">
+            <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update"             :errors="errors.group_id" desc="Provide a name for this observing request.">
             </customfield>
-            <customselect v-model="userrequest.proposal" label="Proposal" field="proposal" v-on:input="update"
-                           :errors="errors.proposal" :options="proposalOptions">
+            <customselect v-model="userrequest.proposal" label="Proposal" field="proposal"
+                          v-on:input="update" :errors="errors.proposal" :options="proposalOptions"
+                          desc="Select the proposal for which this observation will be made.">
             </customselect>
-            <customselect v-model="userrequest.observation_type" label="Priority" field="observation_type" v-on:input="update"
+            <customselect v-model="userrequest.observation_type" label="Mode"
+                          field="observation_type" v-on:input="update"
                           :errors="errors.observation_type"
                           :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
-                                     {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]">
+                                     {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
+                          desc="Rapid response mode means the request should be executed immediately.">
             </customselect>
             <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
-                          v-on:input="update" :errors="errors.ipp_value">
+                         v-on:input="update" :errors="errors.ipp_value"
+                         desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
             <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
           </form>
@@ -114,7 +107,7 @@ export default {
     },
     durationDisplay: function(){
       var duration =  moment.duration(this.duration_data.duration, 'seconds');
-      return duration.hours() + ' hours ' + duration.minutes() + ' minutes ' + duration.seconds() + ' seconds';
+      return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
     }
   },
   watch: {
@@ -146,7 +139,7 @@ export default {
       }
       this.cadenceRequestId = data.id;
       var payload = _.cloneDeep(this.userrequest);
-      payload.requests = [data.request];
+      payload.requests = [_.cloneDeep(data.request)];
       payload.requests[0].windows = [];
       payload.requests[0].cadence = data.cadence;
       var that = this;

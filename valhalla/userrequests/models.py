@@ -49,7 +49,7 @@ class UserRequest(models.Model):
     modified = models.DateTimeField(auto_now=True, db_index=True)
 
     class Meta:
-        ordering = ('-id',)
+        ordering = ('-created',)
 
     def __str__(self):
         return self.get_id_display()

@@ -59,4 +59,25 @@ export const collapseMixin = {
   }
 };
 
+export const siteToColor = {
+  'tfn': '#263c6f',
+  'elp': '#700000',
+  'lsc': '#f04e23',
+  'cpt': '#004f00',
+  'coj': '#fac900',
+  'ogg': '#3366dd',
+  'sqa': '#009d00'
+};
+
+export const siteCodeToName = {
+  'tfn': 'Teide',
+  'elp': 'McDonald',
+  'lsc': 'Cerro Tololo',
+  'cpt': 'Sutherland',
+  'coj': 'Siding Spring',
+  'ogg': 'Haleakala',
+  'sqa': 'Sedgwick',
+  'ngq': 'Ali'
+};
+
 export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal};

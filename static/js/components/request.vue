@@ -5,11 +5,9 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <dl>
-          <dt>Instrument</dt>
-          <dd>Select the instrument with which this observation will be made.
-          <a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments</a>.</dd>
-        </dl>
+          <ul>
+            <li><a target="_blank" href="https://lco.global/observatory/instruments/">More information about LCO instruments.</a></li>
+          </ul>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
@@ -17,7 +15,8 @@
                           :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
           </customselect>
           <customselect v-model="instrument_name" label="Instrument" field="instrument_name"
-                         :errors="errors.instrument_name" :options="availableInstrumentOptions">
+                         :errors="errors.instrument_name" :options="availableInstrumentOptions"
+                         desc="Select the instrument with which this observation will be made.">
           </customselect>
         </form>
       </div>
@@ -29,7 +28,7 @@
                 v-on:moleculeupdate="moleculeUpdated" v-on:moleculefillwindow="moleculeFillWindow" :available_instruments="available_instruments"
                 :errors="_.get(errors, ['molecules', idx], {})"
                 :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})"
-                v-on:remove="removeMolecule(idx)" v-on:copy="addMolecule(idx)">
+                v-on:remove="removeMolecule(idx)" v-on:copy="addMolecule(idx)" v-on:generateCalibs="generateCalibs">
       </molecule>
     </div>
     <div v-for="(window, idx) in request.windows">
@@ -117,6 +116,17 @@ export default {
         this.request.molecules[molecule_id].exposure_count = Math.max(1, num_exposures);
         this.update();
       }
+    },
+    generateCalibs: function(molecule_id){
+      var request = this.request;
+      var calibs = [{}, {}, {}, {}]
+      for(var x in calibs){
+        calibs[x] = _.cloneDeep(request.molecules[molecule_id]);
+      }
+      calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
+      request.molecules.unshift(calibs[0], calibs[1]);
+      calibs[2].type = 'ARC'; calibs[3].type = 'LAMP_FLAT';
+      request.molecules.push(calibs[2], calibs[3]);
     },
     moleculeUpdated: function(){
       console.log('moleculeupdated');

@@ -40,16 +40,20 @@
                            v-on:userrequestupdate="userrequestUpdated"></userrequest>
             </div>
             <div class="col-md-1 hidden-sm hidden-xs">
-              <sidenav :userrequest="userrequest"></sidenav>
+              <sidenav :userrequest="userrequest" :errors="errors"></sidenav>
             </div>
           </div>
         </div>
         <div class="tab-pane" :class="{ active: tab === 2 }">
           <div class="row">
             <div class="col-md-12">
-              <p>This is the code that can be used to submit this overvation using the Request submission API.
-              Submitting via API allows you to submit observations for scheduling using programming languages like python.</p>
-              <p>For more information see the <a href="https://developers.lco.global/pages/request-service.html">API Documentation</a></p>
+              <p>This is what your request looks like in JSON format.</p>
+              <p>This code can be used to submit this observation through the Request service API.
+              Using the API allows you to generate and submit observations for scheduling using
+              programming languages like python.</p>
+              <p>For more information see the
+                <a target="_blank" href="https://developers.lco.global/pages/request-service.html">API Documentation</a>
+              </p>
               <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
             </div>
           </div>
@@ -75,10 +79,11 @@
   import userrequest from './components/userrequest.vue';
   import drafts from './components/drafts.vue';
   import sidenav from './components/sidenav.vue';
+  import alert from './components/util/alert.vue';
   import {datetimeFormat} from './utils.js';
   export default {
     name: 'app',
-    components: {userrequest, drafts, sidenav},
+    components: {userrequest, drafts, sidenav, alert},
     data: function(){
       return {
         tab: 1,
@@ -109,6 +114,7 @@
               bin_x: null,
               bin_y: null,
               fill_window: false,
+              defocus: 0,
             }],
             windows:[{
               start: moment().format(datetimeFormat),

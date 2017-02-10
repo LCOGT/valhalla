@@ -5,13 +5,15 @@
 import vis from 'vis';
 import 'vue-style-loader!vis/dist/vis.css';
 import 'vue-style-loader!../../css/plot_style.css';
+import {siteToColor} from '../utils.js';
+import {siteCodeToName} from '../utils.js';
+
 export default {
   props: ['data'],
   data: function(){
     var options = {
       dataAxis: {
-        left: {format: function(value){ return Math.abs(value).toPrecision(2);},
-          title: {text: 'Visibility'}
+        left: {format: function(value){ return Math.abs(value).toPrecision(2);}
         }
       },
       orientation: 'top',
@@ -48,17 +50,17 @@ export default {
           var current_time = last_time;
           plotSites.add({
             id: i,
-            content: site,
+            content: siteCodeToName[site],
             options: {
               drawPoints: {
                 enabled: true,
                 size: 9,
                 style: 'circle',
-                styles: 'stroke:' + 'blue' + '; fill: ' + 'green' + ';visibility: hidden;'
+                styles: 'stroke:' + siteToColor[site] + '; fill: ' + siteToColor[site] + ';visibility: hidden;'
               },
               excludeFromLegend: false,
             },
-            style: 'stroke: ' + 'blue' + ';',
+            style: 'stroke: ' + siteToColor[site] + ';',
           });
           for (p = 0; p < airmass_times.length; p++) {
             current_time = new Date(airmass_times[p] + 'Z');
@@ -69,17 +71,17 @@ export default {
               i++;
               plotSites.add({
                 id: i,
-                content: site,
+                content: siteCodeToName[site],
                 options: {
                   drawPoints: {
                     enabled: true,
                     size: 7,
                     style: 'circle',
-                    styles: 'stroke:' + 'blue' + '; fill: ' + 'green' + ';visibility: hidden;'
+                    styles: 'stroke:' + siteToColor[site] + '; fill: ' + siteToColor[site] + ';visibility: hidden;'
                   },
                   excludeFromLegend: true,
                 },
-                style: 'stroke: ' + 'blue' + ';',
+                style: 'stroke: ' + siteToColor[site] + ';',
               });
             }
             last_time = current_time;
@@ -87,7 +89,7 @@ export default {
               x: airmass_times[p] + 'Z', y: -airmasses[p],
               group: i,
               label: {
-                content: 'Site: ' + site + '<br>Time: ' + airmass_times[p] + '<br>Airmass: ' + airmasses[p].toFixed(2),
+                content: 'Site: ' + siteCodeToName[site] + '<br>Time: ' + airmass_times[p] + '<br>Airmass: ' + airmasses[p].toFixed(2),
                 className: 'graphtt'
               }
             },]);
@@ -108,9 +110,9 @@ export default {
 
         if (airmass_limit) {
           var limitMin = new Date(visData.min('x')['x']);
-          limitMin.setDate(limitMin.getDate() - 1);
+          limitMin.setMinutes(limitMin.getMinutes() - 30);
           var limitMax = new Date(visData.max('x')['x']);
-          limitMax.setDate(limitMax.getDate() + 1);
+          limitMax.setMinutes(limitMax.getMinutes() + 30);
           visData.add([{x: limitMin, y: -1 * airmass_limit, group: i},
             {x: limitMax, y: -1 * airmass_limit, group: i}]);
         }

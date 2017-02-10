@@ -5,7 +5,7 @@ import moment from 'moment';
 import {datetimeFormat} from './utils.js';
 import App from './compose.vue';
 import * as main from './main.js';
-import * as bootstrap from 'bootstrap3';
+import scrollspy from 'bootstrap3';
 
 Vue.mixin({
   computed: {
