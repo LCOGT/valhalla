@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'window' + $parent.index + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'window' + $parent.$parent.index + index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-calendar" title="Window" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
