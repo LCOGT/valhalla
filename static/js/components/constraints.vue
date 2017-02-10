@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'constraints' + $parent.index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'constraints' + $parent.$parent.index" :errors="errors" v-on:show="show = $event"
          :canremove="false" :cancopy="false" icon="fa-lock" title="Constraints" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">
       {{ error }}
