@@ -5,6 +5,7 @@
 </template>
 <script>
 import vis from 'vis';
+import _ from 'lodash';
 import 'vue-style-loader!vis/dist/vis.css';
 import 'vue-style-loader!../../css/plot_style.css';
 import {siteToColor} from '../utils.js';
@@ -141,6 +142,8 @@ export default {
   },
   methods:{
     buildPlot: function(itemData, groupData){
+      // Set a unique name for the plot element, since vis.js needs this to separate plots
+      this.$el.setAttribute('class', _.uniqueId(this.$el.className));
       var plot = new vis.Graph2d(this.$el, new vis.DataSet([]), this.options);
       var that = this;
       plot.on('changed', function(){

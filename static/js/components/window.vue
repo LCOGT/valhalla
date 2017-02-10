@@ -65,6 +65,8 @@ export default {
     },
     updateVisibility: function(start, end){
       var request = _.cloneDeep(this.$parent.$parent.request);
+      //replace the window list with a single window with this start/end
+      request['windows'] = [{start:start, end:end}]
       var that = this;
       $.ajax({
         type: 'POST',
