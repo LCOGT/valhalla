@@ -5,12 +5,13 @@
       <a :href="guiLink" target="_blank">
         {{ resultCount }}
       </a>
-      public frames have been found on the LCO science archive covering this RA/Dec.
+      existing frames have been found on the LCO science archive covering this RA/Dec.
     </h3>
   </div>
 </template>
 <script>
 import $ from 'jquery';
+import _ from 'lodash';
 import * as archive from '../archive.js';
 export default {
   props: ['ra', 'dec'],
@@ -26,14 +27,14 @@ export default {
     }
   },
   methods:{
-    setResultCount: function(){
+    setResultCount: _.debounce(function(){
       var that = this;
       login(function(){
         $.getJSON('https://archive-api.lco.global/frames/?covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
           that.resultCount = data.count;
         });
       });
-    }
+    }, 500)
   },
   watch: {
     ra: function(val){
