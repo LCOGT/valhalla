@@ -1,5 +1,7 @@
 <template>
-  <div class="airmassPlot"></div>
+  <div class="airmassPlot">
+    <plot_controls v-on:plotZoom="plotZoom"></plot_controls>
+  </div>
 </template>
 <script>
 import vis from 'vis';
@@ -7,9 +9,11 @@ import 'vue-style-loader!vis/dist/vis.css';
 import 'vue-style-loader!../../css/plot_style.css';
 import {siteToColor} from '../utils.js';
 import {siteCodeToName} from '../utils.js';
+import plot_controls from './util/plot_controls.vue';
 
 export default {
   props: ['data'],
+  components: {plot_controls},
   data: function(){
     var options = {
       dataAxis: {
@@ -89,7 +93,7 @@ export default {
               x: airmass_times[p] + 'Z', y: -airmasses[p],
               group: i,
               label: {
-                content: 'Site: ' + siteCodeToName[site] + '<br>Time: ' + airmass_times[p] + '<br>Airmass: ' + airmasses[p].toFixed(2),
+                content: 'Site: ' + siteCodeToName[site] + '<br>Time: ' + airmass_times[p].replace('T', ' ') + '<br>Airmass: ' + airmasses[p].toFixed(2),
                 className: 'graphtt'
               }
             },]);
@@ -154,6 +158,15 @@ export default {
         });
       });
       return plot;
+    },
+    plotZoom: function(zoomValue){
+      var range = this.plot.getWindow();
+      var interval = range.end - range.start;
+
+      this.plot.setWindow({
+        start: range.start.valueOf() - interval * zoomValue,
+        end:   range.end.valueOf()   + interval * zoomValue
+      });
     }
   }
 };
