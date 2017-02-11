@@ -33,6 +33,7 @@
   </panel>
 </template>
 <script>
+import $ from 'jquery';
 import _ from 'lodash';
 
 import {collapseMixin} from '../utils.js';
@@ -48,7 +49,6 @@ export default {
   data: function(){
     return {
       show: this.parentshow,
-      airmassRequest: {},
       airmassData: {},
       showAirmass: false,
       cadence: 'none',
@@ -69,21 +69,17 @@ export default {
       var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
       request['windows'] = [{start:this.window.start, end:this.window.end}]
-      var jsonRequest = JSON.stringify(request);
-      if(this.airmassRequest != jsonRequest) {
-        var that = this;
-        $.ajax({
-          type: 'POST',
-          url: '/api/airmass/',
-          data: jsonRequest,
-          contentType: 'application/json',
-          success: function (data) {
-            that.airmassData = data;
-            that.showAirmass = 'airmass_limit' in data;
-          }
-        });
-        this.airmassRequest = jsonRequest;
-      }
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/airmass/',
+        data: JSON.stringify(request),
+        contentType: 'application/json',
+        success: function (data) {
+          that.airmassData = data;
+          that.showAirmass = 'airmass_limit' in data;
+        }
+      });
     },
   },
 };
