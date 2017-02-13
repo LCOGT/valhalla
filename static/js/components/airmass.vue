@@ -1,5 +1,6 @@
 <template>
   <div class="airmassPlot">
+    <h4 class="text-center">Visibility</h4>
     <plot_controls v-on:plotZoom="plotZoom"></plot_controls>
   </div>
 </template>
