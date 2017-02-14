@@ -1,3 +1,5 @@
+import {archiveAjaxSetup} from './archive.js';
+
 import $ from 'jquery';
 import 'bootstrap3';
 import 'eonasdan-bootstrap-datetimepicker';
@@ -24,6 +26,8 @@ function csrfSafeMethod(method) {
   // these HTTP methods do not require CSRF protection
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
+
+archiveAjaxSetup();
 
 $.ajaxSetup({
   beforeSend: function(xhr, settings) {

@@ -12,7 +12,7 @@
 </div>
 {% for request in object.requests.all %}
 <section class="request-list">
-  {% include 'userrequests/partials/request_row.html' with request=request %}
+  {% include 'userrequests/partials/request_row.html' with request=request link=True %}
 </section>
 {% endfor %}
 {% endblock %}

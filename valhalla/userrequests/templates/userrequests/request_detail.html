@@ -11,7 +11,7 @@
     </ol>
   </div>
 </div>
-{% include 'userrequests/partials/request_row.html' with request=object %}
+{% include 'userrequests/partials/request_row.html' with request=object link=False %}
 <div id="request-detail" data-requestid="{{ object.id }}">
 {% verbatim %}
   <div id="app"></div>

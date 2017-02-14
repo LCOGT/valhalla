@@ -2,13 +2,15 @@ import $ from 'jquery';
 import 'jquery-file-download';
 export const archiveRoot = 'https://archive-api.lco.global/';
 export const archiveUIRoot = 'https://archive.lco.global/';
-export {ajaxSetup, login, downloadZip, downloadAll, getThumbnail, getLatestFrame};
+export {archiveAjaxSetup, login, downloadZip, downloadAll, getThumbnail, getLatestFrame};
 
-function ajaxSetup(){
-  $.ajaxPrefilter(function(options, originalOptions, jqXHR){
-    if(options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0 ){
-      jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('archiveAuthToken'));
-    }
+function archiveAjaxSetup(){
+  login(function(){
+    $.ajaxPrefilter(function(options, originalOptions, jqXHR){
+      if(options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0 ){
+        jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('archiveAuthToken'));
+      }
+    });
   });
 }
 
