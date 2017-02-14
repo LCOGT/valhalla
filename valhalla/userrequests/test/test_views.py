@@ -54,7 +54,7 @@ class UserRequestList(TestCase):
         self.assertNotContains(response, self.userrequests[2].group_id)
 
 
-class TestRequestList(TestCase):
+class TestUserrequestDetail(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         self.proposal = mixer.blend(Proposal)
@@ -65,10 +65,24 @@ class TestRequestList(TestCase):
             mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
 
-    def test_request_list(self):
+    def test_userrequest_detail(self):
         response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
         for request in self.requests:
             self.assertContains(response, request.id)
+
+
+class TestRequestDetail(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, proposal=self.proposal, user=self.user)
+        self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
+        self.request = mixer.blend(Request, user_request=self.userrequest)
+        self.client.force_login(self.user)
+
+    def test_request_detail(self):
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertContains(response, self.request.id)
 
 
 class TestTelescopeStates(TelescopeStatesFromFile):
