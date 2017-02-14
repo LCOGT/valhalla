@@ -14,8 +14,9 @@ from rest_framework.views import APIView
 from valhalla.common.configdb import ConfigDB
 from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class)
-
+from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
 from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 
 
@@ -108,6 +109,17 @@ class TelescopeAvailabilityView(APIView):
         str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}
 
         return Response(str_telescope_availability)
+
+
+class AirmassView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = RequestSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(get_airmasses_for_request_at_sites(serializer.validated_data))
+        else:
+            return Response(serializer.errors)
 
 
 class InstrumentsInformationView(APIView):

@@ -91,7 +91,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
 
     @detail_route()
     def airmass(self, request, pk=None):
-        return Response(get_airmasses_for_request_at_sites(self.get_object()))
+        return Response(get_airmasses_for_request_at_sites(self.get_object().as_dict))
 
     @detail_route()
     def telescope_states(self, request, pk=None):

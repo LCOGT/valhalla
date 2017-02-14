@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
-from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView
+from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
 from valhalla.userrequests.views import UserRequestListView, InstrumentsInformationView
 from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
@@ -23,6 +23,7 @@ api_urlpatterns = [
     url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
     url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'profile/', ProfileApiView.as_view(), name='profile'),
+    url(r'airmass/', AirmassView.as_view(), name='airmass'),
     url(r'instruments/', InstrumentsInformationView.as_view(), name='instruments_information'),
 ]
 

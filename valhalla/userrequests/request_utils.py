@@ -1,4 +1,3 @@
-from django.forms.models import model_to_dict
 from datetime import timedelta
 from rise_set.angle import Angle
 from rise_set.astrometry import calculate_airmass_at_times
@@ -10,7 +9,7 @@ from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_int
 
 def get_telescope_states_for_request(request):
     instrument_type = request.molecules.first().instrument_name
-    rs_target = get_rise_set_target(model_to_dict(request.target))
+    rs_target = request.target.rise_set_target
     constraints = request.constraints
     configdb = ConfigDB()
     site_intervals = {}
@@ -26,7 +25,7 @@ def get_telescope_states_for_request(request):
             site_intervals[site] = get_rise_set_interval_for_target_and_site(
               rise_set_target=rs_target,
               site_detail=details,
-              windows=[model_to_dict(w) for w in request.windows.all()],
+              windows=[w.as_dict for w in request.windows.all()],
               airmass=constraints.max_airmass,
               moon_distance=constraints.min_lunar_distance)
     # If you have no sites, return the empty dict here
@@ -58,22 +57,22 @@ def date_range_from_interval(start_time, end_time, dt=timedelta(minutes=15)):
         time += dt
 
 
-def get_airmasses_for_request_at_sites(request):
-    instrument_type = request.molecules.first().instrument_name
-    constraints = request.constraints
+def get_airmasses_for_request_at_sites(request_dict):
+    instrument_type = request_dict['molecules'][0]['instrument_name']
+    constraints = request_dict['constraints']
 
     configdb = ConfigDB()
     site_data = configdb.get_sites_with_instrument_type_and_location(
       instrument_type=instrument_type,
-      site_code=request.location.site,
-      observatory_code=request.location.observatory,
-      telescope_code=request.location.telescope
+      site_code=request_dict['location'].get('site'),
+      observatory_code=request_dict['location'].get('observatory'),
+      telescope_code=request_dict['location'].get('telescope')
     )
 
-    rs_target = get_rise_set_target(model_to_dict(request.target))
+    rs_target = get_rise_set_target(request_dict['target'])
 
     data = {'airmass_data': {}}
-    if request.target.type.upper() != 'SATELLITE':
+    if request_dict['target']['type'].upper() != 'SATELLITE':
         for site_id, site_details in site_data.items():
             night_times = []
             site_lat = Angle(degrees=site_details['latitude'])
@@ -82,9 +81,9 @@ def get_airmasses_for_request_at_sites(request):
             intervals = get_rise_set_interval_for_target_and_site(
               rise_set_target=rs_target,
               site_detail=site_details,
-              windows=[model_to_dict(w) for w in request.windows.all()],
-              airmass=constraints.max_airmass,
-              moon_distance=constraints.min_lunar_distance
+              windows=request_dict['windows'],
+              airmass=constraints['max_airmass'],
+              moon_distance=constraints['min_lunar_distance']
             )
             for interval in intervals:
                 night_times.extend(
@@ -97,6 +96,6 @@ def get_airmasses_for_request_at_sites(request):
                 data['airmass_data'][site_id]['airmasses'] = calculate_airmass_at_times(
                   night_times, rs_target, site_lat, site_lon, site_alt
                 )
-                data['airmass_limit'] = constraints.max_airmass
+                data['airmass_limit'] = constraints['max_airmass']
 
     return data

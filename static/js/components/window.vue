@@ -5,6 +5,8 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
+        <h4 class="text-center">Visibility</h4>
+        <airmass v-show="showAirmass" :data="airmassData" :showZoomControls="true"></airmass>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal" >
@@ -32,17 +34,24 @@
   </panel>
 </template>
 <script>
+import $ from 'jquery';
+import _ from 'lodash';
+
 import {collapseMixin} from '../utils.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+import airmass from './airmass.vue';
+
 export default {
   props: ['window', 'index', 'errors', 'parentshow'],
-  components: {customfield, customselect, panel},
+  components: {customfield, customselect, panel, airmass},
   mixins: [collapseMixin],
   data: function(){
     return {
       show: this.parentshow,
+      airmassData: {},
+      showAirmass: false,
       cadence: 'none',
       period: 24.0,
       jitter: 12.0
@@ -56,7 +65,23 @@ export default {
       this.$emit('cadence', {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
-    }
-  }
+    },
+    updateVisibility: function(req){
+      var request = _.cloneDeep(req);
+      //replace the window list with a single window with this start/end
+      request['windows'] = [{start:this.window.start, end:this.window.end}];
+      var that = this;
+      $.ajax({
+        type: 'POST',
+        url: '/api/airmass/',
+        data: JSON.stringify(request),
+        contentType: 'application/json',
+        success: function (data) {
+          that.airmassData = data;
+          that.showAirmass = 'airmass_limit' in data;
+        }
+      });
+    },
+  },
 };
 </script>
