@@ -49,7 +49,7 @@ export default {
       var plotSites = new vis.DataSet();
       var visData = new vis.DataSet();
 
-      if (this.data != undefined) {
+      if (!$.isEmptyObject(this.data)) {
         var i = 0;
         var airmass_limit = this.data.airmass_limit;
 
