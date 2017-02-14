@@ -62,11 +62,18 @@
         <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
     </dl>
     <dl>
-        <dt>{% trans 'Co-Investigators' %}</dt>
-        {% for ci in object.cis %}
-        <dd>{{ ci.first_name }} {{ ci.last_name }}</dd>
-        <dd><a href="mailto:{{ ci.email }}">{{ ci.email }}</a></dd>
-        {% endfor %}
+        <dt>{% trans 'Co-Investigators' %} <a id="toggleci" title="Show/hide CI list" class="fa fa-eye fa-eye-slash"></a></dt>
+        <div id="cilist">
+            {% for mem in object.membership_set.all %}
+            {% if mem.role != 'PI' %}
+            <dd>{{ mem.user.first_name }} {{ mem.user.last_name }}</dd>
+            <dd><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></dd>
+                {% if user == object.pi %}
+                    <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
     </dl>
     {% if user == object.pi %}
     <div class="help-block">
@@ -86,7 +93,7 @@
     </form>
     <br/>
     <dl>
-        <dt>{% trans 'Pending Invitataions' %}</dt>
+        <dt>{% trans 'Pending Invitations' %}</dt>
         {% for invite in object.proposalinvite_set.all %}
         {% if not invite.used %}
         <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
@@ -98,4 +105,12 @@
     {% endif %}
     </div>
 </div>
+{% endblock %}
+{% block extra_javascript %}
+<script type="text/javascript">
+    $('#toggleci').click(function(){
+        $(this).toggleClass('fa-eye-slash')
+        $('#cilist').toggle();
+    });
+</script>
 {% endblock %}
