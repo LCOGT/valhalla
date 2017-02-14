@@ -20,7 +20,7 @@
         </div>
         <div :class="show ? 'col-md-6' : 'col-md-12'">
           <form class="form-horizontal">
-            <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update"             :errors="errors.group_id" desc="Provide a name for this observing request.">
+            <customfield v-model="userrequest.group_id" label="Title" field="title" v-on:input="update" :errors="errors.group_id" desc="Provide a name for this observing request.">
             </customfield>
             <customselect v-model="userrequest.proposal" label="Proposal" field="proposal"
                           v-on:input="update" :errors="errors.proposal" :options="proposalOptions"

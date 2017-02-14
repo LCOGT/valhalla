@@ -32,7 +32,7 @@
       </molecule>
     </div>
     <div v-for="(window, idx) in request.windows">
-      <window :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
+      <window ref="window" :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
               :errors="_.get(errors, ['windows', idx], {})" :parentshow="show"
               v-on:remove="removeWindow(idx)" v-on:copy="addWindow(idx)">
       </window>
@@ -99,6 +99,11 @@ export default {
   methods: {
     update: function(){
       this.$emit('requestupdate');
+      if('window' in this.$refs) {
+        for (var windowIdx in this.$refs.window) {
+          this.$refs.window[windowIdx].updateVisibility(this.request);
+        }
+      }
     },
     instrumentToDataType: function(value){
       if(!_.isEmpty(this.available_instruments) && value) {
