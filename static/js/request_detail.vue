@@ -67,8 +67,10 @@
         <archivetable :requestid="request.id"></archivetable>
       </div>
       <div class="tab-pane" :class="{ active: tab === 3 }">
+        <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
       </div>
       <div class="tab-pane" :class="{ active: tab === 4 }">
+        <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData" :telescopeStatesData="telescopeStatesData"></airmass_telescope_states>
       </div>
     </div>
   </div>
@@ -78,15 +80,20 @@
 import $ from 'jquery';
 import thumbnail from './components/thumbnail.vue';
 import archivetable from './components/archivetable.vue';
+import blockhistory from './components/blockhistory.vue';
+import airmass_telescope_states from './components/airmass_telescope_states.vue';
 import {login, getLatestFrame} from './archive.js';
 
 export default {
   name: 'app',
-  components: {thumbnail, archivetable},
+  components: {thumbnail, archivetable, blockhistory, airmass_telescope_states},
   data: function(){
     return {
       request: {},
       curFrame: null,
+      blockData: [],
+      airmassData: {},
+      telescopeStatesData: {},
       tab: 1,
     };
   },
@@ -104,6 +111,44 @@ export default {
       });
     });
   },
+  watch: {
+    'tab': function(tabNumber){
+      if(tabNumber === 3 && this.blockData.length === 0){
+        this.loadBlockData();
+      }
+      else if (tabNumber === 4){
+        if($.isEmptyObject(this.airmassData)) {
+          this.loadAirmassData();
+        }
+        if($.isEmptyObject(this.telescopeStatesData)){
+          this.loadTelescopeStatesData();
+        }
+      }
+    }
+  },
+  methods: {
+    loadBlockData: function(){
+      var that = this;
+      var requestId = $('#request-detail').data('requestid');
+      $.getJSON('/api/requests/' + requestId + '/blocks/', function(data){
+        that.blockData = data;
+      });
+    },
+    loadAirmassData: function(){
+      var that = this;
+      var requestId = $('#request-detail').data('requestid');
+      $.getJSON('/api/requests/' + requestId + '/airmass/', function(data){
+        that.airmassData = data;
+      });
+    },
+    loadTelescopeStatesData: function(){
+      var that = this;
+      var requestId = $('#request-detail').data('requestid');
+      $.getJSON('/api/requests/' + requestId + '/telescope_states/', function(data){
+        that.telescopeStatesData = data;
+      });
+    }
+  }
 
 };
 </script>

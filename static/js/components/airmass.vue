@@ -167,6 +167,9 @@ export default {
           $(this).appendTo($(this).parent());
         });
       });
+      plot.on('rangechanged', function () {
+        that.$emit('rangechanged', that.plot.getWindow());
+      });
       return plot;
     }
   }
