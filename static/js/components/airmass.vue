@@ -1,11 +1,11 @@
 <template>
   <div class="airmassPlot">
-    <h4 class="text-center">Visibility</h4>
-    <plot_controls v-on:plotZoom="plotZoom"></plot_controls>
+    <plot_controls v-show="showZoomControls" v-on:plotZoom="plotZoom"></plot_controls>
   </div>
 </template>
 <script>
 import vis from 'vis';
+import $ from 'jquery';
 import _ from 'lodash';
 import 'vue-style-loader!vis/dist/vis.css';
 import 'vue-style-loader!../../css/plot_style.css';
@@ -15,7 +15,7 @@ import plot_controls from './util/plot_controls.vue';
 import {plotZoomMixin} from './util/plot_mixins.js';
 
 export default {
-  props: ['data'],
+  props: ['data', 'showZoomControls'],
   mixins: [plotZoomMixin],
   components: {plot_controls},
   data: function () {

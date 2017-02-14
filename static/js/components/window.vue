@@ -5,7 +5,8 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <airmass v-show="showAirmass" :data="airmassData"></airmass>
+        <h4 class="text-center">Visibility</h4>
+        <airmass v-show="showAirmass" :data="airmassData" :showZoomControls="true"></airmass>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal" >
@@ -68,7 +69,7 @@ export default {
     updateVisibility: function(req){
       var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
-      request['windows'] = [{start:this.window.start, end:this.window.end}]
+      request['windows'] = [{start:this.window.start, end:this.window.end}];
       var that = this;
       $.ajax({
         type: 'POST',
