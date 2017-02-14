@@ -12,24 +12,31 @@ import 'vue-style-loader!../../css/plot_style.css';
 import {siteToColor} from '../utils.js';
 import {siteCodeToName} from '../utils.js';
 import plot_controls from './util/plot_controls.vue';
+import {plotZoomMixin} from './util/plot_mixins.js';
 
 export default {
   props: ['data'],
+  mixins: [plotZoomMixin],
   components: {plot_controls},
-  data: function(){
+  data: function () {
     var options = {
       dataAxis: {
-        left: {format: function(value){ return Math.abs(value).toPrecision(2);}
+        left: {
+          format: function (value) {
+            return Math.abs(value).toPrecision(2);
+          }
         }
       },
       orientation: 'top',
-      legend: {enabled: true,
-        left: {visible: true,
-          position:'bottom-right'
+      legend: {
+        enabled: true,
+        left: {
+          visible: true,
+          position: 'bottom-right'
         }
       },
       zoomKey: 'ctrlKey',
-      moment: function(date){
+      moment: function (date) {
         return vis.moment(date).utc();
       }
     };
@@ -37,9 +44,8 @@ export default {
       options: options
     };
   },
-  computed:{
-    toVis: function(){
-      var visData = [];
+  computed: {
+    toVis: function () {
       var plotSites = new vis.DataSet();
       var visData = new vis.DataSet();
 
@@ -128,7 +134,7 @@ export default {
     }
   },
   watch: {
-    data: function(){
+    data: function () {
       var datasets = this.toVis;
       //Need to first zero out the items and groups or vis.js throws an error
       this.plot.setItems(new vis.DataSet());
@@ -138,17 +144,17 @@ export default {
       this.plot.fit();
     }
   },
-  mounted: function(){
-    this.plot = this.buildPlot(new vis.DataSet(), new vis.DataSet());
+  mounted: function () {
+    this.plot = this.buildPlot();
   },
-  methods:{
-    buildPlot: function(itemData, groupData){
+  methods: {
+    buildPlot: function () {
       // Set a unique name for the plot element, since vis.js needs this to separate plots
       this.$el.setAttribute('class', _.uniqueId(this.$el.className));
       var plot = new vis.Graph2d(this.$el, new vis.DataSet([]), this.options);
       var that = this;
-      plot.on('changed', function(){
-        $(that.$el).find('.vis-point').each(function() {
+      plot.on('changed', function () {
+        $(that.$el).find('.vis-point').each(function () {
           $(this).attr('title', $(this).next().text());
           $(this).attr('data-original-title', $(this).next().text());
           $(this).attr('data-html', 'true');
@@ -157,20 +163,11 @@ export default {
           label.appendTo($(this).parent());
         });
         $(that.$el).find('.vis-point').tooltip({'container': 'body', 'placement': 'top'});
-        $(that.$el).find('.vis-legend svg path').each(function() {
+        $(that.$el).find('.vis-legend svg path').each(function () {
           $(this).appendTo($(this).parent());
         });
       });
       return plot;
-    },
-    plotZoom: function(zoomValue){
-      var range = this.plot.getWindow();
-      var interval = range.end - range.start;
-
-      this.plot.setWindow({
-        start: range.start.valueOf() - interval * zoomValue,
-        end:   range.end.valueOf()   + interval * zoomValue
-      });
     }
   }
 };
