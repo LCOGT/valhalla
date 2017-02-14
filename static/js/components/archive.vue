@@ -12,13 +12,14 @@
 <script>
 import $ from 'jquery';
 import _ from 'lodash';
-import * as archive from '../archive.js';
+import {login, ajaxSetup} from '../archive.js';
 export default {
   props: ['ra', 'dec'],
   data: function(){
     return{resultCount: 0};
   },
   created: function(){
+    ajaxSetup();
     this.setResultCount();
   },
   computed: {

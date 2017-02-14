@@ -1,8 +1,8 @@
 {% extends 'index.html' %}
-{% load i18n bootstrap3 request_extras humanize %}
+{% load i18n bootstrap3 request_extras humanize static %}
 {% block title %}Submitted Requests{% endblock %}
 {% block extra_css %}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css">
+  <link rel="stylesheet" href="{% static 'css/userrequest_list.css' %}">
 {% endblock %}
 {% block request_list %}
   {% if user.userrequests_set.count < 1 %}
@@ -25,18 +25,18 @@
     <div class="col-md-12">
       <h2>Submitted Observation Requests</h2>
       <div class="filter-block">
-        <form method="get" action="" class="form-inline">
+        <form method="get" action="" id="filter" class="form-inline">
           <div class="form-group">
             {% bootstrap_field filter.form.state show_label=False show_help=False size='small' addon_before='State:' bound_css_class='' %}
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' %}
+            {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' placeholder='Title contains' %}
           </div>
           <div class="form-group">
             <label class="sr-only control-label" for="id_proposal"> Proposal</label>
             <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-fw fa-users"></i> Proposal:</span>
-              <select class="form-control input-sm" id="id_proposal" name="proposal" title="">
+              <span class="input-group-addon"><i class="fa fa-fw fa-users"></i> Proposal</span>
+              <select class="form-control input-sm" id="id_proposal" name="proposal" title="" name="id_proposal">
                 <option value="">---------</option>
                 {% for proposal in user.proposal_set.all %}
                 <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>{{ proposal }}</option>
@@ -45,15 +45,16 @@
             </div>
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Created After' bound_css_class='' %}
+            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Submited After' bound_css_class='' placeholder='Greater than or equal' %}
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Created Before' bound_css_class='' %}
+            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Submitted Before' bound_css_class='' placeholder='Less than or equal' %}
           </div>
           <div class="form-group">
-            {% bootstrap_field filter.form.user show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-user"></i> User' bound_css_class='' %}
+            {% bootstrap_field filter.form.user show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-user"></i> User' bound_css_class='' placeholder='Username contains' %}
           </div>
-          <input type="submit" class="btn btn-info btn-sm" value="Filter"/>
+          <br/>
+          <input type="submit" class="btn btn-info" value="Filter Results"/>
         </form>
       </div>
     </div>
@@ -77,7 +78,9 @@
           <div class="col-md-8">
             <div class="row">
               <div class="col-md-12">
-                <a class="userrequest-title" href="{% url 'userrequests:list' ur=ur.id %}"> {{ ur.group_id|default:'Unnamed Request' }}</a>
+                <a class="userrequest-title" href="{% url 'userrequests:detail' ur %}">
+                  {{ ur.group_id|default:'Unnamed Request' }}
+                </a>
               </div>
             </div>
             <div class="row">
@@ -140,15 +143,10 @@
 {% endblock %}
 {% block extra_javascript %}
   {{ block.super }}
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js'></script>
   <script type="text/javascript">
     $('#id_created_after, #id_created_before').datetimepicker({
       'format': 'YYYY-M-D HH:mm:ss'
     });
-    $('#filter').click(function(){
-      $('.filter-block').toggle(300);
-    })
     $(function() {
        $(".tool-tip").tooltip();
     });

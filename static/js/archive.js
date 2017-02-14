@@ -1,15 +1,18 @@
-/* globals $ */
-/* eslint-disable no-undef */
-var archiveRoot = 'https://archive-api.lco.global/';
+import $ from 'jquery';
+import 'jquery-file-download';
+export const archiveRoot = 'https://archive-api.lco.global/';
+export const archiveUIRoot = 'https://archive.lco.global/';
+export {ajaxSetup, login, downloadZip, downloadAll, getThumbnail, getLatestFrame};
 
-$.ajaxPrefilter(function(options, originalOptions, jqXHR){
-  if(options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0 ){
-    jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('authToken'));
-  }
-});
+function ajaxSetup(){
+  $.ajaxPrefilter(function(options, originalOptions, jqXHR){
+    if(options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0 ){
+      jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('archiveAuthToken'));
+    }
+  });
+}
 
-
-login = function(callback){
+function login(callback){
   if(localStorage.getItem('archiveAuthToken')){
     callback();
   }else{
@@ -30,44 +33,44 @@ login = function(callback){
       });
     });
   }
-};
+}
 
-downloadZip = function(frameIds){
+function downloadZip(frameIds){
   var postData = {};
   for(var i = 0; i < frameIds.length; i++){
     postData['frame_ids[' + i + ']'] = frameIds[i];
   }
-  postData['auth_token'] = localStorage.getItem('authToken');
+  postData['auth_token'] = localStorage.getItem('archiveAuthToken');
   $.fileDownload(archiveRoot + 'frames/zip/', {
     httpMethod: 'POST',
     data: postData
   });
-};
+}
 
-downloadAll = function(requestId){
+function downloadAll(requestId){
   $.getJSON(archiveRoot + 'frames/?limit=1000&REQNUM=' + requestId, function(data){
     if(data.count > 1000){
       alert('Over 1000 products found. Please use https://archive.lco.global to download your data');
       return false;
     }
-    frameIds = [];
+    var frameIds = [];
     for (var i = 0; i < data.results.length; i++) {
       frameIds.push(data.results[i].id);
     }
     downloadZip(frameIds);
   });
-};
+}
 
-getThumbnail = function(frameId, size, callback){
+function getThumbnail(frameId, size, callback){
   $.getJSON('https://thumbnails.lco.global/' + frameId + '/?width=' + size + '&height=' + size, function(data){
     callback(data);
   }).fail(function(){
     callback({'error': '<span>Could not load thumbnail for this file</span>'});
   });
-};
+}
 
-getLatestFrame = function(requestId, callback){
+function getLatestFrame(requestId, callback){
   $.getJSON(archiveRoot + 'frames/?ordering=-id&limit=1&REQNUM=' + requestId, function(data){
     callback(data.results[0]);
   });
-};
+}

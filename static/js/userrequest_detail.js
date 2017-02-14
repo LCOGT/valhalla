@@ -1,17 +1,8 @@
 import $ from 'jquery';
-import Vue from 'vue';
 
 import {ajaxSetup, login, getThumbnail, getLatestFrame, downloadAll} from './archive.js';
-import App from './request_detail.vue';
 
 ajaxSetup();
-
-new Vue({
-  el: '#app',
-  render: function(h){
-    return h(App);
-  }
-});
 
 $('#downloadall').click(function(){
   downloadAll($(this).data('requestid'));

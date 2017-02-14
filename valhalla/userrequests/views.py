@@ -1,6 +1,7 @@
 from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import TemplateView
+from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -42,6 +43,30 @@ class UserRequestListView(FilterView):
             return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
         else:
             return UserRequest.objects.none()
+
+
+class UserRequestDetailView(DetailView):
+    model = UserRequest
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        else:
+            return UserRequest.objects.none()
+
+
+class RequestDetailView(DetailView):
+    model = Request
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
+        else:
+            return Request.objects.none()
+
+
+class RequestCreateView(LoginRequiredMixin, TemplateView):
+    template_name = 'userrequests/request_create.html'
 
 
 class TelescopeStatesView(APIView):
@@ -104,24 +129,3 @@ class InstrumentsInformationView(APIView):
         return Response(info)
 
 
-class RequestListView(LoginRequiredMixin, FilterView):
-    template_name = 'userrequests/request_list.html'
-    model = Request
-    paginate_by = 20
-
-    def get_queryset(self):
-        user_request = get_object_or_404(
-            UserRequest,
-            pk=self.kwargs['ur'],
-            proposal__in=self.request.user.proposal_set.all()
-        )
-        return user_request.requests.all()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['userrequest'] = UserRequest.objects.get(pk=self.kwargs['ur'])
-        return context
-
-
-class RequestCreateView(LoginRequiredMixin, TemplateView):
-    template_name = 'userrequests/request_create.html'

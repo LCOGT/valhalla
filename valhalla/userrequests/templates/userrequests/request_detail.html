@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load render_bundle from webpack_loader %}
+{% block title %} User Request Detail {% endblock %}
+{% block content %}
+{% include 'userrequests/partials/userrequest_header.html' with userrequest=object.user_request %}
+<div class="row">
+  <div class="col-md-12">
+    <ol class="breadcrumb">
+      <li><a href="{% url 'userrequests:detail' object.user_request %}">Child Requests</a></li>
+      <li class="active"># {{ object.id }}</li>
+    </ol>
+  </div>
+</div>
+{% include 'userrequests/partials/request_row.html' with request=object %}
+<div id="request-detail" data-requestid="{{ object.id }}">
+{% verbatim %}
+  <div id="app"></div>
+{% endverbatim %}
+</div>
+{% endblock %}
+{% block extra_javascript %}
+{% render_bundle 'request_detail' %}
+{% endblock %}

@@ -102,6 +102,7 @@ a:hover {
 .userrequest {
     border: 1px solid #EFF0EC;
     min-height: 75px;
+    margin: 0px;
 
 }
 

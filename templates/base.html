@@ -1,5 +1,6 @@
 <!doctype html>
 {% load static bootstrap3 %}
+{% load render_bundle from webpack_loader %}
 <html class="no-js" lang="">
     <head>
         <meta charset="utf-8">
@@ -29,14 +30,14 @@
                 <span class="icon-bar"></span>
               </button>
               <div class="navbar-header branding branding-logo">
-                <a href="{% url 'index' %}" title="Observation Portal" rel="home" class="navbar-brand"><img src="https://cdn.lco.global/mainstyle/img/LCO-logo-web.jpg" alt="Las Cumbres Observatory" /></a>
+                <a href="{% url 'userrequests:list' %}" title="Observation Portal" rel="home" class="navbar-brand"><img src="https://cdn.lco.global/mainstyle/img/LCO-logo-web.jpg" alt="Las Cumbres Observatory" /></a>
               </div>
               <div class="navbar-header branding">
                 <div id="lco-name">Observing Portal</div>
               </div>
               <div id="navbar" class="navbar-collapse collapse headNav">
                 <ul class="nav navbar-nav navbar-main">
-                <li><a href="{% url 'index' %}">Home</a>
+                <li><a href="{% url 'userrequests:list' %}">Home</a>
                 <li><a href="{% url 'userrequests:create' %}">Submit Observation</a></li>
                 <li><a href="{% url 'proposals:list' %}?active=1">Manage Proposals</a></li>
                 <li><a href="{% url 'sciapplications:index' %}">Submit Proposals</a></li>
@@ -77,9 +78,8 @@
         </div>
     </body>
     {% block javascript %}
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    {% render_bundle 'common' %}
+    {% render_bundle 'global' %}
     {% endblock %}
     {% block extra_javascript %}
     {% endblock %}

@@ -1,0 +1,48 @@
+{% load i18n request_extras humanize %}
+<div class="row userrequest userrequest-{{ request.state|state_to_bs }}" data-request='{{ request.id }}'>
+    <div class="col-md-10">
+      <div class="row">
+        <div class="col-md-12">
+          <strong><a class="userrequest-title" href="{% url 'userrequests:request-detail' request %}"> #{{ request.id }}</a></strong>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 userrequest-block border-right">
+          <p><i class="fa fa-clock-o"></i> Duration: {{ request.duration }} seconds</p>
+          <p><i class="fa fa-ban"></i> Fail Count: {{ request.fail_count }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          <p>
+            <span class="text-{{ request.state|state_to_bs }}">
+              <i class="fa fa-{{ request.state|state_to_icon }}"></i>
+              {{ request.state }}
+            </span>
+            {% if request.state == 'PENDING' %}
+              <a class="fa fa-question-circle block-info" data-requestid="{{ request.id }}" role="button" data-toggle="popover" data-trigger="focus" tabindex="0" title="Schedule Details" data-content="<i class='fa fa-pulse fa-spinner'>"></a>
+            {% endif %}
+          </p>
+          <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
+        </div>
+        <div class="col-md-4 userrequest-block border-right">
+          {% if request.state == 'COMPLETED' %}
+          <button id="downloadall" data-requestid="{{ request.id }}" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download</button>
+          {% endif %}
+          <div class="btn-group">
+            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-cog"></i> Options <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#"><i class="fa fa-files-o"></i> Copy Request</a></li>
+              <li><a href="{% url 'api:requests-detail' pk=request.id %}"><i class="fa fa-cogs"></i> View on API</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      {% if request.state == 'COMPLETED' %}
+      <div style="display: none; margin-top: 10px;"></div>
+      <img src="" class="thumbnail-small thumbnail" data-request="{{ request.id }}" style="display: none">
+      {% endif %}
+    </div>
+</div>

@@ -27,12 +27,11 @@ api_urlpatterns = [
 ]
 
 urlpatterns = [
-    url(r'^$', UserRequestListView.as_view(), name='index'),
+    url(r'^', include(userrequest_urls, namespace='userrequests')),
     url(r'^accounts/', include(accounts_urls)),
     url(r'^api/', include(api_urlpatterns, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
-    url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
     url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
     url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'^admin/', admin.site.urls),

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load static i18n %}
 {% block title %}Home{% endblock %}
 {% block content %}
 <div class="row">
@@ -65,7 +65,6 @@
 </div>
 {% endblock %}
 {% block extra_javascript %}
-{% load static bootstrap3 %}
 <script src="{% static 'js/telescope_availability.js' %}"></script>
 <script type="text/javascript">
 $(document).ready(function(){
