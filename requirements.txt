@@ -14,4 +14,3 @@ PyPDF2
 elasticsearch
 numpy
 rise_set
-
