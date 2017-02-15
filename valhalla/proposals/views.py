@@ -1,8 +1,10 @@
 from django.views import View
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.validators import validate_email
 from django.http import Http404, HttpResponseRedirect
+from django.urls import reverse_lazy
 from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.contrib import messages
@@ -44,3 +46,14 @@ class InviteCreateView(LoginRequiredMixin, View):
             proposal.add_users([email], Membership.CI)
             messages.success(request, _('Co Investigator invited'))
         return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': proposal.id}))
+
+
+class MembershipDeleteView(LoginRequiredMixin, DeleteView):
+    model = Membership
+
+    def get_success_url(self):
+        return reverse_lazy('proposals:detail', kwargs={'pk': self.get_object().proposal.id})
+
+    def get_queryset(self):
+        proposals = self.request.user.proposal_set.filter(membership__role=Membership.PI)
+        return Membership.objects.filter(proposal__in=proposals)

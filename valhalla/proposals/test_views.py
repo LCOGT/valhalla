@@ -105,3 +105,52 @@ class TestPropsalList(TestCase):
         response = self.client.get(reverse('proposals:list'))
         for proposal in self.proposals:
             self.assertContains(response, proposal.id)
+
+
+class TestMembershipDelete(TestCase):
+    def setUp(self):
+        self.pi_user = mixer.blend(User)
+        self.ci_user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.pi_user, role=Membership.PI, proposal=self.proposal)
+        self.cim = mixer.blend(Membership, user=self.ci_user, role=Membership.CI, proposal=self.proposal)
+
+    def test_pi_can_remove_ci(self):
+        self.client.force_login(self.pi_user)
+
+        self.assertEqual(self.proposal.membership_set.count(), 2)
+        response = self.client.post(
+            reverse('proposals:membership-delete', kwargs={'pk': self.cim.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.proposal.membership_set.count(), 1)
+
+    def test_ci_cannot_remove_ci(self):
+        other_user = mixer.blend(User)
+        other_cim = mixer.blend(Membership, user=other_user, proposal=self.proposal)
+
+        self.client.force_login(self.ci_user)
+        self.assertEqual(self.proposal.membership_set.count(), 3)
+        response = self.client.post(
+            reverse('proposals:membership-delete', kwargs={'pk': other_cim.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(self.proposal.membership_set.count(), 3)
+
+    def test_pi_cannot_remove_ci_other_proposal(self):
+        other_proposal = mixer.blend(Proposal)
+        other_membership = mixer.blend(Membership, user=self.ci_user, proposal=other_proposal)
+
+        self.client.force_login(self.pi_user)
+        self.assertEqual(other_proposal.membership_set.count(), 1)
+        response = self.client.post(
+            reverse('proposals:membership-delete', kwargs={'pk': other_membership.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(other_proposal.membership_set.count(), 1)

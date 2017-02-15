@@ -7,15 +7,16 @@
     <div class="col-md-8">
         <h3>{{ object }} <small>{{ object.title }}</small></h3>
         <p>{{ object.abstract }}</p>
-        <h4>Time Allocation</h4>
+        <h4>Total Observation Requests:
+            <a title="View requests" href="{% url 'index' %}?proposal={{ object.id }}">{{ object.userrequest_set.all.count }}</a>
+        </h4>
         <table class="table">
             <thead>
                 <tr>
                     <td>Semester</td>
                     <td>Telescope Class</td>
-                    <td>Type</td>
-                    <td>Used</td>
-                    <td>Total</td>
+                    <td>Hours</td>
+                    <td>Used/Allocated</td>
                 </tr>
             </thead>
             <tbody>
@@ -27,28 +28,39 @@
                     {% for ta in ta.list %}
                         <tr>
                             <td></td>
-                            <td colspan="4">{{ ta.telescope_class }}</td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
+                            <td style="width: 20%;">{{ ta.telescope_class }}</td>
                             <td>Standard</td>
-                            <td>{{ ta.std_time_used|floatformat}}</td>
-                            <td>{{ ta.std_allocation }}</td>
+                            <td style="width: 50%;">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progress-bar" style="min-width: 3em; width:{% widthratio ta.std_time_used ta.std_allocation 100 %}%">
+                                        {{ ta.std_time_used|floatformat}}/{{ ta.std_allocation }}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td></td>
                             <td>Rapid Response</td>
-                            <td>{{ ta.too_time_used|floatformat }}</td>
-                            <td>{{ ta.too_allocation }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progress-bar" style="min-width: 3em; width:{% widthratio ta.too_time_used ta.too_allocation 100 %}%">
+                                        {{ ta.too_time_used|floatformat}}/{{ ta.too_allocation }}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         <tr>
                             <td></td>
                             <td></td>
                             <td>IPP</td>
-                            <td>{{ ta.ipp_time_available|floatformat }}</td>
-                            <td>{{ ta.ipp_limit }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progress-bar" style="min-width: 3em; width:{% widthratio ta.ipp_time_available ta.ipp_limit 100 %}%">
+                                        {{ ta.ipp_time_available|floatformat}}/{{ ta.ipp_limit }}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
@@ -62,11 +74,18 @@
         <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
     </dl>
     <dl>
-        <dt>{% trans 'Co-Investigators' %}</dt>
-        {% for ci in object.cis %}
-        <dd>{{ ci.first_name }} {{ ci.last_name }}</dd>
-        <dd><a href="mailto:{{ ci.email }}">{{ ci.email }}</a></dd>
-        {% endfor %}
+        <dt>{% trans 'Co-Investigators' %} <a id="toggleci" title="Show/hide CI list" class="fa fa-eye fa-eye-slash"></a></dt>
+        <div id="cilist">
+            {% for mem in object.membership_set.all %}
+            {% if mem.role != 'PI' %}
+            <dd>{{ mem.user.first_name }} {{ mem.user.last_name }}</dd>
+            <dd><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></dd>
+                {% if user == object.pi %}
+                    <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
+                {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
     </dl>
     {% if user == object.pi %}
     <div class="help-block">
@@ -86,7 +105,7 @@
     </form>
     <br/>
     <dl>
-        <dt>{% trans 'Pending Invitataions' %}</dt>
+        <dt>{% trans 'Pending Invitations' %}</dt>
         {% for invite in object.proposalinvite_set.all %}
         {% if not invite.used %}
         <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
@@ -98,4 +117,12 @@
     {% endif %}
     </div>
 </div>
+{% endblock %}
+{% block extra_javascript %}
+<script type="text/javascript">
+    $('#toggleci').click(function(){
+        $(this).toggleClass('fa-eye-slash')
+        $('#cilist').toggle();
+    });
+</script>
 {% endblock %}

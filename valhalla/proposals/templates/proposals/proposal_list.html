@@ -4,12 +4,14 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <h2>My Proposals</h2>
-        <p>The following lists all proposals for which you are either the primary or a co-investigator. Proposals
-        may span several semesters, and have many different time allocations per telescope class, type, etc.</p>
-        <p>Click on the title of a proposal to view it's details and (if you are the primary investigator) manage co-investigators.</p>
+        <h2>Your Proposals</h2>
+        <p>
+            Below is a list of all proposals for which you are either the principal investigator (PI)
+            or a co-investigator.
+        </p>
+        <p>Click on a Proposal ID to view details and (if you are the PI) manage co-investigators.</p>
         <form method="get" action="" class="form-inline pull-right">
-            {% bootstrap_form  filter.form %}
+            {% bootstrap_form filter.form %}
             {% bootstrap_button button_type="submit" content="Filter" %}
         </form>
         <table class="table table-striped">
