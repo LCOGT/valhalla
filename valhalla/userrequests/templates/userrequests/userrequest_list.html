@@ -67,7 +67,7 @@
       <small>State Info</small>
     </div>
     <div class="col-md-5">
-      <small class="pull-right"># Requests / Complete / Pending / Failed</small>
+      <small class="pull-right"># Requests / Pending / Failed / Complete</small>
     </div>
   </div>
   <div class="row">
@@ -108,21 +108,21 @@
           <div class="col-xs-1 request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
-                <p><center class="text-success">{{ ur|request_state_count:'COMPLETED' }}</center></p>
+                <p><center class="text-warning">{{ ur|request_state_count:'PENDING' }}</center></p>
               </div>
             </div>
           </div>
           <div class="col-xs-1 request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
-                <p><center class="text-warning">{{ ur|request_state_count:'PENDING' }}</center></p>
+                <p><center class="text-danger">{{ ur|request_state_count:'WINDOW_EXPIRED' }}</center></p>
               </div>
             </div>
           </div>
            <div class="col-xs-1 request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
-                <p><center class="text-danger">{{ ur|request_state_count:'WINDOW_EXPIRED' }}</center></p>
+                <p><center class="text-success">{{ ur|request_state_count:'COMPLETE' }}</center></p>
               </div>
             </div>
           </div>

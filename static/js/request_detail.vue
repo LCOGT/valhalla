@@ -5,36 +5,40 @@
   </div>
   <div class="col-md-8">
     <ul class="nav nav-tabs nav-justified">
-      <li :class="{ active: tab === 1 }" v-on:click="tab = 1">
+      <li :class="{ active: tab === 'details' }" v-on:click="tab = 'details'">
         <a title="Details about the observed request.">Details</a>
       </li>
-      <li :class="{ active: tab === 2 }" v-on:click="tab = 2">
-        <a title="Downloadable data.">Data</a>
-      </li>
-      <li :class="{ active: tab === 3 }" v-on:click="tab = 3">
+      <li :class="{ active: tab === 'scheduling' }" v-on:click="tab = 'scheduling'">
         <a title="Scheduling history.">Scheduling</a>
       </li>
-      <li :class="{ active: tab === 4 }" v-on:click="tab = 4">
+      <li :class="{ active: tab === 'visibility' }" v-on:click="tab = 'visibility'">
         <a title="Target Visibility.">Visibility</a>
+      </li>
+      <li :class="{ active: tab === 'data' }" v-on:click="tab = 'data'">
+        <a title="Downloadable data.">Data</a>
       </li>
     </ul>
     <div class="tab-content">
-      <div class="tab-pane" :class="{ active: tab === 1 }">
+      <div class="tab-pane" :class="{ active: tab === 'details' }">
         <div class="row">
           <div class="col-md-6">
             <h4>Windows</h4>
             <table class="table">
               <thead>
-                <tr><td>Start</td><td>End</td></tr>
+                <tr><td><strong>Start</strong></td><td><strong>End</strong></td></tr>
               </thead>
               <tbody>
-                <tr v-for="window in request.windows"><td>{{ window.start }}</td><td>{{ window.end }}</td></tr>
+                <tr v-for="window in request.windows">
+                  <td>{{ window.start }}</td><td>{{ window.end }}</td>
+                </tr>
               </tbody>
             </table>
             <h4>Configurations</h4>
             <table class="table table-condensed">
               <thead>
-                <tr><td>Instrument</td><td>Filter</td><td>Exposures</td></tr>
+                <tr>
+                  <td><strong>Instrument</strong></td><td><strong>Filter</strong></td><td><strong>Exposures</strong></td>
+                </tr>
               </thead>
               <tbody>
                 <tr v-for="molecule in request.molecules">
@@ -63,13 +67,13 @@
           </div>
         </div>
       </div>
-      <div class="tab-pane" :class="{ active: tab === 2 }">
+      <div class="tab-pane" :class="{ active: tab === 'data' }">
         <archivetable :requestid="request.id"></archivetable>
       </div>
-      <div class="tab-pane" :class="{ active: tab === 3 }">
+      <div class="tab-pane" :class="{ active: tab === 'scheduling' }">
         <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
       </div>
-      <div class="tab-pane" :class="{ active: tab === 4 }">
+      <div class="tab-pane" :class="{ active: tab === 'visibility' }">
         <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData" :telescopeStatesData="telescopeStatesData"></airmass_telescope_states>
       </div>
     </div>
@@ -94,7 +98,7 @@ export default {
       blockData: [],
       airmassData: {},
       telescopeStatesData: {},
-      tab: 1,
+      tab: 'details',
     };
   },
   created: function(){
@@ -112,11 +116,11 @@ export default {
     });
   },
   watch: {
-    'tab': function(tabNumber){
-      if(tabNumber === 3 && this.blockData.length === 0){
+    'tab': function(tab){
+      if(tab === 'scheduling' && this.blockData.length === 0){
         this.loadBlockData();
       }
-      else if (tabNumber === 4){
+      else if (tab === 'visibility'){
         if($.isEmptyObject(this.airmassData)) {
           this.loadAirmassData();
         }
