@@ -55,11 +55,7 @@
                             <td></td>
                             <td>IPP</td>
                             <td>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progress-bar" style="min-width: 3em; width:{% widthratio ta.ipp_time_available ta.ipp_limit 100 %}%">
-                                        {{ ta.ipp_time_available|floatformat}}/{{ ta.ipp_limit }}
-                                    </div>
-                                </div>
+                                Available: {{ ta.ipp_time_available|floatformat }} Limit: {{ ta.ipp_limit }}
                             </td>
                         </tr>
                     {% endfor %}
