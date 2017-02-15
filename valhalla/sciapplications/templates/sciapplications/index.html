@@ -1,93 +1,96 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% block title %}{% trans 'Apply' %}{% endblock %}
+{% block title %}{% trans 'Submit Proposal' %}{% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-8">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>{% trans 'Proposal Applications' %}</h3>
-                {% blocktrans %}
-                <p>This page contains links to submission forms for standard science and Key Project proposal calls. After submitting your proposal it will be submitted for review and you will be notified if/when your application has been successful. You will also be able to check on the status on this page.</p>
-                <p>Information about the <a href="http://lcogt.net/observatory/telescopes">telescopes</a>, <a href="http://lcogt.net/observatory/instruments">intruments</a>, <a href="http://lcogt.net/observatory/data">data handling and quality</a>, <a href="http://lcogt.net/observatory/scheduling">scheduling</a> and other technical aspects of the network is available on the <a href="http://lcogt.net/observatory/capabilities">observatory capabilities</a> pages.</p>
-                <p>Full details of our proposal and network time allocation policies are available <a href="http://lcogt.net/observatory/proposal/policies">on our website.</a></p>
-                {% endblocktrans %}
-                <h4>Draft Proposals</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <td>{% trans 'Title' %}</td>
-                            <td>{% trans 'Call' %}</td>
-                            <td>{% trans 'Deadline' %}</td>
-                            <td>{% trans 'Status' %}</td>
-                            <td>{% trans 'Preview' %}</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for app in draft_proposals %}
-                        <tr>
-                            <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
-                            <td>{{ app.call }}</td>
-                            <td>{{ app.call.deadline }}</td>
-                            <td>{{ app.status }}</td>
-                            <td>
-                                <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
-                                <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan=5>{% trans 'You have not started any proposals.' %}</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <h4>Submitted Proposals</h4>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <td>{% trans 'Title' %}</td>
-                            <td>{% trans 'Call' %}</td>
-                            <td>{% trans 'Deadline' %}</td>
-                            <td>{% trans 'Status' %}</td>
-                            <td>{% trans 'View' %}</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for app in submitted_proposals %}
-                        <tr>
-                            <td>{{ app.title }}</td>
-                            <td>{{ app.call }}</td>
-                            <td>{{ app.call.deadline }}</td>
-                            <td>{{ app.status }}</td>
-                            <td>
-                                <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
-                                <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <td colspan="5">{% trans 'You have not submitted any proposals.' %}</td>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h3>{% trans 'Open Calls' %}</h3>
-                {% if calls %}
-                    {% for call in calls %}
-                    <div class="call-block">
-                        <p><strong>{{ call }}</strong><br/><small>Deadline: {{ call.deadline }}</small><br/>
-                        {{ call.eligibility_short }}<br/>
-                        <a href="{% url 'sciapplications:create' call=call.id %}">Apply</a></p>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p>{% trans 'There are no open calls at this time' %}</p>
-                {% endif %}
-            </div>
-        </div>
+    <div class="col-md-12">
+        <h1>Current Calls for Proposals</h1>
+        <p>
+            Information about the <a href="http://lcogt.net/observatory/telescopes">telescopes</a>, <a href="http://lcogt.net/observatory/instruments">intruments</a>,
+            <a href="http://lcogt.net/observatory/data">data handling and quality</a>, <a href="http://lcogt.net/observatory/scheduling">scheduling</a>
+            and other technical aspects of the network is available on the <a href="http://lcogt.net/observatory/capabilities">observatory capabilities</a> pages.
+        </p>
+        <p>Full details of our proposal and network time allocation policies are available <a href="http://lcogt.net/observatory/proposal/policies">on our website.</a></p>
+        <p>More information about <a href="https://lco.global/observatory/proposal/guidelines/">writing proposals</a></p>
+        <table class="table">
+            <thead>
+                <tr><td>Type</td><td>Semester</td><td>Eligibility</td><td>Deadline</td><td></td></tr>
+            </thead>
+            <tbody>
+                {% for call in calls %}
+                <tr>
+                    <td>{{ call.get_proposal_type_display }}</td><td>{{ call.semester }}</td><td>{{ call.eligibility_short }}</td><td>{{ call.deadline }}</td>
+                    <td><a href="{% url 'sciapplications:create' call=call.id %}" class="btn btn-primary">Apply</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No active calls at this time</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h1>Your Proposals</h1>
+        <p>
+            Below is a list of your active proposals in LCO's submission system. Submitted proposals are reviewed by LCO's Time Allocation Committee (TAC) whose members are
+            selected from the astronomical community and are not affiliated with LCO. Proposals recommended for scheduling by the TAC are awarded time by LCO's director,
+            and PIs are notified whether a proposal has been accepted approximately 3 weeks before the start of the semester.
+        </p>
+        <h4>Draft Proposals</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>{% trans 'Title' %}</td>
+                    <td>{% trans 'Call' %}</td>
+                    <td>{% trans 'Deadline' %}</td>
+                    <td>{% trans 'Status' %}</td>
+                    <td>{% trans 'Preview' %}</td>
+                    <td>{% trans 'Delete' %}</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in draft_proposals %}
+                <tr>
+                    <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
+                    <td>{{ app.call }}</td>
+                    <td>{{ app.call.deadline }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                        <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                    </td>
+                    <td><a href="{% url 'sciapplications:delete' pk=app.id %}" class="fa fa-trash" title="Delete draft"></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan=5>{% trans 'You have not started any proposals.' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Submitted Proposals</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>{% trans 'Title' %}</td>
+                    <td>{% trans 'Call' %}</td>
+                    <td>{% trans 'Deadline' %}</td>
+                    <td>{% trans 'Status' %}</td>
+                    <td>{% trans 'View' %}</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in submitted_proposals %}
+                <tr>
+                    <td>{{ app.title }}</td>
+                    <td>{{ app.call }}</td>
+                    <td>{{ app.call.deadline }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                        <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <td colspan="5">{% trans 'You have not submitted any proposals.' %}</td>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 

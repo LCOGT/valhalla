@@ -5,12 +5,19 @@
 
 {% block content %}
 <div class="row">
+    <div class="col-md-12">
+        <ol class="breadcrumb">
+          <li><a href="{% url 'sciapplications:index' %}">Calls for Proposoals</a></li>
+          <li class="active">Submit proposal</li>
+        </ol>
+    </div>
+</div>
+<div class="row">
     <div class="col-md-9">
         <p>
-        {% blocktrans with semester=call.semester deadline=call.deadline eligibility=call.eligibility %}
-        <p>You are creating a proposal for {{ semester }}. The deadline for all proposals to be submitted is {{ deadline }}.</p>
-        <p>{{ eligibility }}</p>
-        {% endblocktrans %}
+        <p>You are creating a proposal for {{ call.semester }}.</p>
+        <p>Deadline: <strong>{{ call.deadline|date:"j M Y P" }}</strong>
+        <p>{{ call.eligibility }}</p>
         </p>
         {% bootstrap_form_errors form %}
         <form method="post" action="" enctype="multipart/form-data" id="app_form">
@@ -30,7 +37,7 @@
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
-                {% blocktrans %}If this is not you, please add email address of the PI. The email address given shouldrepresent the institutional affiliation through which the PI is authorized to apply for LCOGT time through the TAC (either the LCOGT TAC or NAOC TAC).
+                {% blocktrans %}<strong>If this is not you</strong>, please add the email address of the PI. The email address given should represent the institutional affiliation through which the PI is authorized to apply for LCO time through the TAC.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.pi show_label=false %}
@@ -49,7 +56,7 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately. If you are applying to the LCOGT TAC, you may request time on any size telescope. If you are applying to the NAOC TAC, you may only request time on the 1-meter telescopes. {% endblocktrans %}
+                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately. If you are applying to the LCO TAC, you may request time on any size telescope.{% endblocktrans %}
                 </div>
                 <table class="table table-striped">
                     <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
@@ -139,7 +146,7 @@
             {% endif %}
 
             {% if form.past_use %}
-                {% bootstrap_label 'Report on past use of LCOGT in the last 3 years' label_for=id_past_use %}
+                {% bootstrap_label 'Report on past use of LCO in the last 3 years' label_for=id_past_use %}
                 {% bootstrap_field form.past_use show_label=False %}
             {% endif %}
 
@@ -159,12 +166,12 @@
             {% endif %}
 
             {% if form.relevance %}
-                {% bootstrap_label 'Relevance to unique capabilities of the LCOGT network' label_for=id_relevance %}
+                {% bootstrap_label 'Relevance to unique capabilities of the LCO network' label_for=id_relevance %}
                 {% bootstrap_field form.relevance show_label=False %}
             {% endif %}
 
             {% if form.contribution %}
-                {% bootstrap_label 'Contribution brought by non-LCOGT participants' label_for=id_contribution %}
+                {% bootstrap_label 'Contribution brought by non-LCO participants' label_for=id_contribution %}
                 {% bootstrap_field form.contribution show_label=False %}
             {% endif %}
 
@@ -199,7 +206,6 @@
         <p>{% trans 'Deleting a draft is an irreversible action' %}.</p>
         <p><a href="{% url 'sciapplications:delete' pk=form.instance.id %}" class="btn btn-danger">{% trans 'Delete' %}</a></p>
         {% endif %}
-        <!-- <p><a href="{% url 'sciapplications:index' %}">{% trans 'Back to application list' %}</a></p> -->
     </div>
 </div>
 {% endblock %}
