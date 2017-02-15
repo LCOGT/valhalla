@@ -13,9 +13,7 @@
 </div>
 {% include 'userrequests/partials/request_row.html' with request=object link=False %}
 <div id="request-detail" data-requestid="{{ object.id }}">
-{% verbatim %}
   <div id="app"></div>
-{% endverbatim %}
 </div>
 {% endblock %}
 {% block extra_javascript %}

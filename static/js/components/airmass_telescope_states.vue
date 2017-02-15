@@ -6,9 +6,6 @@
   </div>
 </template>
 <script>
-import $ from 'jquery';
-import _ from 'lodash';
-
 import airmass from './airmass.vue';
 import telescope_states from './telescope_states.vue';
 
