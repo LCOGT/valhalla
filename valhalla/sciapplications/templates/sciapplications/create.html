@@ -2,6 +2,9 @@
 {% load i18n static bootstrap3 %}
 
 {% block title %}{% trans "Submit Application" %}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/sciapplications.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -47,7 +50,7 @@
                 {% bootstrap_label 'Co-investigators' label_for=id_coi %}
                 <div class="help-block">
                 {% blocktrans %}
-                Add the email addresses (comma seperated) of any extra people who you with to add to this proposal.
+                Add the email addresses (comma separated) of any extra people who you with to add to this proposal.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.coi show_label=false %}
@@ -56,7 +59,9 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately. If you are applying to the LCO TAC, you may request time on any size telescope.{% endblocktrans %}
+                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately.
+                If you are applying to the LCO TAC, you may request time on any size telescope.
+                {% endblocktrans %}
                 </div>
                 <table class="table table-striped">
                     <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
@@ -84,7 +89,7 @@
             {% endif %}
 
             {% if form.science_case %}
-                {% bootstrap_label 'Science Case' label_for=id_science_case %}
+                {% bootstrap_label 'Science Justification' label_for=id_science_case %}
                 <div class="help-block">
                 {% blocktrans %}
                 <p>Please provide a scientific justification for the time requested. This should include the
@@ -106,16 +111,15 @@
                 {% bootstrap_label 'Experimental Design' label_for=id_experimental_design %}
                 <div class="help-block">
                 {% blocktrans %}
-                <p>Describe the strategy of your observational program. Describe the characteristics of your
+                <p>Describe the strategy of your observing program. Describe the characteristics of your
                 targets, and justify the instruments and exposure times. Are there any unusual aspects of
                 scheduling that might impact your success?</p>
 
-                <p>For proposals that want some fraction of their time for rapid response observations, justify
-                the need for this amount of time. (Rapid response observations will interrupt regularly
-                scheduled observations, and so their use is restricted to cases in which this is the only mode
-                in which these targets can be observe.)</p>
+                <p>If you are requesting Rapid Response observations, you must justify the need for the amount of time.
+                (Because Rapid Response mode interrupts scheduled observations, its use is restricted to targets
+                that can ONLY be observed in this way.)</p>
 
-                <p>What measurements will you make from the data and what additional work will you do to address your science goals?</p>
+                <p>What measurements will you make from the data, and what additional work will you do to address your science goals?</p>
 
                 <p>You may also upload a pdf if your experimental design is complex.</p>
                 {% endblocktrans %}
@@ -129,8 +133,7 @@
                 <div class="help-block">
                 {% blocktrans %}
                 Select instrument(s) desired for 1m (SBIG/Sinistro) and/or 2m (FLOYDS/Spectral) observations.
-                0.4m observations are limited to the SBIG STX-6303 imagers. Note that we intend to retire the
-                1m SBIG imagers before the start of this semester. Ctrl+click to select mutliple instruments.
+                0.4m observations are limited to the SBIG STX-6303 imagers. Ctrl+click to select mutliple instruments.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.instruments show_label=False %}
@@ -203,6 +206,8 @@
         <a href="#" class="btn btn-success" id="submit">{% trans 'Submit' %}</a>
         {% endbuttons %}
         {% if form.instance.id %}
+        <p>Previewing your submission will <strong>discard</strong> any pending edits.</p>
+        <a href="{% url 'sciapplications:detail' form.instance.id %}" class="btn btn-default" id="preview">{% trans 'Preview' %}</a>
         <p>{% trans 'Deleting a draft is an irreversible action' %}.</p>
         <p><a href="{% url 'sciapplications:delete' pk=form.instance.id %}" class="btn btn-danger">{% trans 'Delete' %}</a></p>
         {% endif %}
@@ -215,8 +220,8 @@
     $(document).ready(function(){
         $('#app_form tbody tr').formset({
             prefix: '{{ timerequest_form.prefix }}',
-            deleteCssClass: 'fa fa-times delete-timeallocation',
-            deleteText: '',
+            deleteCssClass: 'delete-timeallocation',
+            deleteText: '<i class="fa fa-trash"></i>',
             added: function(row){
                row.find('input[type=number]').val(0)
             }
