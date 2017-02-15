@@ -131,39 +131,40 @@ def filter_telescope_states_by_intervals(telescope_states, sites_intervals, star
     filtered_states = {}
     for telescope_key, events in telescope_states.items():
         # now loop through the events for the telescope, and tally the time the telescope is available for each 'day'
-        site_intervals = sites_intervals[telescope_key.site]
-        filtered_events = []
+        if telescope_key.site in sites_intervals:
+            site_intervals = sites_intervals[telescope_key.site]
+            filtered_events = []
 
-        for event in events:
-            event_start = max(event['start'], start)
-            event_end = min(event['end'], end)
-            for interval in site_intervals:
-                if event_start >= interval[0] and event_end <= interval[1]:
-                    # the event is fully contained to add it and break out
-                    extra_event = deepcopy(event)
-                    extra_event['start'] = event_start
-                    extra_event['end'] = event_end
-                    filtered_events.append(deepcopy(event))
-                elif event_start < interval[0] and event_end > interval[1]:
-                    # start is before interval and end is after, so it spans the interval
-                    extra_event = deepcopy(event)
-                    extra_event['start'] = interval[0]
-                    extra_event['end'] = interval[1]
-                    filtered_events.append(deepcopy(extra_event))
-                elif event_start < interval[0] and event_end > interval[0] and event_end <= interval[1]:
-                    # start is before interval and end is in interval, so truncate start
-                    extra_event = deepcopy(event)
-                    extra_event['start'] = interval[0]
-                    extra_event['end'] = event_end
-                    filtered_events.append(deepcopy(extra_event))
-                elif event_start >= interval[0] and event_start < interval[1] and event_end > interval[1]:
-                    # start is within interval and end is after, so truncate end
-                    extra_event = deepcopy(event)
-                    extra_event['start'] = event_start
-                    extra_event['end'] = interval[1]
-                    filtered_events.append(deepcopy(extra_event))
+            for event in events:
+                event_start = max(event['start'], start)
+                event_end = min(event['end'], end)
+                for interval in site_intervals:
+                    if event_start >= interval[0] and event_end <= interval[1]:
+                        # the event is fully contained to add it and break out
+                        extra_event = deepcopy(event)
+                        extra_event['start'] = event_start
+                        extra_event['end'] = event_end
+                        filtered_events.append(deepcopy(event))
+                    elif event_start < interval[0] and event_end > interval[1]:
+                        # start is before interval and end is after, so it spans the interval
+                        extra_event = deepcopy(event)
+                        extra_event['start'] = interval[0]
+                        extra_event['end'] = interval[1]
+                        filtered_events.append(deepcopy(extra_event))
+                    elif event_start < interval[0] and event_end > interval[0] and event_end <= interval[1]:
+                        # start is before interval and end is in interval, so truncate start
+                        extra_event = deepcopy(event)
+                        extra_event['start'] = interval[0]
+                        extra_event['end'] = event_end
+                        filtered_events.append(deepcopy(extra_event))
+                    elif event_start >= interval[0] and event_start < interval[1] and event_end > interval[1]:
+                        # start is within interval and end is after, so truncate end
+                        extra_event = deepcopy(event)
+                        extra_event['start'] = event_start
+                        extra_event['end'] = interval[1]
+                        filtered_events.append(deepcopy(extra_event))
 
-        filtered_states[telescope_key] = filtered_events
+            filtered_states[telescope_key] = filtered_events
 
     return filtered_states
 

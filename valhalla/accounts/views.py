@@ -26,7 +26,7 @@ class UserUpdateView(LoginRequiredMixin, TemplateView):
             user_form.save()
             profile_form.save()
             messages.success(request, _('Profile successfully updated'))
-            return redirect('index')
+            return redirect('userrequests:list')
         else:
             context = self.get_context_data(user_form=user_form, profile_form=profile_form)
             return super().render_to_response(context)

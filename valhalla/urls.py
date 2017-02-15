@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
-from valhalla.userrequests.views import UserRequestListView, InstrumentsInformationView
+from valhalla.userrequests.views import InstrumentsInformationView
 from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
@@ -28,12 +28,11 @@ api_urlpatterns = [
 ]
 
 urlpatterns = [
-    url(r'^$', UserRequestListView.as_view(), name='index'),
+    url(r'^', include(userrequest_urls, namespace='userrequests')),
     url(r'^accounts/', include(accounts_urls)),
     url(r'^api/', include(api_urlpatterns, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
-    url(r'^requests/', include(userrequest_urls, namespace='userrequests')),
     url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
     url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'^admin/', admin.site.urls),

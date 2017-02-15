@@ -49,7 +49,7 @@ export default {
       var plotSites = new vis.DataSet();
       var visData = new vis.DataSet();
 
-      if (this.data != undefined) {
+      if (!$.isEmptyObject(this.data)) {
         var i = 0;
         var airmass_limit = this.data.airmass_limit;
 
@@ -166,6 +166,9 @@ export default {
         $(that.$el).find('.vis-legend svg path').each(function () {
           $(this).appendTo($(this).parent());
         });
+      });
+      plot.on('rangechanged', function () {
+        that.$emit('rangechanged', that.plot.getWindow());
       });
       return plot;
     }

@@ -8,7 +8,7 @@
         <h3>{{ object }} <small>{{ object.title }}</small></h3>
         <p>{{ object.abstract }}</p>
         <h4>Total Observation Requests:
-            <a title="View requests" href="{% url 'index' %}?proposal={{ object.id }}">{{ object.userrequest_set.all.count }}</a>
+            <a title="View requests" href="{% url 'userrequests:list' %}?proposal={{ object.id }}">{{ object.userrequest_set.all.count }}</a>
         </h4>
         <table class="table">
             <thead>

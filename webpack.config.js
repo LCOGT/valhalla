@@ -4,7 +4,11 @@ var webpack = require('webpack');
 
 module.exports = {
   entry: {
+    global: './static/js/global',
     compose: './static/js/compose',
+    userrequest_detail: './static/js/userrequest_detail',
+    request_detail: './static/js/request_detail'
+
   },
   output: {
     path: path.resolve('./static/bundles/'),
@@ -41,6 +45,10 @@ module.exports = {
       {
         test: /\.css$/,
         use: [ 'style-loader', 'css-loader' ]
+      },
+      {
+        test: /\.woff($|\?)|\.woff2($|\?)|\.ttf($|\?)|\.eot($|\?)|\.svg($|\?)/,
+        loader: 'file-loader'
       }
     ]
   },
@@ -53,6 +61,10 @@ module.exports = {
 
   plugins: [
     new BundleTracker({filename: './webpack-stats.json'}),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'common',
+      filename: 'common.js'
+    })
   ],
 };
 

@@ -12,7 +12,7 @@
 <script>
 import $ from 'jquery';
 import _ from 'lodash';
-import * as archive from '../archive.js';
+import {archiveRoot, archiveUIRoot} from '../archive.js';
 export default {
   props: ['ra', 'dec'],
   data: function(){
@@ -23,16 +23,14 @@ export default {
   },
   computed: {
     guiLink: function(){
-      return 'https://archive.lco.global/?start=2014-05-01&covers=POINT(' + this.ra + ' ' + this.dec +')';
+      return archiveUIRoot + '?start=2014-05-01&covers=POINT(' + this.ra + ' ' + this.dec +')';
     }
   },
   methods:{
     setResultCount: _.debounce(function(){
       var that = this;
-      login(function(){
-        $.getJSON('https://archive-api.lco.global/frames/?covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
-          that.resultCount = data.count;
-        });
+      $.getJSON(archiveRoot + 'frames/?covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
+        that.resultCount = data.count;
       });
     }, 500)
   },

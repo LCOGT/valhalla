@@ -1,0 +1,42 @@
+{% load i18n request_extras %}
+<div class="row">
+  <div class="col-md-12 ">
+    <h2>{{ userrequest.group_id }} <br/><small>Tracking # {{ userrequest.id }}</small></h2>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <dl class="col-md-2">
+      <dt>{% trans 'State' %}</dt>
+      <dd class="text-{{ userrequest.state|state_to_bs }}">
+        <i class="fa fa-{{ userrequest.state|state_to_icon }}"></i> {{ userrequest.state }}
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Last Update' %}</dt>
+      <dd>{{ userrequest.modified }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Created' %}</dt>
+      <dd>{{ userrequest.created }}</dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Proposal' %}l</dt>
+      <dd>
+        <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
+      </dd>
+    </dl>
+    <dl class="col-md-2">
+      <dt>{% trans 'Submitter' %}</dt>
+      <dd>{{ userrequest.submitter }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>{% trans 'Type' %}</dt>
+      <dd>{{ userrequest.observation_type }}</dd>
+    </dl>
+    <dl class="col-md-1">
+      <dt>IPP</dt>
+      <dd>{{ userrequest.ipp_value }}</dd>
+    </dl>
+  </div>
+</div>
