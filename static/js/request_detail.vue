@@ -4,7 +4,7 @@
     <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
   </div>
   <div class="col-md-8">
-    <ul class="nav nav-tabs nav-justified col-md-6">
+    <ul class="nav nav-tabs nav-justified">
       <li :class="{ active: tab === 1 }" v-on:click="tab = 1">
         <a title="Details about the observed request.">Details</a>
       </li>
