@@ -47,6 +47,12 @@
           <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus">
           </customfield>
+          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
+                        :errors="errors.ag_mode" desc="Whether or not to force autoguiding."
+                        :options="[{value: 'OPTIONAL', text: 'Optional'},
+                                   {value: 'OFF', text: 'Off'},
+                                   {value: 'ON', text: 'On'}]">
+          </customselect>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                           desc="The type of exposure (allows for calibrations)."

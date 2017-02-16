@@ -155,6 +155,7 @@
               bin_y: null,
               fill_window: false,
               defocus: 0,
+              ag_mode: 'OPTIONAL'
             }],
             windows:[{
               start: moment().format(datetimeFormat),
