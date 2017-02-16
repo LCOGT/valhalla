@@ -37,14 +37,17 @@ class InviteCreateView(LoginRequiredMixin, View):
             proposal = request.user.membership_set.get(proposal=kwargs.get('pk'), role=Membership.PI).proposal
         except Membership.DoesNotExist:
             raise Http404
-        email = request.POST['email']
-        try:
-            validate_email(email)
-        except ValidationError:
-            messages.error(request, _('Please enter a valid email address'))
-        else:
-            proposal.add_users([email], Membership.CI)
-            messages.success(request, _('Co Investigator invited'))
+        emails = request.POST['email'].replace(' ', '').strip(',').split(',')
+        valid = True
+        for email in emails:
+            try:
+                validate_email(email)
+            except ValidationError:
+                valid = False
+                messages.error(request, _('Please enter a valid email address: {}'.format(email)))
+        if valid:
+            proposal.add_users(emails, Membership.CI)
+            messages.success(request, _('Co Investigator(s) invited'))
         return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': proposal.id}))
 
 

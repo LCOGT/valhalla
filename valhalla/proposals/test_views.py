@@ -50,6 +50,17 @@ class TestProposalInvite(TestCase):
         self.assertTrue(ProposalInvite.objects.filter(email='rick@getschwifty.com', proposal=self.proposal).exists())
         self.assertEqual(response.status_code, 200)
 
+    def test_multiple_invite(self):
+        self.client.force_login(self.pi_user)
+        response = self.client.post(
+            reverse('proposals:invite', kwargs={'pk': self.proposal.id}),
+            data={'email': 'rick@getschwifty.com, morty@globbitygook.com, '},
+            follow=True
+        )
+        self.assertTrue(ProposalInvite.objects.filter(email='rick@getschwifty.com', proposal=self.proposal).exists())
+        self.assertTrue(ProposalInvite.objects.filter(email='morty@globbitygook.com', proposal=self.proposal).exists())
+        self.assertEqual(response.status_code, 200)
+
     def test_invite_get(self):
         self.client.force_login(self.pi_user)
         response = self.client.get(reverse('proposals:invite', kwargs={'pk': self.proposal.id}))

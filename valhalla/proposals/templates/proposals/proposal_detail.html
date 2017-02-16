@@ -87,15 +87,16 @@
     <div class="help-block">
         {% blocktrans %}
         Invite co-investigators by entering their email address below and
-        pressing "add". If the user is already registered with LCOGT, they will be added to this proposal.
-        If not, they will be invited.
+        pressing "add". If you would like to add multiple address at once, enter them below,
+        comma separated. If the user is already registered with LCOGT, they will be added to
+        this proposal. If not, they will be invited.
         {% endblocktrans %}
     </div>
     <form method="POST" action="{% url 'proposals:invite' pk=object.id %}" class="form-inline">
         {% csrf_token %}
         <div class="form-group">
             <label class="sr-only" for="email">Invite a Co-Investigator</label>
-            <input name="email" class="form-control" type="email" placeholder="Invite a Co-Investigator"/>
+            <input name="email" class="form-control" placeholder="Invite Co-Investigators"/>
         </div>
         <button type="submit" class="btn btn-default">Add</button>
     </form>
