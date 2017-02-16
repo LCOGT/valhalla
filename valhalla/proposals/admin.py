@@ -44,6 +44,7 @@ class MembershipAdmin(admin.ModelAdmin):
     list_display = ('proposal', 'proposal_title', 'user', 'role')
     list_filter = ('role',)
     search_fields = ['proposal__id', 'user__username', 'user__email', 'proposal__title']
+    raw_id_fields = ['user', 'proposal']
 
     def proposal_title(self, obj):
         return obj.proposal.title
