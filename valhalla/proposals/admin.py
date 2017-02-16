@@ -8,12 +8,10 @@ class SemesterAdmin(admin.ModelAdmin):
     list_display = ('id', 'start', 'end')
     list_filter = ('start', 'end')
     raw_id_fields = ('proposals',)
-admin.site.register(Semester, SemesterAdmin)
 
 
 class TimeAllocationGroupAdmin(admin.ModelAdmin):
     list_display = ('id',)
-admin.site.register(TimeAllocationGroup, TimeAllocationGroupAdmin)
 
 
 class TimeAllocationAdminInline(admin.TabularInline):
@@ -25,20 +23,33 @@ class ProposalAdmin(admin.ModelAdmin):
         'id',
         'active',
         'title',
-        'abstract',
         'tac_priority',
         'tag',
         'public',
+        'semesters',
+        'pi'
     )
+
     list_filter = ('active', 'tag', 'public')
     raw_id_fields = ('users',)
     inlines = [TimeAllocationAdminInline]
-    search_fields = ['id', 'title']
-admin.site.register(Proposal, ProposalAdmin)
+    search_fields = ['id', 'title', 'abstract']
+
+    def semesters(self, obj):
+        return [semester.id for semester in obj.semester_set.all().distinct()]
+    semesters.ordering = ''
 
 
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ('proposal', 'user', 'role')
+    list_display = ('proposal', 'proposal_title', 'user', 'role')
     list_filter = ('role',)
-    search_fields = ['proposal__id', 'user__username', 'user__email']
+    search_fields = ['proposal__id', 'user__username', 'user__email', 'proposal__title']
+
+    def proposal_title(self, obj):
+        return obj.proposal.title
+
+
+admin.site.register(Semester, SemesterAdmin)
+admin.site.register(TimeAllocationGroup, TimeAllocationGroupAdmin)
+admin.site.register(Proposal, ProposalAdmin)
 admin.site.register(Membership, MembershipAdmin)
