@@ -189,6 +189,7 @@ export default {
     fetchUserRequest: function(id){
       var that = this;
       $.getJSON('/api/user_requests/' + id + '/', function(data){
+        that.userrequest.requests = [];
         Vue.nextTick(function(){
           that.userrequest.requests = data.requests;
           that.update();

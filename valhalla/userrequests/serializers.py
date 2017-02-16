@@ -115,6 +115,11 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         exclude = ('request', 'id')
+        extra_kwargs = {
+            'site': {'write_only': True},
+            'observatory': {'write_only': True},
+            'telescope': {'write_only': True},
+        }
 
     def validate(self, data):
         if 'observatory' in data and 'site' not in data:
