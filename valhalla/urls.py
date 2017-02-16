@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.conf import settings
+from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 
@@ -33,8 +34,7 @@ urlpatterns = [
     url(r'^api/', include(api_urlpatterns, namespace='api')),
     url(r'^proposals/', include(proposals_urls, namespace='proposals')),
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
-    url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
-    url(r'^telescope_availability/', TelescopeAvailabilityView.as_view(), name='telescope_availability'),
     url(r'^admin/', admin.site.urls),
+    url(r'^help/', TemplateView.as_view(template_name='help.html'), name='help'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled
