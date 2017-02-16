@@ -26,7 +26,7 @@
         <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
       </dd>
     </dl>
-    <dl class="col-md-2">
+    <dl class="col-md-1">
       <dt>{% trans 'Submitter' %}</dt>
       <dd>{{ userrequest.submitter }}</dd>
     </dl>
@@ -38,5 +38,10 @@
       <dt>IPP</dt>
       <dd>{{ userrequest.ipp_value }}</dd>
     </dl>
+    <span class="col-md-1">
+      <a title="Copy this request" href="{% url 'userrequests:create' %}?userrequestid={{ userrequest.id }}" class="btn btn-default">
+        <i class="fa fa-copy"></i> Copy
+      </a>
+    </span>
   </div>
 </div>

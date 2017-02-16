@@ -62,6 +62,7 @@
 import $ from 'jquery';
 import _ from 'lodash';
 import moment from 'moment';
+import Vue from 'vue';
 
 import modal from './util/modal.vue';
 import request from './request.vue';
@@ -69,6 +70,7 @@ import cadence from './cadence.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+import {QueryString} from '../utils.js';
 
 export default {
   props: ['errors', 'userrequest', 'duration_data'],
@@ -99,6 +101,10 @@ export default {
         that.available_instruments = allowed_instruments;
         that.update();
       });
+    }).done(function(){
+      if(QueryString().userrequestid){
+        that.fetchUserRequest(QueryString().userrequestid);
+      }
     });
   },
   computed:{
@@ -179,6 +185,15 @@ export default {
       this.cadenceRequestId = -1;
       this.showCadence = false;
       this.update();
+    },
+    fetchUserRequest: function(id){
+      var that = this;
+      $.getJSON('/api/user_requests/' + id + '/', function(data){
+        Vue.nextTick(function(){
+          that.userrequest.requests = data.requests;
+          that.update();
+        });
+      });
     }
   }
 };

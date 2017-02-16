@@ -49,6 +49,24 @@ function sexagesimalDecToDecimal(dec){
   return dec;
 }
 
+function QueryString() {
+  var qString = {};
+  var query = window.location.search.substring(1);
+  var vars = query.split('&');
+  for (var i = 0; i < vars.length; i++) {
+    var pair = vars[i].split('=');
+    if (typeof qString[pair[0]] === 'undefined') {
+      qString[pair[0]] = decodeURIComponent(pair[1]);
+    } else if (typeof qString[pair[0]] === 'string') {
+      var arr = [qString[pair[0]], decodeURIComponent(pair[1])];
+      qString[pair[0]] = arr;
+    } else {
+      qString[pair[0]].push(decodeURIComponent(pair[1]));
+    }
+  }
+  return qString;
+}
+
 export const datetimeFormat = 'YYYY-M-D HH:mm:ss';
 
 export const collapseMixin = {
@@ -80,4 +98,4 @@ export const siteCodeToName = {
   'ngq': 'Ali'
 };
 
-export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal};
+export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString};

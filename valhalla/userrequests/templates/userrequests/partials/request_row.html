@@ -31,17 +31,9 @@
         </div>
         <div class="col-md-4 userrequest-block border-right">
           {% if request.state == 'COMPLETED' %}
-          <button id="downloadall" data-requestid="{{ request.id }}" class="btn btn-default btn-sm"><i class="fa fa-download"></i> Download</button>
+          <button id="downloadall" data-requestid="{{ request.id }}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-download"></i> Download</button>
           {% endif %}
-          <div class="btn-group">
-            <button class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-              <i class="fa fa-cog"></i> Options <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a href="#"><i class="fa fa-files-o"></i> Copy Request</a></li>
-              <li><a href="{% url 'api:requests-detail' pk=request.id %}"><i class="fa fa-cogs"></i> View on API</a></li>
-            </ul>
-          </div>
+          <a href="{% url 'api:requests-detail' pk=request.id %}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-cogs"></i> View in API</a>
         </div>
       </div>
     </div>
