@@ -9,15 +9,18 @@
     {% endblock %}
     {% else %}
     <div class="jumbotron noauth">
-        <h1>Observation Portal</h1>
-        <p>The Observation Portal enables scientists to utilize Las Cumbres Observatory's global
-        network of telescopes remotely at any time.</p>
-        <p>Registered users have the ability to:</p>
+        <h1>Observing Portal</h1>
+        <p>This is your access point to Las Cumbres Observatory's global network of telescopes. Registered users can:</p>
         <ul class="list-unstyled">
-            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left" aria-hidden="true"></i><span>Compose, draft and submit observation requests to be observed on the network.</span>
+            <li><i class="fa fa-group fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span>Submit proposals and manage the membershipof their research temas.</span>
             </li>
-            <li><i class="fa fa-cloud-download fa-3x fa-pull-left" aria-hidden="true"></i><span>Track status of submitted observations, preview quicklook data and download final data products.</span></li>
-            <li><i class="fa fa-group fa-3x fa-pull-left" aria-hidden="true"></i><span>Submit proposals, track progress and manage primary and co-investigators.</span></li>
+            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span>Compose, save and submit observing requests.</span>
+            </li>
+            <li><i class="fa fa-cloud-download fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span>Check the status of submitted requests, and download data from completed observations.</span>
+            </li>
         </ul>
         <a href="{% url 'registration_register' %}" class="btn btn-lg btn-success col-md-5">Register an Account</a>
         <a href="{% url 'auth_login' %}" class="btn btn-lg btn-default col-md-5 col-md-offset-2">Login</a>
