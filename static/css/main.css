@@ -57,6 +57,10 @@ a:hover {
     margin-bottom: 0px;
 }
 
+.thumnail-small {
+    max-height: 75px;
+}
+
 .downPage ul.nav {
     width: auto;
 }

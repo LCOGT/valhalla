@@ -1,9 +1,10 @@
 <template>
-<div class="row">
-  <div class="col-md-4">
+<div class="row request-details">
+  <div v-if="request.state === 'COMPLETED'" class="col-md-4">
     <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
+    <span class="thumb-help">Click a file in the data table to preview</span>
   </div>
-  <div class="col-md-8">
+  <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
     <ul class="nav nav-tabs nav-justified">
       <li :class="{ active: tab === 'details' }" v-on:click="tab = 'details'">
         <a title="Details about the observed request.">Details</a>
@@ -68,7 +69,7 @@
         </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'data' }">
-        <archivetable :requestid="request.id"></archivetable>
+        <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event.id"></archivetable>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'scheduling' }">
         <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
@@ -161,5 +162,12 @@ dl.twocol {
   -moz-column-count: 2;
   -webkit-column-count: 2;
   column-count: 2;
+}
+.request-details {
+  margin-top: 5px;
+}
+.thumb-help {
+  font-style: italic;
+  font-size: 0.8em;
 }
 </style>
