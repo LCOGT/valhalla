@@ -66,7 +66,7 @@ export default {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
     },
-    updateVisibility: function(req){
+    updateVisibility: _.debounce(function(req){
       var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
       request['windows'] = [{start:this.window.start, end:this.window.end}];
@@ -81,7 +81,7 @@ export default {
           that.showAirmass = 'airmass_limit' in data;
         }
       });
-    },
+    }, 300),
   },
 };
 </script>
