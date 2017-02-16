@@ -1,6 +1,10 @@
 {% load i18n request_extras humanize %}
 <div class="row userrequest userrequest-{{ request.state|state_to_bs }}" data-request='{{ request.id }}'>
+    {% if request.state == 'COMPLETED' %}
     <div class="col-md-10">
+    {% else %}
+    <div class="col-md-8">
+    {% endif %}
       <div class="row">
         <div class="col-md-12">
           <strong>
@@ -23,11 +27,8 @@
               <i class="fa fa-{{ request.state|state_to_icon }}"></i>
               {{ request.state }}
             </span>
-            {% if request.state == 'PENDING' %}
-              <a class="fa fa-question-circle block-info" data-requestid="{{ request.id }}" role="button" data-toggle="popover" data-trigger="focus" tabindex="0" title="Schedule Details" data-content="<i class='fa fa-pulse fa-spinner'>"></a>
-            {% endif %}
           </p>
-          <p><i class="fa fa-calendar"></i> {{ request.modified|naturaltime }}</p>
+          <p><i class="fa fa-calendar"></i> {{ request.modified}}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
           {% if request.state == 'COMPLETED' %}
@@ -37,10 +38,15 @@
         </div>
       </div>
     </div>
+    {% if request.state == 'COMPLETED' %}
     <div class="col-md-2">
-      {% if request.state == 'COMPLETED' %}
       <div style="display: none; margin-top: 10px;"></div>
       <img src="" class="thumbnail-small thumbnail" data-request="{{ request.id }}" style="display: none">
-      {% endif %}
     </div>
+    {% else %}
+    <div class="col-md-4">
+      <br/>
+      <div class="pending-details" data-request="{{ request.id }}"><i class="fa fa-spinner fa-spin"></i></div>
+    </div>
+    {% endif %}
 </div>
