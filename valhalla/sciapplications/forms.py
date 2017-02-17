@@ -23,7 +23,7 @@ def validate_pdf_file(value):
 
 class BaseProposalAppForm(ModelForm):
     call = forms.ModelChoiceField(
-        queryset=Call.objects.filter(deadline__gte=timezone.now(), opens__lte=timezone.now()),
+        queryset=Call.objects.all(),
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
