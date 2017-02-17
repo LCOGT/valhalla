@@ -203,6 +203,13 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('must have more than one child request', str(response.content))
 
+    def test_post_userrequest_constraints_optional(self):
+        good_data = self.generic_payload.copy()
+        del good_data['requests'][0]['constraints']['max_airmass']
+        del good_data['requests'][0]['constraints']['min_lunar_distance']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
     def test_validation(self):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-validate'), data=good_data)
