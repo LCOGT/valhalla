@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
     'rest_framework',
+    'rest_framework.authtoken',
     'bootstrap3',
     'oauth2_provider',
     'corsheaders',
@@ -169,6 +170,11 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50
