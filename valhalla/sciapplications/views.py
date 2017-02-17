@@ -1,10 +1,9 @@
 from django.utils.translation import ugettext as _
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.utils import timezone
 from django.contrib import messages
@@ -175,14 +174,19 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
         context['pdf'] = True
         response = super().render_to_response(context, **kwargs)
         response.render()
-        html = HTML(string=response.content)
-        fileobj = io.BytesIO()
-        html.write_pdf(fileobj)
-        merger = PdfFileMerger()
-        merger.append(fileobj)
-        if self.object.science_case_file:
-            merger.append(self.object.science_case_file.file)
-        if self.object.experimental_design_file:
-            merger.append(self.object.experimental_design_file.file)
-        merger.write(response)
+        try:
+            html = HTML(string=response.content)
+            fileobj = io.BytesIO()
+            html.write_pdf(fileobj)
+            merger = PdfFileMerger()
+            merger.append(fileobj)
+            if self.object.science_case_file:
+                merger.append(self.object.science_case_file.file)
+            if self.object.experimental_design_file:
+                merger.append(self.object.experimental_design_file.file)
+            merger.write(response)
+        except Exception as exc:
+            error = 'There was an error generating your pdf. {}'
+            messages.error(self.request, error.format(str(exc)))
+            return HttpResponseRedirect(reverse('sciapplications:index'))
         return response
