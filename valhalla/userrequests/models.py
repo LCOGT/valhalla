@@ -41,7 +41,7 @@ class UserRequest(models.Model):
     submitter = models.ForeignKey(User)
     proposal = models.ForeignKey(Proposal)
     group_id = models.CharField(max_length=50)
-    observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES, default=OBSERVATION_TYPES[0][0])
+    observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES)
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
     ipp_value = models.FloatField(default=1.0, validators=[MinValueValidator(0.5)])
     created = models.DateTimeField(auto_now_add=True, db_index=True)
@@ -333,7 +333,7 @@ class Molecule(models.Model):
     # The type of molecule being requested.
     # Valid types are: DARK, BIAS, EXPOSE, SKY_FLAT, HARTMANN, STANDARD,
     #                  ARC, LAMP_FLAT, SPECTRUM, AUTO_FOCUS, ZERO_POINTING
-    type = models.CharField(max_length=50, choices=MOLECULE_TYPES, default=MOLECULE_TYPES[0][0])
+    type = models.CharField(max_length=50, choices=MOLECULE_TYPES)
 
     # Place-holder for future functionality, allowing arguments to be
     # passed along with a molecule
