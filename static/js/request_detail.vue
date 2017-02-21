@@ -1,10 +1,6 @@
 <template>
 <div class="row request-details">
-  <div v-if="request.state === 'COMPLETED'" class="col-md-4">
-    <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
-    <span class="thumb-help">Click a file in the data table to preview</span>
-  </div>
-  <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
+  <div class="col-md-12">
     <ul class="nav nav-tabs nav-justified">
       <li :class="{ active: tab === 'details' }" v-on:click="tab = 'details'">
         <a title="Details about the observed request.">Details</a>
@@ -49,13 +45,6 @@
                 </tr>
               </tbody>
             </table>
-            <h4>Constraints</h4>
-            <dl class="twocol">
-              <span v-for="x, idx in request.constraints">
-              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
-              <dd v-if="x">{{ x }}</dd>
-              </span>
-            </dl>
           </div>
           <div class="col-md-6">
             <h4>Target</h4>
@@ -65,14 +54,30 @@
               <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
+            <h4>Constraints</h4>
+            <dl class="twocol">
+              <span v-for="x, idx in request.constraints">
+              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
+              <dd v-if="x">{{ x }}</dd>
+              </span>
+            </dl>
           </div>
         </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'data' }">
-        <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event.id"></archivetable>
+        <div class="row">
+          <div v-if="request.state === 'COMPLETED'" class="col-md-4">
+            <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
+            <span class="thumb-help">Click a file in the data table to preview</span>
+          </div>
+          <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
+            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event.id"></archivetable>
+          </div>
+        </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'scheduling' }">
-        <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
+        <blockhistory v-if="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
+        <div v-else class="text-center"><h3>This request has not been scheduled.</h3></div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'visibility' }">
         <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData" :telescopeStatesData="telescopeStatesData"></airmass_telescope_states>
