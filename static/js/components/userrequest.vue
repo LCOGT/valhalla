@@ -7,16 +7,18 @@
           <h3>Duration of Observing Request:</h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
-          <ul>
-            <li>
-              <a href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
-            </li>
-            <li>
-              <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
-                More information about IPP.
-              </a>
-            </li>
-          </ul>
+          <div v-show="!simple_interface">
+            <ul>
+              <li>
+                <a href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
+              </li>
+              <li>
+                <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
+                  More information about IPP.
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
         <div :class="show ? 'col-md-6' : 'col-md-12'">
           <form class="form-horizontal">
@@ -28,12 +30,14 @@
             </customselect>
             <customselect v-model="userrequest.observation_type" label="Mode"
                           field="observation_type" v-on:input="update"
+                          v-show="!simple_interface"
                           :errors="errors.observation_type"
                           :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
                                      {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
                           desc="Rapid response mode means the request should be executed immediately.">
             </customselect>
             <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
+                         v-show="!simple_interface"
                          v-on:input="update" :errors="errors.ipp_value"
                          desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
@@ -51,6 +55,7 @@
                  v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
                  :errors="_.get(errors, ['requests', idx], {})"
                  :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})"
+                 :simple_interface="simple_interface"
                  v-on:remove="removeRequest(idx)" v-on:copy="addRequest(idx)">
         </request>
         <div class="request-margin"></div>
@@ -79,6 +84,7 @@ export default {
     return {
       show: true,
       showCadence: false,
+      simple_interface: false,
       cadenceRequests: [],
       available_instruments: {},
       proposals: [],
@@ -90,6 +96,7 @@ export default {
     var allowed_instruments = {};
     $.getJSON('/api/profile/', function(data){
       that.proposals = data.proposals;
+      that.simple_interface = data.profile.simple_interface;
       for(var ai in data.available_instrument_types){
         allowed_instruments[data.available_instrument_types[ai]] = {};
       }

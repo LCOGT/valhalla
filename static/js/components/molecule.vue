@@ -31,6 +31,7 @@
                          desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
           </customselect>
           <customselect v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
+                         v-show="!simple_interface"
                          :errors="errors.bin_x" :options="binningsOptions"
                          desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
           </customselect>
@@ -45,9 +46,9 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus">
+                       v-show="!simple_interface" :errors="errors.defocus">
           </customfield>
-          <div class="spectra" v-if="datatype === 'SPECTRA'">
+          <div class="spectra" v-show="!simple_interface" v-if="datatype === 'SPECTRA'">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                           desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
@@ -77,7 +78,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'parentshow', 'duration_data'],
+  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'simple_interface', 'parentshow', 'duration_data'],
   components: {customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){
