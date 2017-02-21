@@ -17,7 +17,7 @@ import valhalla.userrequests.urls as userrequest_urls
 
 router = DefaultRouter()
 router.register(r'requests', RequestViewSet, 'requests')
-router.register(r'user_requests', UserRequestViewSet, 'user_requests')
+router.register(r'userrequests', UserRequestViewSet, 'user_requests')
 router.register(r'drafts', DraftUserRequestViewSet, 'drafts')
 
 api_urlpatterns = [

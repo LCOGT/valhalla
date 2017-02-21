@@ -180,7 +180,7 @@
         var that = this;
         $.ajax({
           type: 'POST',
-          url: '/api/user_requests/validate/',
+          url: '/api/userrequests/validate/',
           data: JSON.stringify(that.userrequest),
           contentType: 'application/json',
           success: function(data){
@@ -193,7 +193,7 @@
         var that = this;
         $.ajax({
           type: 'POST',
-          url: '/api/user_requests/',
+          url: '/api/userrequests/',
           data: JSON.stringify(that.userrequest),
           contentType: 'application/json',
           success: function(data){
