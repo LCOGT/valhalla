@@ -43,10 +43,12 @@
       <div style="display: none; margin-top: 10px;"></div>
       <img src="" class="thumbnail-small center-block img-responsive" data-request="{{ request.id }}" style="display: none">
     </div>
-    {% else %}
+    {% elif request.state == 'PENDING' %}
     <div class="col-md-4">
       <br/>
       <div class="pending-details" data-request="{{ request.id }}"><i class="fa fa-spinner fa-spin"></i></div>
     </div>
+    {% else %}
+    <div class="col-md-4"></div>
     {% endif %}
 </div>
