@@ -81,7 +81,8 @@
         <div v-else class="text-center"><h3>This request has not been scheduled.</h3></div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'visibility' }">
-        <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData" :telescopeStatesData="telescopeStatesData"></airmass_telescope_states>
+        <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData"
+                                  :telescopeStatesData="telescopeStatesData" :activeBlock="activeBlock"></airmass_telescope_states>
       </div>
     </div>
   </div>
@@ -103,6 +104,7 @@ export default {
       request: {},
       curFrame: null,
       blockData: [],
+      activeBlock: null,
       airmassData: {},
       telescopeStatesData: {},
       tab: 'details',
@@ -133,6 +135,9 @@ export default {
         }
         if($.isEmptyObject(this.telescopeStatesData)){
           this.loadTelescopeStatesData();
+          if(this.blockData.length === 0){
+            this.loadBlockData();
+          }
         }
       }
     }
@@ -143,6 +148,15 @@ export default {
       var requestId = $('#request-detail').data('requestid');
       $.getJSON('/api/requests/' + requestId + '/blocks/', function(data){
         that.blockData = data;
+        for(var blockIdx in that.blockData){
+          if(that.blockData[blockIdx].completed){
+            that.activeBlock = that.blockData[blockIdx];
+            break;
+          }
+          else if(that.blockData[blockIdx].status === 'SCHEDULED'){
+            that.activeBlock = that.blockData[blockIdx];
+          }
+        }
       });
     },
     loadAirmassData: function(){

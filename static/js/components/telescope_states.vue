@@ -100,7 +100,7 @@ export default {
               type: 'range'
             });
           }
-          if (this.activeBlock != undefined && this.activeBlock.site == site && this.activeBlock.observatory == sorted_telescopes[telescope].split('.')[1] && this.activeBlock.telescope == sorted_telescopes[telescope].split('.')[2]) {
+          if (this.activeBlock != null && this.activeBlock.site === site && this.activeBlock.observatory === sorted_telescopes[telescope].split('.')[1] && this.activeBlock.telescope === sorted_telescopes[telescope].split('.')[2]) {
             visData.add({
               group: g,
               title: this.activeBlock.status.toLowerCase() + ' at ' + sorted_telescopes[telescope] + '<br/>start: ' + this.activeBlock.start +
