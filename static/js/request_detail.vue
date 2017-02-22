@@ -175,4 +175,7 @@ dl.twocol {
   font-style: italic;
   font-size: 0.8em;
 }
+.tab-pane {
+  padding-top: 5px;
+}
 </style>
