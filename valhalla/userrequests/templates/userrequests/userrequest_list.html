@@ -75,7 +75,7 @@
       <section class="userrequest-list">
         {% for ur in object_list %}
         <div class="row userrequest userrequest-{{ ur.state|state_to_bs }}">
-          <div class="col-md-8">
+          <div class="col-sm-8 col-xs-12">
             <div class="row">
               <div class="col-md-12">
                 <a class="userrequest-title" href="{% url 'userrequests:detail' ur %}">
@@ -84,11 +84,11 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-md-6 userrequest-block border-right">
+              <div class="col-xs-6 userrequest-block border-right">
                 <p><i class="fa fa-fw fa-user"></i> {{ ur.submitter }}</p>
                 <p><i class="fa fa-fw fa-users"></i> <a href="{% url 'proposals:detail' pk=ur.proposal.id %}">{{ ur.proposal }}</a></p>
               </div>
-              <div class="col-md-6 userrequest-block border-right">
+              <div class="col-xs-6 userrequest-block border-right">
                 <p><span class="text-{{ ur.state|state_to_bs }}">
                   <i class="fa fa-fw fa-{{ ur.state|state_to_icon }}"></i>
                   {{ ur.state }}
@@ -98,28 +98,28 @@
             </div>
           </div>
           {% if ur.requests.all %}
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
-              <div class="col-md-12 request-count">
+              <div class="col-xs-12 request-count">
                 <p><center>{{ ur.requests.count }}</center></p>
               </div>
             </div>
           </div>
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
                 <p><center class="text-warning">{{ ur|request_state_count:'PENDING' }}</center></p>
               </div>
             </div>
           </div>
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
                 <p><center class="text-danger">{{ ur|request_state_count:'WINDOW_EXPIRED' }}</center></p>
               </div>
             </div>
           </div>
-           <div class="col-xs-1 request-block">
+           <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
                 <p><center class="text-success">{{ ur|request_state_count:'COMPLETE' }}</center></p>

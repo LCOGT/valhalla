@@ -130,7 +130,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
-DATETIME_FORMAT = 'd-m-Y H:i:s'
+DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 USE_I18N = True
 
