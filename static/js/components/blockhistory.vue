@@ -42,7 +42,6 @@ export default {
 
       var timeline_min = 0;
       var timeline_max = 0;
-
       if(this.data.length > 0) {
 
         var previousBlock = this.data[0];

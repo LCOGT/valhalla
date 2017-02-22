@@ -77,8 +77,8 @@
         </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'scheduling' }">
-        <blockhistory v-if="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
-        <div v-else class="text-center"><h3>This request has not been scheduled.</h3></div>
+        <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
+        <div v-show="blockData.length < 1" class="text-center"><h3>This request has not been scheduled.</h3></div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'visibility' }">
         <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData"
