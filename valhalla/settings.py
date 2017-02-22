@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'bootstrap3',
     'oauth2_provider',
     'corsheaders',
-    'webpack_loader',
     'valhalla.accounts',
     'valhalla.userrequests',
     'valhalla.proposals',

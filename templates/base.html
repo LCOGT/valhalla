@@ -1,6 +1,5 @@
 <!doctype html>
 {% load static bootstrap3 %}
-{% load render_bundle from webpack_loader %}
 <html class="no-js" lang="">
     <head>
         <meta charset="utf-8">
@@ -79,8 +78,8 @@
         </div>
     </body>
     {% block javascript %}
-    {% render_bundle 'common' %}
-    {% render_bundle 'global' %}
+    <script type="text/javascript" src="{% static '/bundles/common.js' %}"></script>
+    <script type="text/javascript" src="{% static '/bundles/global.js' %}"></script>
     {% endblock %}
     {% block extra_javascript %}
     {% endblock %}

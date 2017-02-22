@@ -3,7 +3,6 @@ django-registration-redux
 djangorestframework
 django-oauth-toolkit
 django-cors-headers
-django-webpack-loader
 requests
 responses
 django-filter
