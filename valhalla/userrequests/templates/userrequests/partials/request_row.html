@@ -1,17 +1,13 @@
 {% load i18n request_extras humanize %}
 <div class="row userrequest userrequest-{{ request.state|state_to_bs }}" data-request='{{ request.id }}'>
-    {% if request.state == 'COMPLETED' %}
     <div class="col-md-10">
-    {% else %}
-    <div class="col-md-8">
-    {% endif %}
       <div class="row">
         <div class="col-md-12">
           <strong>
           {% if link %}
-            <a class="userrequest-title" href="{% url 'userrequests:request-detail' request %}"> #{{ request.id }}</a>
+            <a class="userrequest-title" href="{% url 'userrequests:request-detail' request %}"> # {{ request.id }}</a>
           {% else %}
-            <span class="userrequest-title">#{{ request.id }}
+            <span class="userrequest-title"># {{ request.id }}
           {% endif %}
           </strong>
         </div>
@@ -31,24 +27,22 @@
           <p><i class="fa fa-calendar"></i> {{ request.modified}}</p>
         </div>
         <div class="col-md-4 userrequest-block border-right">
+          <a href="{% url 'api:requests-detail' pk=request.id %}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-code"></i> View in API</a>
           {% if request.state == 'COMPLETED' %}
           <button id="downloadall" data-requestid="{{ request.id }}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-download"></i> Download</button>
           {% endif %}
-          <a href="{% url 'api:requests-detail' pk=request.id %}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-cogs"></i> View in API</a>
         </div>
       </div>
     </div>
-    {% if request.state == 'COMPLETED' %}
     <div class="col-md-2">
+      {% if request.state == 'COMPLETED' %}
       <div style="display: none; margin-top: 10px;"></div>
       <img src="" class="thumbnail-small center-block img-responsive" data-request="{{ request.id }}" style="display: none">
-    </div>
-    {% elif request.state == 'PENDING' %}
-    <div class="col-md-4">
+      {% elif request.state == 'PENDING' %}
       <br/>
-      <div class="pending-details" data-request="{{ request.id }}"><i class="fa fa-spinner fa-spin"></i></div>
+      <div class="pending-details" data-request="{{ request.id }}"><i class="fa fa-spinner fa-spin"></i>
+      </div>
+      {% else %}
+      {% endif %}
     </div>
-    {% else %}
-    <div class="col-md-4"></div>
-    {% endif %}
 </div>

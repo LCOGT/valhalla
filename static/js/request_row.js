@@ -31,10 +31,9 @@ $(document).ready(function(){
       var content = '';
       if(data.length > 0){
         data = data.reverse(); // get the latest non cancled block
-        content = 'Scheduled for<br/>' + data[0].start + ' to ' +
-          data[0].end + '<br/>Site: ' + data[0].site;
-        content = 'Scheduled at ' + data[0].site + ' between ' + moment(data[0].start).format(datetimeFormat) +
-          ' and ' + moment(data[0].end).format(datetimeFormat);
+        content = '<strong>' + data[0].site + '</strong> <br/>' +
+                  moment(data[0].start).format(datetimeFormat) +
+                 ' to ' + moment(data[0].end).format(datetimeFormat);
       }else{
         content = 'No scheduling information found';
       }
