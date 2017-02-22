@@ -76,7 +76,8 @@ export default {
             id: g,
             content: siteCodeToName[site] + ' ' + used_telescopes[site],
             title: sorted_telescopes[telescope],
-            style: 'color: ' + siteToColor[sorted_telescopes[telescope].split('.')[0]] + ';'
+            style: 'color: ' + siteToColor[sorted_telescopes[telescope].split('.')[0]] + ';' +
+                   'width: 130px;'
           });
           for (var index in this.data[sorted_telescopes[telescope]]) {
             var event = this.data[sorted_telescopes[telescope]][index];

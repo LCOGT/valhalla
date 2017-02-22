@@ -1,6 +1,6 @@
 <template>
   <div class="airmassTelescopeStatesCombo">
-    <airmass ref="airmass" v-on:rangechanged="updateTelescopeStatesRange" :data="airmassData" v-show="'airmass_limit' in airmassData" :showZoomControls="true"></airmass>
+    <airmass ref="airmass" v-on:rangechanged="updateTelescopeStatesRange" :data="airmassData" v-show="'airmass_limit' in airmassData" :showZoomControls="true" :alignleft="true"></airmass>
     <p></p>
     <telescope_states ref="telescope_states" v-on:rangechanged="updateAirmassRange" :data="telescopeStatesData" v-show="'airmass_limit' in airmassData" :showZoomControls="false"></telescope_states>
   </div>

@@ -54,6 +54,7 @@
               <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
+            <hr/>
             <h4>Constraints</h4>
             <dl class="twocol">
               <span v-for="x, idx in request.constraints">

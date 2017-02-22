@@ -15,7 +15,14 @@ import plot_controls from './util/plot_controls.vue';
 import {plotZoomMixin} from './util/plot_mixins.js';
 
 export default {
-  props: ['data', 'showZoomControls'],
+  props: {
+    data: Object,
+    showZoomControls: Boolean,
+    alignleft: {
+      type: Boolean,
+      default: false
+    }
+  },
   mixins: [plotZoomMixin],
   components: {plot_controls},
   data: function () {
@@ -24,8 +31,9 @@ export default {
         left: {
           format: function (value) {
             return Math.abs(value).toPrecision(2);
-          }
-        }
+          },
+        },
+        width: this.alignleft ? '129px' : ''
       },
       orientation: 'top',
       legend: {
