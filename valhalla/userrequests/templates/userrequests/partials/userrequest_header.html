@@ -49,7 +49,7 @@
               <i class="fa fa-copy"></i> Copy
             </a>
           </li>
-          {% if userrequest.state == 'PENDING' %}
+          {% if userrequest.state == 'PENDING' and user.is_authenticated %}
           <li>
             <a title="Cancel this request" id="cancelur" data-id="{{ userrequest.id }}">
               <i class="fa fa-times"></i> Cancel

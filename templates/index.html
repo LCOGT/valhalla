@@ -4,10 +4,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-    {% if user.is_authenticated %}
-    {% block request_list %}
-    {% endblock %}
-    {% else %}
+    {% if not user.is_authenticated %}
     <div class="jumbotron noauth">
         <h1>Observing Portal</h1>
         <p>This is your access point to Las Cumbres Observatory's global network of telescopes. Registered users can:</p>
@@ -27,6 +24,8 @@
         <br/>
     </div>
     {% endif %}
+    {% block request_list %}
+    {% endblock %}
     </div>
     <div class="col-md-4">
         <div class="row">

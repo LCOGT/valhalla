@@ -92,6 +92,12 @@ class TestUserGetRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         result = self.client.get(reverse('api:user_requests-list'))
         self.assertContains(result, user_request.group_id)
 
+    def test_get_user_request_detail_public(self):
+        proposal = mixer.blend(Proposal, public=True)
+        user_request = mixer.blend(UserRequest, submitter=self.user, proposal=proposal, group_id="publicgroup")
+        result = self.client.get(reverse('api:user_requests-detail', args=(user_request.id,)))
+        self.assertContains(result, user_request.group_id)
+
 
 class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -1028,7 +1034,8 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def test_get_request_list_unauthenticated(self):
         mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-list'))
-        self.assertEquals(result.status_code, 403)
+        self.assertNotContains(result, 'testobsnote')
+        self.assertEquals(result.status_code, 200)
 
     def test_get_request_detail_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
@@ -1039,11 +1046,20 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def test_get_request_detail_unauthenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 404)
 
     def test_get_request_list_staff(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
         self.client.force_login(self.staff_user)
+        result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
+        self.assertEquals(result.json()['observation_note'], request.observation_note)
+
+    def test_get_request_detail_public(self):
+        proposal = mixer.blend(Proposal, public=True)
+        self.user_request.proposal = proposal
+        self.user_request.save()
+        request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
+        self.client.logout()
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
 
