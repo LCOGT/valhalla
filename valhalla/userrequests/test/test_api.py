@@ -1250,7 +1250,7 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
         requests = mixer.cycle(3).blend(Request, state='PENDING', user_request=userrequest)
 
-        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
         for request in requests:
@@ -1261,7 +1261,7 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         pending_r = mixer.blend(Request, state='PENDING', user_request=userrequest)
         completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
         we_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
-        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
@@ -1272,7 +1272,7 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_cannot_cancel_expired_ur(self, modify_mock):
         userrequest = mixer.blend(UserRequest, state='WINDOW_EXPIRED', proposal=self.proposal)
         expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
-        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'WINDOW_EXPIRED')
@@ -1282,7 +1282,7 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         userrequest = mixer.blend(UserRequest, state='COMPLETED', proposal=self.proposal)
         completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
         expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
-        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')

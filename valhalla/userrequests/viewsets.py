@@ -33,7 +33,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         else:
             return UserRequest.objects.none()
 
-    @detail_route(methods=['post'])
+    @detail_route(methods=['put'])
     def cancel(self, request, pk=None):
         ur = self.get_object()
         try:
@@ -41,7 +41,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             ur.save()
         except InvalidStateChange as exc:
             return Response({'errors': [str(exc)]}, status=400)
-        return Response(UserRequestSerializer(self.get_object()).data)
+        return Response(UserRequestSerializer(ur).data)
 
     @list_route(methods=['post'])
     def validate(self, request):
