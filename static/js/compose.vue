@@ -197,7 +197,7 @@
           data: JSON.stringify(that.userrequest),
           contentType: 'application/json',
           success: function(data){
-            window.location = '/requests/' + data.id;
+            window.location = '/userrequests/' + data.id;
           }
         });
       },
