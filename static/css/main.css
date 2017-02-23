@@ -1,6 +1,12 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
     font-size: 16px;
     font-family: 'Affogato-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin-bottom: 45px;
 }
 
 p {
@@ -13,6 +19,15 @@ a:hover {
 }
 .nav > li > a:focus, .nav > li > a:hover {
     background-color: inherit;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 45px;
+  text-align: center;
 }
 
 .nav-tabs > li > a {

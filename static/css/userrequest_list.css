@@ -1,3 +1,7 @@
 #filter > .form-group {
     margin-bottom: 5px;
 }
+
+.pagination {
+    padding-left: 15px;
+}

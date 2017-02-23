@@ -22,7 +22,7 @@
     "babel-core": "^6.22.1",
     "babel-loader": "^6.2.10",
     "bootstrap-table": "^1.11.1",
-    "bootstrap3": "^3.3.5",
+    "bootstrap": "^3.3.5",
     "css-loader": "^0.26.1",
     "eonasdan-bootstrap-datetimepicker": "^4.17.46",
     "file-loader": "^0.10.0",
