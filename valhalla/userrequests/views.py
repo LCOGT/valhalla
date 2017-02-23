@@ -138,5 +138,3 @@ class InstrumentsInformationView(APIView):
                 'default_binning': configdb.get_default_binning(instrument_type),
             }
         return Response(info)
-
-
