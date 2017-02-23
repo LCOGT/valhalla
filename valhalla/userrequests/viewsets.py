@@ -9,6 +9,7 @@ from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration_dict
+from valhalla.userrequests.state_changes import InvalidStateChange
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -31,6 +32,16 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             )
         else:
             return UserRequest.objects.none()
+
+    @detail_route(methods=['post'])
+    def cancel(self, request, pk=None):
+        ur = self.get_object()
+        try:
+            ur.state = 'CANCELED'
+            ur.save()
+        except InvalidStateChange as exc:
+            return Response({'errors': [str(exc)]}, status=400)
+        return Response(UserRequestSerializer(self.get_object()).data)
 
     @list_route(methods=['post'])
     def validate(self, request):

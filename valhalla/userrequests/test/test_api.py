@@ -1233,3 +1233,58 @@ class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:airmass'), data=self.request)
         self.assertIn('tst', response.json()['airmass_data'])
         self.assertTrue(response.json()['airmass_data']['tst']['times'])
+
+
+@patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
+class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    ''' Test canceling user requests via API. Mocking out modify_ipp_time_from_requets
+        as it is called on state change, but tested elsewhere '''
+    def setUp(self):
+        super().setUp()
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+
+    def test_cancel_pending_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
+        requests = mixer.cycle(3).blend(Request, state='PENDING', user_request=userrequest)
+
+        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
+        for request in requests:
+            self.assertEqual(Request.objects.get(pk=request.id).state, 'CANCELED')
+
+    def test_cancel_pending_ur_some_requests_not_pending(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
+        pending_r = mixer.blend(Request, state='PENDING', user_request=userrequest)
+        completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
+        we_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
+        self.assertEqual(Request.objects.get(pk=pending_r.id).state, 'CANCELED')
+        self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
+        self.assertEqual(Request.objects.get(pk=we_r.id).state, 'WINDOW_EXPIRED')
+
+    def test_cannot_cancel_expired_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='WINDOW_EXPIRED', proposal=self.proposal)
+        expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'WINDOW_EXPIRED')
+        self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
+
+    def test_cannot_cancel_completed_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='COMPLETED', proposal=self.proposal)
+        completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
+        expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')
+        self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
+        self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
