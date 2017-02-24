@@ -148,3 +148,11 @@ class ProposalInvite(models.Model):
         send_mail(subject, message, 'portal@lco.glboal', [self.email])
         self.sent = timezone.now()
         self.save()
+
+
+class ProposalNotification(models.Model):
+    proposal = models.ForeignKey(Proposal)
+    user = models.ForeignKey(User)
+
+    class Meta:
+        unique_together = ('proposal', 'user')

@@ -11,7 +11,8 @@ from django.contrib import messages
 from django_filters.views import FilterView
 from django.utils.translation import ugettext as _
 
-from valhalla.proposals.models import Proposal, Membership
+from valhalla.proposals.forms import ProposalNotificationForm
+from valhalla.proposals.models import Proposal, Membership, ProposalNotification
 from valhalla.proposals.filters import ProposalFilter
 
 
@@ -20,6 +21,22 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         return self.request.user.proposal_set.all()
+
+    def post(self, request, **kwargs):
+        form = ProposalNotificationForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data['notifications_enabled']:
+                ProposalNotification.objects.get_or_create(user=request.user, proposal=self.get_object())
+            else:
+                ProposalNotification.objects.filter(user=request.user, proposal=self.get_object()).delete()
+        messages.success(request, 'Preferences saved.')
+        return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': self.get_object().id}))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        enabled = ProposalNotification.objects.filter(user=self.request.user, proposal=self.get_object()).exists()
+        context['notification_form'] = ProposalNotificationForm(initial={'notifications_enabled': enabled})
+        return context
 
 
 class ProposalListView(LoginRequiredMixin, FilterView):

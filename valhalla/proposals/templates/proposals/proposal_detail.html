@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n bootstrap3 %}
 {% block title %}{{ object.id }}{% endblock %}
 
 {% block content %}
@@ -64,6 +64,13 @@
         </table>
     </div>
     <div class="col-md-4">
+        <form method="POST" action="" class="form">
+            {% csrf_token %}
+            {% bootstrap_form form=notification_form %}
+            <p>You will recieve notifications whenever a requested observation on this proposal is completed.</p>
+            <button type="submit" class="btn btn-default">Save</button>
+        </form>
+        <br/>
     <dl>
         <dt>{% trans 'Principal Investigator' %}</dt>
         <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
@@ -108,6 +115,8 @@
         <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
         <dd>Invited: {{ invite.sent }}</dd>
         {% endif %}
+        {% empty %}
+        <p>No pending invitations.</p>
         {% endfor %}
     </dl>
 

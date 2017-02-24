@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
-from valhalla.proposals.models import Membership, Proposal, ProposalInvite
+from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
 
 
 class TestProposalDetail(TestCase):
@@ -165,3 +165,26 @@ class TestMembershipDelete(TestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(other_proposal.membership_set.count(), 1)
+
+
+class TestNotificationsEnabled(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+
+    def test_user_can_enable_notifications(self):
+        self.client.post(
+            reverse('proposals:detail', kwargs={'pk': self.proposal.id}),
+            data={'notifications_enabled': True},
+        )
+        self.assertEqual(self.user.proposalnotification_set.count(), 1)
+
+    def test_user_can_disable_notifications(self):
+        ProposalNotification.objects.create(user=self.user, proposal=self.proposal)
+        self.client.post(
+            reverse('proposals:detail', kwargs={'pk': self.proposal.id}),
+            data={'notifications_enabled': False},
+        )
+        self.assertEqual(self.user.proposalnotification_set.count(), 0)
