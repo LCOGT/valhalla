@@ -38,6 +38,9 @@ class CadenceSerializer(serializers.Serializer):
 
 
 class ConstraintsSerializer(serializers.ModelSerializer):
+    max_airmass = serializers.FloatField(default=2.0)
+    min_lunar_distance = serializers.FloatField(default=30.0)
+
     class Meta:
         model = Constraints
         exclude = ('request', 'id')

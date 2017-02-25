@@ -4,11 +4,11 @@ from valhalla.userrequests.models import UserRequest, Request
 
 
 class UserRequestFilter(filters.FilterSet):
-    created_after = django_filters.DateTimeFilter(name='created', lookup_expr='gte')
-    created_before = django_filters.DateTimeFilter(name='created', lookup_expr='lte')
+    created_after = django_filters.DateTimeFilter(name='created', lookup_expr='gte', label="Submitted after")
+    created_before = django_filters.DateTimeFilter(name='created', lookup_expr='lte', label="Submitted before")
     state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
-    title = django_filters.CharFilter(name='group_id', lookup_expr='icontains')
-    user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains')
+    title = django_filters.CharFilter(name='group_id', lookup_expr='icontains', label="Title contains")
+    user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains', label="Username contains")
 
     class Meta:
         model = UserRequest

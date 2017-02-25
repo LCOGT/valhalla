@@ -1,5 +1,4 @@
 var path = require('path');
-var BundleTracker = require('webpack-bundle-tracker');
 var webpack = require('webpack');
 
 module.exports = {
@@ -60,7 +59,6 @@ module.exports = {
   },
 
   plugins: [
-    new BundleTracker({filename: './webpack-stats.json'}),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'common',
       filename: 'common.js'

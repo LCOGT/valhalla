@@ -12,6 +12,7 @@ class EventSerializer(serializers.Serializer):
 
 class BlockMoleculeSerializer(serializers.Serializer):
     event = EventSerializer(many=True, read_only=True)
+    id = serializers.IntegerField()
     acquire_mode = serializers.CharField()
     sub_y1 = serializers.CharField()
     sub_y2 = serializers.CharField()

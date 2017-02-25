@@ -1,6 +1,7 @@
 <template>
   <div class="thumbnail-container">
     <span class="error" v-if="error"></span>
+    <i class="fa fa-spinner fa-spin" v-show="!src && !error"></i>
     <img class="thumbnail img-responsive" :src="src" v-show="src">
   </div>
 </template>
@@ -21,6 +22,7 @@ export default {
   },
   watch: {
     frameid: function(){
+      this.src = '';
       this.fetch();
     }
   },

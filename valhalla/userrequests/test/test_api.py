@@ -92,6 +92,12 @@ class TestUserGetRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         result = self.client.get(reverse('api:user_requests-list'))
         self.assertContains(result, user_request.group_id)
 
+    def test_get_user_request_detail_public(self):
+        proposal = mixer.blend(Proposal, public=True)
+        user_request = mixer.blend(UserRequest, submitter=self.user, proposal=proposal, group_id="publicgroup")
+        result = self.client.get(reverse('api:user_requests-detail', args=(user_request.id,)))
+        self.assertContains(result, user_request.group_id)
+
 
 class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -202,6 +208,13 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('must have more than one child request', str(response.content))
+
+    def test_post_userrequest_constraints_optional(self):
+        good_data = self.generic_payload.copy()
+        del good_data['requests'][0]['constraints']['max_airmass']
+        del good_data['requests'][0]['constraints']['min_lunar_distance']
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
 
     def test_validation(self):
         good_data = self.generic_payload.copy()
@@ -1021,7 +1034,8 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def test_get_request_list_unauthenticated(self):
         mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-list'))
-        self.assertEquals(result.status_code, 403)
+        self.assertNotContains(result, 'testobsnote')
+        self.assertEquals(result.status_code, 200)
 
     def test_get_request_detail_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
@@ -1032,11 +1046,20 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def test_get_request_detail_unauthenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 404)
 
     def test_get_request_list_staff(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
         self.client.force_login(self.staff_user)
+        result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
+        self.assertEquals(result.json()['observation_note'], request.observation_note)
+
+    def test_get_request_detail_public(self):
+        proposal = mixer.blend(Proposal, public=True)
+        self.user_request.proposal = proposal
+        self.user_request.save()
+        request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
+        self.client.logout()
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEquals(result.json()['observation_note'], request.observation_note)
 
@@ -1226,3 +1249,58 @@ class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:airmass'), data=self.request)
         self.assertIn('tst', response.json()['airmass_data'])
         self.assertTrue(response.json()['airmass_data']['tst']['times'])
+
+
+@patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
+class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    ''' Test canceling user requests via API. Mocking out modify_ipp_time_from_requets
+        as it is called on state change, but tested elsewhere '''
+    def setUp(self):
+        super().setUp()
+        self.user = mixer.blend(User)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+
+    def test_cancel_pending_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
+        requests = mixer.cycle(3).blend(Request, state='PENDING', user_request=userrequest)
+
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
+        for request in requests:
+            self.assertEqual(Request.objects.get(pk=request.id).state, 'CANCELED')
+
+    def test_cancel_pending_ur_some_requests_not_pending(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
+        pending_r = mixer.blend(Request, state='PENDING', user_request=userrequest)
+        completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
+        we_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'CANCELED')
+        self.assertEqual(Request.objects.get(pk=pending_r.id).state, 'CANCELED')
+        self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
+        self.assertEqual(Request.objects.get(pk=we_r.id).state, 'WINDOW_EXPIRED')
+
+    def test_cannot_cancel_expired_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='WINDOW_EXPIRED', proposal=self.proposal)
+        expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'WINDOW_EXPIRED')
+        self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
+
+    def test_cannot_cancel_completed_ur(self, modify_mock):
+        userrequest = mixer.blend(UserRequest, state='COMPLETED', proposal=self.proposal)
+        completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
+        expired_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        response = self.client.put(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')
+        self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
+        self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')

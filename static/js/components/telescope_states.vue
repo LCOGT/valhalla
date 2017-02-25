@@ -76,7 +76,8 @@ export default {
             id: g,
             content: siteCodeToName[site] + ' ' + used_telescopes[site],
             title: sorted_telescopes[telescope],
-            style: 'color: ' + siteToColor[sorted_telescopes[telescope].split('.')[0]] + ';'
+            style: 'color: ' + siteToColor[sorted_telescopes[telescope].split('.')[0]] + ';' +
+                   'width: 130px;'
           });
           for (var index in this.data[sorted_telescopes[telescope]]) {
             var event = this.data[sorted_telescopes[telescope]][index];
@@ -99,7 +100,7 @@ export default {
               type: 'range'
             });
           }
-          if (this.activeBlock != undefined && this.activeBlock.site == site && this.activeBlock.observatory == sorted_telescopes[telescope].split('.')[1] && this.activeBlock.telescope == sorted_telescopes[telescope].split('.')[2]) {
+          if (this.activeBlock != null && this.activeBlock.site === site && this.activeBlock.observatory === sorted_telescopes[telescope].split('.')[1] && this.activeBlock.telescope === sorted_telescopes[telescope].split('.')[2]) {
             visData.add({
               group: g,
               title: this.activeBlock.status.toLowerCase() + ' at ' + sorted_telescopes[telescope] + '<br/>start: ' + this.activeBlock.start +

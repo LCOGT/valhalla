@@ -158,7 +158,7 @@ export default {
       var that = this;
       $.ajax({
         type: 'POST',
-        url: '/api/user_requests/cadence/',
+        url: '/api/userrequests/cadence/',
         data: JSON.stringify(payload),
         contentType: 'application/json',
         success: function(data){
@@ -195,7 +195,7 @@ export default {
     },
     fetchUserRequest: function(id){
       var that = this;
-      $.getJSON('/api/user_requests/' + id + '/', function(data){
+      $.getJSON('/api/userrequests/' + id + '/', function(data){
         that.userrequest.requests = [];
         Vue.nextTick(function(){
           that.userrequest.requests = data.requests;

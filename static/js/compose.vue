@@ -155,6 +155,7 @@
               bin_y: null,
               fill_window: false,
               defocus: 0,
+              ag_mode: 'OPTIONAL'
             }],
             windows:[{
               start: moment().format(datetimeFormat),
@@ -179,7 +180,7 @@
         var that = this;
         $.ajax({
           type: 'POST',
-          url: '/api/user_requests/validate/',
+          url: '/api/userrequests/validate/',
           data: JSON.stringify(that.userrequest),
           contentType: 'application/json',
           success: function(data){
@@ -192,11 +193,11 @@
         var that = this;
         $.ajax({
           type: 'POST',
-          url: '/api/user_requests/',
+          url: '/api/userrequests/',
           data: JSON.stringify(that.userrequest),
           contentType: 'application/json',
           success: function(data){
-            window.location = '/requests/' + data.id;
+            window.location = '/userrequests/' + data.id;
           }
         });
       },

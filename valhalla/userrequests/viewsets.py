@@ -1,7 +1,9 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
+from valhalla.proposals.models import Proposal
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.metadata import RequestMetadata
@@ -9,11 +11,13 @@ from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
 from valhalla.userrequests.duration_utils import get_request_duration_dict
+from valhalla.userrequests.state_changes import InvalidStateChange
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
 
 class UserRequestViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     serializer_class = UserRequestSerializer
     filter_class = UserRequestFilter
     filter_backends = (
@@ -30,7 +34,17 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                 proposal__in=self.request.user.proposal_set.all()
             )
         else:
-            return UserRequest.objects.none()
+            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+
+    @detail_route(methods=['put'])
+    def cancel(self, request, pk=None):
+        ur = self.get_object()
+        try:
+            ur.state = 'CANCELED'
+            ur.save()
+        except InvalidStateChange as exc:
+            return Response({'errors': [str(exc)]}, status=400)
+        return Response(UserRequestSerializer(ur).data)
 
     @list_route(methods=['post'])
     def validate(self, request):
@@ -70,6 +84,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
 
 class RequestViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (IsAuthenticatedOrReadOnly,)
     metadata_class = RequestMetadata
     serializer_class = RequestSerializer
     filter_class = RequestFilter
@@ -87,7 +102,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
                 user_request__proposal__in=self.request.user.proposal_set.all()
             )
         else:
-            return Request.objects.none()
+            return Request.objects.filter(user_request__proposal__in=Proposal.objects.filter(public=True))
 
     @detail_route()
     def airmass(self, request, pk=None):

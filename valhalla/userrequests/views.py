@@ -17,6 +17,7 @@ from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sit
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
+from valhalla.proposals.models import Proposal
 
 
 def get_start_end_paramters(request):
@@ -42,7 +43,7 @@ class UserRequestListView(FilterView):
         if self.request.user.is_authenticated:
             return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
         else:
-            return UserRequest.objects.none()
+            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
 
 
 class UserRequestDetailView(DetailView):
@@ -52,7 +53,7 @@ class UserRequestDetailView(DetailView):
         if self.request.user.is_authenticated:
             return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
         else:
-            return UserRequest.objects.none()
+            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
 
 
 class RequestDetailView(DetailView):
@@ -62,7 +63,7 @@ class RequestDetailView(DetailView):
         if self.request.user.is_authenticated:
             return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
         else:
-            return Request.objects.none()
+            return Request.objects.filter(user_request__proposal__in=Proposal.objects.filter(public=True))
 
 
 class RequestCreateView(LoginRequiredMixin, TemplateView):
@@ -138,5 +139,3 @@ class InstrumentsInformationView(APIView):
                 'default_binning': configdb.get_default_binning(instrument_type),
             }
         return Response(info)
-
-

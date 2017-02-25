@@ -23,39 +23,50 @@
   {% else %}
   <div class="row">
     <div class="col-md-12">
-      <h2>Submitted Observation Requests</h2>
-      <div class="filter-block">
-        <form method="get" action="" id="filter" class="form-inline">
-          <div class="form-group">
-            {% bootstrap_field filter.form.state show_label=False show_help=False size='small' addon_before='State:' bound_css_class='' %}
-          </div>
-          <div class="form-group">
-            {% bootstrap_field filter.form.title show_label=False show_help=False size='small' addon_before='Title' bound_css_class='' placeholder='Title contains' %}
-          </div>
-          <div class="form-group">
-            <label class="sr-only control-label" for="id_proposal"> Proposal</label>
-            <div class="input-group">
-              <span class="input-group-addon"><i class="fa fa-fw fa-users"></i> Proposal</span>
-              <select class="form-control input-sm" id="id_proposal" name="proposal" title="" name="id_proposal">
-                <option value="">---------</option>
-                {% for proposal in user.proposal_set.all %}
-                <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>{{ proposal }}</option>
-                {% endfor %}
-              </select>
+      <div class="row">
+        <div class="col-md-7">
+          <p class="title">Submitted Observation Requests</p>
+        </div>
+        <div class="col-md-5">
+          <li class="dropdown list-unstyled">
+            <a class="dropdown-toggle pull-right btn btn-default" href="#" data-toggle="dropdown">
+              <i class="fa fa-filter"></i> Filter List
+            </a>
+            <div class="dropdown-menu" style="padding:17px;">
+              <form method="get" action="" id="filter" class="form">
+                {% bootstrap_label '<i class="fa fa-refresh"></i> State' label_for="id_state" %}
+                {% bootstrap_field filter.form.state show_label=False size='small' %}
+
+                {% bootstrap_label '<i class="fa fa-font"></i> Title Contains' label_for="id_title" %}
+                {% bootstrap_field filter.form.title show_label=False size='small' %}
+
+                <div class="form-group">
+                  <label class="control-label" for="id_proposal"><i class="fa fa-users"></i> Proposal</label>
+                    <select class="form-control input-sm" id="id_proposal" name="proposal" title="" name="id_proposal">
+                      <option value="">---------</option>
+                      {% for proposal in user.proposal_set.all %}
+                      <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>
+                        {{ proposal }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                </div>
+
+                {% bootstrap_label '<i class="fa fa-calendar"> <i class="fa fa-arrow-right"></i> </i> Submitted After' label_for="id_created_before" %}
+                {% bootstrap_field filter.form.created_after show_label=False size='small' %}
+
+                {% bootstrap_label '<i class="fa fa-arrow-left"></i> <i class="fa fa-calendar"></i> Submitted Before' label_for="id_created_before" %}
+                {% bootstrap_field filter.form.created_before show_label=False size='small' %}
+
+                {% bootstrap_label '<i class="fa fa-user"></i> Username Contains' label_for="id_user" %}
+                {% bootstrap_field filter.form.user show_label=False show_help=False size='small' %}
+                <br/>
+                <input type="submit" class="btn btn-info" value="Filter Results"/>
+                <a href="{% url 'userrequests:list' %}" class="btn btn-default">Reset</a>
+              </form>
             </div>
-          </div>
-          <div class="form-group">
-            {% bootstrap_field filter.form.created_after show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Submited After' bound_css_class='' placeholder='Greater than or equal' %}
-          </div>
-          <div class="form-group">
-            {% bootstrap_field filter.form.created_before show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-calendar"></i> Submitted Before' bound_css_class='' placeholder='Less than or equal' %}
-          </div>
-          <div class="form-group">
-            {% bootstrap_field filter.form.user show_label=False show_help=False size='small' addon_before='<i class="fa fa-fw fa-user"></i> User' bound_css_class='' placeholder='Username contains' %}
-          </div>
-          <br/>
-          <input type="submit" class="btn btn-info" value="Filter Results"/>
-        </form>
+          </li>
+        </div>
       </div>
     </div>
   </div>
@@ -75,7 +86,7 @@
       <section class="userrequest-list">
         {% for ur in object_list %}
         <div class="row userrequest userrequest-{{ ur.state|state_to_bs }}">
-          <div class="col-md-8">
+          <div class="col-sm-8 col-xs-12">
             <div class="row">
               <div class="col-md-12">
                 <a class="userrequest-title" href="{% url 'userrequests:detail' ur %}">
@@ -84,11 +95,11 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-md-6 userrequest-block border-right">
+              <div class="col-xs-6 userrequest-block border-right">
                 <p><i class="fa fa-fw fa-user"></i> {{ ur.submitter }}</p>
                 <p><i class="fa fa-fw fa-users"></i> <a href="{% url 'proposals:detail' pk=ur.proposal.id %}">{{ ur.proposal }}</a></p>
               </div>
-              <div class="col-md-6 userrequest-block border-right">
+              <div class="col-xs-6 userrequest-block border-right">
                 <p><span class="text-{{ ur.state|state_to_bs }}">
                   <i class="fa fa-fw fa-{{ ur.state|state_to_icon }}"></i>
                   {{ ur.state }}
@@ -98,31 +109,31 @@
             </div>
           </div>
           {% if ur.requests.all %}
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
-              <div class="col-md-12 request-count">
+              <div class="col-xs-12 request-count">
                 <p><center>{{ ur.requests.count }}</center></p>
               </div>
             </div>
           </div>
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
                 <p><center class="text-warning">{{ ur|request_state_count:'PENDING' }}</center></p>
               </div>
             </div>
           </div>
-          <div class="col-xs-1 request-block">
+          <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
                 <p><center class="text-danger">{{ ur|request_state_count:'WINDOW_EXPIRED' }}</center></p>
               </div>
             </div>
           </div>
-           <div class="col-xs-1 request-block">
+           <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
-                <p><center class="text-success">{{ ur|request_state_count:'COMPLETE' }}</center></p>
+                <p><center class="text-success">{{ ur|request_state_count:'COMPLETED' }}</center></p>
               </div>
             </div>
           </div>

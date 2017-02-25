@@ -1,9 +1,6 @@
 <template>
-<div class="row">
-  <div class="col-md-4">
-    <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
-  </div>
-  <div class="col-md-8">
+<div class="row request-details">
+  <div class="col-md-12">
     <ul class="nav nav-tabs nav-justified">
       <li :class="{ active: tab === 'details' }" v-on:click="tab = 'details'">
         <a title="Details about the observed request.">Details</a>
@@ -48,13 +45,6 @@
                 </tr>
               </tbody>
             </table>
-            <h4>Constraints</h4>
-            <dl class="twocol">
-              <span v-for="x, idx in request.constraints">
-              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
-              <dd v-if="x">{{ x }}</dd>
-              </span>
-            </dl>
           </div>
           <div class="col-md-6">
             <h4>Target</h4>
@@ -64,17 +54,35 @@
               <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
+            <hr/>
+            <h4>Constraints</h4>
+            <dl class="twocol">
+              <span v-for="x, idx in request.constraints">
+              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
+              <dd v-if="x">{{ x }}</dd>
+              </span>
+            </dl>
           </div>
         </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'data' }">
-        <archivetable :requestid="request.id"></archivetable>
+        <div class="row">
+          <div v-if="request.state === 'COMPLETED'" class="col-md-4">
+            <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
+            <span class="thumb-help">Click a file in the data table to preview</span>
+          </div>
+          <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
+            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event.id"></archivetable>
+          </div>
+        </div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'scheduling' }">
         <blockhistory v-show="blockData.length > 0" :data="blockData" :showPlotControls="true"></blockhistory>
+        <div v-show="blockData.length < 1" class="text-center"><h3>This request has not been scheduled.</h3></div>
       </div>
       <div class="tab-pane" :class="{ active: tab === 'visibility' }">
-        <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData" :telescopeStatesData="telescopeStatesData"></airmass_telescope_states>
+        <airmass_telescope_states v-show="'airmass_limit' in airmassData" :airmassData="airmassData"
+                                  :telescopeStatesData="telescopeStatesData" :activeBlock="activeBlock"></airmass_telescope_states>
       </div>
     </div>
   </div>
@@ -96,6 +104,7 @@ export default {
       request: {},
       curFrame: null,
       blockData: [],
+      activeBlock: null,
       airmassData: {},
       telescopeStatesData: {},
       tab: 'details',
@@ -126,6 +135,9 @@ export default {
         }
         if($.isEmptyObject(this.telescopeStatesData)){
           this.loadTelescopeStatesData();
+          if(this.blockData.length === 0){
+            this.loadBlockData();
+          }
         }
       }
     }
@@ -136,6 +148,15 @@ export default {
       var requestId = $('#request-detail').data('requestid');
       $.getJSON('/api/requests/' + requestId + '/blocks/', function(data){
         that.blockData = data;
+        for(var blockIdx in that.blockData){
+          if(that.blockData[blockIdx].completed){
+            that.activeBlock = that.blockData[blockIdx];
+            break;
+          }
+          else if(that.blockData[blockIdx].status === 'SCHEDULED'){
+            that.activeBlock = that.blockData[blockIdx];
+          }
+        }
       });
     },
     loadAirmassData: function(){
@@ -161,5 +182,15 @@ dl.twocol {
   -moz-column-count: 2;
   -webkit-column-count: 2;
   column-count: 2;
+}
+.request-details {
+  margin-top: 5px;
+}
+.thumb-help {
+  font-style: italic;
+  font-size: 0.8em;
+}
+.tab-pane {
+  padding-top: 5px;
 }
 </style>

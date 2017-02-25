@@ -17,11 +17,11 @@
       <dd>{{ userrequest.modified }}</dd>
     </dl>
     <dl class="col-md-2">
-      <dt>{% trans 'Created' %}</dt>
+      <dt>{% trans 'Submitted' %}</dt>
       <dd>{{ userrequest.created }}</dd>
     </dl>
     <dl class="col-md-2">
-      <dt>{% trans 'Proposal' %}l</dt>
+      <dt>{% trans 'Proposal' %}</dt>
       <dd>
         <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
       </dd>
@@ -39,9 +39,25 @@
       <dd>{{ userrequest.ipp_value }}</dd>
     </dl>
     <span class="col-md-1">
-      <a title="Copy this request" href="{% url 'userrequests:create' %}?userrequestid={{ userrequest.id }}" class="btn btn-default">
-        <i class="fa fa-copy"></i> Copy
-      </a>
+      <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          Options <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <a title="Copy this request" href="{% url 'userrequests:create' %}?userrequestid={{ userrequest.id }}">
+              <i class="fa fa-copy"></i> Copy
+            </a>
+          </li>
+          {% if userrequest.state == 'PENDING' and user.is_authenticated %}
+          <li>
+            <a title="Cancel this request" id="cancelur" data-id="{{ userrequest.id }}">
+              <i class="fa fa-times"></i> Cancel
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </span>
   </div>
 </div>

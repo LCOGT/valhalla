@@ -70,6 +70,21 @@ class TestUserrequestDetail(TestCase):
         for request in self.requests:
             self.assertContains(response, request.id)
 
+    def test_userrequest_detail_no_auth(self):
+        self.client.logout()
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_public_userrequest_no_auth(self):
+        proposal = mixer.blend(Proposal, public=True)
+        self.userrequest.proposal = proposal
+        self.userrequest.save()
+
+        self.client.logout()
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        for request in self.requests:
+            self.assertContains(response, request.id)
+
 
 class TestRequestDetail(TestCase):
     def setUp(self):
@@ -81,6 +96,20 @@ class TestRequestDetail(TestCase):
         self.client.force_login(self.user)
 
     def test_request_detail(self):
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertContains(response, self.request.id)
+
+    def test_request_detail_no_auth(self):
+        self.client.logout()
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_public_request_detail_no_auth(self):
+        proposal = mixer.blend(Proposal, public=True)
+        self.userrequest.proposal = proposal
+        self.userrequest.save()
+
+        self.client.logout()
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
         self.assertContains(response, self.request.id)
 

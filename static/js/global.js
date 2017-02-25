@@ -1,7 +1,7 @@
 import {archiveAjaxSetup} from './archive.js';
 
 import $ from 'jquery';
-import 'bootstrap3';
+import 'bootstrap';
 import 'eonasdan-bootstrap-datetimepicker';
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
 

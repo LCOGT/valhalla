@@ -48,6 +48,7 @@ export default{
     }
   },
   mounted: function(){
+    var that = this;
     $('#archive-table').bootstrapTable({
       url: null,
       responseHandler: function(res){
@@ -55,6 +56,9 @@ export default{
           alert('More than 1000 results found, please view on archive to view all data');
         }
         return res.results;
+      },
+      onClickRow: function(row){
+        that.$emit('rowClicked', row);
       },
       queryParamsType: '',
       idField: 'id',
@@ -97,3 +101,8 @@ export default{
   }
 };
 </script>
+<style>
+#archive-table > tbody > tr {
+  cursor: pointer;
+}
+</style>

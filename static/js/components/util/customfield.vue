@@ -24,7 +24,7 @@ import $ from 'jquery';
 import {datetimeFormat} from '../../utils';
 import 'eonasdan-bootstrap-datetimepicker';
 import 'vue-style-loader!eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
-import tooltip from 'bootstrap3';
+import tooltip from 'bootstrap';
 
 export default {
   props: ['value', 'label', 'field', 'errors', 'type', 'desc'],

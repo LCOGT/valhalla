@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load render_bundle from webpack_loader %}
+{% load static %}
 {% block title %} User Request Detail {% endblock %}
 {% block content %}
 {% include 'userrequests/partials/userrequest_header.html' with userrequest=userrequest %}
@@ -16,7 +16,6 @@
 </section>
 {% endfor %}
 {% endblock %}
-{% block javascript %}
-{% render_bundle 'common' %}
-{% render_bundle 'userrequest_detail' %}
+{% block extra_javascript %}
+<script type="text/javascript" src="{% static '/bundles/userrequest_detail.js' %}"></script>
 {% endblock %}

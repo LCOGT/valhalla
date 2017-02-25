@@ -1,6 +1,12 @@
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 body {
     font-size: 16px;
     font-family: 'Affogato-Regular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin-bottom: 45px;
 }
 
 p {
@@ -13,6 +19,15 @@ a:hover {
 }
 .nav > li > a:focus, .nav > li > a:hover {
     background-color: inherit;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 45px;
+  text-align: center;
 }
 
 .nav-tabs > li > a {
@@ -57,6 +72,10 @@ a:hover {
     margin-bottom: 0px;
 }
 
+.thumnail-small {
+    max-height: 75px;
+}
+
 .downPage ul.nav {
     width: auto;
 }
@@ -71,7 +90,7 @@ a:hover {
 
 
 .head.downPage .headNav {
-    width: 65%;
+    width: 70%;
 }
 
 .head {
@@ -87,11 +106,6 @@ a:hover {
     max-height: 10px;
 }
 
-.filter-block {
-    padding: 10px;
-    margin-bottom: 20px;
-}
-
 .userrequest {
     border: 1px solid #EFF0EC;
     min-height: 75px;
@@ -101,6 +115,7 @@ a:hover {
 
 .userrequest-title {
     font-size: 1.2em;
+    margin-left: 4px;
 }
 
 .userrequest-success {
