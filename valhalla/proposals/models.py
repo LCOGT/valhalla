@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 from django.urls import reverse
 from collections import namedtuple
+
+from valhalla.celery import send_mail
 
 
 class Semester(models.Model):
@@ -145,7 +146,7 @@ class ProposalInvite(models.Model):
             }
         )
 
-        send_mail(subject, message, 'portal@lco.glboal', [self.email])
+        send_mail.delay(subject, message, 'portal@lco.glboal', [self.email])
         self.sent = timezone.now()
         self.save()
 
