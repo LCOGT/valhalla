@@ -5,7 +5,15 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <h4 class="text-center">Visibility</h4>
+        <ul>
+          <li>
+            Try the
+            <a href="https://lco.global/observatory/visibility/">
+              Target Visibility Calculator.
+            </a>
+          </li>
+        </ul>
+        <h4 v-show="showAirmass" class="text-center">Visibility</h4>
         <airmass v-show="showAirmass" :data="airmassData" :showZoomControls="true"></airmass>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
@@ -38,6 +46,7 @@ import $ from 'jquery';
 import _ from 'lodash';
 
 import {collapseMixin} from '../utils.js';
+import { EventBus } from '../eventBus.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
@@ -56,6 +65,10 @@ export default {
       period: 24.0,
       jitter: 12.0
     };
+  },
+  created: function(){
+    var that = this;
+    EventBus.$on('updateVisPlot', that.updateVisibility);
   },
   methods: {
     update: function(){

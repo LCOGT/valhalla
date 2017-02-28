@@ -45,6 +45,7 @@
 import _ from 'lodash';
 
 import {collapseMixin} from '../utils.js';
+import { EventBus } from '../eventBus.js';
 import target from './target.vue';
 import molecule from './molecule.vue';
 import window from './window.vue';
@@ -52,6 +53,7 @@ import constraints from './constraints.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+
 export default {
   props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data'],
   components: {target, molecule, window, constraints, customfield, customselect, panel},
@@ -62,6 +64,12 @@ export default {
       data_type: this.instrumentToDataType(this.request.molecules[0].instrument_name),
       instrument_name: this.request.molecules[0].instrument_name
     };
+  },
+  created: function(){
+    var that = this;
+    EventBus.$on('draftLoaded', function(){
+      EventBus.$emit('updateVisPlot', that.request);
+    });
   },
   computed: {
     availableInstrumentOptions: function(){
@@ -99,11 +107,7 @@ export default {
   methods: {
     update: function(){
       this.$emit('requestupdate');
-      if('window' in this.$refs) {
-        for (var windowIdx in this.$refs.window) {
-          this.$refs.window[windowIdx].updateVisibility(this.request);
-        }
-      }
+      EventBus.$emit('updateVisPlot', this.request);
     },
     instrumentToDataType: function(value){
       if(!_.isEmpty(this.available_instruments) && value) {
