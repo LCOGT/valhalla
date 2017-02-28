@@ -2,7 +2,7 @@
   <div id="app">
     <div class="row">
       <div class="col-md-11">
-        <alert v-for="alert in alerts" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
+        <alert v-for="alert in alerts" :key="alert.msg" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
       </div>
     </div>
     <div id="tabs">
