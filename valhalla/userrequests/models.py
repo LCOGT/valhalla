@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.urls import reverse
 from django.conf import settings
 from django.forms.models import model_to_dict
 import requests
@@ -56,6 +57,9 @@ class UserRequest(models.Model):
 
     def get_id_display(self):
         return str(self.id).zfill(10)
+
+    def get_absolute_url(self):
+        return reverse('userrequests:detail', kwargs={'pk': self.pk})
 
     @property
     def as_dict(self):

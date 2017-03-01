@@ -3,3 +3,7 @@ LOCAL_INSTALLED_APPS = [
 ]
 LOCAL_ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+ELASTICSEARCH_URL = ''
+POND_URL = ''
+CONFIGDB_URL = ''
+ARCHIVE_API_TOKEN = ''
