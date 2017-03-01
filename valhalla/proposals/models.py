@@ -155,5 +155,8 @@ class ProposalNotification(models.Model):
     proposal = models.ForeignKey(Proposal)
     user = models.ForeignKey(User)
 
+    def __str__(self):
+        return '{} - {}'.format(self.proposal, self.user)
+
     class Meta:
         unique_together = ('proposal', 'user')

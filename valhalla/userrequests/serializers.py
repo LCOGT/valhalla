@@ -39,10 +39,10 @@ class CadenceSerializer(serializers.Serializer):
 
 class ConstraintsSerializer(serializers.ModelSerializer):
     max_airmass = serializers.FloatField(
-        default=2.0, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)] # Duplicated in models.py
+        default=2.0, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)]  # Duplicated in models.py
     )
     min_lunar_distance = serializers.FloatField(
-        default=30.0, validators=[MinValueValidator(0.0), MaxValueValidator(180.0)] # Duplicated in models.py
+        default=30.0, validators=[MinValueValidator(0.0), MaxValueValidator(180.0)]  # Duplicated in models.py
     )
 
     class Meta:
