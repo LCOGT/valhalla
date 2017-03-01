@@ -10,7 +10,7 @@ from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration_dict
+from valhalla.userrequests.duration_utils import get_request_duration_dict, get_max_ipp_dict
 from valhalla.userrequests.state_changes import InvalidStateChange
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
@@ -58,6 +58,15 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
         return Response({'request_durations': req_durations,
                          'errors': errors})
+
+    @list_route(methods=['post'])
+    def max_allowable_ipp(self, request):
+        serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            ipp_dict = get_max_ipp_dict(serializer.validated_data['requests'], serializer.validated_data['proposal'])
+            return Response(ipp_dict)
+        else:
+            return Response({'errors': serializer.errors})
 
     @list_route(methods=['post'])
     def cadence(self, request):

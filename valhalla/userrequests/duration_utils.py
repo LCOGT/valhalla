@@ -8,6 +8,8 @@ from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_i
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
 PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
+MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
+MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
 
 
 def get_num_mol_changes(molecules):
@@ -45,6 +47,42 @@ def get_request_duration_dict(request_dict):
     req_durations['duration'] = sum([req['duration'] for req in req_durations['requests']])
 
     return req_durations
+
+
+def get_max_ipp_dict(request_dict, proposal_id):
+    proposal = Proposal.objects.get(pk=proposal_id)
+    request_durations = get_request_duration_sum(request_dict,
+                                                 proposal_id)
+    ipp_dict = {}
+    for tak, duration in request_durations.items():
+        time_allocation = proposal.timeallocation_set.get(semester=tak.semester,
+                                                           telescope_class=tak.telescope_class)
+        duration_hours = duration / 3600.0
+        ipp_available = time_allocation.ipp_time_available
+        max_ipp_allowable = min((ipp_available / duration_hours) + 1.0, MAX_IPP_LIMIT)
+        max_ipp_allowable = float("{:.3f}".format(max_ipp_allowable))
+        if tak.semester not in ipp_dict:
+            ipp_dict[tak.semester] = {}
+        ipp_dict[tak.semester][tak.telescope_class] = {'ipp_time_available': ipp_available,
+                                                       'ipp_limit': time_allocation.ipp_limit,
+                                                       'request_duration': duration_hours,
+                                                       'max_allowable_ipp_value': max_ipp_allowable,
+                                                       'min_allowable_ipp_value': MIN_IPP_LIMIT}
+    return ipp_dict
+
+
+def get_request_duration_sum(request_dict, proposal_id):
+    duration_sum = {}
+    for req in request_dict:
+        duration = get_request_duration(req)
+        tak = get_time_allocation_key(telescope_class=req['location']['telescope_class'],
+                                      proposal_id=proposal_id,
+                                      min_window_time=min([w['start'] for w in req['windows']]),
+                                      max_window_time=max([w['end'] for w in req['windows']]))
+        if not tak in duration_sum:
+            duration_sum[tak] = 0
+        duration_sum[tak] += duration
+    return duration_sum
 
 
 def get_num_exposures(molecule_dict, time_available):

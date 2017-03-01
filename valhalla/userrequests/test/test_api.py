@@ -1304,3 +1304,69 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')
         self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
         self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
+
+
+class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    ''' Test getting max ipp allowable of user requests via API.'''
+
+    def setUp(self):
+        super().setUp()
+        self.proposal = mixer.blend(Proposal, id='temp')
+        self.semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+                               )
+        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
+                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=1.0)
+        self.time_allocation_0m4 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
+                                               telescope_class='0m4', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=1.0)
+        self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+        self.generic_payload = copy.deepcopy(generic_payload)
+
+    def test_get_max_ipp_fail_bad_ur(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['proposal']
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), bad_data)
+        self.assertIn('proposal', response.json()['errors'])
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_max_ipp_max_ipp_returned(self):
+        from valhalla.userrequests.duration_utils import MAX_IPP_LIMIT, MIN_IPP_LIMIT
+        good_data = self.generic_payload.copy()
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        self.assertEqual(MAX_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+        self.assertEqual(MIN_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['min_allowable_ipp_value'])
+
+    def test_get_max_ipp_reduced_max_ipp(self):
+
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0 # 90 minute exposure (1.0 ipp available)
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
+        self.assertEqual(1.649, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+
+    def test_get_max_ipp_no_ipp_available(self):
+        good_data = self.generic_payload.copy()
+        self.time_allocation_1m0.ipp_time_available = 0.0
+        self.time_allocation_1m0.save()
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
+        self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+
+
+
