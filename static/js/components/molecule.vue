@@ -18,7 +18,7 @@
             <h2>Automatic generation of calibration frames</h2>
             <p>
               Since you are taking a spetrum, it is recommended you also schedule calibrations for before
-              and after your exposure.
+              and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request.
             </p>
             <a class="btn btn-default" v-on:click="generateCalibs" v-show="molecule.type === 'SPECTRUM'">Create calibration frames</a>
           </div>
