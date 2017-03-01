@@ -116,7 +116,6 @@
   import $ from 'jquery';
   import Vue from 'vue';
 
-  import { EventBus } from './eventBus.js';
   import userrequest from './components/userrequest.vue';
   import drafts from './components/drafts.vue';
   import sidenav from './components/sidenav.vue';
@@ -248,9 +247,6 @@
             that.userrequest = JSON.parse(data.content);
           });
           that.validate();
-          _.delay(function() {
-            EventBus.$emit('draftLoaded');
-          }, 500);
         });
       }
     }

@@ -46,7 +46,6 @@ import $ from 'jquery';
 import _ from 'lodash';
 
 import {collapseMixin} from '../utils.js';
-import { EventBus } from '../eventBus.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
@@ -66,10 +65,6 @@ export default {
       jitter: 12.0
     };
   },
-  created: function(){
-    var that = this;
-    EventBus.$on('updateVisPlot', that.updateVisibility);
-  },
   methods: {
     update: function(){
       this.$emit('windowupdate');
@@ -79,7 +74,7 @@ export default {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
     },
-    updateVisibility: _.debounce(function(req){
+    updateVisibility: function(req){
       var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
       request['windows'] = [{start:this.window.start, end:this.window.end}];
@@ -94,7 +89,7 @@ export default {
           that.showAirmass = 'airmass_limit' in data;
         }
       });
-    }, 300),
+    },
   },
 };
 </script>
