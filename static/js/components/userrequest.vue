@@ -4,7 +4,10 @@
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
       <div class="row">
         <div class="col-md-6 compose-help" v-show="show">
-          <h3>Duration of Observing Request:</h3>
+          <h3>
+            Duration of Observing Request:
+            <sup><a title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
+          </h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
           <ul>
