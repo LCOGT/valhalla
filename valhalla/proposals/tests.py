@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from mixer.backend.django import mixer
 
-from valhalla.proposals.models import ProposalInvite, Proposal, Membership
+from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification
+from valhalla.userrequests.models import UserRequest
+from valhalla.accounts.models import Profile
 
 
 class TestProposal(TestCase):
@@ -37,3 +39,42 @@ class TestProposalInvitation(TestCase):
         user = mixer.blend(User)
         invitation.accept(user)
         self.assertIn(invitation.proposal, user.proposal_set.all())
+
+
+class TestProposalNotifications(TestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, state='PENDING')
+
+    def test_all_proposal_notification(self):
+        mixer.blend(Profile, user=self.user, notifications_enabled=True)
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+    def test_single_proposal_notification(self):
+        mixer.blend(Profile, user=self.user, notifications_enabled=False)
+        mixer.blend(ProposalNotification, user=self.user, proposal=self.proposal)
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+    def test_user_loves_notifications(self):
+        mixer.blend(Profile, user=self.user, notifications_enabled=True)
+        mixer.blend(ProposalNotification, user=self.user, proposal=self.proposal)
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+    def test_no_notifications(self):
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertEqual(len(mail.outbox), 0)

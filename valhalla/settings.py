@@ -179,6 +179,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50
 }
 
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_BROKER_URL = 'memory://localhost'
+
 try:
     from local_settings import *  # noqa
 except ImportError:
