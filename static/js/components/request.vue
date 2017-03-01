@@ -52,6 +52,7 @@ import constraints from './constraints.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+
 export default {
   props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data'],
   components: {target, molecule, window, constraints, customfield, customselect, panel},
@@ -99,12 +100,18 @@ export default {
   methods: {
     update: function(){
       this.$emit('requestupdate');
+      var that = this;
+      _.delay(function(){
+        that.updateVisibility()
+      }, 500);
+    },
+    updateVisibility: _.debounce(function(){
       if('window' in this.$refs) {
         for (var windowIdx in this.$refs.window) {
           this.$refs.window[windowIdx].updateVisibility(this.request);
         }
       }
-    },
+    }, 300),
     instrumentToDataType: function(value){
       if(!_.isEmpty(this.available_instruments) && value) {
         return this.available_instruments[value].type;
