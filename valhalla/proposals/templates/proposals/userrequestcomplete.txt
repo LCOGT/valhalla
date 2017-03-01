@@ -1,6 +1,6 @@
 Hello,
 
-This email is to inform you that the observation request: {{ usserrequest.group_id }} has completed.
+This email is to inform you that the observation request: {{ userrequest.group_id }} has completed.
 
 Data may be download on the
 <a href="https://observe.lco.global{{ userrequest.get_absolute_url }}">request details page.</a>
