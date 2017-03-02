@@ -3,6 +3,9 @@ from django.db import transaction
 from django.utils.translation import ugettext as _
 from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
 
+from valhalla.userrequests.models import UserRequest, Request
+
+import itertools
 import logging
 
 logger = logging.getLogger(__name__)
@@ -139,6 +142,87 @@ def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
             time_allocation.save()
     except Exception as e:
         logger.warn(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
+
+
+def get_request_state_from_pond_blocks(request_state, request_blocks):
+    active_blocks = False
+    future_blocks = False
+    now = timezone.now()
+    for block in request_blocks:
+        if all([molecule['complete'] for molecule in block['molecules']]):
+            return 'COMPLETE'
+        if (not block['canceled'] and not any([molecule['failed'] for molecule in block['molecules']])
+            and block['start'] < now < block['end']):
+            active_blocks = True
+        if now < block['start']:
+            future_blocks = True
+
+    if not (future_blocks or active_blocks):
+        return 'FAILED'
+
+    return request_state
+
+
+def get_request_state(request_state, request_blocks, ur_expired):
+    if request_state == 'COMPLETED':
+        return request_state
+    else:
+        pond_state = get_request_state_from_pond_blocks(request_state, request_blocks)
+        if pond_state in ['COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']:
+            return pond_state
+
+        if ur_expired:
+            return 'WINDOW_EXPIRED'
+
+        if pond_state == 'FAILED' and request_state in ['WINDOW_EXPIRED', 'CANCELED']:
+            return request_state
+
+        return pond_state
+
+
+def aggregate_request_states(request_states, operator):
+    # Failed states are equivalent to PENDING from UR perspective
+    request_states = [rs.replace('FAILED', 'PENDING') for rs in request_states]
+
+    # Set the priority ordering - assume AND by default
+    state_priority = ['WINDOW_EXPIRED', 'PENDING', 'COMPLETED', 'CANCELED']
+    if operator == 'oneof':
+        state_priority = ['COMPLETED', 'PENDING', 'WINDOW_EXPIRED', 'CANCELED']
+    elif operator == 'many':
+        state_priority = ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']
+
+    for state in state_priority:
+        if state in request_states:
+            return state
+
+    raise AggregateStateException('Unable to Aggregate States: {}'.format(request_states))
+
+
+def update_request_states_from_pond_blocks(pond_blocks):
+    sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_number'])
+    blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_number'])
+    now = timezone.now()
+
+    for tracking_num, blocks in blocks_by_tracking_num:
+        sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
+        blocks_by_request_num = itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])
+        user_request = UserRequest.objects.get(pk=tracking_num)
+        ur_expired = user_request.max_window_time < now
+        request_states = []
+        for request_number, req_blocks in blocks_by_request_num:
+            request = Request.objects.get(pk=request_number)
+            new_r_state = get_request_state(request.state, req_blocks, ur_expired)
+            if new_r_state != request.state:
+                request.save(state=new_r_state)
+            request_states.append(new_r_state)
+        new_ur_state = aggregate_request_states(request_states, user_request.operator)
+        if new_ur_state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']:
+            user_request.save(state=new_ur_state)
+
+
+class AggregateStateException(Exception):
+    '''Raised when we fail to aggregate request states into a user request state'''
+    pass
 
 
 class TimeAllocationError(Exception):
