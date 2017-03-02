@@ -3,11 +3,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from django.http import HttpResponseBadRequest
 from django.utils import timezone
+from django.conf import settings
+from django.core.cache import cache
 from dateutil.parser import parse
 from datetime import timedelta
+import requests
 from rest_framework.views import APIView
 
 from valhalla.common.configdb import ConfigDB
@@ -17,6 +20,7 @@ from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sit
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
+from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
 from valhalla.proposals.models import Proposal
 
 
@@ -139,3 +143,18 @@ class InstrumentsInformationView(APIView):
                 'default_binning': configdb.get_default_binning(instrument_type),
             }
         return Response(info)
+
+
+class UserRequestStatusIsDirty(APIView):
+    permission_classes = (IsAdminUser,)
+
+    def get(self, request):
+        last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
+        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}'.format(last_query_time)
+        response = requests.get(url)
+        response.raise_for_status()
+
+        pond_blocks = response.json()
+        update_request_states_from_pond_blocks(pond_blocks)
+
+        return Response({'isDirty': len(pond_blocks) > 0})
