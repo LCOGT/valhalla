@@ -27,7 +27,7 @@ class Block:
     molecules = list
 
     def _to_dict(self):
-        return {'start': self.start, 'end': self.end, 'canceled': self.canceled,
+        return {'start': self.start.isoformat(), 'end': self.end.isoformat(), 'canceled': self.canceled,
                 'molecules': [m._to_dict() for m in self.molecules]}
 
 
@@ -559,4 +559,3 @@ class TestUpdateRequestStates(TestCase):
             self.assertEqual(req.state, request_states[i])
         self.ur.refresh_from_db()
         self.assertEqual(self.ur.state, 'COMPLETED')
-

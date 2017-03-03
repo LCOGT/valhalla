@@ -7,6 +7,7 @@ from valhalla.userrequests.models import UserRequest, Request
 
 import itertools
 import logging
+import dateutil.parser
 
 logger = logging.getLogger(__name__)
 
@@ -149,12 +150,14 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
     future_blocks = False
     now = timezone.now()
     for block in request_blocks:
+        start_time = dateutil.parser.parse(block['start']).replace(tzinfo=timezone.utc)
+        end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
         if all([molecule['complete'] for molecule in block['molecules']]):
             return 'COMPLETED'
         if (not block['canceled'] and not any([molecule['failed'] for molecule in block['molecules']])
-            and block['start'].replace(tzinfo=timezone.utc) < now < block['end'].replace(tzinfo=timezone.utc)):
+            and start_time < now < end_time):
             active_blocks = True
-        if now < block['start'].replace(tzinfo=timezone.utc):
+        if now < start_time:
             future_blocks = True
 
     if not (future_blocks or active_blocks):

@@ -4,7 +4,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, HttpResponseServerError
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache import cache
@@ -149,12 +149,18 @@ class UserRequestStatusIsDirty(APIView):
     permission_classes = (IsAdminUser,)
 
     def get(self, request):
+
         last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
         url = settings.POND_URL + '/pond/pond/blocks/new/?since={}'.format(last_query_time)
-        response = requests.get(url)
-        response.raise_for_status()
+        now = timezone.now()
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except Exception as e:
+            return HttpResponseServerError({'error': repr(e)})
 
         pond_blocks = response.json()
         update_request_states_from_pond_blocks(pond_blocks)
+        cache.set('isDirty_query_time', now)
 
         return Response({'isDirty': len(pond_blocks) > 0})

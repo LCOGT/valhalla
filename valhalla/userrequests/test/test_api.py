@@ -1,19 +1,23 @@
-from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
+from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest, Window
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
+from valhalla.userrequests.test.test_state_changes import Molecule, Block
 
 from django.core.urlresolvers import reverse
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 from django.conf import settings
 from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
+from mixer.main import mixer as basic_mixer
 from unittest.mock import patch
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 import responses
 import os
 import copy
+import json
 
 generic_payload = {
     'proposal': 'temp',
@@ -488,6 +492,7 @@ class TestWindowApi(ConfigDBTestMixin, APITestCase):
 class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
+
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
@@ -1304,3 +1309,95 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')
         self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
         self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
+
+
+@patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
+class TestUpdateRequestStatesAPI(APITestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.user = mixer.blend(User, is_staff=True)
+        self.proposal = mixer.blend(Proposal)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+        self.ur = mixer.blend(UserRequest, operator='MANY', state='PENDING', proposal=self.proposal)
+        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING')
+
+    @responses.activate
+    def test_no_pond_blocks_no_state_changed(self, modify_mock):
+        pond_blocks = []
+        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+
+        response = self.client.get(reverse('api:isDirty'))
+        response_json = response.json()
+
+        self.assertFalse(response_json['isDirty'])
+
+    @responses.activate
+    def test_pond_blocks_no_state_changed(self, modify_mock):
+        now = timezone.now()
+        windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                                        end=now + timedelta(days=1))
+        molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[0].id,
+                                          tracking_number=self.ur.id)
+        molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
+                                          tracking_number=self.ur.id)
+        molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
+                                          tracking_number=self.ur.id)
+        pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
+                                           start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
+        pond_blocks = [pb._to_dict() for pb in pond_blocks]
+        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+
+        response = self.client.get(reverse('api:isDirty'))
+        response_json = response.json()
+
+        self.assertTrue(response_json['isDirty'])
+        for i, req in enumerate(self.requests):
+            req.refresh_from_db()
+            self.assertEqual(req.state, 'PENDING')
+        self.ur.refresh_from_db()
+        self.assertEqual(self.ur.state, 'PENDING')
+
+    @responses.activate
+    def test_pond_blocks_state_change_completed(self, modify_mock):
+        now = timezone.now()
+        windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                                        end=now - timedelta(days=1))
+        molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=True, failed=False, request_number=self.requests[0].id,
+                                          tracking_number=self.ur.id)
+        molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
+                                          tracking_number=self.ur.id)
+        molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
+                                          tracking_number=self.ur.id)
+        pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
+                                           start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
+        pond_blocks = [pb._to_dict() for pb in pond_blocks]
+        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+
+        response = self.client.get(reverse('api:isDirty'))
+        response_json = response.json()
+
+        self.assertTrue(response_json['isDirty'])
+
+        request_states = ['COMPLETED', 'WINDOW_EXPIRED', 'WINDOW_EXPIRED']
+        for i, req in enumerate(self.requests):
+            req.refresh_from_db()
+            self.assertEqual(req.state, request_states[i])
+        self.ur.refresh_from_db()
+        self.assertEqual(self.ur.state, 'COMPLETED')
+
+    @responses.activate
+    def test_bad_data_from_pond(self, modify_mock):
+        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+                      body='Internal Server Error', status=500, content_type='application/json')
+
+        response = self.client.get(reverse('api:isDirty'))
+
+        self.assertEqual(response.status_code, 500)
+
+
+
