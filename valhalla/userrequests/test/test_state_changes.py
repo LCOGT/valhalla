@@ -221,70 +221,70 @@ class TestAggregateRequestStates(TestCase):
     def test_many_all_complete(self):
         request_states = ['COMPLETED', 'COMPLETED', 'COMPLETED']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_any_pending(self):
         request_states = ['COMPLETED', 'CANCELED', 'PENDING']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'PENDING')
 
     def test_many_expired_and_complete(self):
         request_states = ['WINDOW_EXPIRED', 'COMPLETED', 'WINDOW_EXPIRED']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_canceled_and_complete(self):
         request_states = ['CANCELED', 'COMPLETED', 'CANCELED']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_all_canceled(self):
         request_states = ['CANCELED', 'CANCELED', 'CANCELED']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'CANCELED')
 
     def test_many_all_expired(self):
         request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'WINDOW_EXPIRED']
 
-        aggregate_state = aggregate_request_states(request_states, 'many')
+        aggregate_state = aggregate_request_states(request_states, 'MANY')
 
         self.assertEqual(aggregate_state, 'WINDOW_EXPIRED')
 
     def test_oneof_any_completed(self):
         request_states = ['WINDOW_EXPIRED', 'COMPLETED', 'PENDING']
 
-        aggregate_state = aggregate_request_states(request_states, 'oneof')
+        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_oneof_pending_and_expired(self):
         request_states = ['WINDOW_EXPIRED', 'PENDING', 'PENDING']
 
-        aggregate_state = aggregate_request_states(request_states, 'oneof')
+        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
 
         self.assertEqual(aggregate_state, 'PENDING')
 
     def test_oneof_all_expired(self):
         request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'WINDOW_EXPIRED']
 
-        aggregate_state = aggregate_request_states(request_states, 'oneof')
+        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
 
         self.assertEqual(aggregate_state, 'WINDOW_EXPIRED')
 
     def test_oneof_all_canceled(self):
         request_states = ['CANCELED', 'CANCELED', 'CANCELED']
 
-        aggregate_state = aggregate_request_states(request_states, 'oneof')
+        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
 
         self.assertEqual(aggregate_state, 'CANCELED')
 
