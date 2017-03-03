@@ -150,11 +150,11 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
     now = timezone.now()
     for block in request_blocks:
         if all([molecule['complete'] for molecule in block['molecules']]):
-            return 'COMPLETE'
+            return 'COMPLETED'
         if (not block['canceled'] and not any([molecule['failed'] for molecule in block['molecules']])
-            and block['start'] < now < block['end']):
+            and block['start'].replace(tzinfo=timezone.utc) < now < block['end'].replace(tzinfo=timezone.utc)):
             active_blocks = True
-        if now < block['start']:
+        if now < block['start'].replace(tzinfo=timezone.utc):
             future_blocks = True
 
     if not (future_blocks or active_blocks):
@@ -186,9 +186,9 @@ def aggregate_request_states(request_states, operator):
 
     # Set the priority ordering - assume AND by default
     state_priority = ['WINDOW_EXPIRED', 'PENDING', 'COMPLETED', 'CANCELED']
-    if operator == 'oneof':
+    if operator == 'ONEOF':
         state_priority = ['COMPLETED', 'PENDING', 'WINDOW_EXPIRED', 'CANCELED']
-    elif operator == 'many':
+    elif operator == 'MANY':
         state_priority = ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']
 
     for state in state_priority:
@@ -205,19 +205,23 @@ def update_request_states_from_pond_blocks(pond_blocks):
 
     for tracking_num, blocks in blocks_by_tracking_num:
         sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
-        blocks_by_request_num = itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])
+        blocks_by_request_num = {k: list(v) for k,v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
         user_request = UserRequest.objects.get(pk=tracking_num)
         ur_expired = user_request.max_window_time < now
         request_states = []
-        for request_number, req_blocks in blocks_by_request_num:
-            request = Request.objects.get(pk=request_number)
-            new_r_state = get_request_state(request.state, req_blocks, ur_expired)
-            if new_r_state != request.state:
-                request.save(state=new_r_state)
+        requests = user_request.requests.all()
+        for request in requests:
+            new_r_state = request.state
+            if request.id in blocks_by_request_num:
+                new_r_state = get_request_state(request.state, blocks_by_request_num[request.id], ur_expired)
+                if new_r_state != request.state:
+                    request.state = new_r_state
+                    request.save(update_fields=['state'])
             request_states.append(new_r_state)
         new_ur_state = aggregate_request_states(request_states, user_request.operator)
         if new_ur_state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']:
-            user_request.save(state=new_ur_state)
+            user_request.state = new_ur_state
+            user_request.save(update_fields=['state'])
 
 
 class AggregateStateException(Exception):
