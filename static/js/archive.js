@@ -7,7 +7,8 @@ export {archiveAjaxSetup, login, downloadZip, downloadAll, getThumbnail, getLate
 function archiveAjaxSetup(){
   login(function(){
     $.ajaxPrefilter(function(options, originalOptions, jqXHR){
-      if(options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0 ){
+      if((options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0) &&
+         localStorage.getItem('archiveAuthToken')){
         jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('archiveAuthToken'));
       }
     });
@@ -33,6 +34,8 @@ function login(callback){
           callback();
         }
       });
+    }).fail(function(){
+      callback();
     });
   }
 }
