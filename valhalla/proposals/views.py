@@ -19,7 +19,7 @@ from valhalla.proposals.filters import ProposalFilter
 
 
 class ProposalDetailView(LoginRequiredMixin, DetailView):
-    model = ProposalNotification
+    model = Proposal
 
     def get_queryset(self):
         if self.request.user.is_staff:
