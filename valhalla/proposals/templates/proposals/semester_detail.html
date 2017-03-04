@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css" />
+{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <div id="toolbar">
+      <div class="form form-inline">
+      <div class="form-group">
+        <label for="semester" class="control-label">Semester</label>
+        <select class="form-control" onchange="location = this.value">
+          {% for semester in semesters %}
+          <option value="{% url 'proposals:semester-detail' semester %}"
+                  {% if object == semester %} selected {% endif %}>
+            {{ semester }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    </div>
+    <table id="semester-table" class="table table-striped">
+      </select>
+      </select>
+      <thead>
+        <tr>
+          <th>Proposal</th>
+          <th>Telescope Class</th>
+          <th>Std Time Alloc</th>
+          <th>Std Time Used</th>
+          <th>RR Time Alloc</th>
+          <th>RR Time Used</th>
+          <th>IPP Limit</th>
+          <th>IPP Time Avail</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for ta in object.timeallocation_set.all.distinct %}
+      <tr>
+        <td>{{ ta.proposal.id }}</td>
+        <td>{{ ta.telescope_class }}</td>
+        <td>{{ ta.std_allocation|floatformat }}</td>
+        <td>{{ ta.std_time_used|floatformat }}</td>
+        <td>{{ ta.too_allocation|floatformat }}</td>
+        <td>{{ ta.too_time_used|floatformat }}</td>
+        <td>{{ ta.ipp_limit|floatformat }}</td>
+        <td>{{ ta.ipp_time_available|floatformat }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
+<script src="https://s3-us-west-2.amazonaws.com/cdn.lcogt.net/script/tableExport.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/extensions/export/bootstrap-table-export.min.js"></script>
+<script type="text/javascript">
+$('#semester-table').bootstrapTable({
+  sortName: 'proposal',
+  toolbar: '#toolbar',
+  showExport: true,
+  search: true,
+  columns: [
+    {
+      field: 'proposal',
+      title: 'Proposal',
+      sortable: true,
+    },
+    {
+      field: 'telescope_class',
+      title: 'Telescope Class',
+      sortable: true,
+    },
+    {
+      field: 'std_allocation',
+      title: 'Std time Alloc',
+      sortable: true,
+    },
+    {
+      field: 'std_time_used',
+      title: 'Std Time Used',
+      sortable: true,
+    },
+    {
+      field: 'too_allocation',
+      title: 'RR Time Alloc',
+      sortable: true,
+    },
+    {
+      field: 'too_time_used',
+      title: 'RR Time Used',
+      sortable: true,
+    },
+    {
+      field: 'ipp_limit',
+      title: 'IPP Limit',
+      sortable: true,
+    },
+    {
+      field: 'ipp_time_available',
+      title: 'IPP Time Available',
+      sortable: true,
+    },
+  ],
+});
+</script>
+{% endblock %}

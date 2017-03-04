@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
+from valhalla.proposals.models import Semester, TimeAllocation
 
 
 class TestProposalDetail(TestCase):
@@ -98,7 +99,7 @@ class TestProposalInvite(TestCase):
         self.assertContains(response, 'Please enter a valid email address')
 
 
-class TestPropsalList(TestCase):
+class TestProposalList(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         self.proposals = mixer.cycle(5).blend(Proposal)
@@ -110,12 +111,20 @@ class TestPropsalList(TestCase):
         self.client.force_login(user)
         response = self.client.get(reverse('proposals:list'))
         self.assertContains(response, 'You are not a member of any proposals')
+        self.assertNotContains(response, 'Admin only')
 
     def test_proposals_show_in_list(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('proposals:list'))
         for proposal in self.proposals:
             self.assertContains(response, proposal.id)
+
+    def test_admin_link(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('proposals:list'))
+        self.assertContains(response, 'Admin only')
 
 
 class TestMembershipDelete(TestCase):
@@ -188,3 +197,26 @@ class TestNotificationsEnabled(TestCase):
             data={'notifications_enabled': False},
         )
         self.assertEqual(self.user.proposalnotification_set.count(), 0)
+
+
+class TestSemesterDetail(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User, is_staff=True)
+        self.proposal = mixer.blend(Proposal)
+        self.semester = mixer.blend(Semester)
+        self.ta = mixer.blend(TimeAllocation, semester=self.semester, proposal=self.proposal)
+
+    def test_proposal_table(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('proposals:semester-detail', kwargs={'pk': self.semester.id})
+        )
+        self.assertContains(response, self.proposal.id)
+
+    def test_proposal_table_not_staff(self):
+        user = mixer.blend(User)
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse('proposals:semester-detail', kwargs={'pk': self.semester.id})
+        )
+        self.assertEqual(response.status_code, 302)
