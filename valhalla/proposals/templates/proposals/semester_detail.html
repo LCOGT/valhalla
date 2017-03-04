@@ -38,7 +38,7 @@
       <tbody>
       {% for ta in object.timeallocation_set.all.distinct %}
       <tr>
-        <td>{{ ta.proposal.id }}</td>
+        <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
         <td>{{ ta.std_time_used|floatformat }}</td>

@@ -22,6 +22,8 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
     model = ProposalNotification
 
     def get_queryset(self):
+        if self.request.user.is_staff:
+            return Proposal.objects.all()
         return self.request.user.proposal_set.all()
 
     def post(self, request, **kwargs):

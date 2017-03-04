@@ -26,6 +26,16 @@ class TestProposalDetail(TestCase):
         self.assertContains(response, self.proposal.id)
         self.assertNotContains(response, 'Pending Invitations')
 
+    def test_proposal_detail_as_staff(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
+        self.assertContains(response, self.proposal.id)
+
+    def test_proposal_detail_unauthenticated(self):
+        response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
+        self.assertEqual(response.status_code, 302)
+
     def test_show_pending_invites(self):
         invite = mixer.blend(ProposalInvite, used=None, proposal=self.proposal)
         self.client.force_login(self.pi_user)
