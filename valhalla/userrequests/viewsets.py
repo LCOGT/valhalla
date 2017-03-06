@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django.utils import timezone
 
 from valhalla.proposals.models import Proposal, Semester, TimeAllocation
@@ -40,7 +40,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         else:
             return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
 
-    @list_route(methods=['get'])
+    @list_route(methods=['get'], permission_classes=(IsAdminUser,))
     def schedulable_requests(self, request):
         '''
             Gets the set of schedulable User requests for the scheduler, should be called right after isDirty finishes

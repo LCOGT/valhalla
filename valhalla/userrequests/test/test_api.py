@@ -1404,7 +1404,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         super().setUp()
 
         self.proposal = mixer.blend(Proposal)
-        self.user = mixer.blend(User)
+        self.user = mixer.blend(User, is_staff=True)
         mixer.blend(Membership, user=self.user, proposal=self.proposal, ipp_value=1.0)
         semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
@@ -1419,7 +1419,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         # Add a few requests within the current semester
         self.urs = mixer.cycle(10).blend(UserRequest, proposal=self.proposal, submitter=self.user,
-                                    observation_type='NORMAL', operator='MANY', state='PENDING')
+                                         observation_type='NORMAL', operator='MANY', state='PENDING')
         for ur in self.urs:
             reqs = mixer.cycle(5).blend(Request, user_request=ur, state='PENDING')
             for req in reqs:
@@ -1469,3 +1469,9 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(len(response.json()), 5)
         for ur in response.json():
             self.assertIn(ur['id'], tracking_numbers)
+
+    def test_not_admin(self, modify_mock):
+        user = mixer.blend(User)
+        self.client.force_login(user)
+        response = self.client.get(reverse('api:user_requests-schedulable-requests'))
+        self.assertEqual(response.status_code, 403)
