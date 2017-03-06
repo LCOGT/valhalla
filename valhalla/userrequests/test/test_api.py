@@ -1422,7 +1422,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         for ur in self.urs:
             reqs = mixer.cycle(5).blend(Request, user_request=ur, state='PENDING')
             for req in reqs:
-                mixer.blend(Window, request=req, start=datetime(2016, 10, 1), end=datetime(2016, 11, 1))
+                mixer.blend(Window, request=req, start=datetime(2016, 10, 1, tzinfo=timezone.utc), end=datetime(2016, 11, 1, tzinfo=timezone.utc))
                 mixer.blend(Molecule, request=req, exposure_time=60, exposure_count=10, type='EXPOSE', filter='air',
                             instrument_name='1M0-SCICAM-SBIG', bin_x=1, bin_y=1)
                 mixer.blend(Target, request=req, type='SIDEREAL', dec=20, ra=34.4)
@@ -1432,8 +1432,8 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
     def test_setting_time_range_with_no_requests(self):
-        start = datetime(2020, 1, 1).isoformat()
-        end = datetime(2020, 4, 1).isoformat()
+        start = datetime(2020, 1, 1, tzinfo=timezone.utc).isoformat()
+        end = datetime(2020, 4, 1, tzinfo=timezone.utc).isoformat()
         response = self.client.get(reverse('api:user_requests-schedulable-requests') + '?start=' + start + '&end=' + end)
 
         self.assertEqual(response.status_code, 200)

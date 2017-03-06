@@ -2,6 +2,7 @@ from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.utils import timezone
 
 from valhalla.proposals.models import Proposal, Semester, TimeAllocation
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
@@ -44,13 +45,13 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             Needs a start and end time specified as the range of time to get requests in. Usually this is the entire
             semester for a scheduling run.
         '''
-        current_semester = Semester.current_semesters()[0]
+        current_semester = Semester.current_semesters().first()
         if 'start' in request.query_params:
-            start = parse(request.query_params.get('start'))
+            start = parse(request.query_params.get('start')).replace(tzinfo=timezone.utc)
         else:
             start = current_semester.start
         if 'end' in request.query_params:
-            end = parse(request.query_params.get('end'))
+            end = parse(request.query_params.get('end')).replace(tzinfo=timezone.utc)
         else:
             end = current_semester.end
 
