@@ -3,6 +3,7 @@ from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django.utils import timezone
+from dateutil.parser import parse
 
 from valhalla.proposals.models import Proposal, Semester, TimeAllocation
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
@@ -15,7 +16,6 @@ from valhalla.userrequests.duration_utils import get_request_duration_dict
 from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
-from dateutil.parser import parse
 
 OVERHEAD_ALLOWANCE = 1.1
 
@@ -48,14 +48,8 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             semester for a scheduling run.
         '''
         current_semester = Semester.current_semesters().first()
-        if 'start' in request.query_params:
-            start = parse(request.query_params.get('start')).replace(tzinfo=timezone.utc)
-        else:
-            start = current_semester.start
-        if 'end' in request.query_params:
-            end = parse(request.query_params.get('end')).replace(tzinfo=timezone.utc)
-        else:
-            end = current_semester.end
+        start = parse(request.query_params.get('start', str(current_semester.start))).replace(tzinfo=timezone.utc)
+        end = parse(request.query_params.get('end', str(current_semester.end))).replace(tzinfo=timezone.utc)
 
         # Schedulable requests are not in a terminal state, are part of an active proposal,
         # and have a window within this semester
