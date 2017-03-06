@@ -17,6 +17,8 @@ from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_si
                                                  get_telescope_states_for_request)
 from dateutil.parser import parse
 
+OVERHEAD_ALLOWANCE = 1.1
+
 
 class UserRequestViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -57,8 +59,8 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
         # Schedulable requests are not in a terminal state, are part of an active proposal,
         # and have a window within this semester
-        queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES, proposal__active=False).filter(
-            requests__windows__start__lte=end, requests__windows__start__gte=start).distinct()
+        queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES).filter(
+            requests__windows__start__lte=end, requests__windows__start__gte=start, proposal__active=True).distinct()
 
         # queryset now contains all the schedulable URs and their associated requests and data
         # Check that each request time available in its proposal still
@@ -76,7 +78,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                 else:
                     time_left = time_allocation.too_allocation - time_allocation.too_time_used
 
-                if time_left * 1.1 >= (duration / 3600.0):
+                if time_left * OVERHEAD_ALLOWANCE >= (duration / 3600.0):
                     serialized_ur = UserRequestSerializer(ur)
                     ur_data.append(serialized_ur.data)
 

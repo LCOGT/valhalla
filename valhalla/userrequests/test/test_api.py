@@ -1398,6 +1398,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
         self.assertEqual(response.status_code, 500)
 
 
+@patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
 class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
@@ -1431,7 +1432,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         self.client.force_login(self.user)
 
-    def test_setting_time_range_with_no_requests(self):
+    def test_setting_time_range_with_no_requests(self, modify_mock):
         start = datetime(2020, 1, 1, tzinfo=timezone.utc).isoformat()
         end = datetime(2020, 4, 1, tzinfo=timezone.utc).isoformat()
         response = self.client.get(reverse('api:user_requests-schedulable-requests') + '?start=' + start + '&end=' + end)
@@ -1439,11 +1440,32 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
-    def test_get_all_requests_in_semester(self):
+    def test_get_all_requests_in_semester(self, modify_mock):
         response = self.client.get(reverse('api:user_requests-schedulable-requests'))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 10)
         tracking_numbers = [ur.id for ur in self.urs]
+        for ur in response.json():
+            self.assertIn(ur['id'], tracking_numbers)
+
+    def test_dont_get_requests_in_terminal_states(self, modify_mock):
+        tracking_numbers = []
+        # Set half the user requests to complete
+        for ur in self.urs:
+            if ur.id % 2 == 0:
+                for r in ur.requests.all():
+                    r.state = 'COMPLETED'
+                    r.save()
+                ur.state = 'COMPLETED'
+                ur.save()
+            else:
+                tracking_numbers.append(ur.id)
+
+        # get all the userrequests for the semester
+        response = self.client.get(reverse('api:user_requests-schedulable-requests'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 5)
         for ur in response.json():
             self.assertIn(ur['id'], tracking_numbers)
