@@ -91,13 +91,13 @@ def get_time_allocation_key(telescope_class, proposal_id, min_window_time, max_w
     return TimeAllocationKey(time_allocation.semester.id, telescope_class)
 
 
-def get_total_duration_dict(operator, proposal_id, requests):
+def get_total_duration_dict(userrequest_dict):
     durations = []
-    for request in requests:
+    for request in userrequest_dict['requests']:
         min_window_time = min([window['start'] for window in request['windows']])
         max_window_time = max([window['end'] for window in request['windows']])
         tak = get_time_allocation_key(request['location']['telescope_class'],
-                                      proposal_id,
+                                      userrequest_dict['proposal'],
                                       min_window_time,
                                       max_window_time
                                       )
@@ -105,14 +105,14 @@ def get_total_duration_dict(operator, proposal_id, requests):
         durations.append((tak, duration))
     # check the proposal has a time allocation with enough time for all requests depending on operator
     total_duration = {}
-    if operator == 'SINGLE':
+    if userrequest_dict['operator'] == 'SINGLE':
         (tak, duration) = durations[0]
         total_duration[tak] = duration
 
-    elif operator in ['MANY', 'ONEOF']:
+    elif userrequest_dict['operator'] in ['MANY', 'ONEOF']:
         for (tak, duration) in durations:
             total_duration[tak] = max(total_duration.get(tak, 0.0), duration)
-    elif operator == 'AND':
+    elif userrequest_dict['operator'] == 'AND':
         for (tak, duration) in durations:
             if tak not in total_duration:
                 total_duration[tak] = 0

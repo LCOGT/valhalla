@@ -10,7 +10,7 @@ from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration_dict, get_total_duration_dict
+from valhalla.userrequests.duration_utils import get_request_duration_dict
 from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
@@ -63,7 +63,6 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         # Check that each request time available in its proposal still
         ur_data = []
         for ur in queryset.all():
-            serialized_ur = UserRequestSerializer(ur)
             total_duration_dict = ur.total_duration
             for tak, duration in total_duration_dict.items():
                 time_allocation = TimeAllocation.objects.get(
@@ -77,6 +76,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                     time_left = time_allocation.too_allocation - time_allocation.too_time_used
 
                 if time_left * 1.1 >= (duration / 3600.0):
+                    serialized_ur = UserRequestSerializer(ur)
                     ur_data.append(serialized_ur.data)
 
         return Response(ur_data)

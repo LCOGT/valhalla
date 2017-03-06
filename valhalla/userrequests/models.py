@@ -84,11 +84,7 @@ class UserRequest(models.Model):
 
     @property
     def total_duration(self):
-        return get_total_duration_dict(
-            self.operator,
-            self.proposal.id,
-            [r.as_dict for r in self.requests.all()]
-        )
+        return get_total_duration_dict(self.as_dict)
 
 
 class Request(models.Model):
