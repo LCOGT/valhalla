@@ -4,6 +4,7 @@
 <style type="text/css">
   .table {
     font-family: monospace;
+    font-size: 13px;
   }
 </style>
 {% endblock %}
@@ -46,9 +47,9 @@
         <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
-        <td>{{ ta.std_time_used|floatformat }}</td>
+        <td {% if ta.std_time_used > ta.std_allocation %} class="bg-danger" {% endif %}>{{ ta.std_time_used|floatformat }}</td>
         <td>{{ ta.too_allocation|floatformat }}</td>
-        <td>{{ ta.too_time_used|floatformat }}</td>
+        <td{% if ta.too_time_used > ta.too_allocation %} class="bg-danger" {% endif %}>{{ ta.too_time_used|floatformat }}</td>
         <td>{{ ta.ipp_limit|floatformat }}</td>
         <td>{{ ta.ipp_time_available|floatformat }}</td>
       </tr>
