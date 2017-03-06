@@ -5,8 +5,11 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from unittest.mock import patch
 
-from valhalla.userrequests.models import Request, Molecule, Target, Constraints, Location, UserRequest, Window
-from valhalla.userrequests.state_changes import get_request_state_from_pond_blocks, get_request_state, aggregate_request_states, update_request_states_from_pond_blocks
+from valhalla.userrequests.models import Request, UserRequest, Window
+from valhalla.userrequests.state_changes import (
+    get_request_state_from_pond_blocks, get_request_state, aggregate_request_states,
+    update_request_states_from_pond_blocks
+)
 
 
 class PondMolecule:
@@ -32,9 +35,6 @@ class PondBlock:
 
 
 class TestStateFromPonBlocks(TestCase):
-    def setUp(self):
-        super().setUp()
-
     def test_pond_blocks_all_molecules_complete(self):
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=True)
@@ -90,9 +90,6 @@ class TestStateFromPonBlocks(TestCase):
 
 
 class TestRequestState(TestCase):
-    def setUp(self):
-        super().setUp()
-
     def test_request_state_complete(self):
         request_state = 'COMPLETED'
 
@@ -215,9 +212,6 @@ class TestRequestState(TestCase):
 
 
 class TestAggregateRequestStates(TestCase):
-    def setUp(self):
-        super().setUp()
-
     def test_many_all_complete(self):
         request_states = ['COMPLETED', 'COMPLETED', 'COMPLETED']
 
@@ -292,13 +286,12 @@ class TestAggregateRequestStates(TestCase):
 @patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
 class TestUpdateRequestStates(TestCase):
     def setUp(self):
-        super().setUp()
         self.ur = dmixer.blend(UserRequest, operator='MANY', state='PENDING')
         self.requests = dmixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING')
 
     def test_many_requests_expire_after_last_window(self, modify_mock):
         now = timezone.now()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[0].id, tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[1].id, tracking_number=self.ur.id)
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
@@ -315,7 +308,7 @@ class TestUpdateRequestStates(TestCase):
 
     def test_many_requests_complete_and_expired(self, modify_mock):
         now = timezone.now()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[0].id, tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[1].id, tracking_number=self.ur.id)
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
@@ -333,7 +326,7 @@ class TestUpdateRequestStates(TestCase):
 
     def test_many_requests_complete_and_failed(self, modify_mock):
         now = timezone.now()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[0].id, tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[1].id, tracking_number=self.ur.id)
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=True, request_number=self.requests[2].id, tracking_number=self.ur.id)
@@ -353,7 +346,7 @@ class TestUpdateRequestStates(TestCase):
         now = timezone.now()
         self.requests[0].state = 'WINDOW_EXPIRED'
         self.requests[0].save()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[0].id, tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=True, request_number=self.requests[1].id, tracking_number=self.ur.id)
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=True, request_number=self.requests[2].id, tracking_number=self.ur.id)
@@ -375,7 +368,7 @@ class TestUpdateRequestStates(TestCase):
         self.requests[0].save()
         self.requests[1].state = 'COMPLETED'
         self.requests[1].save()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now+timedelta(days=1))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
@@ -394,7 +387,7 @@ class TestUpdateRequestStates(TestCase):
         self.requests[0].save()
         self.requests[1].state = 'COMPLETED'
         self.requests[1].save()
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=True, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
@@ -416,7 +409,7 @@ class TestUpdateRequestStates(TestCase):
         self.ur.state = 'WINDOW_EXPIRED'
         self.ur.save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
@@ -429,7 +422,6 @@ class TestUpdateRequestStates(TestCase):
         self.ur.refresh_from_db()
         self.assertEqual(self.ur.state, 'COMPLETED')
 
-
     def test_many_requests_canceled_to_completed(self, modify_mock):
         now = timezone.now()
         for req in self.requests:
@@ -439,7 +431,7 @@ class TestUpdateRequestStates(TestCase):
         self.ur.state = 'CANCELED'
         self.ur.save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now-timedelta(days=2), end=now-timedelta(days=1))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
@@ -457,8 +449,8 @@ class TestUpdateRequestStates(TestCase):
         self.ur.operator = 'ONEOF'
         self.ur.save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=now + timedelta(days=1))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                              end=now + timedelta(days=1))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[0].id,
                                           tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[1].id,
@@ -488,8 +480,8 @@ class TestUpdateRequestStates(TestCase):
         self.requests[1].state = 'WINDOW_EXPIRED'
         self.requests[1].save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                              end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
         molecules1 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[0].id,
                                           tracking_number=self.ur.id)
         molecules2 = mixer.cycle(3).blend(PondMolecule, complete=False, failed=True, request_number=self.requests[1].id,
@@ -521,8 +513,8 @@ class TestUpdateRequestStates(TestCase):
         self.ur.state = 'WINDOW_EXPIRED'
         self.ur.save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                              end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
@@ -546,8 +538,8 @@ class TestUpdateRequestStates(TestCase):
         self.ur.state = 'CANCELED'
         self.ur.save()
 
-        windows = dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
+        dmixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                              end=(e for e in [now - timedelta(days=1), now - timedelta(days=1), now + timedelta(days=1)]))
         molecules3 = mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[2].id, tracking_number=self.ur.id)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules3, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
