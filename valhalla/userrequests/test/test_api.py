@@ -1314,8 +1314,6 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 @patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
 class TestUpdateRequestStatesAPI(APITestCase):
     def setUp(self):
-        super().setUp()
-
         self.user = mixer.blend(User, is_staff=True)
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
@@ -1337,16 +1335,16 @@ class TestUpdateRequestStatesAPI(APITestCase):
     @responses.activate
     def test_pond_blocks_no_state_changed(self, modify_mock):
         now = timezone.now()
-        windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=now + timedelta(days=1))
+        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                             end=now + timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[0].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
-                                           start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
+                                                 start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
@@ -1364,16 +1362,16 @@ class TestUpdateRequestStatesAPI(APITestCase):
     @responses.activate
     def test_pond_blocks_state_change_completed(self, modify_mock):
         now = timezone.now()
-        windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                                        end=now - timedelta(days=1))
+        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                             end=now - timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=True, failed=False, request_number=self.requests[0].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
-                                          tracking_number=self.ur.id)
+                                                tracking_number=self.ur.id)
         pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
-                                           start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
+                                                 start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
@@ -1398,6 +1396,3 @@ class TestUpdateRequestStatesAPI(APITestCase):
         response = self.client.get(reverse('api:isDirty'))
 
         self.assertEqual(response.status_code, 500)
-
-
-
