@@ -214,13 +214,14 @@ def update_request_states_from_pond_blocks(pond_blocks):
         request_states = []
         requests = user_request.requests.all()
         for request in requests:
-            new_r_state = request.state
             if request.id in blocks_by_request_num:
                 new_r_state = get_request_state(request.state, blocks_by_request_num[request.id], ur_expired)
                 if new_r_state != request.state:
                     request.state = new_r_state
                     request.save(update_fields=['state'])
-            request_states.append(new_r_state)
+                request_states.append(new_r_state)
+            else:
+                request_states.append(request.state)
         new_ur_state = aggregate_request_states(request_states, user_request.operator)
         if new_ur_state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']:
             user_request.state = new_ur_state

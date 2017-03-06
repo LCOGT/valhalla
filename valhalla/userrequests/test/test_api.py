@@ -1,8 +1,8 @@
-from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest, Window
+from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest, Window, Molecule, Target, Constraints, Location
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
-from valhalla.userrequests.test.test_state_changes import Molecule, Block
+from valhalla.userrequests.test.test_state_changes import PondMolecule, PondBlock
 
 from django.core.urlresolvers import reverse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -1339,14 +1339,14 @@ class TestUpdateRequestStatesAPI(APITestCase):
         now = timezone.now()
         windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                                         end=now + timedelta(days=1))
-        molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[0].id,
+        molecules1 = basic_mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[0].id,
                                           tracking_number=self.ur.id)
-        molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
+        molecules2 = basic_mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[1].id,
                                           tracking_number=self.ur.id)
-        molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
+        molecules3 = basic_mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[2].id,
                                           tracking_number=self.ur.id)
-        pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
-                                           start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
+        pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
+                                                 start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
@@ -1366,14 +1366,14 @@ class TestUpdateRequestStatesAPI(APITestCase):
         now = timezone.now()
         windows = mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                                         end=now - timedelta(days=1))
-        molecules1 = basic_mixer.cycle(3).blend(Molecule, complete=True, failed=False, request_number=self.requests[0].id,
+        molecules1 = basic_mixer.cycle(3).blend(PondMolecule, complete=True, failed=False, request_number=self.requests[0].id,
                                           tracking_number=self.ur.id)
-        molecules2 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[1].id,
+        molecules2 = basic_mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[1].id,
                                           tracking_number=self.ur.id)
-        molecules3 = basic_mixer.cycle(3).blend(Molecule, complete=False, failed=False, request_number=self.requests[2].id,
+        molecules3 = basic_mixer.cycle(3).blend(PondMolecule, complete=False, failed=False, request_number=self.requests[2].id,
                                           tracking_number=self.ur.id)
-        pond_blocks = basic_mixer.cycle(3).blend(Block, molecules=(m for m in [molecules1, molecules2, molecules3]),
-                                           start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
+        pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
+                                                 start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
@@ -1398,6 +1398,57 @@ class TestUpdateRequestStatesAPI(APITestCase):
         response = self.client.get(reverse('api:isDirty'))
 
         self.assertEqual(response.status_code, 500)
+
+
+class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.proposal = mixer.blend(Proposal)
+        self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal, ipp_value=1.0)
+        semester = mixer.blend(
+            Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        # Add a few requests within the current semester
+        self.urs = mixer.cycle(10).blend(UserRequest, proposal=self.proposal, submitter=self.user,
+                                    observation_type='NORMAL', operator='MANY', state='PENDING')
+        for ur in self.urs:
+            reqs = mixer.cycle(5).blend(Request, user_request=ur, state='PENDING')
+            for req in reqs:
+                mixer.blend(Window, request=req, start=datetime(2016, 10, 1), end=datetime(2016, 11, 1))
+                mixer.blend(Molecule, request=req, exposure_time=60, exposure_count=10, type='EXPOSE', filter='air',
+                            instrument_name='1M0-SCICAM-SBIG', bin_x=1, bin_y=1)
+                mixer.blend(Target, request=req, type='SIDEREAL', dec=20, ra=34.4)
+                mixer.blend(Location, request=req, telescope_class='1m0')
+                mixer.blend(Constraints, request=req, max_airmass=2.0, min_lunar_distance=30.0)
+
+        self.client.force_login(self.user)
+
+    def test_setting_time_range_with_no_requests(self):
+        start = datetime(2020, 1, 1).isoformat()
+        end = datetime(2020, 4, 1).isoformat()
+        response = self.client.get(reverse('api:user_requests-schedulable-requests') + '?start=' + start + '&end=' + end)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+    def test_get_all_requests_in_semester(self):
+        response = self.client.get(reverse('api:user_requests-schedulable-requests'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 10)
+        tracking_numbers = [ur.id for ur in self.urs]
+        for ur in response.json():
+            self.assertIn(ur['id'], tracking_numbers)
 
 
 

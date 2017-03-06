@@ -364,19 +364,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             )
 
         try:
-            request_durations = []
-            for request in data['requests']:
-                min_window_time = min([window['start'] for window in request['windows']])
-                max_window_time = max([window['end'] for window in request['windows']])
-                tak = get_time_allocation_key(request['location']['telescope_class'],
-                                              data['proposal'],
-                                              min_window_time,
-                                              max_window_time
-                                              )
-                duration = get_request_duration(request)
-                request_durations.append((tak, duration))
-
-            total_duration_dict = get_total_duration_dict(data['operator'], request_durations)
+            total_duration_dict = get_total_duration_dict(data['operator'], data['proposal'], data['requests'])
             # TODO Add 10% rule
             # check the proposal has a time allocation with enough time for all requests depending on operator
             for tak, duration in total_duration_dict.items():

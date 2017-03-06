@@ -18,7 +18,7 @@ from valhalla.common.telescope_states import (get_telescope_states, get_telescop
                                               combine_telescope_availabilities_by_site_and_class)
 from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.userrequests.serializers import RequestSerializer
+from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
 from valhalla.proposals.models import Proposal
@@ -146,6 +146,10 @@ class InstrumentsInformationView(APIView):
 
 
 class UserRequestStatusIsDirty(APIView):
+    '''
+        Gets the pond blocks changed since last call, and updates request and ur statuses with them. Returns if any
+        pond_blocks were received from the pond (isDirty)
+    '''
     permission_classes = (IsAdminUser,)
 
     def get(self, request):
