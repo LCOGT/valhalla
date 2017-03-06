@@ -1422,8 +1422,12 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
                                          observation_type='NORMAL', operator='MANY', state='PENDING')
         for ur in self.urs:
             reqs = mixer.cycle(5).blend(Request, user_request=ur, state='PENDING')
+            start = datetime(2016, 10, 1, tzinfo=timezone.utc)
+            end = datetime(2016, 11, 1, tzinfo=timezone.utc)
             for req in reqs:
-                mixer.blend(Window, request=req, start=datetime(2016, 10, 1, tzinfo=timezone.utc), end=datetime(2016, 11, 1, tzinfo=timezone.utc))
+                mixer.blend(Window, request=req, start=start, end=end)
+                start += timedelta(days=2)
+                end += timedelta(days=2)
                 mixer.blend(Molecule, request=req, exposure_time=60, exposure_count=10, type='EXPOSE', filter='air',
                             instrument_name='1M0-SCICAM-SBIG', bin_x=1, bin_y=1)
                 mixer.blend(Target, request=req, type='SIDEREAL', dec=20, ra=34.4)
@@ -1469,6 +1473,26 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(len(response.json()), 5)
         for ur in response.json():
             self.assertIn(ur['id'], tracking_numbers)
+
+    def test_dont_get_requests_in_inactive_proposals(self, modify_mock):
+        self.proposal.active = False
+        self.proposal.save()
+
+        # get all the userrequests for the semester
+        response = self.client.get(reverse('api:user_requests-schedulable-requests'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+    def test_get_ur_if_any_requests_in_time_range(self, modify_mock):
+        start = datetime(2016, 10, 8, tzinfo=timezone.utc).isoformat()
+        end = datetime(2016, 11, 8, tzinfo=timezone.utc).isoformat()
+        response = self.client.get(reverse('api:user_requests-schedulable-requests') + '?start=' + start + '&end=' + end)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 10)
+        for ur in response.json():
+            self.assertEqual(len(ur['requests']), 5)
 
     def test_not_admin(self, modify_mock):
         user = mixer.blend(User)
