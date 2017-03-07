@@ -187,6 +187,12 @@ REST_FRAMEWORK = {
 CELERY_TASK_ALWAYS_EAGER = not os.getenv('CELERY_ENABLED', False)
 CELERY_BROKER_URL = os.getenv('BROKER_URL', 'memory://localhost')
 
+CELERY_BEAT_SCHEDULE = {
+    'time-accounting-every-hour': {
+        'task': 'valhalla.proposals.tasks.run_accounting',
+        'schedule': 3600.0
+    },
+}
 try:
     from local_settings import *  # noqa
 except ImportError:

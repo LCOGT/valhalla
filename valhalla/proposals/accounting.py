@@ -28,7 +28,7 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
     try:
         total += query_pond(timeallocation.proposal.id, start, end, timeallocation.telescope_class, too)
     except requests.HTTPError:
-        logger.warning('We got a pond inception. Splitting further.')
+        logger.warn('We got a pond inception. Splitting further.')
         for start, end in split_time(start, end, 4):
             total += get_time_totals_from_pond(timeallocation, start, end, too, recur=recur + 1)
 
@@ -36,9 +36,10 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
 
 
 def query_pond(proposal_id, start, end, telescope_class, too):
-    logger.warn('Attempting to get time used for {0} from {1} to {2}'.format(proposal_id, start, end))
+    logger.info('Attempting to get time used for %s from %s to %s', proposal_id, start, end)
     url = '{0}/pond/pond/accounting/summary?proposal_id={1}&start={2}&end={3}&telescope_class={4}&too_time={5}'.format(
-        settings.POND_URL, proposal_id, start.strftime('%Y-%m-%d %H:%M:%S'), end.strftime('%Y-%m-%d %H:%M:%S'), telescope_class, too
+        settings.POND_URL, proposal_id, start.strftime('%Y-%m-%d %H:%M:%S'), end.strftime('%Y-%m-%d %H:%M:%S'),
+        telescope_class, too
     )
     response = requests.get(url)
     response.raise_for_status()
@@ -53,9 +54,9 @@ def perform_accounting(semesters=None):
         semesters = Semester.current_semesters()
 
     for semester in semesters:
-        logger.warn('Performing accounting for semester: {}'.format(semester))
+        logger.info('Performing accounting for semester: %s', semester)
         for talloc in semester.timeallocation_set.all():
-            logger.warn('Updating timeallocation for {}'.format(talloc.proposal))
+            logger.info('Updating timeallocation for %s', talloc.proposal)
             std_total = get_time_totals_from_pond(talloc, semester.start, semester.end, too=False)
             too_total = get_time_totals_from_pond(talloc, semester.start, semester.end, too=True)
 
