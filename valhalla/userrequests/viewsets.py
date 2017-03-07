@@ -6,7 +6,6 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from valhalla.proposals.models import Proposal
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
-from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
@@ -85,7 +84,6 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
 class RequestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    metadata_class = RequestMetadata
     serializer_class = RequestSerializer
     filter_class = RequestFilter
     filter_backends = (
