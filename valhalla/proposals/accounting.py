@@ -8,9 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 def split_time(start, end, chunks=4):
-    spans = []
     chunk = (end - start) / chunks
-    spans.append((start, start + chunk))
+    spans = [(start, start + chunk)]
     for i in range(0, chunks - 1):
         spans.append((spans[i][1], spans[i][1] + chunk))
     return spans
