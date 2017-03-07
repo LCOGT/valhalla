@@ -18,10 +18,9 @@ from valhalla.common.telescope_states import (get_telescope_states, get_telescop
                                               combine_telescope_availabilities_by_site_and_class)
 from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
 from valhalla.userrequests.models import UserRequest, Request
-from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
+from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
-from valhalla.proposals.models import Proposal
 
 
 def get_start_end_paramters(request):
@@ -45,9 +44,11 @@ class UserRequestListView(FilterView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        else:
-            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return UserRequest.objects.all()
+            else:
+                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        return UserRequest.objects.filter(proposal__public=True)
 
 
 class UserRequestDetailView(DetailView):
@@ -55,9 +56,11 @@ class UserRequestDetailView(DetailView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        else:
-            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return UserRequest.objects.all()
+            else:
+                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        return UserRequest.objects.filter(proposal__public=True)
 
 
 class RequestDetailView(DetailView):
@@ -65,9 +68,11 @@ class RequestDetailView(DetailView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
-        else:
-            return Request.objects.filter(user_request__proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return Request.objects.all()
+            else:
+                return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
+        return Request.objects.filter(user_request__proposal__public=True)
 
 
 class RequestCreateView(LoginRequiredMixin, TemplateView):
