@@ -10,7 +10,7 @@ from valhalla.common.test_telescope_states import TelescopeStatesFromFile
 from valhalla.common.test_helpers import ConfigDBTestMixin
 
 
-class UserRequestList(TestCase):
+class TestUserRequestList(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         self.proposals = mixer.cycle(3).blend(Proposal)
@@ -38,6 +38,15 @@ class UserRequestList(TestCase):
         self.client.logout()
         response = self.client.get(reverse('userrequests:list'))
         self.assertContains(response, 'Register an Account')
+
+    def test_userrequest_admin(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:list'))
+        for ur in self.userrequests:
+            self.assertContains(response, ur.group_id)
+            for request in ur.requests.all():
+                self.assertContains(response, request.id)
 
     def test_no_other_requests(self):
         proposal = mixer.blend(Proposal)
@@ -75,6 +84,13 @@ class TestUserrequestDetail(TestCase):
         response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
         self.assertEqual(response.status_code, 404)
 
+    def test_userrequest_detail_admin(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        for request in self.requests:
+            self.assertContains(response, request.id)
+
     def test_public_userrequest_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)
         self.userrequest.proposal = proposal
@@ -103,6 +119,12 @@ class TestRequestDetail(TestCase):
         self.client.logout()
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
         self.assertEqual(response.status_code, 404)
+
+    def test_request_detail_admin(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertContains(response, self.request.id)
 
     def test_public_request_detail_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)
