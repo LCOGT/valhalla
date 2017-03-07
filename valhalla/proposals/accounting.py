@@ -48,7 +48,7 @@ def query_pond(proposal_id, start, end, telescope_class, too):
         return response.json()['attempted_hours']
 
 
-def perform_accounting(semesters=list()):
+def perform_accounting(semesters=None):
     if not semesters:
         semesters = Semester.current_semesters()
 
