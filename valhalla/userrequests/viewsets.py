@@ -12,12 +12,10 @@ from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration_dict
+from valhalla.userrequests.duration_utils import get_request_duration_dict, OVERHEAD_ALLOWANCE
 from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
-
-OVERHEAD_ALLOWANCE = 1.1
 
 
 class UserRequestViewSet(viewsets.ModelViewSet):

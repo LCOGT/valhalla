@@ -8,6 +8,7 @@ from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_i
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
 PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
+OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 
 
 def get_num_mol_changes(molecules):
