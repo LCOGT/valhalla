@@ -8,7 +8,7 @@
         <ul>
           <li>
             Try the
-            <a href="https://lco.global/observatory/visibility/">
+            <a href="https://lco.global/observatory/visibility/" title="Target Visibilty Calculator" target="_blank">
               Target Visibility Calculator.
             </a>
           </li>
