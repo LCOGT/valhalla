@@ -202,7 +202,7 @@ def aggregate_request_states(request_states, operator):
 
 
 def update_request_states_for_window_expiration():
-    user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES)
+    user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES).prefetch_related('requests__windows')
     now = timezone.now()
     states_changed = False
     for user_request in user_requests.all():
@@ -232,7 +232,7 @@ def update_request_states_from_pond_blocks(pond_blocks):
     for tracking_num, blocks in blocks_by_tracking_num:
         sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
         blocks_by_request_num = {k: list(v) for k,v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
-        user_request = UserRequest.objects.get(pk=tracking_num)
+        user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
         ur_expired = user_request.max_window_time < now
         request_states = []
         requests = user_request.requests.all()
