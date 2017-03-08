@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'request' + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'request' + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-wpexplorer" title="Request" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
