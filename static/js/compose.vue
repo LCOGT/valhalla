@@ -11,7 +11,7 @@
           <a title="Observing request form."><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a>
         </li>
         <li :class="{ active: tab === 2 }" v-on:click="tab = 2">
-          <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> Api View</a>
+          <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> API View</a>
         </li>
         <li :class="{ active: tab === 3 }" v-on:click="tab = 3">
           <a title="Your saved observing requests."><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a>
