@@ -1,4 +1,4 @@
-webpack-stats.json
+celerybeat-schedule
 static/bundles/
 node_modules/
 local_settings.py
