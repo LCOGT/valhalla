@@ -38,8 +38,7 @@
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
-                {% blocktrans %}<strong>If this is not you</strong>, please add the email address of the PI. The email address given should represent the institutional affiliation through which the PI is authorized to apply for LCO time through the TAC.
-                {% endblocktrans %}
+                {% blocktrans %}<strong>If this is not you</strong>, please add the email address of the PI.{% endblocktrans %}
                 </div>
                 {% bootstrap_field form.pi show_label=false %}
             {% endif %}
