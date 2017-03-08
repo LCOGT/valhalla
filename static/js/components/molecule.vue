@@ -45,7 +45,7 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus">
+                       :errors="errors.defocus" desc="Offset of the secondary mirror in mm. Limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
                         :errors="errors.ag_mode" desc="Whether or not to force autoguiding."
