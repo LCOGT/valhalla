@@ -201,10 +201,29 @@ def aggregate_request_states(request_states, operator):
     raise AggregateStateException('Unable to Aggregate States: {}'.format(request_states))
 
 
+def update_request_states_for_window_expiration():
+    user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES)
+    now = timezone.now()
+    states_changed = False
+    for user_request in user_requests.all():
+        request_states = []
+        for request in user_request.requests.all():
+            if request.state == 'PENDING' and request.max_window_time < now:
+                request.state = 'WINDOW_EXPIRED'
+                states_changed = True
+                request.save()
+            request_states.append(request.state)
+        user_request_state = aggregate_request_states(request_states, user_request.operator)
+        states_changed |= update_user_request_state(user_request, user_request_state)
+
+    return states_changed
+
+
 def update_request_states_from_pond_blocks(pond_blocks):
     sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_number'])
     blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_number'])
     now = timezone.now()
+    states_changed = False
 
     for tracking_num, blocks in blocks_by_tracking_num:
         sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
@@ -217,15 +236,24 @@ def update_request_states_from_pond_blocks(pond_blocks):
             if request.id in blocks_by_request_num:
                 new_r_state = get_request_state(request.state, blocks_by_request_num[request.id], ur_expired)
                 if new_r_state != request.state:
+                    states_changed = True
                     request.state = new_r_state
                     request.save()
                 request_states.append(new_r_state)
             else:
                 request_states.append(request.state)
         new_ur_state = aggregate_request_states(request_states, user_request.operator)
-        if new_ur_state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']:
-            user_request.state = new_ur_state
-            user_request.save()
+        states_changed |= update_user_request_state(user_request, new_ur_state)
+
+    return states_changed
+
+
+def update_user_request_state(user_request, state):
+    if user_request.state != state and (state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']):
+        user_request.state = state
+        user_request.save()
+        return True
+    return False
 
 
 class AggregateStateException(Exception):

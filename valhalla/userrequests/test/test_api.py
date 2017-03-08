@@ -1324,6 +1324,9 @@ class TestUpdateRequestStatesAPI(APITestCase):
     @responses.activate
     def test_no_pond_blocks_no_state_changed(self, modify_mock):
         pond_blocks = []
+        now = timezone.now()
+        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                             end=now + timedelta(days=1))
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
@@ -1352,7 +1355,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
         response = self.client.get(reverse('api:isDirty'))
         response_json = response.json()
 
-        self.assertTrue(response_json['isDirty'])
+        self.assertFalse(response_json['isDirty'])
         for i, req in enumerate(self.requests):
             req.refresh_from_db()
             self.assertEqual(req.state, 'PENDING')
@@ -1396,6 +1399,25 @@ class TestUpdateRequestStatesAPI(APITestCase):
         response = self.client.get(reverse('api:isDirty'))
 
         self.assertEqual(response.status_code, 500)
+
+    @responses.activate
+    def test_requests_set_to_expired_without_pond_blocks(self, modify_mock):
+        pond_blocks = []
+        now = timezone.now()
+        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
+                             end=now - timedelta(days=1))
+        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+
+        response = self.client.get(reverse('api:isDirty'))
+        response_json = response.json()
+
+        self.assertTrue(response_json['isDirty'])
+        for i, req in enumerate(self.requests):
+            req.refresh_from_db()
+            self.assertEqual(req.state, 'WINDOW_EXPIRED')
+        self.ur.refresh_from_db()
+        self.assertEqual(self.ur.state, 'WINDOW_EXPIRED')
 
 
 @patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
