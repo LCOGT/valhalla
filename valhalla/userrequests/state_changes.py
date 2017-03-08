@@ -208,13 +208,17 @@ def update_request_states_for_window_expiration():
     for user_request in user_requests.all():
         request_states = []
         for request in user_request.requests.all():
-            if request.state == 'PENDING' and request.max_window_time < now:
-                request.state = 'WINDOW_EXPIRED'
-                states_changed = True
-                request.save()
-            request_states.append(request.state)
-        user_request_state = aggregate_request_states(request_states, user_request.operator)
-        states_changed |= update_user_request_state(user_request, user_request_state)
+            new_r_state = request.state
+            if request.max_window_time < now:
+                with transaction.atomic():
+                    req = Request.objects.select_for_update().get(pk=request.id)
+                    if req.state == 'PENDING':
+                        req.state = 'WINDOW_EXPIRED'
+                        states_changed = True
+                        req.save()
+                    new_r_state = req.state
+            request_states.append(new_r_state)
+        states_changed |= update_user_request_state(user_request, request_states)
 
     return states_changed
 
@@ -235,24 +239,29 @@ def update_request_states_from_pond_blocks(pond_blocks):
         for request in requests:
             if request.id in blocks_by_request_num:
                 new_r_state = get_request_state(request.state, blocks_by_request_num[request.id], ur_expired)
-                if new_r_state != request.state:
-                    states_changed = True
-                    request.state = new_r_state
-                    request.save()
-                request_states.append(new_r_state)
+                with transaction.atomic():
+                    req = Request.objects.select_for_update().get(pk=request.id)
+                    if new_r_state in REQUEST_STATE_MAP[req.state]:
+                        states_changed = True
+                        req.state = new_r_state
+                        req.save()
+                        request_states.append(new_r_state)
+                    else:
+                        request_states.append(req.state)
             else:
                 request_states.append(request.state)
-        new_ur_state = aggregate_request_states(request_states, user_request.operator)
-        states_changed |= update_user_request_state(user_request, new_ur_state)
+        states_changed |= update_user_request_state(user_request, request_states)
 
     return states_changed
 
-
-def update_user_request_state(user_request, state):
-    if user_request.state != state and (state == 'COMPLETED' or user_request.state not in ['CANCELED', 'WINDOW_EXPIRED']):
-        user_request.state = state
-        user_request.save()
-        return True
+def update_user_request_state(user_request, request_states):
+    new_ur_state = aggregate_request_states(request_states, user_request.operator)
+    with transaction.atomic():
+        ur = UserRequest.objects.select_for_update().get(pk=user_request.id)
+        if ur.state != new_ur_state and (new_ur_state == 'COMPLETED' or ur.state not in ['CANCELED', 'WINDOW_EXPIRED']):
+            ur.state = new_ur_state
+            ur.save()
+            return True
     return False
 
 
