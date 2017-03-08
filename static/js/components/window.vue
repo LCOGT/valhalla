@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'window' + $parent.$parent.index + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'window' + $parent.$parent.index + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-calendar" title="Window" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
@@ -8,7 +8,7 @@
         <ul>
           <li>
             Try the
-            <a href="https://lco.global/observatory/visibility/">
+            <a href="https://lco.global/observatory/visibility/" title="Target Visibilty Calculator" target="_blank">
               Target Visibility Calculator.
             </a>
           </li>

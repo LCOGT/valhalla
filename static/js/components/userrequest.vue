@@ -6,7 +6,7 @@
         <div class="col-md-6 compose-help" v-show="show">
           <h3>
             Duration of Observing Request:
-            <sup><a title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
+            <sup><a id="durationtip" title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
           </h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
@@ -109,6 +109,9 @@ export default {
         that.fetchUserRequest(QueryString().userrequestid);
       }
     });
+  },
+  mounted: function(){
+    $('#durationtip').tooltip({trigger: 'hover click'});
   },
   computed:{
     proposalOptions: function(){

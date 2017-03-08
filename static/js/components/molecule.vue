@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'molecule' + $parent.$parent.index + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'molecule' + $parent.$parent.index + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-cogs" title="Configuration" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
@@ -17,7 +17,7 @@
           <div class="col-md-12">
             <h2>Automatic generation of calibration frames</h2>
             <p>
-              Since you are taking a spetrum, it is recommended you also schedule calibrations for before
+              Since you are taking a spectrum, it is recommended you also schedule calibrations for before
               and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request.
             </p>
             <a class="btn btn-default" v-on:click="generateCalibs" v-show="molecule.type === 'SPECTRUM'">Create calibration frames</a>
@@ -45,7 +45,7 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus">
+                       :errors="errors.defocus" desc="Offset of the secondary mirror in mm. Limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
                         :errors="errors.ag_mode" desc="Whether or not to force autoguiding."

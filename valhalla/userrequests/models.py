@@ -374,7 +374,7 @@ class Molecule(models.Model):
     sub_y2 = models.PositiveIntegerField(null=True, blank=True)  # Sub Frame Y end pixel
 
     # Other options
-    defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-10.0), MaxValueValidator(40.0)])
+    defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-3.0), MaxValueValidator(3.0)])
 
     def __str__(self):
         return 'Molecule {0}: {1} type, {2} instrument, {3} exposures @ {4}s'.format(
