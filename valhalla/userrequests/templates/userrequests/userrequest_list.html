@@ -44,6 +44,10 @@
                   <label class="control-label" for="id_proposal"><i class="fa fa-users"></i> Proposal</label>
                     <select class="form-control input-sm" id="id_proposal" name="proposal" title="" name="id_proposal">
                       <option value="">---------</option>
+                      {% if request.GET.proposal %}
+                        <!-- if an admin user is checking out proposals for a proposal they don't belong to, allow filtering to work -->
+                        <option value="{{ request.GET.proposal }}" selected="selected">{{ request.GET.proposal }}</option>
+                      {% endif %}
                       {% for proposal in user.proposal_set.all %}
                       <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>
                         {{ proposal }}
