@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 from valhalla.userrequests.models import Request, UserRequest, Window
 from valhalla.userrequests.state_changes import (
-    get_request_state_from_pond_blocks, get_request_state, aggregate_request_states,
+    get_request_state_from_pond_blocks, update_request_state, aggregate_request_states,
     update_request_states_from_pond_blocks
 )
 
@@ -91,41 +91,47 @@ class TestStateFromPonBlocks(TestCase):
 
 class TestRequestState(TestCase):
     def test_request_state_complete(self):
-        request_state = 'COMPLETED'
+        request = dmixer.blend(Request, state='COMPLETED')
 
         molecules = mixer.cycle(4).blend(PondMolecule)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules)._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
-        self.assertEqual(new_state, 'COMPLETED')
+        state_changed = update_request_state(request, pond_blocks, True)
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'COMPLETED')
 
     def test_request_state_pond_state_complete(self):
-        request_state = 'INITIAL'
+        request = dmixer.blend(Request, state='PENDING')
 
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
         complete_molecules = mixer.cycle(4).blend(PondMolecule, complete=True, failed=False)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules)._to_dict(),
                        mixer.blend(PondBlock, molecules=complete_molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
+        state_changed = update_request_state(request, pond_blocks, True)
 
-        self.assertEqual(new_state, 'COMPLETED')
+        request.refresh_from_db()
+        self.assertTrue(state_changed)
+        self.assertEqual(request.state, 'COMPLETED')
 
     def test_request_state_pond_state_initial_state_expired(self):
-        request_state = 'WINDOW_EXPIRED'
+        request = dmixer.blend(Request, state='WINDOW_EXPIRED')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
+        state_changed = update_request_state(request, pond_blocks, True)
 
-        self.assertEqual(new_state, 'WINDOW_EXPIRED')
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'WINDOW_EXPIRED')
 
     def test_request_state_pond_state_initial_state_canceled(self):
-        request_state = 'CANCELED'
+        request = dmixer.blend(Request, state='CANCELED')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
@@ -133,12 +139,14 @@ class TestRequestState(TestCase):
                                    end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
+        state_changed = update_request_state(request, pond_blocks, True)
 
-        self.assertEqual(new_state, 'CANCELED')
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'CANCELED')
 
     def test_request_state_pond_state_initial_state_pending(self):
-        request_state = 'PENDING'
+        request = dmixer.blend(Request, state='PENDING')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
@@ -146,139 +154,171 @@ class TestRequestState(TestCase):
                                    end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, False)
+        state_changed = update_request_state(request, pond_blocks, False)
 
-        self.assertEqual(new_state, 'PENDING')
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'PENDING')
 
     def test_request_state_pond_state_initial_state_pending_ur_expired(self):
-        request_state = 'PENDING'
+        request = dmixer.blend(Request, state='PENDING')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
+        state_changed = update_request_state(request, pond_blocks, True)
 
-        self.assertEqual(new_state, 'WINDOW_EXPIRED')
+        request.refresh_from_db()
+        self.assertTrue(state_changed)
+        self.assertEqual(request.state, 'WINDOW_EXPIRED')
 
     def test_request_state_pond_state_failed_initial_state_expired(self):
-        request_state = 'WINDOW EXPIRED'
+        request = dmixer.blend(Request, state='WINDOW_EXPIRED')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=True)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, True)
+        state_changed = update_request_state(request, pond_blocks, True)
 
-        self.assertEqual(new_state, 'WINDOW_EXPIRED')
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'WINDOW_EXPIRED')
 
     def test_request_state_pond_state_failed_initial_state_canceled(self):
-        request_state = 'CANCELED'
+        request = dmixer.blend(Request, state='CANCELED')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=True)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, False)
+        state_changed = update_request_state(request, pond_blocks, False)
 
-        self.assertEqual(new_state, 'CANCELED')
+        request.refresh_from_db()
+        self.assertFalse(state_changed)
+        self.assertEqual(request.state, 'CANCELED')
 
     def test_request_state_pond_state_failed(self):
-        request_state = 'PENDING'
+        request = dmixer.blend(Request, state='PENDING')
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=True)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, False)
+        state_changed = update_request_state(request, pond_blocks, False)
 
-        self.assertEqual(new_state, 'FAILED')
+        request.refresh_from_db()
+        self.assertTrue(state_changed)
+        self.assertEqual(request.state, 'PENDING')
 
     def test_request_state_pond_state_failed_2(self):
-        request_state = 'PENDING'
+        request = dmixer.blend(Request, state='PENDING')
+
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, complete=False, failed=False)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))._to_dict()]
 
-        new_state = get_request_state(request_state, pond_blocks, False)
-
-        self.assertEqual(new_state, 'FAILED')
+        state_changed = update_request_state(request, pond_blocks, False)
+        request.refresh_from_db()
+        self.assertTrue(state_changed)
+        self.assertEqual(request.state, 'PENDING')
 
 
 class TestAggregateRequestStates(TestCase):
     def test_many_all_complete(self):
         request_states = ['COMPLETED', 'COMPLETED', 'COMPLETED']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_any_pending(self):
         request_states = ['COMPLETED', 'CANCELED', 'PENDING']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'PENDING')
 
     def test_many_expired_and_complete(self):
         request_states = ['WINDOW_EXPIRED', 'COMPLETED', 'WINDOW_EXPIRED']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_canceled_and_complete(self):
         request_states = ['CANCELED', 'COMPLETED', 'CANCELED']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_many_all_canceled(self):
         request_states = ['CANCELED', 'CANCELED', 'CANCELED']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'CANCELED')
 
     def test_many_all_expired(self):
         request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'WINDOW_EXPIRED']
+        ur = dmixer.blend(UserRequest, operator='MANY')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'MANY')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'WINDOW_EXPIRED')
 
     def test_oneof_any_completed(self):
         request_states = ['WINDOW_EXPIRED', 'COMPLETED', 'PENDING']
+        ur = dmixer.blend(UserRequest, operator='ONEOF')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'COMPLETED')
 
     def test_oneof_pending_and_expired(self):
         request_states = ['WINDOW_EXPIRED', 'PENDING', 'PENDING']
+        ur = dmixer.blend(UserRequest, operator='ONEOF')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'PENDING')
 
     def test_oneof_all_expired(self):
         request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'WINDOW_EXPIRED']
+        ur = dmixer.blend(UserRequest, operator='ONEOF')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'WINDOW_EXPIRED')
 
     def test_oneof_all_canceled(self):
         request_states = ['CANCELED', 'CANCELED', 'CANCELED']
+        ur = dmixer.blend(UserRequest, operator='ONEOF')
+        dmixer.cycle(3).blend(Request, state=(state for state in request_states), user_request=ur)
 
-        aggregate_state = aggregate_request_states(request_states, 'ONEOF')
+        aggregate_state = aggregate_request_states(ur)
 
         self.assertEqual(aggregate_state, 'CANCELED')
 
@@ -335,7 +375,7 @@ class TestUpdateRequestStates(TestCase):
 
         update_request_states_from_pond_blocks(pond_blocks)
 
-        request_states = ['COMPLETED', 'COMPLETED', 'FAILED']
+        request_states = ['COMPLETED', 'COMPLETED', 'PENDING']
         for i, req in enumerate(self.requests):
             req.refresh_from_db()
             self.assertEqual(req.state, request_states[i])
@@ -355,7 +395,7 @@ class TestUpdateRequestStates(TestCase):
 
         update_request_states_from_pond_blocks(pond_blocks)
 
-        request_states = ['WINDOW_EXPIRED', 'FAILED', 'FAILED']
+        request_states = ['WINDOW_EXPIRED', 'PENDING', 'PENDING']
         for i, req in enumerate(self.requests):
             req.refresh_from_db()
             self.assertEqual(req.state, request_states[i])
@@ -495,7 +535,7 @@ class TestUpdateRequestStates(TestCase):
 
         update_request_states_from_pond_blocks(pond_blocks)
 
-        request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'FAILED']
+        request_states = ['WINDOW_EXPIRED', 'WINDOW_EXPIRED', 'PENDING']
         for i, req in enumerate(self.requests):
             req.refresh_from_db()
             self.assertEqual(req.state, request_states[i])

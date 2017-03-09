@@ -166,32 +166,41 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
     return request_state
 
 
-def get_request_state(request_state, request_blocks, ur_expired):
-    if request_state == 'COMPLETED':
-        return request_state
-    else:
-        pond_state = get_request_state_from_pond_blocks(request_state, request_blocks)
-        if pond_state in ['COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']:
-            return pond_state
+def update_request_state(request, request_blocks, ur_expired):
+    '''Update a request state given a set of pond blocks for that request'''
+    if request.state == 'COMPLETED':
+        return False
 
-        if ur_expired:
-            return 'WINDOW_EXPIRED'
+    state_changed = False
+    # Get the state from the pond blocks
+    new_r_state = get_request_state_from_pond_blocks(request.state, request_blocks)
+    # If the state is not a terminal state and the ur has expired, mark the request as expired
+    if new_r_state not in TERMINAL_STATES and ur_expired:
+        new_r_state = 'WINDOW_EXPIRED'
+    # If the state was the 'FAILED' fake state, switch it to pending but record that the state has changed
+    elif new_r_state == 'FAILED' and request.state not in TERMINAL_STATES:
+        new_r_state = 'PENDING'
+        state_changed = True
+    with transaction.atomic():
+        # Re-get the request and lock. If the new state is a valid state transition, set it on the request atomically.
+        req = Request.objects.select_for_update().get(pk=request.id)
+        if new_r_state in REQUEST_STATE_MAP[req.state]:
+            state_changed = True
+            req.state = new_r_state
+            req.save()
 
-        if pond_state == 'FAILED' and request_state in ['WINDOW_EXPIRED', 'CANCELED']:
-            return request_state
-
-        return pond_state
+    return state_changed
 
 
-def aggregate_request_states(request_states, operator):
-    # Failed states are equivalent to PENDING from UR perspective
-    request_states = [rs.replace('FAILED', 'PENDING') for rs in request_states]
 
+def aggregate_request_states(user_request):
+    '''Aggregate the state of the user request from all of its child request states'''
+    request_states = [request.state for request in Request.objects.filter(user_request=user_request)]
     # Set the priority ordering - assume AND by default
     state_priority = ['WINDOW_EXPIRED', 'PENDING', 'COMPLETED', 'CANCELED']
-    if operator == 'ONEOF':
+    if user_request.operator == 'ONEOF':
         state_priority = ['COMPLETED', 'PENDING', 'WINDOW_EXPIRED', 'CANCELED']
-    elif operator == 'MANY':
+    elif user_request.operator == 'MANY':
         state_priority = ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']
 
     for state in state_priority:
@@ -202,13 +211,12 @@ def aggregate_request_states(request_states, operator):
 
 
 def update_request_states_for_window_expiration():
+    '''Update the state of all requests and user_requests to WINDOW_EXPIRED if their last window has passed'''
     user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES).prefetch_related('requests__windows')
     now = timezone.now()
     states_changed = False
     for user_request in user_requests.all():
-        request_states = []
         for request in user_request.requests.all():
-            new_r_state = request.state
             if request.max_window_time < now:
                 with transaction.atomic():
                     req = Request.objects.select_for_update().get(pk=request.id)
@@ -216,14 +224,13 @@ def update_request_states_for_window_expiration():
                         req.state = 'WINDOW_EXPIRED'
                         states_changed = True
                         req.save()
-                    new_r_state = req.state
-            request_states.append(new_r_state)
-        states_changed |= update_user_request_state(user_request, request_states)
+        states_changed |= update_user_request_state(user_request)
 
     return states_changed
 
 
 def update_request_states_from_pond_blocks(pond_blocks):
+    '''Update the states of requests and user_requests given a set of recently changed pond blocks.'''
     sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_number'])
     blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_number'])
     now = timezone.now()
@@ -234,31 +241,20 @@ def update_request_states_from_pond_blocks(pond_blocks):
         blocks_by_request_num = {k: list(v) for k,v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
         user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
         ur_expired = user_request.max_window_time < now
-        request_states = []
         requests = user_request.requests.all()
         for request in requests:
             if request.id in blocks_by_request_num:
-                new_r_state = get_request_state(request.state, blocks_by_request_num[request.id], ur_expired)
-                with transaction.atomic():
-                    req = Request.objects.select_for_update().get(pk=request.id)
-                    if new_r_state in REQUEST_STATE_MAP[req.state]:
-                        states_changed = True
-                        req.state = new_r_state
-                        req.save()
-                        request_states.append(new_r_state)
-                    else:
-                        request_states.append(req.state)
-            else:
-                request_states.append(request.state)
-        states_changed |= update_user_request_state(user_request, request_states)
+                states_changed |= update_request_state(request, blocks_by_request_num[request.id], ur_expired)
+        states_changed |= update_user_request_state(user_request)
 
     return states_changed
 
-def update_user_request_state(user_request, request_states):
-    new_ur_state = aggregate_request_states(request_states, user_request.operator)
+def update_user_request_state(user_request):
+    '''Update the state of the user request if possible'''
+    new_ur_state = aggregate_request_states(user_request)
     with transaction.atomic():
         ur = UserRequest.objects.select_for_update().get(pk=user_request.id)
-        if ur.state != new_ur_state and (new_ur_state == 'COMPLETED' or ur.state not in ['CANCELED', 'WINDOW_EXPIRED']):
+        if new_ur_state in REQUEST_STATE_MAP[ur.state]:
             ur.state = new_ur_state
             ur.save()
             return True
