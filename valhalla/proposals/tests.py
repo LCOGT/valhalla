@@ -13,8 +13,8 @@ import datetime
 from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification, TimeAllocation, Semester
 from valhalla.userrequests.models import UserRequest
 from valhalla.accounts.models import Profile
-from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond, perform_accounting
-
+from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
+from valhalla.proposals.tasks import run_accounting, update_time_allocation
 
 class TestProposal(TestCase):
     def test_add_users(self):
@@ -123,13 +123,13 @@ class TestAccounting(TestCase):
         self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, True), 1)
 
     @patch('valhalla.proposals.accounting.query_pond', return_value=1)
-    def test_perform_accounting(self, qa_mock):
+    def test_run_accounting(self, qa_mock):
         semester = mixer.blend(
             Semester, start=datetime.datetime(2017, 1, 1, tzinfo=timezone.utc), end=datetime.datetime(2017, 4, 30, tzinfo=timezone.utc))
         talloc = mixer.blend(
             TimeAllocation, semester=semester, std_allocation=10, too_allocation=10, std_time_used=0, too_time_used=0
         )
-        perform_accounting([semester])
+        run_accounting([semester])
         talloc.refresh_from_db()
         self.assertEqual(talloc.std_time_used, 1)
         self.assertEqual(talloc.too_time_used, 1)
