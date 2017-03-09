@@ -192,7 +192,6 @@ def update_request_state(request, request_blocks, ur_expired):
     return state_changed
 
 
-
 def aggregate_request_states(user_request):
     '''Aggregate the state of the user request from all of its child request states'''
     request_states = [request.state for request in Request.objects.filter(user_request=user_request)]
