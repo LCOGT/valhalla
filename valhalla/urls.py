@@ -39,5 +39,6 @@ urlpatterns = [
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
     url(r'^admin/', admin.site.urls),
     url(r'^help/', TemplateView.as_view(template_name='help.html'), name='help'),
+    url(r'^tools/', TemplateView.as_view(template_name='tools.html'), name='tools'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled
