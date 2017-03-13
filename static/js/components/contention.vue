@@ -7,7 +7,6 @@
     <option value="0M4-SCICAM-SBIG">.4m SBIG</option>
   </select>
   <div id="plot"></div>
-  {{ contention }}
 </div>
 </template>
 <script>
@@ -18,39 +17,64 @@ export default {
   name: 'contention',
   data: function(){
     return {
-      instrument: '1M0-SCICAM-SINISTRO',
-      items: [],
+      instrument: '',
+      contention: [],
       options: {
         style: 'bar',
         stack: true,
+        drawPoints: false,
+        dataAxis: {
+          // icons:true,
+          left: {
+            title: {
+              text: 'Total Requested Hours'
+            }
+          },
+        },
+        tooltip: {
+          followMouse: true
+        }
       }
     };
   },
-  methods: {
-    toVis: function(data){
-      var items = [];
-      for(var ra in data){
-        for(var prop in data[ra]){
-          items.push({
+  computed: {
+    toVis: function(){
+      var items = new vis.DataSet();
+      var groups = new vis.DataSet();
+      for(var ra in this.contention){
+        for(var prop in this.contention[ra]){
+          items.add({
             x: Number(ra),
             group: prop,
-            y: data[ra][prop]
+            y: this.contention[ra][prop] / 3600
           });
+          if(!groups.get(prop)){
+            groups.add({
+              id: prop,
+              content: prop
+            });
+          }
         }
       }
-      return items;
-    }
+      return {groups: groups, items: items};
+    },
+  },
+  created: function(){
+    this.instrument = '0M4-SCICAM-SBIG';
   },
   watch: {
     instrument: function(instrument){
       var that = this;
       $.getJSON('/api/contention/' + instrument + '/', function(data){
-        that.items = that.toVis(data);
+        that.contention = data;
+        that.graph.setGroups(that.toVis.groups);
+        that.graph.setItems(that.toVis.items);
+        that.graph.fit();
       });
     }
   },
   mounted: function(){
-    this.timeline = new vis.Timeline(this.$el, this.items, this.options);
+    this.graph = new vis.Graph2d(this.$el, this.toVis, this.groups, this.options);
   }
 };
 </script>
