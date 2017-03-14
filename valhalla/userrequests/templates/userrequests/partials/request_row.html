@@ -3,13 +3,11 @@
     <div class="col-md-10">
       <div class="row">
         <div class="col-md-12">
-          <strong>
           {% if link %}
             <a class="userrequest-title" href="{% url 'userrequests:request-detail' request %}"> # {{ request.id }}</a>
           {% else %}
             <span class="userrequest-title"># {{ request.id }}
           {% endif %}
-          </strong>
         </div>
       </div>
       <div class="row">

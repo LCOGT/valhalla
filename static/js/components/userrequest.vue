@@ -6,7 +6,7 @@
         <div class="col-md-6 compose-help" v-show="show">
           <h3>
             Duration of Observing Request:
-            <sup><a title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
+            <sup><a id="durationtip" title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
           </h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
@@ -45,7 +45,8 @@
         </div>
       </div>
       <div v-for="(request, idx) in userrequest.requests">
-        <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence" header="Generated Cadence">
+        <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence"
+               header="Generated Cadence" :showAccept="cadenceRequests.length > 0">
           <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
           Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
           <cadence :data="cadenceRequests"></cadence>
@@ -109,6 +110,9 @@ export default {
         that.fetchUserRequest(QueryString().userrequestid);
       }
     });
+  },
+  mounted: function(){
+    $('#durationtip').tooltip({trigger: 'hover click'});
   },
   computed:{
     proposalOptions: function(){

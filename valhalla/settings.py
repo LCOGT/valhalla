@@ -21,9 +21,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv('SECRET_KEY', '*j6j4auodqdo=nab#3je9mn6hkzxyxc%5#=ndj6np4o#g--=rw')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['valhalla.lco.gtn', 'observe.lco.global']
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'bootstrap3',
     'oauth2_provider',
     'corsheaders',
+    'django_extensions',
     'valhalla.accounts',
     'valhalla.userrequests',
     'valhalla.proposals',
@@ -85,11 +86,21 @@ WSGI_APPLICATION = 'valhalla.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('DB_NAME', os.path.join(BASE_DIR, 'db.sqlite3')),
+        'USER': os.getenv('DB_USER', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', ''),
+        'PORT': os.getenv('DB_PORT', '')
     }
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': os.getenv('CACHE_BACKEND', 'django.core.cache.backends.locmem.LocMemCache'),
+        'LOCATION': os.getenv('CACHE_LOCATION', 'unique-snowflake')
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -139,16 +150,10 @@ USE_L10N = False
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '_static')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'bundles/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-    }
-}
 
 ACCOUNT_ACTIVATION_DAYS = 7
 LOGIN_REDIRECT_URL = '/'
@@ -161,7 +166,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
 
-ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', '')
+ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://localhost')
 POND_URL = os.getenv('POND_URL', 'http://localhost')
 CONFIGDB_URL = os.getenv('CONFIGDB_URL', 'http://localhost')
 
@@ -179,9 +184,15 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50
 }
 
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_BROKER_URL = 'memory://localhost'
+CELERY_TASK_ALWAYS_EAGER = not os.getenv('CELERY_ENABLED', False)
+CELERY_BROKER_URL = os.getenv('BROKER_URL', 'memory://localhost')
 
+CELERY_BEAT_SCHEDULE = {
+    'time-accounting-every-hour': {
+        'task': 'valhalla.proposals.tasks.run_accounting',
+        'schedule': 3600.0
+    },
+}
 try:
     from local_settings import *  # noqa
 except ImportError:

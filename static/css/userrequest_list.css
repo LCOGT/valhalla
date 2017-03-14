@@ -9,3 +9,9 @@
 .title {
     font-size: 1.8em;
 }
+
+.userrequest p {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}

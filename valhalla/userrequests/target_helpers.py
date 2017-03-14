@@ -62,7 +62,7 @@ class NonSiderealTargetHelper(BaseTargetHelper):
     def __init__(self, target):
         self.defaults = {}
         self.fields = (
-            'type', 'epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme'
+            'type', 'name', 'epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme'
         )
         if target.get('scheme') == 'ASA_MAJOR_PLANET':
             self.fields += ('longofperih', 'meandist', 'meanlong', 'dailymot')

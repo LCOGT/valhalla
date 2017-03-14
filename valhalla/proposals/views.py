@@ -10,9 +10,11 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django_filters.views import FilterView
 from django.utils.translation import ugettext as _
+from django.contrib.auth.mixins import UserPassesTestMixin
+
 
 from valhalla.proposals.forms import ProposalNotificationForm
-from valhalla.proposals.models import Proposal, Membership, ProposalNotification
+from valhalla.proposals.models import Proposal, Membership, ProposalNotification, Semester
 from valhalla.proposals.filters import ProposalFilter
 
 
@@ -20,6 +22,8 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
     model = Proposal
 
     def get_queryset(self):
+        if self.request.user.is_staff:
+            return Proposal.objects.all()
         return self.request.user.proposal_set.all()
 
     def post(self, request, **kwargs):
@@ -77,3 +81,15 @@ class MembershipDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         proposals = self.request.user.proposal_set.filter(membership__role=Membership.PI)
         return Membership.objects.filter(proposal__in=proposals)
+
+
+class SemesterDetailView(UserPassesTestMixin, DetailView):
+    model = Semester
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['semesters'] = Semester.objects.all().order_by('-start')
+        return context
