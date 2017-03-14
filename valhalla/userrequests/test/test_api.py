@@ -1367,6 +1367,3 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn(self.semester.id, ipp_dict)
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
         self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
-
-
-
