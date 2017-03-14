@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
-from valhalla.userrequests.views import InstrumentsInformationView
+from valhalla.userrequests.views import InstrumentsInformationView, ContentionView
 from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
@@ -28,6 +28,7 @@ api_urlpatterns = [
     url(r'profile/', ProfileApiView.as_view(), name='profile'),
     url(r'airmass/', AirmassView.as_view(), name='airmass'),
     url(r'instruments/', InstrumentsInformationView.as_view(), name='instruments_information'),
+    url(r'contention/(?P<instrument_name>.+)/', ContentionView.as_view(), name='contention'),
 ]
 
 urlpatterns = [
@@ -38,5 +39,6 @@ urlpatterns = [
     url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
     url(r'^admin/', admin.site.urls),
     url(r'^help/', TemplateView.as_view(template_name='help.html'), name='help'),
+    url(r'^tools/', TemplateView.as_view(template_name='tools.html'), name='tools'),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled

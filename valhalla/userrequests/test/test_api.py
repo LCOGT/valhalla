@@ -1,4 +1,5 @@
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
+from valhalla.userrequests.models import Window, Target, Molecule, Location, Constraints
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
@@ -10,7 +11,7 @@ from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
 from unittest.mock import patch
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 import responses
 import os
 import copy
@@ -1304,6 +1305,36 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(UserRequest.objects.get(pk=userrequest.id).state, 'COMPLETED')
         self.assertEqual(Request.objects.get(pk=expired_r.id).state, 'WINDOW_EXPIRED')
         self.assertEqual(Request.objects.get(pk=completed_r.id).state, 'COMPLETED')
+
+
+class TestContention(ConfigDBTestMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        request = mixer.blend(Request, state='PENDING')
+        mixer.blend(
+            Window, start=timezone.now(), end=timezone.now() + timedelta(days=30), request=request
+        )
+        mixer.blend(Target, ra=15.0, type='SIDEREAL', request=request)
+        mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=request)
+        mixer.blend(Location, request=request)
+        mixer.blend(Constraints, request=request)
+        self.request = request
+
+    def test_contention_no_auth(self):
+        response = self.client.get(
+            reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
+        )
+        self.assertNotEqual(response.json()['1']['All Proposals'], 0)
+        self.assertEqual(response.json()['2']['All Proposals'], 0)
+
+    def test_contention_staff(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(
+           reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
+        )
+        self.assertNotEqual(response.json()['1'][self.request.user_request.proposal.id], 0)
+        self.assertNotIn(self.request.user_request.proposal.id, response.json()['2'])
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
