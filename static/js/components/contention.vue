@@ -12,6 +12,7 @@
 <script>
 import vis from 'vis';
 import $ from 'jquery';
+import moment from 'moment';
 import 'vue-style-loader!vis/dist/vis.css';
 export default {
   name: 'contention',
@@ -21,19 +22,22 @@ export default {
       contention: [],
       options: {
         style: 'bar',
+        barChart: {align:'right'},
+        moveable: false,
         stack: true,
+        showMajorLabels: false,
         drawPoints: false,
+        autoResize: true,
         dataAxis: {
-          // icons:true,
           left: {
+            range: {
+              min: 0
+            },
             title: {
               text: 'Total Requested Hours'
             }
           },
         },
-        tooltip: {
-          followMouse: true
-        }
       }
     };
   },
@@ -44,9 +48,9 @@ export default {
       for(var ra in this.contention){
         for(var prop in this.contention[ra]){
           items.add({
-            x: Number(ra),
             group: prop,
-            y: this.contention[ra][prop] / 3600
+            x: Number(ra) * 1000,
+            y: this.contention[ra][prop] / 3600,
           });
           if(!groups.get(prop)){
             groups.add({
@@ -67,6 +71,8 @@ export default {
       var that = this;
       $.getJSON('/api/contention/' + instrument + '/', function(data){
         that.contention = data;
+        that.graph.setItems(new vis.DataSet());
+        that.graph.setGroups(new vis.DataSet());
         that.graph.setGroups(that.toVis.groups);
         that.graph.setItems(that.toVis.items);
         that.graph.fit();
