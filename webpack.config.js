@@ -6,8 +6,8 @@ module.exports = {
     global: './static/js/global',
     compose: './static/js/compose',
     userrequest_detail: './static/js/userrequest_detail',
-    request_detail: './static/js/request_detail'
-
+    request_detail: './static/js/request_detail',
+    tools: './static/js/tools.js'
   },
   output: {
     path: path.resolve('./static/bundles/'),

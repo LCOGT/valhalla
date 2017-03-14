@@ -17,6 +17,7 @@ from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sit
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
+from valhalla.userrequests.contention import Contention
 
 
 def get_start_end_paramters(request):
@@ -144,3 +145,14 @@ class InstrumentsInformationView(APIView):
                 'default_binning': configdb.get_default_binning(instrument_type),
             }
         return Response(info)
+
+
+class ContentionView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, instrument_name):
+        if request.user.is_staff:
+            contention = Contention(instrument_name, anonymous=False)
+        else:
+            contention = Contention(instrument_name)
+        return Response(contention.data())
