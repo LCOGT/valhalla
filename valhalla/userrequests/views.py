@@ -22,6 +22,7 @@ from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 from valhalla.userrequests.state_changes import (update_request_states_from_pond_blocks,
                                                  update_request_states_for_window_expiration)
+from valhalla.userrequests.contention import Contention
 
 
 def get_start_end_paramters(request):
@@ -175,3 +176,14 @@ class UserRequestStatusIsDirty(APIView):
         cache.set('isDirty_query_time', now)
 
         return Response({'isDirty': is_dirty})
+
+
+class ContentionView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, instrument_name):
+        if request.user.is_staff:
+            contention = Contention(instrument_name, anonymous=False)
+        else:
+            contention = Contention(instrument_name)
+        return Response(contention.data())

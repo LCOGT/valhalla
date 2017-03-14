@@ -38,12 +38,16 @@
                 {% bootstrap_field filter.form.state show_label=False size='small' %}
 
                 {% bootstrap_label '<i class="fa fa-font"></i> Title Contains' label_for="id_title" %}
-                {% bootstrap_field filter.form.title show_label=False size='small' %}
+                {% bootstrap_field filter.form.title show_label=False size='small' addon_after='<span class="fa fa-times clearinput"></span>' %}
 
                 <div class="form-group">
                   <label class="control-label" for="id_proposal"><i class="fa fa-users"></i> Proposal</label>
                     <select class="form-control input-sm" id="id_proposal" name="proposal" title="" name="id_proposal">
                       <option value="">---------</option>
+                      {% if request.GET.proposal %}
+                        <!-- if an admin user is checking out proposals for a proposal they don't belong to, allow filtering to work -->
+                        <option value="{{ request.GET.proposal }}" selected="selected">{{ request.GET.proposal }}</option>
+                      {% endif %}
                       {% for proposal in user.proposal_set.all %}
                       <option value="{{ proposal }}" {% if proposal.id == filter.form.proposal.value %} selected="selected"%}{% endif %}>
                         {{ proposal }}
@@ -53,16 +57,16 @@
                 </div>
 
                 {% bootstrap_label '<i class="fa fa-calendar"> <i class="fa fa-arrow-right"></i> </i> Submitted After' label_for="id_created_before" %}
-                {% bootstrap_field filter.form.created_after show_label=False size='small' %}
+                {% bootstrap_field filter.form.created_after show_label=False size='small' addon_after='<span class="fa fa-times clearinput"></span>' %}
 
                 {% bootstrap_label '<i class="fa fa-arrow-left"></i> <i class="fa fa-calendar"></i> Submitted Before' label_for="id_created_before" %}
-                {% bootstrap_field filter.form.created_before show_label=False size='small' %}
+                {% bootstrap_field filter.form.created_before show_label=False size='small' addon_after='<span class="fa fa-times clearinput"></span>' %}
 
                 {% bootstrap_label '<i class="fa fa-user"></i> Username Contains' label_for="id_user" %}
-                {% bootstrap_field filter.form.user show_label=False show_help=False size='small' %}
+                {% bootstrap_field filter.form.user show_label=False show_help=False size='small' addon_after='<span class="fa fa-times clearinput"></span>' %}
                 <br/>
                 <input type="submit" class="btn btn-info" value="Filter Results"/>
-                <a href="{% url 'userrequests:list' %}" class="btn btn-default">Reset</a>
+                <a href="{% url 'userrequests:list' %}" class="btn btn-default">Clear All Fields</a>
               </form>
             </div>
           </li>
@@ -161,5 +165,8 @@
     $(function() {
        $(".tool-tip").tooltip();
     });
+    $('.clearinput').click(function(){
+      $(this).parent().parent().find('input').val('');
+    })
   </script>
 {% endblock %}

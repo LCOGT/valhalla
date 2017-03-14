@@ -2,8 +2,6 @@ import logging
 import requests
 from django.conf import settings
 
-from valhalla.proposals.models import Semester
-
 logger = logging.getLogger(__name__)
 
 
@@ -46,19 +44,3 @@ def query_pond(proposal_id, start, end, telescope_class, too):
         return response.json()['block_bounded_attempted_hours']
     else:
         return response.json()['attempted_hours']
-
-
-def perform_accounting(semesters=None):
-    if not semesters:
-        semesters = Semester.current_semesters()
-
-    for semester in semesters:
-        logger.info('Performing accounting for semester: %s', semester)
-        for talloc in semester.timeallocation_set.all():
-            logger.info('Updating timeallocation for %s', talloc.proposal)
-            std_total = get_time_totals_from_pond(talloc, semester.start, semester.end, too=False)
-            too_total = get_time_totals_from_pond(talloc, semester.start, semester.end, too=True)
-
-            talloc.std_time_used = std_total
-            talloc.too_time_used = too_total
-            talloc.save()

@@ -1,4 +1,5 @@
-from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest, Window, Molecule, Target, Constraints, Location
+from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
+from valhalla.userrequests.models import Window, Target, Molecule, Location, Constraints
 from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Semester
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
@@ -1542,3 +1543,96 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(user)
         response = self.client.get(reverse('api:user_requests-schedulable-requests'))
         self.assertEqual(response.status_code, 403)
+
+
+class TestContention(ConfigDBTestMixin, APITestCase):
+    def setUp(self):
+        super().setUp()
+        request = mixer.blend(Request, state='PENDING')
+        mixer.blend(
+            Window, start=timezone.now(), end=timezone.now() + timedelta(days=30), request=request
+        )
+        mixer.blend(Target, ra=15.0, type='SIDEREAL', request=request)
+        mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=request)
+        mixer.blend(Location, request=request)
+        mixer.blend(Constraints, request=request)
+        self.request = request
+
+    def test_contention_no_auth(self):
+        response = self.client.get(
+            reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
+        )
+        self.assertNotEqual(response.json()['1']['All Proposals'], 0)
+        self.assertEqual(response.json()['2']['All Proposals'], 0)
+
+    def test_contention_staff(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(
+           reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
+        )
+        self.assertNotEqual(response.json()['1'][self.request.user_request.proposal.id], 0)
+        self.assertNotIn(self.request.user_request.proposal.id, response.json()['2'])
+
+
+class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
+    ''' Test getting max ipp allowable of user requests via API.'''
+
+    def setUp(self):
+        super().setUp()
+        self.proposal = mixer.blend(Proposal, id='temp')
+        self.semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+                               )
+        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
+                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=1.0)
+        self.time_allocation_0m4 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
+                                               telescope_class='0m4', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=1.0)
+        self.user = mixer.blend(User)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.client.force_login(self.user)
+        self.generic_payload = copy.deepcopy(generic_payload)
+
+    def test_get_max_ipp_fail_bad_ur(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['proposal']
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), bad_data)
+        self.assertIn('proposal', response.json()['errors'])
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_max_ipp_max_ipp_returned(self):
+        from valhalla.userrequests.duration_utils import MAX_IPP_LIMIT, MIN_IPP_LIMIT
+        good_data = self.generic_payload.copy()
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        self.assertEqual(MAX_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+        self.assertEqual(MIN_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['min_allowable_ipp_value'])
+
+    def test_get_max_ipp_reduced_max_ipp(self):
+
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0 # 90 minute exposure (1.0 ipp available)
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
+        self.assertEqual(1.649, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+
+    def test_get_max_ipp_no_ipp_available(self):
+        good_data = self.generic_payload.copy()
+        self.time_allocation_1m0.ipp_time_available = 0.0
+        self.time_allocation_1m0.save()
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
+        self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])

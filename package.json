@@ -32,9 +32,9 @@
     "moment": "^2.17.1",
     "style-loader": "^0.13.1",
     "vis": "^4.16.1",
-    "vue": "^2.2.1",
+    "vue": "^2.2.2",
     "vue-loader": "^11.1.4",
-    "vue-template-compiler": "^2.2.1",
+    "vue-template-compiler": "^2.2.2",
     "webpack": "^2.2.1"
   }
 }
