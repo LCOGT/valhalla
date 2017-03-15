@@ -216,6 +216,8 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_post_userrequest_constraints_optional(self):
         good_data = self.generic_payload.copy()
+        good_data['requests'][0]['target']['dec'] = -30.0
+        good_data['requests'][0]['target']['ra'] = 50.0
         del good_data['requests'][0]['constraints']['max_airmass']
         del good_data['requests'][0]['constraints']['min_lunar_distance']
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)

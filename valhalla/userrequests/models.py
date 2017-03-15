@@ -392,7 +392,7 @@ class Molecule(models.Model):
 
 class Constraints(models.Model):
     request = models.OneToOneField(Request)
-    max_airmass = models.FloatField(default=2.0, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)])
+    max_airmass = models.FloatField(default=1.6, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)])
     min_lunar_distance = models.FloatField(default=30.0, validators=[MinValueValidator(0.0), MaxValueValidator(180.0)])
     max_lunar_phase = models.FloatField(null=True, blank=True)
     max_seeing = models.FloatField(null=True, blank=True)

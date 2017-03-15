@@ -94,7 +94,7 @@ class TestRequestTelescopeStates(TelescopeStatesFakeInput):
                     proper_motion_ra=0.0, proper_motion_dec=0.0)
 
         self.location = mixer.blend(Location, request=self.request, telescope_class='1m0')
-        mixer.blend(Constraints, request=self.request)
+        mixer.blend(Constraints, request=self.request, max_airmass=2.0)
 
     def tearDown(self):
         super().tearDown()

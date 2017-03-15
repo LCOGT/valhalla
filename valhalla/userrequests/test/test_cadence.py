@@ -18,7 +18,7 @@ class TestCadence(SetTimeMixin, ConfigDBTestMixin, TestCase):
         )
         mixer.blend(Target, request=self.req, type='SIDEREAL', ra=34.4, dec=20,
                     proper_motion_ra=0.0, proper_motion_dec=0.0)
-        mixer.blend(Constraints, request=self.req)
+        mixer.blend(Constraints, request=self.req, max_airmass=2.0)
         mixer.blend(Location, request=self.req, telecope_class='1m0')
 
     def test_correct_number_of_requests_small_cadence(self):
