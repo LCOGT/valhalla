@@ -184,6 +184,7 @@ ACCOUNT_ACTIVATION_DAYS = 7
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 EMAIL_USE_TLS = True
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
