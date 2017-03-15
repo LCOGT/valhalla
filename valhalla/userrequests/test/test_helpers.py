@@ -1,4 +1,4 @@
-from unittest.case import TestCase
+from django.test import TestCase
 
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 

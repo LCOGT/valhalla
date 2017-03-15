@@ -1,5 +1,5 @@
 from django.utils import timezone
-from unittest.case import TestCase
+from django.test import TestCase
 from mixer.backend.django import mixer
 from datetime import datetime
 from unittest.mock import patch

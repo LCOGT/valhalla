@@ -1,4 +1,4 @@
-from unittest.case import TestCase
+from django.test import TestCase
 from mixer.backend.django import mixer
 from django.utils import timezone
 import datetime

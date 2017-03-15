@@ -155,7 +155,7 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
         if all(molecule['complete'] for molecule in block['molecules']):
             return 'COMPLETED'
         if (not block['canceled'] and not any(molecule['failed'] for molecule in block['molecules'])
-            and start_time < now < end_time):
+                and start_time < now < end_time):
             active_blocks = True
         if now < start_time:
             future_blocks = True
@@ -211,12 +211,12 @@ def aggregate_request_states(user_request):
 
 def update_request_states_for_window_expiration():
     '''Update the state of all requests and user_requests to WINDOW_EXPIRED if their last window has passed'''
-    user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES).prefetch_related('requests__windows')
     now = timezone.now()
     states_changed = False
-    for user_request in user_requests.all():
-        for request in user_request.requests.all():
+    for user_request in UserRequest.objects.exclude(state__in=TERMINAL_STATES):
+        for request in user_request.requests.filter(state='PENDING'):
             if request.max_window_time < now:
+                logger.info('Expiring request %s', request.id)
                 with transaction.atomic():
                     req = Request.objects.select_for_update().get(pk=request.id)
                     if req.state == 'PENDING':
@@ -237,7 +237,7 @@ def update_request_states_from_pond_blocks(pond_blocks):
 
     for tracking_num, blocks in blocks_by_tracking_num:
         sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
-        blocks_by_request_num = {k: list(v) for k,v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
+        blocks_by_request_num = {k: list(v) for k, v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
         user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
         ur_expired = user_request.max_window_time < now
         requests = user_request.requests.all()
@@ -247,6 +247,7 @@ def update_request_states_from_pond_blocks(pond_blocks):
         states_changed |= update_user_request_state(user_request)
 
     return states_changed
+
 
 def update_user_request_state(user_request):
     '''Update the state of the user request if possible'''
