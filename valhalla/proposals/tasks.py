@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 @shared_task
 def update_time_allocation(time_allocation_id):
     talloc = TimeAllocation.objects.get(pk=time_allocation_id)
-    logger.info('Updating timeallocation for %s', talloc.proposal)
+    logger.info('Updating timeallocation for %s', talloc.proposal, extra={'tags': {'proposal': talloc.proposal.id}})
     std_total = get_time_totals_from_pond(talloc, talloc.semester.start, talloc.semester.end, too=False)
     too_total = get_time_totals_from_pond(talloc, talloc.semester.start, talloc.semester.end, too=True)
     talloc.std_time_used = std_total

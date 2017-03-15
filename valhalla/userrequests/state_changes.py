@@ -217,7 +217,7 @@ def update_request_states_for_window_expiration():
         request_states_changed = False
         for request in user_request.requests.filter(state='PENDING').prefetch_related('windows'):
             if request.max_window_time < now:
-                logger.info('Expiring request %s', request.id)
+                logger.info('Expiring request %s', request.id, extra={'tags': {'request_num': request.id}})
                 with transaction.atomic():
                     req = Request.objects.select_for_update().get(pk=request.id)
                     if req.state == 'PENDING':
