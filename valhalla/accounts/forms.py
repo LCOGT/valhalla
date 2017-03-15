@@ -52,7 +52,7 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['institution', 'title', 'notifications_enabled']
+        fields = ['institution', 'title', 'notifications_enabled', 'simple_interface']
         help_texts = {
             'notifications_enabled': 'Recieve email notifications for every completed observation on all proposals.'
         }
