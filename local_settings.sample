@@ -1,6 +1,5 @@
 LOCAL_INSTALLED_APPS = []
 LOCAL_ALLOWED_HOSTS = ['127.0.0.1:8000']
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ELASTICSEARCH_URL = ''
 POND_URL = ''
 CONFIGDB_URL = ''

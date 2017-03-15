@@ -15,6 +15,7 @@ celery[redis]
 django-redis-cache
 psycopg2
 django_extensions
+lcogt-logging
 
 ipython
 mixer
