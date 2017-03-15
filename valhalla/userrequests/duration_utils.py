@@ -8,6 +8,7 @@ from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_i
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
 PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
+OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
 MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
 
@@ -131,17 +132,28 @@ def get_time_allocation_key(telescope_class, proposal_id, min_window_time, max_w
     return TimeAllocationKey(time_allocation.semester.id, telescope_class)
 
 
-def get_total_duration_dict(operator, durations):
+def get_total_duration_dict(userrequest_dict):
+    durations = []
+    for request in userrequest_dict['requests']:
+        min_window_time = min([window['start'] for window in request['windows']])
+        max_window_time = max([window['end'] for window in request['windows']])
+        tak = get_time_allocation_key(request['location']['telescope_class'],
+                                      userrequest_dict['proposal'],
+                                      min_window_time,
+                                      max_window_time
+                                      )
+        duration = get_request_duration(request)
+        durations.append((tak, duration))
     # check the proposal has a time allocation with enough time for all requests depending on operator
     total_duration = {}
-    if operator == 'SINGLE':
+    if userrequest_dict['operator'] == 'SINGLE':
         (tak, duration) = durations[0]
         total_duration[tak] = duration
 
-    elif operator in ['MANY', 'ONEOF']:
+    elif userrequest_dict['operator'] in ['MANY', 'ONEOF']:
         for (tak, duration) in durations:
             total_duration[tak] = max(total_duration.get(tak, 0.0), duration)
-    elif operator == 'AND':
+    elif userrequest_dict['operator'] == 'AND':
         for (tak, duration) in durations:
             if tak not in total_duration:
                 total_duration[tak] = 0

@@ -13,7 +13,7 @@ from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import ConfigDB
-from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict,
+from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict, OVERHEAD_ALLOWANCE,
                                                   get_time_allocation_key, get_molecule_duration, get_num_exposures)
 from datetime import timedelta
 from valhalla.common.rise_set_utils import get_rise_set_intervals
@@ -364,19 +364,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             )
 
         try:
-            request_durations = []
-            for request in data['requests']:
-                min_window_time = min([window['start'] for window in request['windows']])
-                max_window_time = max([window['end'] for window in request['windows']])
-                tak = get_time_allocation_key(request['location']['telescope_class'],
-                                              data['proposal'],
-                                              min_window_time,
-                                              max_window_time
-                                              )
-                duration = get_request_duration(request)
-                request_durations.append((tak, duration))
-
-            total_duration_dict = get_total_duration_dict(data['operator'], request_durations)
+            total_duration_dict = get_total_duration_dict(data)
             # TODO Add 10% rule
             # check the proposal has a time allocation with enough time for all requests depending on operator
             for tak, duration in total_duration_dict.items():
@@ -385,14 +373,18 @@ class UserRequestSerializer(serializers.ModelSerializer):
                     telescope_class=tak.telescope_class,
                     proposal=data['proposal'],
                 )
-                enough_time = False
-                if (data['observation_type'] == UserRequest.NORMAL and
-                        (time_allocation.std_allocation - time_allocation.std_time_used)) >= (duration / 3600.0):
-                    enough_time = True
-                elif (data['observation_type'] == UserRequest.TOO and
-                        (time_allocation.too_allocation - time_allocation.too_time_used)) >= (duration / 3600.0):
-                    enough_time = True
-                if not enough_time:
+                time_available = 0
+                if data['observation_type'] == UserRequest.NORMAL:
+                    time_available = time_allocation.std_allocation - time_allocation.std_time_used
+                elif data['observation_type'] == UserRequest.TOO:
+                    time_available = time_allocation.too_allocation - time_allocation.too_time_used
+
+                if time_available <= 0.0:
+                    raise serializers.ValidationError(
+                        _("Proposal {} does not have any time left allocated in semester {} on {} telescopes").format(
+                            data['proposal'], tak.semester, tak.telescope_class)
+                    )
+                elif time_available * OVERHEAD_ALLOWANCE < (duration / 3600.0):
                     raise serializers.ValidationError(
                         _("Proposal {} does not have enough time allocated in semester {} on {} telescopes").format(
                             data['proposal'], tak.semester, tak.telescope_class)

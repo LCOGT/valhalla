@@ -1,16 +1,19 @@
 from rest_framework import viewsets, filters
 from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
+from django.utils import timezone
+from dateutil.parser import parse
 
-from valhalla.proposals.models import Proposal
+from valhalla.proposals.models import Proposal, Semester, TimeAllocation
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration_dict, get_max_ipp_for_userrequest
-from valhalla.userrequests.state_changes import InvalidStateChange
+from valhalla.userrequests.duration_utils import (get_request_duration_dict, get_max_ipp_for_userrequest,
+                                                  OVERHEAD_ALLOWANCE)
+from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
 
@@ -34,6 +37,44 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             )
         else:
             return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+
+    @list_route(methods=['get'], permission_classes=(IsAdminUser,))
+    def schedulable_requests(self, request):
+        '''
+            Gets the set of schedulable User requests for the scheduler, should be called right after isDirty finishes
+            Needs a start and end time specified as the range of time to get requests in. Usually this is the entire
+            semester for a scheduling run.
+        '''
+        current_semester = Semester.current_semesters().first()
+        start = parse(request.query_params.get('start', str(current_semester.start))).replace(tzinfo=timezone.utc)
+        end = parse(request.query_params.get('end', str(current_semester.end))).replace(tzinfo=timezone.utc)
+
+        # Schedulable requests are not in a terminal state, are part of an active proposal,
+        # and have a window within this semester
+        queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES).filter(
+            requests__windows__start__lte=end, requests__windows__start__gte=start, proposal__active=True).distinct()
+
+        # queryset now contains all the schedulable URs and their associated requests and data
+        # Check that each request time available in its proposal still
+        ur_data = []
+        for ur in queryset.all():
+            total_duration_dict = ur.total_duration
+            for tak, duration in total_duration_dict.items():
+                time_allocation = TimeAllocation.objects.get(
+                    semester=tak.semester,
+                    telescope_class=tak.telescope_class,
+                    proposal=ur.proposal.id,
+                )
+                if ur.observation_type == UserRequest.NORMAL:
+                    time_left = time_allocation.std_allocation - time_allocation.std_time_used
+                else:
+                    time_left = time_allocation.too_allocation - time_allocation.too_time_used
+
+                if time_left * OVERHEAD_ALLOWANCE >= (duration / 3600.0):
+                    serialized_ur = UserRequestSerializer(ur)
+                    ur_data.append(serialized_ur.data)
+
+        return Response(ur_data)
 
     @detail_route(methods=['put'])
     def cancel(self, request, pk=None):

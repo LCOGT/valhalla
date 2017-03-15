@@ -3,7 +3,11 @@ from django.db import transaction
 from django.utils.translation import ugettext as _
 from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
 
+from valhalla.userrequests.models import UserRequest, Request
+
+import itertools
 import logging
+import dateutil.parser
 
 logger = logging.getLogger(__name__)
 
@@ -139,6 +143,126 @@ def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
             time_allocation.save()
     except Exception as e:
         logger.warn(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
+
+
+def get_request_state_from_pond_blocks(request_state, request_blocks):
+    active_blocks = False
+    future_blocks = False
+    now = timezone.now()
+    for block in request_blocks:
+        start_time = dateutil.parser.parse(block['start']).replace(tzinfo=timezone.utc)
+        end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
+        if all([molecule['complete'] for molecule in block['molecules']]):
+            return 'COMPLETED'
+        if (not block['canceled'] and not any([molecule['failed'] for molecule in block['molecules']])
+            and start_time < now < end_time):
+            active_blocks = True
+        if now < start_time:
+            future_blocks = True
+
+    if not (future_blocks or active_blocks):
+        return 'FAILED'
+
+    return request_state
+
+
+def update_request_state(request, request_blocks, ur_expired):
+    '''Update a request state given a set of pond blocks for that request'''
+    if request.state == 'COMPLETED':
+        return False
+
+    state_changed = False
+    # Get the state from the pond blocks
+    new_r_state = get_request_state_from_pond_blocks(request.state, request_blocks)
+    # If the state is not a terminal state and the ur has expired, mark the request as expired
+    if new_r_state not in TERMINAL_STATES and ur_expired:
+        new_r_state = 'WINDOW_EXPIRED'
+    # If the state was the 'FAILED' fake state, switch it to pending but record that the state has changed
+    elif new_r_state == 'FAILED' and request.state not in TERMINAL_STATES:
+        new_r_state = 'PENDING'
+        state_changed = True
+    with transaction.atomic():
+        # Re-get the request and lock. If the new state is a valid state transition, set it on the request atomically.
+        req = Request.objects.select_for_update().get(pk=request.id)
+        if new_r_state in REQUEST_STATE_MAP[req.state]:
+            state_changed = True
+            req.state = new_r_state
+            req.save()
+
+    return state_changed
+
+
+def aggregate_request_states(user_request):
+    '''Aggregate the state of the user request from all of its child request states'''
+    request_states = [request.state for request in Request.objects.filter(user_request=user_request)]
+    # Set the priority ordering - assume AND by default
+    state_priority = ['WINDOW_EXPIRED', 'PENDING', 'COMPLETED', 'CANCELED']
+    if user_request.operator == 'ONEOF':
+        state_priority = ['COMPLETED', 'PENDING', 'WINDOW_EXPIRED', 'CANCELED']
+    elif user_request.operator == 'MANY':
+        state_priority = ['PENDING', 'COMPLETED', 'WINDOW_EXPIRED', 'CANCELED']
+
+    for state in state_priority:
+        if state in request_states:
+            return state
+
+    raise AggregateStateException('Unable to Aggregate States: {}'.format(request_states))
+
+
+def update_request_states_for_window_expiration():
+    '''Update the state of all requests and user_requests to WINDOW_EXPIRED if their last window has passed'''
+    user_requests = UserRequest.objects.exclude(state__in=TERMINAL_STATES).prefetch_related('requests__windows')
+    now = timezone.now()
+    states_changed = False
+    for user_request in user_requests.all():
+        for request in user_request.requests.all():
+            if request.max_window_time < now:
+                with transaction.atomic():
+                    req = Request.objects.select_for_update().get(pk=request.id)
+                    if req.state == 'PENDING':
+                        req.state = 'WINDOW_EXPIRED'
+                        states_changed = True
+                        req.save()
+        states_changed |= update_user_request_state(user_request)
+
+    return states_changed
+
+
+def update_request_states_from_pond_blocks(pond_blocks):
+    '''Update the states of requests and user_requests given a set of recently changed pond blocks.'''
+    sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_number'])
+    blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_number'])
+    now = timezone.now()
+    states_changed = False
+
+    for tracking_num, blocks in blocks_by_tracking_num:
+        sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
+        blocks_by_request_num = {k: list(v) for k,v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
+        user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
+        ur_expired = user_request.max_window_time < now
+        requests = user_request.requests.all()
+        for request in requests:
+            if request.id in blocks_by_request_num:
+                states_changed |= update_request_state(request, blocks_by_request_num[request.id], ur_expired)
+        states_changed |= update_user_request_state(user_request)
+
+    return states_changed
+
+def update_user_request_state(user_request):
+    '''Update the state of the user request if possible'''
+    new_ur_state = aggregate_request_states(user_request)
+    with transaction.atomic():
+        ur = UserRequest.objects.select_for_update().get(pk=user_request.id)
+        if new_ur_state in REQUEST_STATE_MAP[ur.state]:
+            ur.state = new_ur_state
+            ur.save()
+            return True
+    return False
+
+
+class AggregateStateException(Exception):
+    '''Raised when we fail to aggregate request states into a user request state'''
+    pass
 
 
 class TimeAllocationError(Exception):
