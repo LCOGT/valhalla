@@ -90,7 +90,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['target', 'errors', 'datatype', 'parentshow'],
+  props: ['target', 'errors', 'datatype', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, archive},
   mixins: [collapseMixin],
   data: function(){

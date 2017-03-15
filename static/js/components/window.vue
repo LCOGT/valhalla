@@ -52,7 +52,7 @@ import customselect from './util/customselect.vue';
 import airmass from './airmass.vue';
 
 export default {
-  props: ['window', 'index', 'errors', 'parentshow'],
+  props: ['window', 'index', 'errors', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, airmass},
   mixins: [collapseMixin],
   data: function(){
