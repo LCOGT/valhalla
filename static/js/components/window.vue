@@ -1,11 +1,19 @@
 <template>
-  <panel :id="'window' + $parent.$parent.index + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'window' + $parent.$parent.index + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-calendar" title="Window" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
-        <h4 class="text-center">Visibility</h4>
+        <ul>
+          <li>
+            Try the
+            <a href="https://lco.global/observatory/visibility/" title="Target Visibilty Calculator" target="_blank">
+              Target Visibility Calculator.
+            </a>
+          </li>
+        </ul>
+        <h4 v-show="showAirmass" class="text-center">Visibility</h4>
         <airmass v-show="showAirmass" :data="airmassData" :showZoomControls="true"></airmass>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
@@ -66,7 +74,7 @@ export default {
         'start': this.window.start, 'end': this.window.end, 'period': this.period, 'jitter': this.jitter
       });
     },
-    updateVisibility: _.debounce(function(req){
+    updateVisibility: function(req){
       var request = _.cloneDeep(req);
       //replace the window list with a single window with this start/end
       request['windows'] = [{start:this.window.start, end:this.window.end}];
@@ -81,7 +89,7 @@ export default {
           that.showAirmass = 'airmass_limit' in data;
         }
       });
-    }, 300),
+    },
   },
 };
 </script>

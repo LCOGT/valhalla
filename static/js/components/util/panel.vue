@@ -10,7 +10,7 @@
             <i title="Section is complete" class="fa fa-check fa-2x fa-fw text-success" v-show="!hasError"></i>
           </div>
           <div class="panel-title col-xs-4">
-            {{ title }}
+            {{ title }} <span v-if="index > 0">#{{ index + 1}}</span>
           </div>
           <div class="panel-actions col-xs-4">
               <a class="btn btn-xs btn-danger" v-on:click="remove" v-show="canremove" title="remove">
@@ -35,13 +35,13 @@
 <script>
 import _ from 'lodash';
 export default {
-  props: ['id', 'errors', 'show', 'canremove', 'cancopy', 'icon', 'title'],
+  props: ['id', 'errors', 'show', 'canremove', 'cancopy', 'icon', 'title', 'index'],
   methods:{
     remove: function(){
       this.$emit('remove');
     },
     copy: function(){
-      this.$emit('copy')
+      this.$emit('copy');
     },
     clickShow: function(){
       this.$emit('show', !this.show);
@@ -52,7 +52,7 @@ export default {
       return !_.isEmpty(this.errors);
     }
   }
-}
+};
 </script>
 <style>
 .panel-body-compact {

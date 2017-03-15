@@ -10,6 +10,14 @@
             or a co-investigator.
         </p>
         <p>Click on a Proposal ID to view details and (if you are the PI) manage co-investigators.</p>
+        {% if user.is_staff %}
+            Admin only:
+            {% if filter.form.semester.field.queryset.count > 0 %}
+            <a href="{% url 'proposals:semester-detail' filter.form.semester.field.queryset.0 %}">
+                View All Proposals
+            </a>
+            {% endif %}
+        {% endif %}
         <form method="get" action="" class="form-inline pull-right">
             {% bootstrap_form filter.form %}
             {% bootstrap_button button_type="submit" content="Filter" %}

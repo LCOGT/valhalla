@@ -1,17 +1,19 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from django.core.mail import send_mail
 from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 from django.urls import reverse
 from collections import namedtuple
+
+from valhalla.celery import send_mail
 
 
 class Semester(models.Model):
     id = models.CharField(primary_key=True, max_length=20)
     start = models.DateTimeField()
     end = models.DateTimeField()
+    public = models.BooleanField(default=False)
     proposals = models.ManyToManyField("Proposal", through="TimeAllocation")
 
     @classmethod
@@ -145,6 +147,17 @@ class ProposalInvite(models.Model):
             }
         )
 
-        send_mail(subject, message, 'portal@lco.glboal', [self.email])
+        send_mail.delay(subject, message, 'portal@lco.glboal', [self.email])
         self.sent = timezone.now()
         self.save()
+
+
+class ProposalNotification(models.Model):
+    proposal = models.ForeignKey(Proposal)
+    user = models.ForeignKey(User)
+
+    def __str__(self):
+        return '{} - {}'.format(self.proposal, self.user)
+
+    class Meta:
+        unique_together = ('proposal', 'user')

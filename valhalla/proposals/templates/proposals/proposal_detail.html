@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n bootstrap3 %}
 {% block title %}{{ object.id }}{% endblock %}
 
 {% block content %}
@@ -22,15 +22,19 @@
             <tbody>
                 {% regroup object.timeallocation_set.all by semester as timeallocations %}
                 {% for ta in timeallocations reversed %}
-                    <tr class="semester">
-                        <td colspan="5">{{ ta.grouper }}</td>
+                    <tr class="bg-info">
+                        <td colspan="4">{{ ta.grouper }}</td>
                     </tr>
                     {% for ta in ta.list %}
-                        <tr>
+                        <tr class="bg-grey">
                             <td></td>
-                            <td style="width: 20%;">{{ ta.telescope_class }}</td>
+                            <td>{{ ta.telescope_class }}</td>
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"></td>
                             <td>Standard</td>
-                            <td style="width: 50%;">
+                            <td>
                                 <div class="progress">
                                     <div class="progress-bar" role="progress-bar" style="min-width: 3em; width:{% widthratio ta.std_time_used ta.std_allocation 100 %}%">
                                         {{ ta.std_time_used|floatformat}}/{{ ta.std_allocation }}
@@ -39,8 +43,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
+                            <td colspan="2"></td>
                             <td>Rapid Response</td>
                             <td>
                                 <div class="progress">
@@ -51,8 +54,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
+                            <td colspan="2"></td>
                             <td>IPP</td>
                             <td>
                                 Available: {{ ta.ipp_time_available|floatformat }} Limit: {{ ta.ipp_limit }}
@@ -64,6 +66,13 @@
         </table>
     </div>
     <div class="col-md-4">
+        <form method="POST" action="" class="form">
+            {% csrf_token %}
+            {% bootstrap_form form=notification_form %}
+            <p>You will recieve notifications whenever a requested observation on this proposal is completed.</p>
+            <button type="submit" class="btn btn-default">Save</button>
+        </form>
+        <br/>
     <dl>
         <dt>{% trans 'Principal Investigator' %}</dt>
         <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
@@ -108,6 +117,8 @@
         <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
         <dd>Invited: {{ invite.sent }}</dd>
         {% endif %}
+        {% empty %}
+        <p>No pending invitations.</p>
         {% endfor %}
     </dl>
 

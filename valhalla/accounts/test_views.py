@@ -45,6 +45,14 @@ class TestIndex(TestCase):
         user = auth.get_user(self.client)
         self.assertTrue(user.is_authenticated())
 
+    def test_login_with_email_fails(self):
+        self.client.post(
+            reverse('auth_login'),
+            {'username': 'doge@dog.com', 'password': 'wrongpass'},
+        )
+        user = auth.get_user(self.client)
+        self.assertFalse(user.is_authenticated())
+
 
 class TestRegistration(TestCase):
     def setUp(self):

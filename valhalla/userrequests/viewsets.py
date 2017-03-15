@@ -6,11 +6,10 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from valhalla.proposals.models import Proposal
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
 from valhalla.userrequests.filters import UserRequestFilter, RequestFilter
-from valhalla.userrequests.metadata import RequestMetadata
 from valhalla.userrequests.cadence import expand_cadence_request
 from valhalla.userrequests.serializers import RequestSerializer, UserRequestSerializer
 from valhalla.userrequests.serializers import DraftUserRequestSerializer, CadenceRequestSerializer
-from valhalla.userrequests.duration_utils import get_request_duration_dict
+from valhalla.userrequests.duration_utils import get_request_duration_dict, get_max_ipp_for_userrequest
 from valhalla.userrequests.state_changes import InvalidStateChange
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
@@ -60,6 +59,15 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                          'errors': errors})
 
     @list_route(methods=['post'])
+    def max_allowable_ipp(self, request):
+        serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            ipp_dict = get_max_ipp_for_userrequest(serializer.validated_data)
+            return Response(ipp_dict)
+        else:
+            return Response({'errors': serializer.errors})
+
+    @list_route(methods=['post'])
     def cadence(self, request):
         expanded_requests = []
         for req in request.data.get('requests', []):
@@ -85,7 +93,6 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
 class RequestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    metadata_class = RequestMetadata
     serializer_class = RequestSerializer
     filter_class = RequestFilter
     filter_backends = (

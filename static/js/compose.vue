@@ -2,7 +2,7 @@
   <div id="app">
     <div class="row">
       <div class="col-md-11">
-        <alert v-for="alert in alerts" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
+        <alert v-for="alert in alerts" :key="alert.msg" :alertclass="alert.class || 'alert-danger'">{{ alert.msg }}</alert>
       </div>
     </div>
     <div id="tabs">
@@ -11,7 +11,7 @@
           <a title="Observing request form."><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a>
         </li>
         <li :class="{ active: tab === 2 }" v-on:click="tab = 2">
-          <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> Api View</a>
+          <a title="Your observing request displayed in the request API language."><i class="fa fa-fw fa-code fa-2x"></i> API View</a>
         </li>
         <li :class="{ active: tab === 3 }" v-on:click="tab = 3">
           <a title="Your saved observing requests."><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a>
@@ -21,6 +21,7 @@
         </li>
       </ul>
       <div class="col-md-5 panel-actions">
+        <a class="btn btn-warning" v-on:click="clear()" title="Clear form"><i class="fa fa-times"> Clear</i></a>
         <span :class="draftId > -1 ? 'btn-group' : ''">
           <button class="btn btn-info" title="Save a draft of this observing request. The request will not be submitted"
                   v-on:click="saveDraft(draftId)">
@@ -248,6 +249,11 @@
           });
           that.validate();
         });
+      },
+      clear: function(){
+        if(confirm('Clear the form?')){
+          window.location.reload();
+        }
       }
     }
   };

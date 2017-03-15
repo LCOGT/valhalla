@@ -1,5 +1,5 @@
 <template>
-  <panel :id="'request' + index" :errors="errors" v-on:show="show = $event"
+  <panel :id="'request' + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-wpexplorer" title="Request" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
     <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
@@ -55,6 +55,7 @@ import constraints from './constraints.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+
 export default {
   props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'simple_interface', 'duration_data'],
   components: {target, molecule, window, constraints, customfield, customselect, panel},
@@ -102,12 +103,18 @@ export default {
   methods: {
     update: function(){
       this.$emit('requestupdate');
+      var that = this;
+      _.delay(function(){
+        that.updateVisibility()
+      }, 500);
+    },
+    updateVisibility: _.debounce(function(){
       if('window' in this.$refs) {
         for (var windowIdx in this.$refs.window) {
           this.$refs.window[windowIdx].updateVisibility(this.request);
         }
       }
-    },
+    }, 300),
     instrumentToDataType: function(value){
       if(!_.isEmpty(this.available_instruments) && value) {
         return this.available_instruments[value].type;

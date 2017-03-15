@@ -17,7 +17,7 @@ from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sit
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
-from valhalla.proposals.models import Proposal
+from valhalla.userrequests.contention import Contention
 
 
 def get_start_end_paramters(request):
@@ -41,9 +41,11 @@ class UserRequestListView(FilterView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        else:
-            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return UserRequest.objects.all()
+            else:
+                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        return UserRequest.objects.filter(proposal__public=True)
 
 
 class UserRequestDetailView(DetailView):
@@ -51,9 +53,11 @@ class UserRequestDetailView(DetailView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        else:
-            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return UserRequest.objects.all()
+            else:
+                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
+        return UserRequest.objects.filter(proposal__public=True)
 
 
 class RequestDetailView(DetailView):
@@ -61,9 +65,11 @@ class RequestDetailView(DetailView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
-        else:
-            return Request.objects.filter(user_request__proposal__in=Proposal.objects.filter(public=True))
+            if self.request.user.is_staff:
+                return Request.objects.all()
+            else:
+                return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
+        return Request.objects.filter(user_request__proposal__public=True)
 
 
 class RequestCreateView(LoginRequiredMixin, TemplateView):
@@ -139,3 +145,14 @@ class InstrumentsInformationView(APIView):
                 'default_binning': configdb.get_default_binning(instrument_type),
             }
         return Response(info)
+
+
+class ContentionView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, instrument_name):
+        if request.user.is_staff:
+            contention = Contention(instrument_name, anonymous=False)
+        else:
+            contention = Contention(instrument_name)
+        return Response(contention.data())

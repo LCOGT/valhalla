@@ -66,13 +66,13 @@
             </customfield>
           </div>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
-            <customselect v-model="target.rot_mode" label="Rotator Mode" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
-                           :options="[{value: 'SKY', text: 'Sky'}, {value: 'VFLOAT', text: 'Vertical Floating'}]"
-                           desc="Defines how the rotator angle moves while tracking the sky.">
+            <customselect v-model="target.rot_mode" label="Slit Angle" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
+                           :options="[{value: 'VFLOAT', text: 'Parallactic'}, {value: 'SKY', text: 'User Specified'}]"
+                           desc="Parallactic positions the dispersion axis horizontally.">
             </customselect>
-            <customfield v-model="target.rot_angle" label="Rotator Angle" field="rot_angle" v-on:input="update"
+            <customfield v-model="target.rot_angle" label="Angle" field="rot_angle" v-on:input="update"
                          :errors="errors.rot_angle" v-if="target.rot_mode === 'SKY'"
-                         desc="Defines the initial angle of the rotator.">
+                         desc="Angle of dispersion axis in degrees east of north.">
             </customfield>
           </div>
         </form>
@@ -103,7 +103,7 @@ export default {
       eccentricity: 0,
       meananom: 0
     };
-    var rot_target_params = {rot_mode: 'SKY', rot_angle: 0};
+    var rot_target_params = {rot_mode: 'VFLOAT', rot_angle: 0};
     var sid_target_params = _.cloneDeep(this.target);
     delete sid_target_params['name'];
     delete sid_target_params['epoch'];

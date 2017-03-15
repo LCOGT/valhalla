@@ -10,8 +10,8 @@
             <slot></slot>
           </div>
           <div class="modal-footer">
-            <a class="btn btn-default" v-on:click="close">Cancel</a>
-            <a class="btn btn-primary" v-on:click="submit">Accept</a>
+            <a class="btn btn-default" v-show="showCancel" v-on:click="close">Cancel</a>
+            <a class="btn btn-primary" v-show="showAccept" v-on:click="submit">Accept</a>
           </div>
         </div>
       </div>
@@ -21,7 +21,18 @@
 
 <script>
 export default {
-  props: ['show', 'header'],
+  props: {
+    show: Boolean,
+    header: String,
+    showAccept: {
+      type: Boolean,
+      default: true
+    },
+    showCancel: {
+      type: Boolean,
+      default: true
+    }
+  },
   data: function(){
     return {
       open: this.show

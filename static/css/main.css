@@ -30,6 +30,10 @@ a:hover {
   text-align: center;
 }
 
+.progress-bar {
+    background-color: #009ec3;
+}
+
 .nav-tabs > li > a {
     cursor: pointer;
 }
@@ -115,6 +119,7 @@ a:hover {
 
 .userrequest-title {
     font-size: 1.2em;
+    font-weight: 900;
     margin-left: 4px;
 }
 
@@ -227,6 +232,6 @@ a:hover {
     height: 40px;
 }
 
-tr.semester {
+.bg-grey {
     background-color: #f9f9f9;
 }
