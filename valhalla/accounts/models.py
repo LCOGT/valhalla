@@ -16,7 +16,6 @@ class Profile(models.Model):
     institution = models.CharField(max_length=200)
     title = models.CharField(max_length=200)
     notifications_enabled = models.BooleanField(default=False)
-    simple_interface = models.BooleanField(default=False)
 
     @property
     def archive_bearer_token(self):

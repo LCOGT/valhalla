@@ -27,7 +27,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['constraints', 'errors', 'parentshow', 'simple_interface'],
+  props: ['constraints', 'errors', 'parentshow'],
   components: {customselect, customfield, panel},
   mixins: [collapseMixin],
   data: function(){
