@@ -7,6 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def expire_userrequests():
+def expire_requests():
     logger.info('Expiring requests')
     update_request_states_for_window_expiration()

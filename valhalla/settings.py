@@ -193,7 +193,7 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 3600.0
     },
     'expire-requests-every-5-minutes': {
-        'task': 'valhalla.userrequests.tasks.expire_userrequests',
+        'task': 'valhalla.userrequests.tasks.expire_requests',
         'schedule': 300.0
     }
 }
