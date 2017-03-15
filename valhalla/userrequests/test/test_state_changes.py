@@ -626,7 +626,5 @@ class TestExpireRequests(TestCase):
         )
         result = update_request_states_for_window_expiration()
         request.refresh_from_db()
-        self.userrequest.refresh_from_db()
-        self.assertEqual(self.userrequest.state, 'COMPLETED')
-        self.assertTrue(result)
+        self.assertFalse(result)
         self.assertEqual(request.state, 'COMPLETED')

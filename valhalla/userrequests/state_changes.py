@@ -214,7 +214,8 @@ def update_request_states_for_window_expiration():
     now = timezone.now()
     states_changed = False
     for user_request in UserRequest.objects.exclude(state__in=TERMINAL_STATES):
-        for request in user_request.requests.filter(state='PENDING'):
+        request_states_changed = False
+        for request in user_request.requests.filter(state='PENDING').prefetch_related('windows'):
             if request.max_window_time < now:
                 logger.info('Expiring request %s', request.id)
                 with transaction.atomic():
@@ -222,8 +223,10 @@ def update_request_states_for_window_expiration():
                     if req.state == 'PENDING':
                         req.state = 'WINDOW_EXPIRED'
                         states_changed = True
+                        request_states_changed = True
                         req.save()
-        states_changed |= update_user_request_state(user_request)
+        if request_states_changed:
+            update_user_request_state(user_request)
 
     return states_changed
 
