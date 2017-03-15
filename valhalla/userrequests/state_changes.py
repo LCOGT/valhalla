@@ -152,9 +152,9 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
     for block in request_blocks:
         start_time = dateutil.parser.parse(block['start']).replace(tzinfo=timezone.utc)
         end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
-        if all([molecule['complete'] for molecule in block['molecules']]):
+        if all(molecule['complete'] for molecule in block['molecules']):
             return 'COMPLETED'
-        if (not block['canceled'] and not any([molecule['failed'] for molecule in block['molecules']])
+        if (not block['canceled'] and not any(molecule['failed'] for molecule in block['molecules'])
             and start_time < now < end_time):
             active_blocks = True
         if now < start_time:
