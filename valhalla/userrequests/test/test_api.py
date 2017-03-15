@@ -1401,46 +1401,6 @@ class TestUpdateRequestStatesAPI(APITestCase):
 
         self.assertEqual(response.status_code, 500)
 
-    @responses.activate
-    def test_requests_set_to_expired_without_pond_blocks(self, modify_mock):
-        pond_blocks = []
-        now = timezone.now()
-        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                             end=now - timedelta(days=1))
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
-
-        response = self.client.get(reverse('api:isDirty'))
-        response_json = response.json()
-
-        self.assertTrue(response_json['isDirty'])
-        for req in self.requests:
-            req.refresh_from_db()
-            self.assertEqual(req.state, 'WINDOW_EXPIRED')
-        self.ur.refresh_from_db()
-        self.assertEqual(self.ur.state, 'WINDOW_EXPIRED')
-
-    @responses.activate
-    def test_requests_one_set_to_expired_without_pond_blocks(self, modify_mock):
-        pond_blocks = []
-        now = timezone.now()
-        end_times = [now - timedelta(days=1), now + timedelta(days=1), now + timedelta(days=1)]
-        mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
-                             end=(e for e in end_times))
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
-
-        response = self.client.get(reverse('api:isDirty'))
-        response_json = response.json()
-
-        self.assertTrue(response_json['isDirty'])
-        request_states = ['WINDOW_EXPIRED', 'PENDING', 'PENDING']
-        for i, req in enumerate(self.requests):
-            req.refresh_from_db()
-            self.assertEqual(req.state, request_states[i])
-        self.ur.refresh_from_db()
-        self.assertEqual(self.ur.state, 'PENDING')
-
 
 @patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
 class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):

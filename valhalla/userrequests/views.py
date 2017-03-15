@@ -20,8 +20,7 @@ from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sit
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
-from valhalla.userrequests.state_changes import (update_request_states_from_pond_blocks,
-                                                 update_request_states_for_window_expiration)
+from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
 from valhalla.userrequests.contention import Contention
 
 
@@ -171,8 +170,7 @@ class UserRequestStatusIsDirty(APIView):
             return HttpResponseServerError({'error': repr(e)})
 
         pond_blocks = response.json()
-        is_dirty = update_request_states_for_window_expiration()
-        is_dirty |= update_request_states_from_pond_blocks(pond_blocks)
+        is_dirty = update_request_states_from_pond_blocks(pond_blocks)
         cache.set('isDirty_query_time', now)
 
         return Response({'isDirty': is_dirty})

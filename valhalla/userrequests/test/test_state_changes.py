@@ -1,4 +1,4 @@
-from unittest.case import TestCase
+from django.test import TestCase
 from mixer.main import mixer
 from mixer.backend.django import mixer as dmixer
 from django.utils import timezone
@@ -8,7 +8,7 @@ from unittest.mock import patch
 from valhalla.userrequests.models import Request, UserRequest, Window
 from valhalla.userrequests.state_changes import (
     get_request_state_from_pond_blocks, update_request_state, aggregate_request_states,
-    update_request_states_from_pond_blocks
+    update_request_states_from_pond_blocks, update_request_states_for_window_expiration
 )
 
 
@@ -591,3 +591,40 @@ class TestUpdateRequestStates(TestCase):
             self.assertEqual(req.state, request_states[i])
         self.ur.refresh_from_db()
         self.assertEqual(self.ur.state, 'COMPLETED')
+
+
+@patch('valhalla.userrequests.state_changes.modify_ipp_time_from_requests')
+class TestExpireRequests(TestCase):
+    def setUp(self):
+        self.userrequest = dmixer.blend(UserRequest, state='PENDING')
+
+    def test_request_is_set_to_expired(self, ipp_mock):
+        request = dmixer.blend(Request, state='PENDING', user_request=self.userrequest)
+        dmixer.blend(
+            Window, start=timezone.now() - timedelta(days=2), end=timezone.now() - timedelta(days=1), request=request
+        )
+
+        result = update_request_states_for_window_expiration()
+        request.refresh_from_db()
+        self.assertTrue(result)
+        self.assertEqual(request.state, 'WINDOW_EXPIRED')
+
+    def test_request_is_not_set_to_expired(self, ipp_mock):
+        request = dmixer.blend(Request, state='PENDING', user_request=self.userrequest)
+        dmixer.blend(
+            Window, start=timezone.now() - timedelta(days=2), end=timezone.now() + timedelta(days=1), request=request
+        )
+        result = update_request_states_for_window_expiration()
+        request.refresh_from_db()
+        self.assertFalse(result)
+        self.assertEqual(request.state, 'PENDING')
+
+    def test_completed_request_is_not_set_to_expired(self, ipp_mock):
+        request = dmixer.blend(Request, state='COMPLETED', user_request=self.userrequest)
+        dmixer.blend(
+            Window, start=timezone.now() - timedelta(days=2), end=timezone.now() - timedelta(days=1), request=request
+        )
+        result = update_request_states_for_window_expiration()
+        request.refresh_from_db()
+        self.assertFalse(result)
+        self.assertEqual(request.state, 'COMPLETED')

@@ -192,6 +192,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'valhalla.proposals.tasks.run_accounting',
         'schedule': 3600.0
     },
+    'expire-requests-every-5-minutes': {
+        'task': 'valhalla.userrequests.tasks.expire_requests',
+        'schedule': 300.0
+    }
 }
 try:
     from local_settings import *  # noqa
