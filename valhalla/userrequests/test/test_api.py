@@ -636,6 +636,13 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
 
+    def test_floyds_gets_vfloat_default(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data, follow=True)
+        self.assertEqual(response.json()['requests'][0]['target']['rot_mode'], 'VFLOAT')
+
 
 class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):

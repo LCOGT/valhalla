@@ -248,6 +248,8 @@ class RequestSerializer(serializers.ModelSerializer):
             if 'acquire_mode' not in data['target']:
                 # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
                 data['target']['acquire_mode'] = 'ON'
+            if 'rot_mode' not in data['target']:
+                data['target']['rot_mode'] = 'VFLOAT'
 
         configdb = ConfigDB()
 
