@@ -309,7 +309,7 @@ class CadenceRequestSerializer(RequestSerializer):
 
 class UserRequestSerializer(serializers.ModelSerializer):
     requests = RequestSerializer(many=True)
-    submitter = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    submitter = serializers.StringRelatedField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = UserRequest
