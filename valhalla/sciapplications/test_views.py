@@ -73,20 +73,33 @@ class TestPostCreateSciApp(TestCase):
         self.semester = mixer.blend(Semester)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
+        instrument = mixer.blend(Instrument)
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
-            proposal_type=Call.SCI_PROPOSAL
+            proposal_type=Call.SCI_PROPOSAL,
+            instruments=(instrument,)
         )
-        mixer.blend(Instrument, call=self.call)
+        self.key_call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            proposal_type=Call.KEY_PROPOSAL,
+            instruments=(instrument,)
+        )
+        self.ddt_call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            proposal_type=Call.DDT_PROPOSAL,
+            instruments=(instrument,)
+        )
         data = {
-            'call': 1,
+            'call': self.call.id,
             'status': 'SUBMITTED',
             'title': 'Test Title',
             'pi': 'test@example.com',
             'coi': 'test2@example.com, test3@example.com',
             'budget_details': 'test budget value',
-            'instruments': 1,
+            'instruments': instrument.id,
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'science_case': 'science case',
@@ -123,9 +136,11 @@ class TestPostCreateSciApp(TestCase):
         self.sci_data.update(timerequest_data)
         self.sci_data.update(management_data)
         self.key_data = {k: data[k] for k in data if k in KeyProjectAppForm.Meta.fields}
+        self.key_data['call'] = self.key_call.id
         self.key_data.update(timerequest_data)
         self.key_data.update(management_data)
         self.ddt_data = {k: data[k] for k in data if k in DDTProposalAppForm.Meta.fields}
+        self.ddt_data['call'] = self.ddt_call.id
         self.ddt_data.update(timerequest_data)
         self.ddt_data.update(management_data)
 
@@ -140,15 +155,9 @@ class TestPostCreateSciApp(TestCase):
         self.assertContains(response, self.sci_data['title'])
 
     def test_post_key_form(self):
-        call = mixer.blend(
-            Call, semester=self.semester,
-            deadline=timezone.now() + timedelta(days=7),
-            proposal_type=Call.KEY_PROPOSAL
-        )
-        mixer.blend(Instrument, call=call)
         num_apps = ScienceApplication.objects.count()
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={'call': call.id}),
+            reverse('sciapplications:create', kwargs={'call': self.key_call.id}),
             data=self.key_data,
             follow=True
         )
@@ -156,15 +165,9 @@ class TestPostCreateSciApp(TestCase):
         self.assertContains(response, self.sci_data['title'])
 
     def test_post_ddt_form(self):
-        call = mixer.blend(
-            Call, semester=self.semester,
-            deadline=timezone.now() + timedelta(days=7),
-            proposal_type=Call.DDT_PROPOSAL
-        )
-        mixer.blend(Instrument, call=call)
         num_apps = ScienceApplication.objects.count()
         response = self.client.post(
-            reverse('sciapplications:create', kwargs={'call': call.id}),
+            reverse('sciapplications:create', kwargs={'call': self.ddt_call.id}),
             data=self.ddt_data,
             follow=True
         )

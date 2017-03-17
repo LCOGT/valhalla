@@ -35,6 +35,11 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         except KeyError:
             raise Http404
 
+    def get_form(self):
+        form = super().get_form()
+        form.fields['instruments'].queryset = self.call.instruments.all()
+        return form
+
     def get_success_url(self):
         if self.object.status == ScienceApplication.DRAFT:
             messages.add_message(self.request, messages.SUCCESS, _('Application created'))
@@ -94,6 +99,11 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_form_class(self):
         return FORM_CLASSES[self.object.call.proposal_type]
+
+    def get_form(self):
+        form = super().get_form()
+        form.fields['instruments'].queryset = self.object.call.instruments.all()
+        return form
 
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
