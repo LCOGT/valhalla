@@ -35,8 +35,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         except KeyError:
             raise Http404
 
-    def get_form(self):
-        form = super().get_form()
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
         form.fields['instruments'].queryset = self.call.instruments.all()
         return form
 
@@ -100,8 +100,8 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_class(self):
         return FORM_CLASSES[self.object.call.proposal_type]
 
-    def get_form(self):
-        form = super().get_form()
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
         form.fields['instruments'].queryset = self.object.call.instruments.all()
         return form
 
