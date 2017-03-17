@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import ModelForm
-from django.utils import timezone
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
 from django.core.validators import validate_email
