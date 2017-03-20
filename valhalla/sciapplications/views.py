@@ -56,6 +56,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
         timerequest_form = timerequest_formset()
+        for ta_form in timerequest_form:
+            ta_form.initial = {'telescope_class': '1m0'}
         return self.render_to_response(
             self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call)
         )

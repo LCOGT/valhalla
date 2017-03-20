@@ -11,7 +11,7 @@ from unittest.mock import MagicMock
 
 
 from valhalla.proposals.models import Semester
-from valhalla.sciapplications.models import ScienceApplication, Call, Instrument
+from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
 
 
@@ -312,15 +312,20 @@ class TestPostUpdateSciApp(TestCase):
             submitter=self.user,
             call=self.call
         )
+        tr = mixer.blend(TimeRequest, science_application=app)
 
         data = {
             'call': 1,
             'title': 'updates',
             'status': 'DRAFT',
-            'timerequest_set-TOTAL_FORMS': 0,
-            'timerequest_set-INITIAL_FORMS': 0,
-            'timerequest_set-MIN_NUM_FORMS': 0,
+            'timerequest_set-TOTAL_FORMS': 1,
+            'timerequest_set-INITIAL_FORMS': 1,
+            'timerequest_set-MIN_NUM_FORMS': 1,
             'timerequest_set-MAX_NUM_FORMS': 1000,
+            'timerequest_set-0-id': tr.id,
+            'timerequest_set-0-telescope_class': tr.telescope_class,
+            'timerequest_set-0-std_time': tr.std_time,
+            'timerequest_set-0-too_time': tr.too_time,
 
         }
         self.client.post(

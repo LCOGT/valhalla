@@ -60,10 +60,12 @@
                 If you are applying to the LCO TAC, you may request time on any size telescope.
                 {% endblocktrans %}
                 </div>
+                {% bootstrap_formset_errors timerequest_form %}
                 <table class="table table-striped">
                     <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
+                    {% bootstrap_form_errors form %}
                     {{ form.id }}
                     <tr>
                         <td>
@@ -89,15 +91,17 @@
                 {% bootstrap_label 'Science Justification' label_for=id_science_case %}
                 <div class="help-block">
                 {% blocktrans %}
-                <p>Please provide a scientific justification for the time requested. This should include the
-                goals of the current project, with the scientific background, including pertinent
-                references which should be listed in full in the figures page(s) or at the end of the
-                Science Justification if space permits. The results of any previous time allocated for
-                this project should be discussed.</p>
+                <p>
+                Please provide scientific justification for the observations requested, including
+                appropriate background information and the goals of the project. The results of any
+                previous time allocated for this project should be discussed. Pertinent references
+                should be listed in full.
+                </p>
 
-                <p>You may upload a single file with a maximum of 1 page of justification and 2 pages containing
-                figures to support your case. We can only accept PDF formatted files. If uploading a file
-                is not necessary, please use the following text field.</p>
+                <p>
+                You may use the text field below, or you may upload a single file with a maximum of
+                1 page of justification and 2 pages containing figures. We can only accept PDF files.
+                </p>
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.science_case show_label=False %}

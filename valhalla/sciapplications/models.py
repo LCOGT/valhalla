@@ -147,8 +147,8 @@ class ScienceApplication(models.Model):
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication)
     telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
-    std_time = models.PositiveIntegerField(default=0)
-    too_time = models.PositiveIntegerField(default=0)
+    std_time = models.PositiveIntegerField(default=0, blank=True)
+    too_time = models.PositiveIntegerField(default=0, blank=True)
     approved = models.BooleanField(default=False)
 
     def __str__(self):

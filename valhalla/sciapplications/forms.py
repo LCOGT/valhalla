@@ -34,7 +34,7 @@ class BaseProposalAppForm(ModelForm):
         super().clean()
         for field in self.Meta.required_fields:
             if not self.cleaned_data.get(field) and self.cleaned_data.get('status') == 'SUBMITTED':
-                self.add_error(field, _('This field is required'))
+                self.add_error(field, _('{}: This field is required'.format(self.fields[field].label)))
         if self.errors:
             self.add_error(None, _('There was an error with your submission.'))
 
@@ -90,5 +90,5 @@ class TimeRequestForm(ModelForm):
 
 
 timerequest_formset = inlineformset_factory(
-    ScienceApplication, TimeRequest, form=TimeRequestForm, extra=1
+    ScienceApplication, TimeRequest, form=TimeRequestForm, extra=0, min_num=1, validate_min=True
 )
