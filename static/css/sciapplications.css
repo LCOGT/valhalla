@@ -1,3 +1,7 @@
 .delete-timeallocation {
     margin-left: 10px;
 }
+
+#id_instruments {
+    height: 150px;
+}
