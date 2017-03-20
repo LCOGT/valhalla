@@ -133,8 +133,9 @@
                 {% bootstrap_label 'Instruments' label_for=id_instruments %}
                 <div class="help-block">
                 {% blocktrans %}
-                Select instrument(s) desired for 1m (SBIG/Sinistro) and/or 2m (FLOYDS/Spectral) observations.
-                0.4m observations are limited to the SBIG STX-6303 imagers. Ctrl+click to select mutliple instruments.
+                The 2m telescopes have Spectral imagers and FLOYDS spectrographs.
+                The 1m telescopes have Sinistro imagers; some have NRES spectrographs.
+                The 0m4 telescopes have SBIG STX-6303 imagers. Ctrl+click to select multiple instruments.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_field form.instruments show_label=False %}
@@ -185,7 +186,7 @@
 
             {% if form.ddt_justification %}
                 {% bootstrap_label 'Justification of discrentionary time' label_for=id_ddt_justification %}
-                {% bootstrap_field form.ddt_justification show_label=False %}
+                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
             {% endif %}
         </form>
         <a href="#">Back to top</a>
