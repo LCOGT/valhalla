@@ -5,6 +5,7 @@ import logging
 from datetime import timedelta
 from django.contrib.auth.models import User
 from oauth2_provider.models import AccessToken, Application
+from rest_framework.authtoken.models import Token
 
 from valhalla.proposals.models import Proposal
 
@@ -39,6 +40,10 @@ class Profile(models.Model):
     @property
     def current_proposals(self):
         return Proposal.current_proposals().filter(active=True, membership__user=self.user).distinct()
+
+    @property
+    def api_token(self):
+        return Token.objects.get_or_create(user=self.user)[0]
 
     def __str__(self):
         return '{0} {1} at {2}'.format(self.user, self.title, self.institution)
