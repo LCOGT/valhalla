@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core.urlresolvers import reverse
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.contrib import auth
 from mixer.backend.django import mixer
@@ -152,3 +153,21 @@ class TestProfile(ConfigDBTestMixin, TestCase):
 
         response = self.client.get(reverse('api:profile'))
         self.assertGreater(len(response.json()['available_instrument_types']), 0)
+
+
+class TestToken(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
+        self.client.force_login(self.user)
+
+    def test_user_gets_api_token(self):
+        with self.assertRaises(Token.DoesNotExist):
+            Token.objects.get(user=self.user)
+        self.client.get(reverse('profile'))
+        self.assertTrue(Token.objects.get(user=self.user))
+
+    def test_user_can_revoke_token(self):
+        token_key = self.user.profile.api_token.key
+        self.client.post(reverse('revoke-api-token'))
+        self.assertNotEqual(token_key, self.user.profile.api_token.key)

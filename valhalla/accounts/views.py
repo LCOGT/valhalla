@@ -1,5 +1,7 @@
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
+from django.urls import reverse
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
@@ -40,3 +42,11 @@ class ProfileApiView(RetrieveAPIView):
             return self.request.user
         else:
             return None
+
+
+class RevokeAPITokenView(LoginRequiredMixin, View):
+    def post(self, request):
+        request.user.auth_token.delete()
+        Token.objects.create(user=request.user)
+        messages.success(request, 'API token revoked.')
+        return redirect(reverse('profile'))
