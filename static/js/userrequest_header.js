@@ -5,7 +5,7 @@ export {cancelUserRequest};
 function cancelUserRequest(id) {
   if(confirm('Cancel this request? This action cannot be undone')){
     $.ajax({
-      type: 'PUT',
+      type: 'POST',
       url: '/api/userrequests/' + id + '/cancel/',
       contentType: 'application/json',
     }).done(function(){

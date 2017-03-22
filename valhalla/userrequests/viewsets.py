@@ -20,6 +20,7 @@ from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_si
 
 class UserRequestViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    http_method_names = ['get', 'post', 'head', 'options']
     serializer_class = UserRequestSerializer
     filter_class = UserRequestFilter
     filter_backends = (
@@ -76,7 +77,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
         return Response(ur_data)
 
-    @detail_route(methods=['put'])
+    @detail_route(methods=['post'])
     def cancel(self, request, pk=None):
         ur = self.get_object()
         try:
