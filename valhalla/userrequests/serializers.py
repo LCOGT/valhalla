@@ -81,7 +81,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):
-            if data['spectra_slit'] not in available_filters:
+            if data['spectra_slit'].lower() not in available_filters:
                 raise serializers.ValidationError(
                     {'filter': _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
                         data['spectra_slit'], data['instrument_name'], ", ".join(available_filters)
@@ -94,7 +94,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
                         data['type'], data['instrument_name']
                     )}
                 )
-            elif data['filter'] not in available_filters:
+            elif data['filter'].lower() not in available_filters:
                 raise serializers.ValidationError(
                     {'filter': _("Invalid filter {} for instrument {}. Valid filters are: {}").format(
                         data['filter'], data['instrument_name'], ", ".join(available_filters)
