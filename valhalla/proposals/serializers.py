@@ -6,7 +6,7 @@ from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 class TimeAllocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = TimeAllocation
-        fields = '__all__'
+        exclude = ('id',)
 
 
 class ProposalSerializer(serializers.ModelSerializer):
