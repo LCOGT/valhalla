@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from valhalla.proposals.models import Proposal, TimeAllocation
+from valhalla.proposals.models import Proposal, TimeAllocation, Semester
 
 
 class TimeAllocationSerializer(serializers.ModelSerializer):
@@ -17,3 +17,9 @@ class ProposalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         fields = '__all__'
+
+
+class SemesterSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = Semester
+        fields = ('id', 'start', 'end')
