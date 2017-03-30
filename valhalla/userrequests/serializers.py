@@ -12,7 +12,7 @@ from valhalla.userrequests.models import Request, Target, Window, UserRequest, L
 from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
-from valhalla.common.configdb import ConfigDB
+from valhalla.common.configdb import configdb
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict, OVERHEAD_ALLOWANCE,
                                                   get_molecule_duration, get_num_exposures)
 from datetime import timedelta
@@ -58,7 +58,6 @@ class MoleculeSerializer(serializers.ModelSerializer):
         exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
 
     def validate_instrument_name(self, value):
-        configdb = ConfigDB()
         if value and value not in configdb.get_active_instrument_types({}):
             raise serializers.ValidationError(
                 _("Invalid instrument name {}. Valid instruments may include: {}").format(
@@ -69,7 +68,6 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # set special defaults if it is a spectrograph
-        configdb = ConfigDB()
         if configdb.is_spectrograph(data['instrument_name']):
             if 'ag_mode' not in data:
                 data['ag_mode'] = 'ON'
@@ -134,7 +132,6 @@ class LocationSerializer(serializers.ModelSerializer):
         if 'telescope' in data and 'observatory' not in data:
             raise serializers.ValidationError(_("Must specify an observatory with a telescope."))
 
-        configdb = ConfigDB()
         site_data_dict = {site['code']: site for site in configdb.site_data}
         if 'site' in data:
             if data['site'] not in site_data_dict:
@@ -250,8 +247,6 @@ class RequestSerializer(serializers.ModelSerializer):
                 data['target']['acquire_mode'] = 'ON'
             if 'rot_mode' not in data['target']:
                 data['target']['rot_mode'] = 'VFLOAT'
-
-        configdb = ConfigDB()
 
         # check if the instrument specified is allowed
         valid_instruments = configdb.get_active_instrument_types(data['location'])

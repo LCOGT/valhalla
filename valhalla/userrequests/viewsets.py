@@ -16,6 +16,8 @@ from valhalla.userrequests.duration_utils import (get_request_duration_dict, get
 from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class UserRequestViewSet(viewsets.ModelViewSet):
@@ -53,27 +55,36 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         # Schedulable requests are not in a terminal state, are part of an active proposal,
         # and have a window within this semester
         queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES).filter(
-            requests__windows__start__lte=end, requests__windows__start__gte=start, proposal__active=True).distinct()
+            requests__windows__start__lte=end, requests__windows__start__gte=start,
+            proposal__active=True).prefetch_related('requests', 'requests__windows', 'requests__target', 'proposal', 'proposal__timeallocation_set',
+                                                    'requests__molecules', 'requests__location', 'requests__constraints').distinct()
 
         # queryset now contains all the schedulable URs and their associated requests and data
         # Check that each request time available in its proposal still
         ur_data = []
+        tas = {}
         for ur in queryset.all():
             total_duration_dict = ur.total_duration
             for tak, duration in total_duration_dict.items():
-                time_allocation = TimeAllocation.objects.get(
-                    semester=tak.semester,
-                    telescope_class=tak.telescope_class,
-                    proposal=ur.proposal.id,
-                )
+                if (tak, ur.proposal.id) in tas:
+                    time_allocation = tas[(tak, ur.proposal.id)]
+                else:
+                    time_allocation = TimeAllocation.objects.get(
+                        semester=tak.semester,
+                        telescope_class=tak.telescope_class,
+                        proposal=ur.proposal.id,
+                    )
+                    tas[(tak, ur.proposal.id)] = time_allocation
                 if ur.observation_type == UserRequest.NORMAL:
                     time_left = time_allocation.std_allocation - time_allocation.std_time_used
                 else:
                     time_left = time_allocation.too_allocation - time_allocation.too_time_used
-
                 if time_left * OVERHEAD_ALLOWANCE >= (duration / 3600.0):
                     serialized_ur = UserRequestSerializer(ur)
                     ur_data.append(serialized_ur.data)
+                    break
+                else:
+                    logging.warning('not enough time left {} in proposal {} for ur {} of duration {}, skipping'.format(time_left, ur.proposal.id, ur.id, (duration / 3600.0)))
 
         return Response(ur_data)
 

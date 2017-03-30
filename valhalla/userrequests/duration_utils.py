@@ -2,8 +2,12 @@ from valhalla.proposals.models import TimeAllocationKey, Proposal
 import itertools
 from math import ceil
 
-from valhalla.common.configdb import ConfigDB
+from valhalla.common.configdb import configdb
+from valhalla.proposals.models import Semester
 from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
@@ -11,6 +15,23 @@ PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasse
 OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
 MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
+
+
+semesters = None
+def get_semesters():
+    global semesters;
+    if not semesters:
+        semesters = list(Semester.objects.filter(public=True).order_by('-start').all())
+    return semesters
+
+
+def get_semester_in(start_date, end_date):
+    semesters = get_semesters()
+    for semester in semesters:
+        if start_date >= semester.start and end_date <= semester.end:
+            return semester
+
+    return None
 
 
 def get_num_mol_changes(molecules):
@@ -22,7 +43,6 @@ def get_num_filter_changes(molecules):
 
 
 def get_molecule_duration_per_exposure(molecule_dict):
-    configdb = ConfigDB()
     total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
     mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
     return mol_duration_per_exp
@@ -78,7 +98,6 @@ def get_request_duration_sum(userrequest_dict):
         duration = get_request_duration(req)
         tak = get_time_allocation_key(
             telescope_class=req['location']['telescope_class'],
-            proposal_id=userrequest_dict['proposal'],
             min_window_time=min([w['start'] for w in req['windows']]),
             max_window_time=max([w['end'] for w in req['windows']])
         )
@@ -98,7 +117,6 @@ def get_num_exposures(molecule_dict, time_available):
 
 def get_request_duration(request_dict):
     # calculate the total time needed by the request, based on its instrument and exposures
-    configdb = ConfigDB()
     request_overheads = configdb.get_request_overheads(request_dict['molecules'][0]['instrument_name'])
     duration = sum([get_molecule_duration(m) for m in request_dict['molecules']])
     if configdb.is_spectrograph(request_dict['molecules'][0]['instrument_name']):
@@ -121,15 +139,21 @@ def get_request_duration(request_dict):
 
 
 def get_time_allocation(telescope_class, proposal_id, min_window_time, max_window_time):
-    return Proposal.objects.get(pk=proposal_id).timeallocation_set.get(
-        semester__start__lte=min_window_time,
-        semester__end__gte=max_window_time,
-        telescope_class=telescope_class)
+    timeall = None
+    try:
+        timeall = Proposal.objects.get(pk=proposal_id).timeallocation_set.get(
+            semester__start__lte=min_window_time,
+            semester__end__gte=max_window_time,
+            semester__public=True,
+            telescope_class=telescope_class)
+    except Exception as e:
+        logger.warning("proposal {} has overlapping time allocations for {}".format(proposal_id, telescope_class))
+    return timeall
 
 
-def get_time_allocation_key(telescope_class, proposal_id, min_window_time, max_window_time):
-    time_allocation = get_time_allocation(telescope_class, proposal_id, min_window_time, max_window_time)
-    return TimeAllocationKey(time_allocation.semester.id, telescope_class)
+def get_time_allocation_key(telescope_class, min_window_time, max_window_time):
+    semester = get_semester_in(min_window_time, max_window_time)
+    return TimeAllocationKey(semester.id, telescope_class)
 
 
 def get_total_duration_dict(userrequest_dict):
@@ -138,7 +162,6 @@ def get_total_duration_dict(userrequest_dict):
         min_window_time = min([window['start'] for window in request['windows']])
         max_window_time = max([window['end'] for window in request['windows']])
         tak = get_time_allocation_key(request['location']['telescope_class'],
-                                      userrequest_dict['proposal'],
                                       min_window_time,
                                       max_window_time
                                       )

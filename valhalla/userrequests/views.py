@@ -13,7 +13,7 @@ from datetime import timedelta
 import requests
 from rest_framework.views import APIView
 
-from valhalla.common.configdb import ConfigDB
+from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class)
 from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
@@ -136,7 +136,6 @@ class InstrumentsInformationView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request):
-        configdb = ConfigDB()
         info = {}
         for instrument_type in configdb.get_active_instrument_types({}):
             filters = configdb.get_filters(instrument_type)
