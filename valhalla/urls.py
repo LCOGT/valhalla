@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
 from valhalla.userrequests.views import InstrumentsInformationView, UserRequestStatusIsDirty, ContentionView
-from valhalla.proposals.viewsets import ProposalViewSet
+from valhalla.proposals.viewsets import ProposalViewSet, SemesterViewSet
 from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
 import valhalla.sciapplications.urls as sciapplications_urls
@@ -21,6 +21,7 @@ router.register(r'requests', RequestViewSet, 'requests')
 router.register(r'userrequests', UserRequestViewSet, 'user_requests')
 router.register(r'drafts', DraftUserRequestViewSet, 'drafts')
 router.register(r'proposals', ProposalViewSet, 'proposals')
+router.register(r'semesters', SemesterViewSet, 'semesters')
 
 api_urlpatterns = [
     url(r'^', include(router.urls)),

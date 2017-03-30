@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 
 
-from valhalla.proposals.models import Proposal, Membership
+from valhalla.proposals.models import Proposal, Membership, Semester
 
 
 class TestProposalApiList(APITestCase):
@@ -63,3 +63,20 @@ class TestProposalApiDetail(APITestCase):
         self.client.force_login(admin_user)
         response = self.client.get(reverse('api:proposals-detail', kwargs={'pk': self.proposal.id}))
         self.assertContains(response, self.proposal.id)
+
+
+class TestSemesterApi(APITestCase):
+    def setUp(self):
+        self.semesters = mixer.cycle(3).blend(Semester, public=True)
+        self.tim_semester = mixer.blend(Semester, public=False)
+
+    def test_semester_list(self):
+        response = self.client.get(reverse('api:semesters-list'))
+        for semester in self.semesters:
+            self.assertContains(response, semester.id)
+        self.assertNotContains(response, self.tim_semester.id)
+
+    def test_semester_detail(self):
+        response = self.client.get(reverse('api:semesters-detail', kwargs={'pk': self.semesters[0].id}))
+        self.assertContains(response, self.semesters[0].id)
+
