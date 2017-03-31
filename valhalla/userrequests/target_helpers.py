@@ -61,25 +61,26 @@ class SiderealTargetHelper(BaseTargetHelper):
 class NonSiderealTargetHelper(BaseTargetHelper):
     def __init__(self, target):
         self.defaults = {}
-        self.fields = (
+        self.fields = ('acquire_mode', 'rot_mode', 'rot_angle')
+        self.required_fields = (
             'type', 'name', 'epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme'
         )
         if target.get('scheme') == 'ASA_MAJOR_PLANET':
-            self.fields += ('longofperih', 'meandist', 'meanlong', 'dailymot')
+            self.required_fields += ('longofperih', 'meandist', 'meanlong', 'dailymot')
         elif target.get('scheme') == 'ASA_MINOR_PLANET':
-            self.fields += ('argofperih', 'meandist', 'meananom')
+            self.required_fields += ('argofperih', 'meandist', 'meananom')
         elif target.get('scheme') == 'ASA_COMET':
-            self.fields += ('argofperih', 'perihdist', 'epochofperih')
+            self.required_fields += ('argofperih', 'perihdist', 'epochofperih')
         elif target.get('scheme') == 'JPL_MAJOR_PLANET':
-            self.fields += ('argofperih', 'meandist', 'meananom', 'dailymot')
+            self.required_fields += ('argofperih', 'meandist', 'meananom', 'dailymot')
         elif target.get('scheme') == 'JPL_MINOR_PLANET':
-            self.fields += ('argofperih', 'perihdist', 'epochofperih')
+            self.required_fields += ('argofperih', 'perihdist', 'epochofperih')
         elif target.get('scheme') == 'MPC_MINOR_PLANET':
-            self.fields += ('argofperih', 'meandist', 'meananom')
+            self.required_fields += ('argofperih', 'meandist', 'meananom')
         elif target.get('scheme') == 'MPC_COMET':
-            self.fields += ('argofperih', 'perihdist', 'epochofperih')
+            self.required_fields += ('argofperih', 'perihdist', 'epochofperih')
 
-        self.required_fields = self.fields
+        self.fields += self.required_fields
         super().__init__(target)
 
     def validate(self):
