@@ -49,6 +49,11 @@ class ConfigDB(object):
 
         return data
 
+    def get_site_data(self):
+        if not self.site_data:
+            self.site_data = self._get_configdb_data('sites')
+        return self.site_data
+
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
         if not self.site_data:
