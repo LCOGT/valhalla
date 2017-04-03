@@ -19,7 +19,7 @@ MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
 
 semesters = None
 def get_semesters():
-    global semesters;
+    global semesters
     if not semesters:
         semesters = list(Semester.objects.filter(public=True).order_by('-start').all())
     return semesters
