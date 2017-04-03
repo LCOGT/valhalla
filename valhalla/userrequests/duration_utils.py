@@ -1,9 +1,9 @@
-from valhalla.proposals.models import TimeAllocationKey, Proposal
 import itertools
+from django.utils.translation import ugettext as _
 from math import ceil
 
+from valhalla.proposals.models import TimeAllocationKey, Proposal, Semester
 from valhalla.common.configdb import configdb
-from valhalla.proposals.models import Semester
 from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 
 import logging
@@ -146,8 +146,8 @@ def get_time_allocation(telescope_class, proposal_id, min_window_time, max_windo
             semester__end__gte=max_window_time,
             semester__public=True,
             telescope_class=telescope_class)
-    except Exception as e:
-        logger.warning("proposal {} has overlapping time allocations for {}".format(proposal_id, telescope_class))
+    except Exception:
+        logger.warn(_("proposal {} has overlapping time allocations for {}").format(proposal_id, telescope_class))
     return timeall
 
 

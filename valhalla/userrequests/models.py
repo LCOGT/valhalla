@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.urls import reverse

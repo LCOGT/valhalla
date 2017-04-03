@@ -56,8 +56,9 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         # and have a window within this semester
         queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES).filter(
             requests__windows__start__lte=end, requests__windows__start__gte=start,
-            proposal__active=True).prefetch_related('requests', 'requests__windows', 'requests__target', 'proposal', 'proposal__timeallocation_set',
-                                                    'requests__molecules', 'requests__location', 'requests__constraints').distinct()
+            proposal__active=True).prefetch_related('requests', 'requests__windows', 'requests__target', 'proposal',
+                                                    'proposal__timeallocation_set', 'requests__molecules',
+                                                    'requests__location', 'requests__constraints').distinct()
 
         # queryset now contains all the schedulable URs and their associated requests and data
         # Check that each request time available in its proposal still
@@ -84,7 +85,8 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                     ur_data.append(serialized_ur.data)
                     break
                 else:
-                    logging.warning('not enough time left {} in proposal {} for ur {} of duration {}, skipping'.format(time_left, ur.proposal.id, ur.id, (duration / 3600.0)))
+                    logging.warning('not enough time left {} in proposal {} for ur {} of duration {}, skipping'
+                                    .format(time_left, ur.proposal.id, ur.id, (duration / 3600.0)))
 
         return Response(ur_data)
 
