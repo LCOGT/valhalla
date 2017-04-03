@@ -2,7 +2,7 @@ from datetime import timedelta
 from rise_set.angle import Angle
 from rise_set.astrometry import calculate_airmass_at_times
 
-from valhalla.common.configdb import ConfigDB
+from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import get_telescope_states, filter_telescope_states_by_intervals
 from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_interval_for_target_and_site
 
@@ -11,7 +11,6 @@ def get_telescope_states_for_request(request):
     instrument_type = request.molecules.first().instrument_name
     rs_target = request.target.rise_set_target
     constraints = request.constraints
-    configdb = ConfigDB()
     site_intervals = {}
     # Build up the list of telescopes and their rise set intervals for the target on this request
     site_data = configdb.get_sites_with_instrument_type_and_location(
@@ -61,7 +60,6 @@ def get_airmasses_for_request_at_sites(request_dict):
     instrument_type = request_dict['molecules'][0]['instrument_name']
     constraints = request_dict['constraints']
 
-    configdb = ConfigDB()
     site_data = configdb.get_sites_with_instrument_type_and_location(
       instrument_type=instrument_type,
       site_code=request_dict['location'].get('site'),

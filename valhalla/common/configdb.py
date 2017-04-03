@@ -25,7 +25,7 @@ class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope
 class ConfigDB(object):
 
     def __init__(self):
-        self.site_data = self._get_configdb_data('sites')
+        self.site_data = None
 
     def _get_configdb_data(self, resource):
         ''' Gets all the data from configdb (the sites structure with everything in it)
@@ -51,6 +51,8 @@ class ConfigDB(object):
 
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
+        if not self.site_data:
+            self.site_data = self._get_configdb_data('sites')
         site_data = self.site_data
         site_details = {}
         for site in site_data:
@@ -76,6 +78,8 @@ class ConfigDB(object):
         return site_details
 
     def get_instruments(self, only_schedulable=False):
+        if not self.site_data:
+            self.site_data = self._get_configdb_data('sites')
         instruments = []
         for site in self.site_data:
             for enclosure in site['enclosure_set']:
@@ -201,3 +205,6 @@ class ConfigDB(object):
     @staticmethod
     def is_spectrograph(instrument_type):
         return instrument_type.upper() in ['2M0-FLOYDS-SCICAM', '0M8-NRES-SCICAM']
+
+
+configdb = ConfigDB()

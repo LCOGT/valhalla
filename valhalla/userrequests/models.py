@@ -11,7 +11,8 @@ import logging
 from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.userrequests.external_serializers import BlockSerializer
 from valhalla.common.rise_set_utils import get_rise_set_target
-from valhalla.userrequests.duration_utils import get_request_duration, get_molecule_duration, get_total_duration_dict
+from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration, get_total_duration_dict,
+                                                  get_semester_in)
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,8 @@ class UserRequest(models.Model):
     def timeallocations(self):
         return self.proposal.timeallocation_set.filter(
             semester__start__lte=self.min_window_time,
-            semester__end__gte=self.max_window_time
+            semester__end__gte=self.max_window_time,
+            semester__public=True,
         )
 
     @property
@@ -139,14 +141,19 @@ class Request(models.Model):
         return max([window.end for window in self.windows.all()])
 
     @property
+    def semester(self):
+        return get_semester_in(self.min_window_time, self.max_window_time)
+
+    @property
     def time_allocation_key(self):
-        return TimeAllocationKey(self.timeallocation.semester.id, self.location.telescope_class)
+        return TimeAllocationKey(self.semester.id, self.location.telescope_class)
 
     @property
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
             semester__start__lte=self.min_window_time,
             semester__end__gte=self.max_window_time,
+            semester__public=True,
             telescope_class=self.location.telescope_class
         )
 
@@ -293,8 +300,8 @@ class Target(models.Model):
 
 class Window(models.Model):
     request = models.ForeignKey(Request, related_name='windows')
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.DateTimeField(db_index=True)
+    end = models.DateTimeField(db_index=True)
 
     @property
     def as_dict(self):

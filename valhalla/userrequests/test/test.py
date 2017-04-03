@@ -15,7 +15,7 @@ class TestUserRequestTotalDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         super().setUp()
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
