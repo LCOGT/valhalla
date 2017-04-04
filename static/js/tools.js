@@ -4,11 +4,11 @@ import Chart from 'chart.js';
 var app = new Vue({
   el: '#app',
   data: {
-    instrument: "1M0-SCICAM-SINISTRO",
+    instrument: '1M0-SCICAM-SINISTRO',
   },
   created: function(){
       this.api_call(function(keys, values) {
-      var ctx = document.getElementById("myChart");
+      var ctx = document.getElementById('myChart');
       var allData = {
           type: 'bar',
           data: {
@@ -52,12 +52,12 @@ var app = new Vue({
     },
   methods: {
     api_call: function(callback){
-      $.getJSON("http://localhost:8000/api/contention/"+ this.instrument, function (json) {
+      $.getJSON('/api/contention/' + this.instrument, function (json) {
         var keys = Object.keys(json).map(function(key) {
           return key;
         });
         var values = Object.values(json).map(function(values) {
-          return (values["All Proposals"] / 3600).toFixed(3);
+          return (values['All Proposals'] / 3600).toFixed(3);
         });
         callback(keys, values)
       });
