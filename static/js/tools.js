@@ -6,6 +6,7 @@ var app = new Vue({
   data: {
     instrument: '1M0-SCICAM-SINISTRO',
   },
+  name: 'contention',
   created: function(){
       this.api_call(function(keys, values) {
       var ctx = document.getElementById('myChart');
