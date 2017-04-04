@@ -1,7 +1,8 @@
 import Vue from 'vue';
+import Tools from './tools.vue'; 
 import Chart from 'chart.js';
 
-var app = new Vue({
+new Vue({
   el: '#app',
   data: {
     instrument: '1M0-SCICAM-SINISTRO',
