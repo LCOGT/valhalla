@@ -1,5 +1,5 @@
 django
-django-registration-redux
+https://github.com/macropin/django-registration/archive/master.zip
 djangorestframework
 django-oauth-toolkit
 django-cors-headers

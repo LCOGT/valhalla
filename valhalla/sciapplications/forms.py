@@ -90,5 +90,5 @@ class TimeRequestForm(ModelForm):
 
 
 timerequest_formset = inlineformset_factory(
-    ScienceApplication, TimeRequest, form=TimeRequestForm, extra=0, min_num=1, validate_min=True
+    ScienceApplication, TimeRequest, form=TimeRequestForm, extra=1
 )
