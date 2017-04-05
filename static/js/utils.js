@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 function semesterStart(datetime){
   if(datetime.month() < 3 ){
     return datetime.subtract(1, 'years').month(9).date(1);
@@ -71,7 +73,13 @@ function QueryString() {
   return qString;
 }
 
-export const datetimeFormat = 'YYYY-M-D HH:mm:ss';
+function formatDate(date){
+  if(date){
+    return moment(String(date)).format(datetimeFormat);
+  }
+}
+
+export const datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
 
 export const collapseMixin = {
   watch: {
@@ -102,4 +110,4 @@ export const siteCodeToName = {
   'ngq': 'Ali'
 };
 
-export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString};
+export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString, formatDate};

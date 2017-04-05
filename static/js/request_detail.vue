@@ -26,7 +26,7 @@
               </thead>
               <tbody>
                 <tr v-for="window in request.windows">
-                  <td>{{ window.start }}</td><td>{{ window.end }}</td>
+                  <td>{{ window.start | formatDate }}</td><td>{{ window.end | formatDate }}</td>
                 </tr>
               </tbody>
             </table>
@@ -34,7 +34,11 @@
             <table class="table table-condensed">
               <thead>
                 <tr>
-                  <td><strong>Instrument</strong></td><td><strong>Filter</strong></td><td><strong>Exposures</strong></td>
+                  <td><strong>Instrument</strong></td>
+                  <td><strong>Filter</strong></td>
+                  <td><strong>Exposures</strong></td>
+                  <td><strong>Binning</strong></td>
+                  <td><strong>Defocus</strong></td></td>
                 </tr>
               </thead>
               <tbody>
@@ -42,6 +46,8 @@
                   <td>{{ molecule.instrument_name }}</td>
                   <td>{{ molecule.filter }}</td>
                   <td>{{ molecule.exposure_time }} x {{ molecule.exposure_count }}</td>
+                  <td>{{ molecule.bin_x }}</td>
+                  <td>{{ molecule.defocus }}</td>
                 </tr>
               </tbody>
             </table>
@@ -89,12 +95,18 @@
 </div>
 </template>
 <script>
+import Vue from 'vue';
 import $ from 'jquery';
 import thumbnail from './components/thumbnail.vue';
 import archivetable from './components/archivetable.vue';
 import blockhistory from './components/blockhistory.vue';
 import airmass_telescope_states from './components/airmass_telescope_states.vue';
+import {formatDate} from './utils.js';
 import {login, getLatestFrame} from './archive.js';
+
+Vue.filter('formatDate', function(value){
+  return formatDate(value);
+});
 
 export default {
   name: 'app',
