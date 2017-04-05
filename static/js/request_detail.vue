@@ -68,11 +68,11 @@
       <div class="tab-pane" :class="{ active: tab === 'data' }">
         <div class="row">
           <div v-if="request.state === 'COMPLETED'" class="col-md-4">
-            <thumbnail :frameid="curFrame" width="400" height="400"></thumbnail>
+            <thumbnail :frame="curFrame" width="400" height="400"></thumbnail>
             <span class="thumb-help">Click a file in the data table to preview</span>
           </div>
           <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
-            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event.id"></archivetable>
+            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event"></archivetable>
           </div>
         </div>
       </div>
@@ -117,8 +117,8 @@ export default {
       $.getJSON('/api/requests/' + requestId, function(data){
         that.request = data;
         if(data.state === 'COMPLETED'){
-          getLatestFrame(data.id, function(data){
-            that.curFrame = data.id;
+          getLatestFrame(data.id, function(frame){
+            that.curFrame = frame;
           });
         }
       });

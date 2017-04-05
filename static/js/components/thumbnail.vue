@@ -9,7 +9,7 @@
 import $ from 'jquery';
 export default {
   props: {
-    frameid: {},
+    frame: {},
     width: {
       default: 200
     },
@@ -21,14 +21,14 @@ export default {
     return {src: '', error: null};
   },
   watch: {
-    frameid: function(){
+    frame: function(){
       this.src = '';
       this.fetch();
     }
   },
   computed: {
     url: function(){
-      return 'https://thumbnails.lco.global/' + this.frameid + '/?width=' + this.width + '&height=' + this.height;
+      return 'https://thumbnails.lco.global/' + this.frame.id + '/?width=' + this.width + '&height=' + this.height + '&label=' + this.frame.filename;
     }
   },
   methods: {

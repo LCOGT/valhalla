@@ -12,6 +12,8 @@ $(document).ready(function(){
   $('.thumbnail-small').each(function(idx, elem){
     getLatestFrame($(elem).data('request'), function(frame){
       $(elem).fadeOut(200);
+      $(elem).attr('alt', frame.filename);
+      $(elem).attr('title', frame.filename);
       $(elem).prev().show().html('<center><span class="fa fa-spinner fa-spin"></span></center>');
       getThumbnail(frame.id, 75, function(data){
         if(data.error){
