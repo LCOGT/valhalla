@@ -235,3 +235,7 @@ a:hover {
 .bg-grey {
     background-color: #f9f9f9;
 }
+
+.progress-bar {
+    font-family: sans-serif;
+}
