@@ -67,7 +67,7 @@
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
                     {{ form.id }}
-                    <tr>
+                    <tr class="timerequest-row">
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
                         {{ form.telescope_class }}
@@ -219,15 +219,27 @@
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.formset/1.2.2/jquery.formset.min.js"></script>
 <script type="text/javascript">
+    function check_time_requests(){
+         if($('.timerequest-row').length < 2){
+            $('.fa-trash').hide();
+        }else{
+            $('.fa-trash').show();
+        }
+    }
     $(document).ready(function(){
         $('#app_form tbody tr').formset({
             prefix: '{{ timerequest_form.prefix }}',
             deleteCssClass: 'delete-timeallocation',
             deleteText: '<i class="fa fa-trash"></i>',
             added: function(row){
-               row.find('input[type=number]').val(0)
+               row.find('input[type=number]').val(0);
+               check_time_requests();
+            },
+            removed: function(row){
+                check_time_requests();
             }
         });
+        check_time_requests();
     });
     $('#submit').click(function(){
         if(window.confirm('Submit this application? You will no longer be able to edit it')){
