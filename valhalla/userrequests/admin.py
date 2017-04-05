@@ -34,6 +34,9 @@ class RequestAdmin(admin.ModelAdmin):
         'created',
         'completed',
     )
+    raw_id_fields = (
+        'user_request',
+    )
     list_filter = ('state', 'modified', 'created', 'completed')
 admin.site.register(Request, RequestAdmin)
 
@@ -100,6 +103,9 @@ admin.site.register(Target, TargetAdmin)
 class WindowAdmin(admin.ModelAdmin):
     list_display = ('id', 'request', 'start', 'end')
     list_filter = ('start', 'end')
+    raw_id_fields = (
+        'request',
+    )
 admin.site.register(Window, WindowAdmin)
 
 
@@ -130,6 +136,9 @@ class MoleculeAdmin(admin.ModelAdmin):
         'sub_y1',
         'sub_y2',
         'defocus',
+    )
+    raw_id_fields = (
+        'request',
     )
     list_filter = ('type',)
 admin.site.register(Molecule, MoleculeAdmin)
