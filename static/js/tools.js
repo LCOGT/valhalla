@@ -6,4 +6,5 @@ new Vue({
   el: '#app',
   render: function(h){
     return h(Tools);
+  }
 });
