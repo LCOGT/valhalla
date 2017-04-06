@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Planning Tools{% endblock %}
+{% block title %}Planning Tools
+{% endblock %}
 {% block content %}
 <div id="app">
   <select v-model="instrument" @change="update_chart">
@@ -23,6 +24,8 @@
   </div>
   <center>Right Ascension</center>
 	<div class="container"><canvas id="myChart" width="850" height="430"></canvas></div>
+</div>
+{% endblock %}
 </div>
 {% endblock %}
 {% block extra_javascript %}
