@@ -1,6 +1,6 @@
 import django_filters
 from rest_framework import filters
-from valhalla.userrequests.models import UserRequest, Request
+from valhalla.userrequests.models import UserRequest, Request, Location
 
 
 class UserRequestFilter(filters.FilterSet):
@@ -9,6 +9,9 @@ class UserRequestFilter(filters.FilterSet):
     state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains', label="Title contains")
     user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains', label="Username contains")
+    telescope_class = django_filters.ChoiceFilter(
+        choices=Location.TELESCOPE_CLASSES, name='requests__location__telescope_class'
+    )
 
     class Meta:
         model = UserRequest
