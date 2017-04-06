@@ -166,7 +166,7 @@
               telescope_class: ''
             },
             constraints: {
-              max_airmass: 2.0,
+              max_airmass: 1.6,
               min_lunar_distance: 30.0
             }
           }]
