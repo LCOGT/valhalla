@@ -21,7 +21,7 @@
         </li>
       </ul>
       <div class="col-md-5 panel-actions">
-        <a class="btn btn-warning" v-on:click="clear()" title="Clear form"><i class="fa fa-times"> Clear</i></a>
+        <a class="btn btn-warning" v-on:click="clear()" title="Clear form"><i class="fa fa-times"></i> Clear</a>
         <span :class="draftId > -1 ? 'btn-group' : ''">
           <button class="btn btn-info" title="Save a draft of this observing request. The request will not be submitted"
                   v-on:click="saveDraft(draftId)">
