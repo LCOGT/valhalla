@@ -61,10 +61,10 @@
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                          desc="How the target is acquired."
+                          desc="The method for positioning the slit."
                           :options="[{value: 'OFF', text: 'Off'},
-                                     {value: 'WCS', text: 'WCS'},
-                                     {value: 'BRIGHTEST', text: 'Brightest'}]">
+                                     {value: 'WCS', text: 'Target Coordinates'},
+                                     {value: 'BRIGHTEST', text: 'Brightest Object'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
                          label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">
