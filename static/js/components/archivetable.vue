@@ -17,8 +17,7 @@
 <script>
 import 'bootstrap-table';
 import $ from 'jquery';
-import moment from 'moment';
-import {datetimeFormat} from '../utils.js';
+import {formatDate} from '../utils.js';
 import {archiveRoot, archiveUIRoot, downloadAll, downloadZip} from '../archive.js';
 export default{
   props: ['requestid'],
@@ -82,7 +81,7 @@ export default{
         title: 'DATE_OBS',
         sortable: 'true',
         formatter: function(value){
-          return moment.utc(value, 'YYYY-MM-DDTHH:mm:ssZ').format(datetimeFormat);
+          return formatDate(value);
         }
       },{
         field: 'FILTER',
@@ -94,8 +93,18 @@ export default{
         sortable: 'true',
       },{
         field: 'RLEVEL',
-        title: 'r. level',
+        title: 'Reduction',
         sortable: 'true',
+        formatter: function(value){
+          switch(value){
+          case 0:
+            return 'raw';
+          case 11:
+            return 'quicklook';
+          case 91:
+            return 'reduced';
+          }
+        }
       }]
     });
   }
