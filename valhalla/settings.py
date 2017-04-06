@@ -26,6 +26,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.global']
 
+SITE_ID = 1
+
 
 # Application definition
 
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.sites',
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
     'rest_framework',

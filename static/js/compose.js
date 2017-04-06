@@ -1,8 +1,7 @@
 import Vue from 'vue';
 import _ from 'lodash';
 import $ from 'jquery';
-import moment from 'moment';
-import {datetimeFormat} from './utils.js';
+import {formatDate} from './utils.js';
 import App from './compose.vue';
 
 Vue.mixin({
@@ -14,9 +13,7 @@ Vue.mixin({
 });
 
 Vue.filter('formatDate', function(value){
-  if(value){
-    return moment(String(value)).format(datetimeFormat);
-  }
+  return formatDate(value);
 });
 
 var vm = new Vue({
