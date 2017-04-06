@@ -54,7 +54,7 @@
           </div>
           <div class="col-md-6">
             <h4>Target</h4>
-            <dl class="twocol">
+            <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.target">
               <dt v-if="request.target[idx]">{{ idx }}</dt>
               <dd v-if="x">{{ x }}</dd>
@@ -62,7 +62,7 @@
             </dl>
             <hr/>
             <h4>Constraints</h4>
-            <dl class="twocol">
+            <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
               <dt v-if="request.constraints[idx]">{{ idx }}</dt>
               <dd v-if="x">{{ x }}</dd>
@@ -195,6 +195,11 @@ dl.twocol {
   -webkit-column-count: 2;
   column-count: 2;
 }
+
+dl.twocol dt {
+  width: inherit;
+}
+
 .request-details {
   margin-top: 5px;
 }
