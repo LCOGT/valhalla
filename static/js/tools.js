@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import Tools from './tools.vue'; 
 import Chart from 'chart.js';
 
 new Vue({
