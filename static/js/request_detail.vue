@@ -56,7 +56,7 @@
             <h4>Target</h4>
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.target">
-              <dt v-if="request.target[idx]">{{ idx }}</dt>
+              <dt v-if="request.target[idx]">{{ idx | formatField }}</dt>
               <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
@@ -64,7 +64,7 @@
             <h4>Constraints</h4>
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
-              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
+              <dt v-if="request.constraints[idx]">{{ idx | formatField }}</dt>
               <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
@@ -106,6 +106,14 @@ import {login, getLatestFrame} from './archive.js';
 
 Vue.filter('formatDate', function(value){
   return formatDate(value);
+});
+
+Vue.filter('formatField', function(value){
+  var words = value.split('_');
+  words = words.map(function(word){
+    return word.charAt(0).toUpperCase() + word.substr(1);
+  });
+  return words.join(' ');
 });
 
 export default {
