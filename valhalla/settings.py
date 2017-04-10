@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'registration',  # must come before admin to use custom templates
     'django.contrib.admin',
     'rest_framework',
+    'django_filters',
     'rest_framework.authtoken',
     'bootstrap3',
     'oauth2_provider',
