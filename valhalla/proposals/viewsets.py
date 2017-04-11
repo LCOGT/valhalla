@@ -2,6 +2,7 @@ from rest_framework import viewsets, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
+from valhalla.proposals.filters import SemesterFilter
 from valhalla.proposals.models import Proposal, Semester
 from valhalla.proposals.serializers import ProposalSerializer, SemesterSerialzer
 
@@ -23,8 +24,8 @@ class ProposalViewSet(viewsets.ReadOnlyModelViewSet):
 class SemesterViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (AllowAny,)
     serializer_class = SemesterSerialzer
-    filter_fields = ('id', 'start', 'end')
-    filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
+    filter_class = SemesterFilter
     ordering = ('-id',)
 
     def get_queryset(self):
