@@ -120,11 +120,6 @@ class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
         exclude = ('request', 'id')
-        extra_kwargs = {
-            'site': {'write_only': True},
-            'observatory': {'write_only': True},
-            'telescope': {'write_only': True},
-        }
 
     def validate(self, data):
         if 'observatory' in data and 'site' not in data:
@@ -154,6 +149,16 @@ class LocationSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError(msg)
 
         return data
+
+    def to_representation(self, instance):
+        '''
+        This method is overridden to remove blank fields from serialized output. We could put this into a subclassed
+        ModelSerializer if we want it to apply to all our Serializers.
+        :param instance:
+        :return:
+        '''
+        rep = super(serializers.ModelSerializer, self).to_representation(instance)
+        return {key: val for key, val in rep.items() if val}
 
 
 class WindowSerializer(serializers.ModelSerializer):
