@@ -17,29 +17,25 @@
         <ul class="nav nav-stacked">
           <li>
             <a :href="'#target' + index">
-              <i v-if="hasError(['requests', index, 'target'])" class="fa fa-fw fa-warning text-danger"></i>
-              <i v-else class="fa fa-fw fa-check text-success"></i>
+              <i class="fa fa-fw" :class="hasError(['requests', index, 'target']) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Target
             </a>
           </li>
           <li v-for="(molecule, molIndex) in request.molecules">
             <a :href="'#molecule' + index + molIndex">
-              <i v-if="hasError(['requests', index, 'molecules', molIndex])" class="fa fa-fw fa-warning text-danger"></i>
-              <i v-else class="fa fa-fw fa-check text-success"></i>
+              <i class="fa fa-fw" :class="hasError(['requests', index, 'molecules', molIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Configutation #{{ molIndex + 1}}
             </a>
           </li>
           <li v-for="(window, winIndex) in request.windows">
             <a :href="'#window' + index + winIndex">
-              <i v-if="hasError(['requests', index, 'windows', winIndex])" class="fa fa-fw fa-warning text-danger"></i>
-              <i v-else class="fa fa-fw fa-check text-success"></i>
+              <i class="fa fa-fw" :class="hasError(['requests', index, 'windows', winIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Window #{{ winIndex + 1}}
             </a>
           </li>
           <li>
             <a :href="'#constraints' + index">
-              <i v-if="hasError(['requests', index, 'constraints'])" class="fa fa-fw fa-warning text-danger"></i>
-              <i v-else class="fa fa-fw fa-check text-success"></i>
+              <i class="fa fa-fw" :class="hasError(['requests', index, 'constraints']) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Constraints
             </a>
           </li>
@@ -50,6 +46,7 @@
 </template>
 
 <script>
+  import _ from 'lodash';
   export default {
     props: ['userrequest', 'errors'],
     computed: {
@@ -59,7 +56,7 @@
     },
     methods: {
       hasError: function(path){
-        return !_.isEmpty(_.get(this.errors, path, []))
+        return !_.isEmpty(_.get(this.errors, path, []));
       }
     }
   };

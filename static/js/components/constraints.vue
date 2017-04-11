@@ -1,8 +1,8 @@
 <template>
   <panel :id="'constraints' + $parent.$parent.index" :errors="errors" v-on:show="show = $event"
          :canremove="false" :cancopy="false" icon="fa-lock" title="Constraints" :show="show">
-    <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">
-      {{ error }}
+    <div class="alert alert-danger" v-show="errors.non_field_errors" role="alert">
+      <span v-for="error in errors.non_field_errors">{{ error }}</span>
     </div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">

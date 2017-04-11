@@ -2,7 +2,9 @@
   <panel :id="'window' + $parent.$parent.index + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-calendar" title="Window" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
-    <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+    <div class="alert alert-danger" v-show="errors.non_field_errors" role="alert">
+      <span v-for="error in errors.non_field_errors">{{ error }}</span>
+    </div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
         <ul>

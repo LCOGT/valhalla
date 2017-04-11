@@ -10,7 +10,7 @@
 <div class="row">
     <div class="col-md-12">
         <ol class="breadcrumb">
-          <li><a href="{% url 'sciapplications:index' %}">Calls for Proposoals</a></li>
+          <li><a href="{% url 'sciapplications:index' %}">Calls for Proposals</a></li>
           <li class="active">Submit proposal</li>
         </ol>
     </div>
@@ -56,7 +56,7 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately.
+                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for <a href="https://lco.global/documentation/" target="_blank">rapid response</a> (immediate-within 15 minutes) observations separately.
                 If you are applying to the LCO TAC, you may request time on any size telescope.
                 {% endblocktrans %}
                 </div>
@@ -67,7 +67,7 @@
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
                     {{ form.id }}
-                    <tr>
+                    <tr class="timerequest-row">
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
                         {{ form.telescope_class }}
@@ -185,7 +185,7 @@
             {% endif %}
 
             {% if form.ddt_justification %}
-                {% bootstrap_label 'Justification of discrentionary time' label_for=id_ddt_justification %}
+                {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
                 {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
             {% endif %}
         </form>
@@ -219,15 +219,27 @@
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.formset/1.2.2/jquery.formset.min.js"></script>
 <script type="text/javascript">
+    function check_time_requests(){
+         if($('.timerequest-row').length < 2){
+            $('.fa-trash').hide();
+        }else{
+            $('.fa-trash').show();
+        }
+    }
     $(document).ready(function(){
         $('#app_form tbody tr').formset({
             prefix: '{{ timerequest_form.prefix }}',
             deleteCssClass: 'delete-timeallocation',
             deleteText: '<i class="fa fa-trash"></i>',
             added: function(row){
-               row.find('input[type=number]').val(0)
+               row.find('input[type=number]').val(0);
+               check_time_requests();
+            },
+            removed: function(row){
+                check_time_requests();
             }
         });
+        check_time_requests();
     });
     $('#submit').click(function(){
         if(window.confirm('Submit this application? You will no longer be able to edit it')){

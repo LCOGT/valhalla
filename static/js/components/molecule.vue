@@ -2,7 +2,9 @@
   <panel :id="'molecule' + $parent.$parent.index + index" :index="index" :errors="errors" v-on:show="show = $event"
          :canremove="this.index > 0" :cancopy="true" icon="fa-cogs" title="Configuration" v-on:remove="$emit('remove')"
          v-on:copy="$emit('copy')" :show="show">
-    <div v-for="error in errors.non_field_errors" class="alert alert-danger" role="alert">{{ error }}</div>
+    <div class="alert alert-danger" v-show="errors.non_field_errors" role="alert">
+      <span v-for="error in errors.non_field_errors">{{ error }}</span>
+    </div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
         <ul>
@@ -61,10 +63,10 @@
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                          desc="How the target is acquired."
+                          desc="The method for positioning the slit."
                           :options="[{value: 'OFF', text: 'Off'},
-                                     {value: 'WCS', text: 'WCS'},
-                                     {value: 'BRIGHTEST', text: 'Brightest'}]">
+                                     {value: 'WCS', text: 'Target Coordinates'},
+                                     {value: 'BRIGHTEST', text: 'Brightest Object'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
                          label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">

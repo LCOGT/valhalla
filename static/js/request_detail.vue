@@ -54,18 +54,18 @@
           </div>
           <div class="col-md-6">
             <h4>Target</h4>
-            <dl class="twocol">
+            <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.target">
-              <dt v-if="request.target[idx]">{{ idx }}</dt>
-              <dd v-if="x">{{ x }}</dd>
+              <dt v-if="request.target[idx]">{{ idx | formatField }}</dt>
+              <dd v-if="x">{{ x | formatValue }}</dd>
               </span>
             </dl>
             <hr/>
             <h4>Constraints</h4>
-            <dl class="twocol">
+            <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
-              <dt v-if="request.constraints[idx]">{{ idx }}</dt>
-              <dd v-if="x">{{ x }}</dd>
+              <dt v-if="request.constraints[idx]">{{ idx | formatField }}</dt>
+              <dd v-if="x">{{ x | formatValue }}</dd>
               </span>
             </dl>
           </div>
@@ -106,6 +106,21 @@ import {login, getLatestFrame} from './archive.js';
 
 Vue.filter('formatDate', function(value){
   return formatDate(value);
+});
+
+Vue.filter('formatField', function(value){
+  var words = value.split('_');
+  words = words.map(function(word){
+    return word.charAt(0).toUpperCase() + word.substr(1);
+  });
+  return words.join(' ');
+});
+
+Vue.filter('formatValue', function(value){
+  if(!isNaN(value)){
+    return Number(value.toFixed(7));
+  }
+  return value;
 });
 
 export default {
@@ -195,6 +210,11 @@ dl.twocol {
   -webkit-column-count: 2;
   column-count: 2;
 }
+
+dl.twocol dt {
+  width: inherit;
+}
+
 .request-details {
   margin-top: 5px;
 }

@@ -48,7 +48,8 @@
         <modal :show="showCadence" v-on:close="cancelCadence" v-on:submit="acceptCadence"
                header="Generated Cadence" :showAccept="cadenceRequests.length > 0">
           <p>The blocks below represent the windows of the requests that will be generated if the current cadence is accepted.
-          Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
+          These requests will replace the current request.</p>
+          <p>Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
           <cadence :data="cadenceRequests"></cadence>
         </modal>
         <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
