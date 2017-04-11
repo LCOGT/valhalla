@@ -57,7 +57,7 @@
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.target">
               <dt v-if="request.target[idx]">{{ idx | formatField }}</dt>
-              <dd v-if="x">{{ x }}</dd>
+              <dd v-if="x">{{ x | formatValue }}</dd>
               </span>
             </dl>
             <hr/>
@@ -65,7 +65,7 @@
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
               <dt v-if="request.constraints[idx]">{{ idx | formatField }}</dt>
-              <dd v-if="x">{{ x }}</dd>
+              <dd v-if="x">{{ x | formatValue }}</dd>
               </span>
             </dl>
           </div>
@@ -114,6 +114,13 @@ Vue.filter('formatField', function(value){
     return word.charAt(0).toUpperCase() + word.substr(1);
   });
   return words.join(' ');
+});
+
+Vue.filter('formatValue', function(value){
+  if(!isNaN(value)){
+    return Number(value.toFixed(7));
+  }
+  return value;
 });
 
 export default {
