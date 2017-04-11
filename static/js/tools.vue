@@ -1,24 +1,70 @@
-<template>
-<div class="row">
-  <div class="col-md-12">
-    <h1>Planning Tools</h1>
-    <h3>Network Contention</h3>
-    <p>
-        This plot shows the amount of telescope time requested by RA and instrument.
-        Observations requested where contention is high are more likely to
-        incur scheduling conflicts.
-    </p>
-    <Contention></Contention>
-  </div>
-</div>
-</template>
-<script>
-import Contention from './components/contention.vue';
-
 export default {
-  name: 'tools',
-  components: {Contention},
-};
-</script>
-<style>
-</style>
+  data: {
+    instrument: '1M0-SCICAM-SINISTRO',
+  },
+  name: 'contention',
+  created: function(){
+      this.api_call(function(keys, values) {
+      var ctx = document.getElementById('myChart');
+      var allData = {
+          type: 'bar',
+          data: {
+              labels: keys,
+              datasets: [{
+                  data: values,
+                  backgroundColor:
+                      'rgba(255, 99, 132, 0.7)',
+                  borderWidth: 1
+              }]
+          },
+          options: {
+              legend: {
+              display: false
+          },
+              scales: {
+                  yAxes: [{
+                      ticks: {
+                          beginAtZero:true,
+                          scaleSteps:.25
+                      },
+                      barPercentage:1,
+                      categoryPercentage:.95,
+                      scaleLabel: {
+                          display: true,
+                          labelString: 'Total Requested Hours'
+                      }
+                  }],
+                  xAxes: [{
+                      ticks: {
+                          stepSize: 2
+                      },
+                  barPercentage:1,
+                  categoryPercentage:.9
+                  }],
+              },
+          }
+      }
+      myChart = new Chart(ctx, allData);
+      });
+    },
+  methods: {
+    api_call: function(callback){
+      $.getJSON('/api/contention/' + this.instrument, function (json) {
+        var keys = Object.keys(json).map(function(key) {
+          return key;
+        });
+        var values = Object.values(json).map(function(values) {
+          return (values['All Proposals'] / 3600).toFixed(3);
+        });
+        callback(keys, values)
+      });
+    },
+    update_chart: function(callback){
+      this.api_call(function(keys, values) {
+      myChart.data.labels = keys;
+      myChart.data.datasets[0].data = values; 
+      myChart.update(); 
+    });
+    }
+  }
+}
