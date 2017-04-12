@@ -22,10 +22,7 @@ export default {
       rawData: [],
       data: {
         labels: [...Array(24).keys()].map(function(x){ return x.toString(); }),
-        datasets: [{
-          label: 'Booked Hours',
-          data: [],
-        }]
+        datasets: []
       }
     };
   },
