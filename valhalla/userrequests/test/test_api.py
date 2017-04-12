@@ -1550,8 +1550,8 @@ class TestContention(ConfigDBTestMixin, APITestCase):
         response = self.client.get(
             reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
         )
-        self.assertNotEqual(response.json()['1']['All Proposals'], 0)
-        self.assertEqual(response.json()['2']['All Proposals'], 0)
+        self.assertNotEqual(response.json()[1]['All Proposals'], 0)
+        self.assertEqual(response.json()[2]['All Proposals'], 0)
 
     def test_contention_staff(self):
         user = mixer.blend(User, is_staff=True)
@@ -1559,8 +1559,8 @@ class TestContention(ConfigDBTestMixin, APITestCase):
         response = self.client.get(
            reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
         )
-        self.assertNotEqual(response.json()['1'][self.request.user_request.proposal.id], 0)
-        self.assertNotIn(self.request.user_request.proposal.id, response.json()['2'])
+        self.assertNotEqual(response.json()[1][self.request.user_request.proposal.id], 0)
+        self.assertNotIn(self.request.user_request.proposal.id, response.json()[2])
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
