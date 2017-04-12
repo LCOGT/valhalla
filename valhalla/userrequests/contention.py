@@ -20,7 +20,7 @@ class Contention(object):
         )
 
     def _binned_durations_by_proposal_and_ra(self):
-        ra_bins = {x: {} for x in range(0, 24)}
+        ra_bins = [{} for x in range(0, 24)]
         for request in self.requests:
             ra = math.floor(request.target.ra / 15)
             proposal_id = request.user_request.proposal.id
@@ -31,8 +31,8 @@ class Contention(object):
         return ra_bins
 
     def _anonymize(self, data):
-        for ra in data:
-            data[ra] = {'All Proposals': sum(data[ra].values())}
+        for index, ra in enumerate(data):
+            data[index] = {'All Proposals': sum(ra.values())}
         return data
 
     def data(self):

@@ -6,98 +6,95 @@
     <option value="2M0-FLOYDS-SCICAM">2m FLOYDS</option>
     <option value="0M4-SCICAM-SBIG">.4m SBIG</option>
   </select>
-  <i class="fa fa-spin fa-spinner" v-show="contention.length < 1"></i>
-  <center>Right Ascension</center>
-  <div id="plot"></div>
+  <i class="fa fa-spin fa-spinner load-spinner" v-show="rawData.length < 1"></i>
+  <canvas id="plot" width="400" height="200"></canvas>
 </div>
 </template>
 <script>
-import vis from 'vis';
+import Chart from 'chart.js';
 import $ from 'jquery';
-import 'vue-style-loader!vis/dist/vis.css';
+import {colorPalette} from '../utils.js';
 export default {
   name: 'contention',
   data: function(){
     return {
       instrument: '',
-      contention: [],
-      options: {
-        style: 'bar',
-        moveable: false,
-        stack: true,
-        showMajorLabels: false,
-        drawPoints: true,
-        dataAxis: {
-          left: {
-            range: {
-              min: 0
-            },
-            title: {
-              text: 'Total Requested Hours'
-            }
-          },
-        },
+      rawData: [],
+      data: {
+        labels: [...Array(24).keys()].map(function(x){ return x.toString(); }),
+        datasets: [{
+          label: 'Booked Hours',
+          data: [],
+        }]
       }
     };
   },
   computed: {
-    toVis: function(){
-      var items = new vis.DataSet();
-      var groups = new vis.DataSet();
-      for(var ra in this.contention){
-        for(var prop in this.contention[ra]){
-          var y = this.contention[ra][prop] / 3600;
-          items.add({
-            group: prop,
-            x: Number(ra) * 1000,
-            y: y,
-            label: {
-              content: prop + ': ' + y.toFixed(2),
-              className: 'plot-label'
-            }
-          });
-          if(!groups.get(prop)){
-            groups.add({
-              id: prop,
-              content: prop,
-            });
+    toChartData: function(){
+      var datasets = {};
+      for (var ra = 0; ra < this.rawData.length; ra++) {
+        for(var proposal in this.rawData[ra]){
+          if(!datasets.hasOwnProperty(proposal)){
+            datasets[proposal] = Array.apply(null, Array(24)).map(Number.prototype.valueOf, 0);  // fills array with 0s
           }
+          datasets[proposal][ra] = this.rawData[ra][proposal] / 3600;
         }
       }
-      return {groups: groups, items: items};
-    },
+      var grouped = [];
+      var color = 0;
+      for(var prop in datasets){
+        grouped.push({label: prop, data: datasets[prop], backgroundColor: colorPalette[color]});
+        color++;
+      }
+      return grouped;
+    }
   },
   created: function(){
     this.instrument = '1M0-SCICAM-SINISTRO';
   },
   watch: {
     instrument: function(instrument){
+      this.rawData = [];
       var that = this;
-      that.contention = [];
       $.getJSON('/api/contention/' + instrument + '/', function(data){
-        that.contention = data;
-        that.graph.setItems(new vis.DataSet());
-        that.graph.setGroups(new vis.DataSet());
-        that.graph.setGroups(that.toVis.groups);
-        that.graph.setItems(that.toVis.items);
-        that.graph.fit();
+        that.rawData = data;
+        that.data.datasets = that.toChartData;
+        that.chart.update();
       });
     }
   },
   mounted: function(){
     var that = this;
-    this.graph = new vis.Graph2d(this.$el, this.toVis, this.groups, this.options);
-    this.graph.on('changed', function(){
-      $(that.$el).find('.vis-point').each(function(){
-        $(this).attr('title', $(this).next().text());
-        $(this).tooltip({'container': 'body', 'placement': 'top'});
-      });
+    var ctx = document.getElementById('plot');
+    this.chart = new Chart(ctx, {
+      type: 'bar',
+      data: that.data,
+      options: {
+        scales:{
+          xAxes: [{
+            stacked: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Right Ascension'
+            }
+          }],
+          yAxes: [{
+            stacked: true,
+            scaleLabel: {
+              display: true,
+              labelString: 'Total Requested Hours'
+            }
+          }]
+        },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem){
+              return tooltipItem.yLabel.toFixed(3);
+            }
+          }
+        }
+      }
     });
   }
 };
 </script>
-<style>
-.plot-label {
-  display: none;
-}
-</style>
