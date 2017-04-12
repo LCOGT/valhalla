@@ -86,7 +86,7 @@ export default {
         tooltips: {
           callbacks: {
             label: function(tooltipItem){
-              return tooltipItem.yLabel.toFixed(3);
+              return that.data.datasets[tooltipItem.datasetIndex].label + ' ' +tooltipItem.yLabel.toFixed(3);
             }
           }
         }
