@@ -19,6 +19,12 @@ a:hover {
     color: #337ab7;
     text-decoration: none;
 }
+
+#lco-name {
+    padding-top: 10px !important;
+    line-height: 1.1em;
+}
+
 .nav > li > a:focus, .nav > li > a:hover {
     background-color: inherit;
 }
@@ -87,20 +93,27 @@ a:hover {
 }
 
 .navbar-main {
-    width: 70% !important;
+    padding-top: 20px;
+    width: 80% !important;
 }
 
 .navbar-right {
+    padding-top: 20px;
     width: auto;
 }
 
 
 .head.downPage .headNav {
-    width: 70%;
+    font-size: 1.2em;
+    width: 80%;
 }
 
 .head {
     box-shadow: none;
+}
+
+.head .headNav a {
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
 .btn {
