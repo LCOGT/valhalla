@@ -21,7 +21,7 @@ export default {
       instrument: '',
       rawData: [],
       data: {
-        labels: [...Array(24).keys()].map(function(x){ return x.toString(); }),
+        labels: Array.apply(null, {length: 24}).map(Number.call, Number),
         datasets: []
       }
     };

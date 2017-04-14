@@ -38,7 +38,7 @@ export default {
       rawData: [],
       data: {
         datasets: [],
-        labels: [...Array(24 * 4).keys()].map(function(x){ return (x / 4).toString(); }),
+        labels: Array.apply(null, {length: 24 * 4}).map(Number.call, Number).map(function(x){ return (x / 4).toString(); })
       }
     };
   },
