@@ -65,9 +65,10 @@ export default {
   },
   methods: {
     fetchData: function(){
+      this.rawData = [];
       var urlstring = '/api/pressure/?x=0';
       if(this.site) urlstring += ('&site=' + this.site);
-      if(this.instrument) urlstring += ('&instrument=' + this.site);
+      if(this.instrument) urlstring += ('&instrument=' + this.instrument);
       var that = this;
       $.getJSON(urlstring, function(data){
         that.rawData = data;

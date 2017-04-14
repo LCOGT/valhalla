@@ -19,6 +19,8 @@ class Contention(object):
             state='PENDING',
             molecules__instrument_name=instrument_name,
             target__type='SIDEREAL'
+        ).prefetch_related(
+            'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
         )
 
     def _binned_durations_by_proposal_and_ra(self):
@@ -62,7 +64,9 @@ class Pressure(object):
         if instrument_name:
             requests = requests.filter(molecules__instrument_name=instrument_name)
 
-        return requests
+        return requests.prefetch_related(
+            'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
+        )
 
     def _request_visibility(self):
         vis = {}
@@ -99,7 +103,10 @@ class Pressure(object):
             start = timezone.now() + timedelta(minutes=15 * x)
             end = timezone.now() + timedelta(minutes=15 * (x + 1))
             available_sites = self._available_sites(start, end)
-            requests = self.requests.filter(windows__start__lte=start, windows__end__gte=end)
+            requests = [
+                r for r in self.requests if
+                min(w.start for w in r.windows.all()) <= start and max(w.end for w in r.windows.all()) >= end
+            ]
             for request in requests:
                 proposal = request.user_request.proposal.id
                 pressure = self._pressure_for_request(request, available_sites)
@@ -115,13 +122,13 @@ class Pressure(object):
         if visible_seconds < 1:
             return 0
         duration = request.duration
-        total_telescopes = 0
+        total_tel = 0
         for molecule in request.molecules.all():
             telescopes_for_instrument_type = configdb.get_telescopes_per_instrument_type(molecule.instrument_name)
-            total_telescopes += len([t for t in telescopes_for_instrument_type if t.site in available_sites])
-        if total_telescopes < 1:
+            total_tel += min([len(t) for t in telescopes_for_instrument_type if t.site in available_sites], default=0)
+        if total_tel < 1:
             return 0
-        avg_telescopes = total_telescopes / request.molecules.count()
+        avg_telescopes = total_tel / request.molecules.count()
         return (duration / visible_seconds) / avg_telescopes
 
     def _anonymize(self, data):
