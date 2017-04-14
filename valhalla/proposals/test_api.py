@@ -2,7 +2,8 @@ from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-
+from datetime import datetime
+from django.utils import timezone
 
 from valhalla.proposals.models import Proposal, Membership, Semester
 
@@ -67,7 +68,8 @@ class TestProposalApiDetail(APITestCase):
 
 class TestSemesterApi(APITestCase):
     def setUp(self):
-        self.semesters = mixer.cycle(3).blend(Semester, public=True)
+        self.semesters = mixer.cycle(3).blend(Semester, public=True, start=datetime(2016, 1, 1, tzinfo=timezone.utc),
+                                              end=datetime(2016, 2, 1, tzinfo=timezone.utc))
         self.tim_semester = mixer.blend(Semester, public=False)
 
     def test_semester_list(self):
@@ -75,6 +77,19 @@ class TestSemesterApi(APITestCase):
         for semester in self.semesters:
             self.assertContains(response, semester.id)
         self.assertNotContains(response, self.tim_semester.id)
+
+    def test_semester_contains_filter(self):
+        later_semester = mixer.blend(Semester, public=True, start=datetime(2017, 1, 1, tzinfo=timezone.utc),
+                                     end=datetime(2017, 2, 1, tzinfo=timezone.utc))
+        response = self.client.get(reverse('api:semesters-list') + '?semester_contains=2017-01-10')
+        self.assertContains(response, later_semester.id)
+        for semester in self.semesters:
+            self.assertNotContains(response, semester.id)
+        self.assertNotContains(response, self.tim_semester.id)
+
+    def test_no_semester_contains_filter(self):
+        response = self.client.get(reverse('api:semesters-list') + '?semester_contains=2018-01-10')
+        self.assertEqual(response.json()['count'], 0)
 
     def test_semester_detail(self):
         response = self.client.get(reverse('api:semesters-detail', kwargs={'pk': self.semesters[0].id}))

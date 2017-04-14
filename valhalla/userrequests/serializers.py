@@ -212,11 +212,12 @@ class RequestSerializer(serializers.ModelSerializer):
     molecules = MoleculeSerializer(many=True)
     windows = WindowSerializer(many=True)
     cadence = CadenceSerializer(required=False)
+    duration = serializers.ReadOnlyField()
 
     class Meta:
         model = Request
         read_only_fields = (
-            'id', 'fail_count', 'scheduled_count', 'created', 'completed'
+            'id', 'fail_count', 'scheduled_count', 'created', 'completed', 'duration',
         )
         exclude = ('user_request',)
 
