@@ -27,6 +27,8 @@
 import Chart from 'chart.js';
 import $ from 'jquery';
 import {colorPalette} from '../utils.js';
+import 'chartjs-plugin-annotation';
+
 export default {
   name: 'pressure',
   data: function(){
@@ -54,7 +56,7 @@ export default {
       var grouped = [];
       var color = 0;
       for(var prop in datasets){
-        grouped.push({label: prop, data: datasets[prop], backgroundColor: colorPalette[color]});
+        grouped.push({label: prop, data: datasets[prop], backgroundColor: colorPalette[color], type: 'bar'});
         color++;
       }
       return grouped;
@@ -92,6 +94,17 @@ export default {
       type: 'bar',
       data: that.data,
       options: {
+        annotation: {
+          annotations: [{
+            type: 'line',
+            mode: 'horizontal',
+            scaleID: 'y-axis-0',
+            value: '1.0',
+            borderColor: 'black',
+            borderDash: [5, 8],
+            borderWidth: 4,
+          }]
+        },
         scales:{
           xAxes: [{
             stacked: true,
