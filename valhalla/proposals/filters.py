@@ -1,5 +1,6 @@
 import django_filters
-
+from django.utils import timezone
+from dateutil.parser import parse
 from valhalla.proposals.models import Semester, Proposal
 
 
@@ -12,3 +13,22 @@ class ProposalFilter(django_filters.FilterSet):
     class Meta:
         model = Proposal
         fields = ('active', 'semester')
+
+
+class SemesterFilter(django_filters.FilterSet):
+    semester_contains = django_filters.CharFilter(method='semester_contains_filter', label='Contains Date')
+
+    def semester_contains_filter(self, queryset, name, value):
+        try:
+            date_value = parse(value)
+            date_value = date_value.replace(tzinfo=timezone.utc)
+            return queryset.filter(start__lte=date_value, end__gte=date_value)
+        except TypeError:
+            return queryset
+
+    class Meta:
+        model = Semester
+        fields = {'start': ['gte',],
+                  'end': ['lte',],
+                  'id': ['contains',],
+                  }
