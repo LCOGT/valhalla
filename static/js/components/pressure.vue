@@ -1,13 +1,26 @@
 <template>
-<div class="contention">
-  <select v-model="instrument">
+<div class="pressure">
+  <label for="pressure-instrument">Instrument</label>
+  <select id="pressure-instrument" v-model="instrument">
+    <option value="">All</option>
     <option value="1M0-SCICAM-SINISTRO">1m Sinistro</option>
     <option value="2M0-SCICAM-SPECTRAL">2m Spectral</option>
     <option value="2M0-FLOYDS-SCICAM">2m FLOYDS</option>
     <option value="0M4-SCICAM-SBIG">.4m SBIG</option>
   </select>
+  <label for="pressure-site">Site</label>
+  <select id="pressure-site" v-model="site">
+    <option value="">All</option>
+    <option value="coj">Siding Spring (coj)</option>
+    <option value="cpt">Sutherlan, South Africa (cpt)</option>
+    <option value="elp">McDonald, Texas (elp)</option>
+    <option value="lsc">Cerro Tololo, Chile (lsc)</option>
+    <option value="ogg">Maui, Hawaii (ogg)</option>
+    <option value="sqa">Sedgwick Reserve (sqa)</option>
+    <option value="tfn">Tenerife, Canary Islands (tfn)</option>
+  </select>
   <i class="fa fa-spin fa-spinner load-spinner" v-show="rawData.length < 1"></i>
-  <canvas id="contentionplot" width="400" height="200"></canvas>
+  <canvas id="pressureplot" width="400" height="200"></canvas>
 </div>
 </template>
 <script>
@@ -15,26 +28,27 @@ import Chart from 'chart.js';
 import $ from 'jquery';
 import {colorPalette} from '../utils.js';
 export default {
-  name: 'contention',
+  name: 'pressure',
   data: function(){
     return {
       instrument: '',
+      site: '',
       rawData: [],
       data: {
-        labels: [...Array(24).keys()].map(function(x){ return x.toString(); }),
-        datasets: []
+        datasets: [],
+        labels: [...Array(24 * 4).keys()].map(function(x){ return (x / 4).toString(); }),
       }
     };
   },
   computed: {
     toChartData: function(){
       var datasets = {};
-      for (var ra = 0; ra < this.rawData.length; ra++) {
-        for(var proposal in this.rawData[ra]){
+      for (var time = 0; time < this.rawData.length; time++) {
+        for(var proposal in this.rawData[time]){
           if(!datasets.hasOwnProperty(proposal)){
-            datasets[proposal] = Array.apply(null, Array(24)).map(Number.prototype.valueOf, 0);  // fills array with 0s
+            datasets[proposal] = Array.apply(null, Array(24 * 4)).map(Number.prototype.valueOf, 0);  // fills array with 0s
           }
-          datasets[proposal][ra] = this.rawData[ra][proposal] / 3600;
+          datasets[proposal][time] = this.rawData[time][proposal];
         }
       }
       var grouped = [];
@@ -47,22 +61,32 @@ export default {
     }
   },
   created: function(){
-    this.instrument = '1M0-SCICAM-SINISTRO';
+    this.fetchData();
   },
-  watch: {
-    instrument: function(instrument){
-      this.rawData = [];
+  methods: {
+    fetchData: function(){
+      var urlstring = '/api/pressure/?x=0';
+      if(this.site) urlstring += ('&site=' + this.site);
+      if(this.instrument) urlstring += ('&instrument=' + this.site);
       var that = this;
-      $.getJSON('/api/contention/' + instrument + '/', function(data){
+      $.getJSON(urlstring, function(data){
         that.rawData = data;
         that.data.datasets = that.toChartData;
         that.chart.update();
       });
     }
   },
+  watch: {
+    instrument: function(){
+      this.fetchData();
+    },
+    site: function(){
+      this.fetchData();
+    }
+  },
   mounted: function(){
     var that = this;
-    var ctx = document.getElementById('contentionplot');
+    var ctx = document.getElementById('pressureplot');
     this.chart = new Chart(ctx, {
       type: 'bar',
       data: that.data,
@@ -72,14 +96,17 @@ export default {
             stacked: true,
             scaleLabel: {
               display: true,
-              labelString: 'Right Ascension'
+              labelString: 'Hours From Now'
+            },
+            ticks: {
+              maxTicksLimit: 25
             }
           }],
           yAxes: [{
             stacked: true,
             scaleLabel: {
               display: true,
-              labelString: 'Total Requested Hours'
+              labelString: 'Pressure'
             }
           }]
         },
