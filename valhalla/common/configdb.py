@@ -118,6 +118,17 @@ class ConfigDB(object):
 
         return telescope_instrument_types
 
+    def get_telescopes_per_instrument_type(self, instrument_type, only_schedulable=False):
+        '''
+        Function returns a set of telescope keys that have an instrument of instrument_type
+        associated with them
+        '''
+        instrument_telescopes = set()
+        for instrument in self.get_instruments(only_schedulable=only_schedulable):
+            if instrument['science_camera']['camera_type']['code'].upper() == instrument_type:
+                instrument_telescopes.add(instrument['telescope_key'])
+        return instrument_telescopes
+
     def get_filters(self, instrument_type):
         '''
         Function creates a set of available filters for instruments of the instrument_type specified using the configdb

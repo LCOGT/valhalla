@@ -6,7 +6,7 @@ from rise_set.rates import ProperMotion
 from rise_set.utils import coalesce_adjacent_intervals
 from rise_set.visibility import Visibility
 
-from valhalla.common.configdb import ConfigDB
+from valhalla.common.configdb import configdb
 
 HOURS_PER_DEGREES = 15.0
 
@@ -18,7 +18,6 @@ def get_rise_set_intervals(request_dict):
     location = request_dict['location']
     instrument_type = request_dict['molecules'][0]['instrument_name']
 
-    configdb = ConfigDB()
     site_details = configdb.get_sites_with_instrument_type_and_location(
             instrument_type, location.get('site', ''), location.get('observatory', ''), location.get('telescope', '')
     )
@@ -105,7 +104,6 @@ def get_rise_set_target(target_dict):
 
 
 def get_site_rise_set_intervals(start, end, site_code):
-    configdb = ConfigDB()
     site_details = configdb.get_sites_with_instrument_type_and_location(site_code=site_code)
     if site_code in site_details:
         site_detail = site_details[site_code]

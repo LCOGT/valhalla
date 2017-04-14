@@ -7,7 +7,7 @@
     <option value="0M4-SCICAM-SBIG">.4m SBIG</option>
   </select>
   <i class="fa fa-spin fa-spinner load-spinner" v-show="rawData.length < 1"></i>
-  <canvas id="plot" width="400" height="200"></canvas>
+  <canvas id="contentionplot" width="400" height="200"></canvas>
 </div>
 </template>
 <script>
@@ -62,7 +62,7 @@ export default {
   },
   mounted: function(){
     var that = this;
-    var ctx = document.getElementById('plot');
+    var ctx = document.getElementById('contentionplot');
     this.chart = new Chart(ctx, {
       type: 'bar',
       data: that.data,

@@ -19,6 +19,7 @@ import responses
 import os
 import copy
 import json
+import random
 
 generic_payload = {
     'proposal': 'temp',
@@ -1561,6 +1562,35 @@ class TestContention(ConfigDBTestMixin, APITestCase):
         )
         self.assertNotEqual(response.json()[1][self.request.user_request.proposal.id], 0)
         self.assertNotIn(self.request.user_request.proposal.id, response.json()[2])
+
+
+class TestPressure(ConfigDBTestMixin, APITestCase):
+    # Todo: Improve these tests
+    def setUp(self):
+        super().setUp()
+        for i in range(24):
+            request = mixer.blend(Request, state='PENDING')
+            mixer.blend(
+                Window, start=timezone.now(), end=timezone.now() + timedelta(hours=i), request=request
+            )
+            mixer.blend(
+                Target, ra=random.randint(0, 360), dec=random.randint(-180, 180),
+                proper_motion_ra=0.0, proper_motion_dec=0.0, type='SIDEREAL', request=request
+            )
+            mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=request)
+            mixer.blend(Location, request=request)
+            mixer.blend(Constraints, request=request)
+
+    def test_pressure_no_auth(self):
+        response = self.client.get(reverse('api:pressure'))
+        self.assertEqual(len(response.json()), 24 * 4)
+        self.assertIn('All Proposals', response.json()[0])
+
+    def test_pressure_auth(self):
+        user = mixer.blend(User, is_staff=True)
+        self.client.force_login(user)
+        response = self.client.get(reverse('api:pressure'))
+        self.assertNotIn('All Proposals', response.json()[0])
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):

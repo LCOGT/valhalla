@@ -8,7 +8,8 @@ from django.conf.urls.static import static
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
-from valhalla.userrequests.views import InstrumentsInformationView, UserRequestStatusIsDirty, ContentionView
+from valhalla.userrequests.views import InstrumentsInformationView, UserRequestStatusIsDirty
+from valhalla.userrequests.views import ContentionView, PressureView
 from valhalla.proposals.viewsets import ProposalViewSet, SemesterViewSet
 from valhalla.accounts.views import ProfileApiView
 import valhalla.accounts.urls as accounts_urls
@@ -33,6 +34,7 @@ api_urlpatterns = [
     url(r'instruments/', InstrumentsInformationView.as_view(), name='instruments_information'),
     url(r'isDirty/', UserRequestStatusIsDirty.as_view(), name='isDirty'),
     url(r'contention/(?P<instrument_name>.+)/', ContentionView.as_view(), name='contention'),
+    url(r'pressure/', PressureView.as_view(), name='pressure'),
 ]
 
 urlpatterns = [

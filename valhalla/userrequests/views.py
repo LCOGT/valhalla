@@ -21,7 +21,7 @@ from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
-from valhalla.userrequests.contention import Contention
+from valhalla.userrequests.contention import Contention, Pressure
 
 
 def get_start_end_paramters(request):
@@ -184,3 +184,16 @@ class ContentionView(APIView):
         else:
             contention = Contention(instrument_name)
         return Response(contention.data())
+
+
+class PressureView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        instrument_name = request.GET.get('instrument')
+        site = request.GET.get('site')
+        if request.user.is_staff:
+            pressure = Pressure(instrument_name, site, anonymous=False)
+        else:
+            pressure = Pressure(instrument_name, site)
+        return Response(pressure.data())

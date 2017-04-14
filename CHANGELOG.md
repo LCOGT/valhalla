@@ -13,6 +13,7 @@
 * Add 'duration' field to API output for getting requests
 * Add 'location' details to API output for requests only if they are not blank (I.e. site, observatory, telescope info)
 * Add semester_contains filter to /api/semesters endpoint to get semester details given a date[time]
+* Initial working pressure and contention plots
 
 ## 0.1.0
 2017-04-07
