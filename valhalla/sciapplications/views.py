@@ -5,7 +5,6 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.utils import timezone
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from weasyprint import HTML
