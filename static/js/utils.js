@@ -47,7 +47,7 @@ function sexagesimalDecToDecimal(dec){
       var dd = parseInt(m[2], 10);
       var mm = parseFloat(m[3]);
       var ss = m[4] ? parseFloat(m[4]) : 0.0;
-      if (dd >= 0 && dd <= 90 && mm >= 0 && mm <= 59 && ss >= 0 && ss <= 59) {
+      if (dd >= 0 && dd <= 90 && mm >= 0 && mm <= 59 && ss >= 0 && ss < 60) {
         dec = (sign * (dd + mm / 60.0 + ss / 3600.0)).toFixed(10);
       }
     }
