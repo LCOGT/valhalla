@@ -12,7 +12,7 @@
           <br/>
           <ul>
             <li>
-              <a href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
+              <a target="_blank" href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
             </li>
             <li>
               <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
