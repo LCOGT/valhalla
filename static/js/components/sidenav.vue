@@ -6,6 +6,7 @@
           <i v-if="rootError" class="fa fa-fw fa-warning text-danger"></i>
           <i v-else class="fa fa-fw fa-check text-success"></i>
           General Info
+          <div class="errorlist text-danger" v-html="rootErrorList"></div>
         </a>
       </li>
       <li v-for="(request, index) in userrequest.requests">
@@ -13,30 +14,35 @@
           <i v-if="hasError(['requests', index])" class="fa fa-fw fa-warning text-danger"></i>
           <i v-else class="fa fa-fw fa-check text-success"></i>
           Request #{{ index + 1}}
+          <div class="errorlist text-danger" v-html="errorList(['requests', index])"></div>
         </a>
         <ul class="nav nav-stacked">
           <li>
             <a :href="'#target' + index">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'target']) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Target
+              <div class="errorlist text-danger" v-html="errorList(['requests', index, 'target'])"></div>
             </a>
           </li>
           <li v-for="(molecule, molIndex) in request.molecules">
             <a :href="'#molecule' + index + molIndex">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'molecules', molIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Configutation #{{ molIndex + 1}}
+              <div class="errorlist text-danger" v-html="errorList(['requests', index, 'molecules', molIndex])"></div>
             </a>
           </li>
           <li v-for="(window, winIndex) in request.windows">
             <a :href="'#window' + index + winIndex">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'windows', winIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Window #{{ winIndex + 1}}
+              <div class="errorlist text-danger" v-html="errorList(['requests', index, 'windows', winIndex])"></div>
             </a>
           </li>
           <li>
             <a :href="'#constraints' + index">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'constraints']) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
               Constraints
+              <div class="errorlist text-danger" v-html="errorList(['requests', index, 'constraints'])"></div>
             </a>
           </li>
         </ul>
@@ -52,11 +58,38 @@
     computed: {
       rootError: function(){
         return !_.isEmpty(this.errors);
+      },
+      rootErrorList: function(){
+        var errortext = '';
+        for(var k in this.errors){
+          if(k != 'requests'){
+            errortext += (k + ': ');
+            for(var e in this.errors[k]){
+              errortext += (this.errors[k][e] + '<br/>');
+            }
+          }
+        }
+        return errortext;
       }
     },
     methods: {
+      getErrors: function(path){
+        return _.get(this.errors, path, []);
+      },
       hasError: function(path){
-        return !_.isEmpty(_.get(this.errors, path, []));
+        return !_.isEmpty(this.getErrors(path));
+      },
+      errorList: function(path){
+        var errortext = '';
+        for(var k in this.getErrors(path)){
+          if(!['request', 'target', 'molecules', 'windows', 'constraints'].includes(k)){
+            errortext += (k + ': ');
+            for(var e in this.getErrors(path)[k]){
+              errortext += (this.getErrors(path)[k][e] + '<br/>');
+            }
+          }
+        }
+        return errortext;
       }
     }
   };
@@ -115,5 +148,10 @@
 /* show active nested list */
 .bs-docs-sidebar .nav>.active>ul.nav {
     display: block;
+}
+.errorlist {
+  padding-left: 22px;
+  font-size: 14px;
+  max-width: 300px;
 }
 </style>
