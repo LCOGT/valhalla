@@ -18,7 +18,9 @@
 <div class="row">
     <div class="col-md-9">
         <p>You are creating a proposal for {{ call.semester }}.</p>
+        {% if call.proposal_type != 'DDT' %}
         <p>Deadline: <strong>{{ call.deadline|date:"j M Y P" }}</strong> ({{ call.deadline|timeuntil }})</p>
+        {% endif %}
         <p>{{ call.eligibility }}</p>
         {% bootstrap_form_errors form %}
         <form method="post" action="" enctype="multipart/form-data" id="app_form">
