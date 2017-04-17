@@ -48,6 +48,9 @@
             <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
                          desc="Modified Julian Days">
             </customfield>
+            <customfield v-model="target.epochofel" label="Epoch of Elements" field="epochofel"
+                         v-on:input="update" :errors="errors.epochofel" desc="Epoch of Elements">
+            </customfield>
             <customfield v-model="target.orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
                         :errors="errors.orbinc">
             </customfield>
@@ -110,7 +113,14 @@ export default {
     delete sid_target_params['name'];
     delete sid_target_params['epoch'];
     delete sid_target_params['type'];
-    return {show: true, lookingUP: false, ns_target_params: ns_target_params, sid_target_params: sid_target_params, rot_target_params: rot_target_params};
+    return {
+      show: true,
+      lookingUP: false,
+      lookupFail: false,
+      lookupText: '',
+      ns_target_params: ns_target_params,
+      sid_target_params: sid_target_params,
+      rot_target_params: rot_target_params};
   },
   methods: {
     update: function(){
