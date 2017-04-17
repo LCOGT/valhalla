@@ -12,9 +12,9 @@
         <form class="form-horizontal">
           <customfield v-model="target.name" label="Target Name" field="name" v-on:input="update" :errors="errors.name">
           </customfield>
-          <div class="row" v-show="lookingUP">
+          <div class="row" v-show="lookingUP || lookupFail">
               <span class="col-md-12" style="text-align: right">
-                <i class="fa fa-spinner fa-spin fa-fw"></i> Looking up coordinates...
+                <i v-show="lookingUP" class="fa fa-spinner fa-spin fa-fw"></i> {{ lookupText }}
               </span>
           </div>
           <customselect v-model="target.type" label="Type" field="type" v-on:input="update"
@@ -128,6 +128,8 @@ export default {
   watch: {
     'target.name': _.debounce(function(name){
       this.lookingUP = true;
+      this.lookupFail = false;
+      this.lookupText = 'Searching for coordinates...';
       var that = this;
       $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
         that.target.ra = _.get(data, ['ra', 'decimal'], null);
@@ -135,6 +137,9 @@ export default {
         that.target.proper_motion_ra = data.pmra;
         that.target.proper_motion_dec = data.pmdec;
         that.update();
+      }).fail(function(){
+        that.lookupText = 'Could not find any matching objects';
+        that.lookupFail = true;
       }).always(function(){
         that.lookingUP = false;
       });
