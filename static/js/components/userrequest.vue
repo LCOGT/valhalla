@@ -36,7 +36,7 @@
                                      {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
                           desc="Rapid response mode means the request should be executed immediately.">
             </customselect>
-            <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
+            <customfield v-model="userrequest.ipp_value" label="IPP Factor" field="ipp_value"
                          v-on:input="update" :errors="errors.ipp_value"
                          desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
