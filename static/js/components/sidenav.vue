@@ -53,6 +53,8 @@
 
 <script>
   import _ from 'lodash';
+  import {formatField} from '../utils.js';
+
   export default {
     props: ['userrequest', 'errors'],
     computed: {
@@ -63,7 +65,7 @@
         var errortext = '';
         for(var k in this.errors){
           if(k != 'requests'){
-            errortext += (k + ': ');
+            errortext += (formatField(k) + ': ');
             for(var e in this.errors[k]){
               errortext += (this.errors[k][e] + '<br/>');
             }
@@ -83,7 +85,7 @@
         var errortext = '';
         for(var k in this.getErrors(path)){
           if(!['request', 'target', 'molecules', 'windows', 'constraints'].includes(k)){
-            errortext += (k + ': ');
+            errortext += (formatField(k) + ': ');
             for(var e in this.getErrors(path)[k]){
               errortext += (this.getErrors(path)[k][e] + '<br/>');
             }

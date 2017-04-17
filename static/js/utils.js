@@ -79,6 +79,14 @@ function formatDate(date){
   }
 }
 
+function formatField(value){
+  var words = value.split('_');
+  words = words.map(function(word){
+    return word.charAt(0).toUpperCase() + word.substr(1);
+  });
+  return words.join(' ');
+}
+
 export const datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
 
 export const collapseMixin = {
@@ -129,4 +137,5 @@ export const colorPalette = [  // useful assigning colors to datasets.
   '#3B5DFF', '#4A3B53', '#FF2F80'
 ];
 
-export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString, formatDate};
+export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
+        formatDate, formatField};
