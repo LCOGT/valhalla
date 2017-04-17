@@ -31,13 +31,14 @@
       <dd>{{ userrequest.submitter }}</dd>
     </dl>
     <dl class="col-md-1">
-      <dt>{% trans 'Type' %}</dt>
-      <dd>{{ userrequest.observation_type }}</dd>
-    </dl>
-    <dl class="col-md-1">
       <dt>IPP</dt>
       <dd>{{ userrequest.ipp_value }}</dd>
     </dl>
+    {% if userrequest.observation_type == 'TARGET_OF_OPPORTUNITY' %}
+    <div class="col-md-1">
+      <p><i>{% trans 'Rapid Response' %}</i></p>
+    </div>
+    {% endif %}
     <span class="col-md-1">
       <div class="btn-group">
         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
