@@ -172,6 +172,9 @@
   <script type="text/javascript">
     $('#id_created_after, #id_created_before').datetimepicker({
       'format': 'YYYY-M-D HH:mm:ss'
+    }).on('dp.change', function(){
+      $('#id_created_after').data("DateTimePicker").hide();
+      $('#id_created_before').data("DateTimePicker").hide();
     });
     $(function() {
        $(".tool-tip").tooltip();
