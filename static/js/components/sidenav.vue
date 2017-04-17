@@ -24,7 +24,7 @@
           <li v-for="(molecule, molIndex) in request.molecules">
             <a :href="'#molecule' + index + molIndex">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'molecules', molIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
-              Configutation #{{ molIndex + 1}}
+              Configuration #{{ molIndex + 1}}
             </a>
           </li>
           <li v-for="(window, winIndex) in request.windows">
