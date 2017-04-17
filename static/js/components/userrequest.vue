@@ -34,7 +34,7 @@
                           :errors="errors.observation_type"
                           :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
                                      {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
-                          desc="Rapid response mode means the request should be executed immediately.">
+                          desc="Rapid Response (RR) requests bypass normal scheduling and are executed immediately. This mode is only available if a proposal was granted RR time.">
             </customselect>
             <customfield v-model="userrequest.ipp_value" label="IPP Factor" field="ipp_value"
                          v-on:input="update" :errors="errors.ipp_value"
