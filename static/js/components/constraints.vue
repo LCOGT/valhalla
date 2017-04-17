@@ -6,6 +6,14 @@
     </div>
     <div class="row">
       <div class="col-md-6 compose-help" v-show="show">
+        <ul>
+          <li>
+            Advice on
+            <a href="https://lco.global/documentation/airmass-limit" target="_blank" >
+              setting the airmass limit.
+            </a>
+          </li>
+        </ul>
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
