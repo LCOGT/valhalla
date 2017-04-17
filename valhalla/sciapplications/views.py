@@ -36,7 +36,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form.fields['instruments'].queryset = self.call.instruments.all()
+        if form.fields.get('instruments'):
+            form.fields['instruments'].queryset = self.call.instruments.all()
         return form
 
     def get_success_url(self):
@@ -103,7 +104,8 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form.fields['instruments'].queryset = self.object.call.instruments.all()
+        if form.fields.get('instruments'):
+            form.fields['instruments'].queryset = self.object.call.instruments.all()
         return form
 
     def get(self, request, *args, **kwargs):
