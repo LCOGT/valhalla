@@ -160,7 +160,7 @@ class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'sciapplications/index.html'
 
     def get_context_data(self):
-        calls = Call.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
+        calls = Call.open_calls()
         draft_proposals = ScienceApplication.objects.filter(
             submitter=self.request.user, status=ScienceApplication.DRAFT
         )
