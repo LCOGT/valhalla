@@ -32,8 +32,8 @@
                          :errors="errors.filter" :options="filterOptions"
                          desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
           </customselect>
-          <customselect v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
-                         :errors="errors.bin_x" :options="binningsOptions"
+          <customselect v-model="molecule.bin_x" v-if="datatype != 'SPECTRA'" label="Binning"
+                        v-on:input="binningsUpdated" :errors="errors.bin_x" :options="binningsOptions"
                          desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
@@ -46,7 +46,8 @@
           <customfield v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
-          <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
+          <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA'" label="Defocus"
+                       field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Offset of the secondary mirror in mm. Limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
@@ -130,7 +131,7 @@ export default {
       this.$emit('moleculefillwindow', this.index);
     },
     generateCalibs: function(){
-      this.$emit('generateCalibs', this.index)
+      this.$emit('generateCalibs', this.index);
     }
   },
   watch: {
@@ -153,6 +154,7 @@ export default {
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
+        this.molecule.ag_mode = 'ON';
         this.molecule.acquire_mode = this.acquire_params.acquire_mode;
         if (this.molecule.acquire_mode === 'BRIGHTEST'){
           this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
