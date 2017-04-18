@@ -20,7 +20,8 @@
             <h2>Automatic generation of calibration frames</h2>
             <p>
               Since you are taking a spectrum, it is recommended you also schedule calibrations for before
-              and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request.
+              and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request: one arc and one flat before and one arc and one flat after
+              your spectrum.
             </p>
             <a class="btn btn-default" v-on:click="generateCalibs" v-show="molecule.type === 'SPECTRUM'">Create calibration frames</a>
           </div>
