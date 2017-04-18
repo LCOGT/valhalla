@@ -34,10 +34,11 @@
           </customselect>
           <customselect v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
                          :errors="errors.bin_x" :options="binningsOptions"
-                         desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
+                         desc="Number of CCD pixels in X and Y to bin together. Only supported binning modes for the selected imager are displayed.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
-                       :errors="errors.exposure_count" desc="Number of exposures to make with this configuration.">
+                       :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
+                       the count is set to the number of exposures (including overheads) the will fit in the observing window.">
             <div class="input-group-btn" slot="inlineButton">
               <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow"
                       :disabled="duration_data.duration > 0 ? false : true"><b>Fill</b></button>
@@ -47,10 +48,10 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus" desc="Offset of the secondary mirror in mm. Limits are ± 3mm.">
+                       :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset from default focus of the secondary mirror in mm. The limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
-                        :errors="errors.ag_mode" desc="Whether or not to force autoguiding."
+                        :errors="errors.ag_mode" desc="Guiding keeps the field stable during exposures. If OPTIONAL is selected, then guiding is initially attempted, but the observations will be carried out even if guiding fails. If ON is selected, then guiding must be successful for the observations to continue."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
