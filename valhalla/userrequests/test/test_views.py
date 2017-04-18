@@ -57,6 +57,15 @@ class TestUserRequestList(TestCase):
         for ur in self.userrequests:
             self.assertContains(response, ur.group_id)
 
+    def test_userrequest_list_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        self.userrequests[0].submitter = self.user
+        self.userrequests[0].save()
+        response = self.client.get(reverse('userrequests:list'))
+        self.assertContains(response, self.userrequests[0].group_id)
+        self.assertNotContains(response, self.userrequests[1].group_id)
+
     def test_no_other_requests(self):
         proposal = mixer.blend(Proposal)
         other_ur = mixer.blend(UserRequest, proposal=proposal, group_id=mixer.RANDOM)
@@ -109,6 +118,15 @@ class TestUserrequestDetail(TestCase):
         for request in self.requests:
             self.assertContains(response, request.id)
 
+    def test_userrequest_detail_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM, submitter=self.user)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': userrequest.id}))
+        self.assertContains(response, userrequest.group_id)
+
     def test_public_userrequest_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)
         self.userrequest.proposal = proposal
@@ -152,6 +170,16 @@ class TestRequestDetail(TestCase):
         self.client.force_login(user)
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
         self.assertContains(response, self.request.id)
+
+    def test_request_detail_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM, submitter=self.user)
+        request = mixer.blend(Request, user_request=userrequest)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': request.id}))
+        self.assertContains(response, request.id)
 
     def test_public_request_detail_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)
