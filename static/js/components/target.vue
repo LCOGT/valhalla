@@ -68,13 +68,13 @@
             </customfield>
           </div>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
-            <customselect v-model="target.rot_mode" label="Slit Angle" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
+            <customselect v-model="target.rot_mode" label="Slit Position" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                            :options="[{value: 'VFLOAT', text: 'Parallactic'}, {value: 'SKY', text: 'User Specified'}]"
-                           desc="Parallactic positions the dispersion axis horizontally.">
+                           desc="With the slit at the parallactic angle, atmospheric dispersion is along the slit.">
             </customselect>
             <customfield v-model="target.rot_angle" label="Angle" field="rot_angle" v-on:input="update"
                          :errors="errors.rot_angle" v-if="target.rot_mode === 'SKY'"
-                         desc="Angle of dispersion axis in degrees east of north.">
+                         desc="Position Angle of the slit in degrees east of north.">
             </customfield>
           </div>
         </form>
