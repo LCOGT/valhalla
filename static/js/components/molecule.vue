@@ -33,10 +33,6 @@
                          :errors="errors.filter" :options="filterOptions"
                          desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
           </customselect>
-          <customselect v-model="molecule.bin_x" v-if="datatype != 'SPECTRA' && !simple_interface" label="Binning"
-                        v-on:input="binningsUpdated" :errors="errors.bin_x" :options="binningsOptions"
-                         desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
-          </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration.">
             <div class="input-group-btn" slot="inlineButton">
@@ -111,6 +107,7 @@ export default {
       return _.sortBy(options, 'text');
     },
     binningsOptions: function(){
+      // Binning has been removed from the ui, but may be added later.
       var options = [];
       var binnings = _.get(this.available_instruments, [this.selectedinstrument, 'binnings'], []);
       binnings.forEach(function(binning){
