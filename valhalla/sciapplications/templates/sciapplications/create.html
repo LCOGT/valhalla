@@ -56,8 +56,7 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for <a href="https://lco.global/documentation/" target="_blank">rapid response</a> (immediate-within 15 minutes) observations separately.
-                If you are applying to the LCO TAC, you may request time on any size telescope.
+                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a> (within 15 minutes of submission) observations must be requested separately.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
