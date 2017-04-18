@@ -38,30 +38,34 @@ def get_start_end_paramters(request):
     return start, end
 
 
+def userrequest_queryset(request):
+    if request.user.is_authenticated:
+        if request.user.profile.staff_view and request.user.is_staff:
+            userrequests = UserRequest.objects.all()
+        else:
+            userrequests = UserRequest.objects.filter(proposal__in=request.user.proposal_set.all())
+            if request.user.profile.view_authored_requests_only:
+                userrequests = userrequests.filter(submitter=request.user)
+    else:
+        userrequests = UserRequest.objects.filter(proposal__public=True)
+
+    return userrequests
+
+
 class UserRequestListView(FilterView):
     filterset_class = UserRequestFilter
     template_name = 'userrequests/userrequest_list.html'
     paginate_by = 20
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            if self.request.user.is_staff:
-                return UserRequest.objects.all()
-            else:
-                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        return UserRequest.objects.filter(proposal__public=True)
+        return userrequest_queryset(self.request)
 
 
 class UserRequestDetailView(DetailView):
     model = UserRequest
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            if self.request.user.is_staff:
-                return UserRequest.objects.all()
-            else:
-                return UserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
-        return UserRequest.objects.filter(proposal__public=True)
+        return userrequest_queryset(self.request)
 
 
 class RequestDetailView(DetailView):
@@ -69,11 +73,16 @@ class RequestDetailView(DetailView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            if self.request.user.is_staff:
-                return Request.objects.all()
+            if self.request.user.profile.staff_view and self.request.user.is_staff:
+                requests = Request.objects.all()
             else:
-                return Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
-        return Request.objects.filter(user_request__proposal__public=True)
+                requests = Request.objects.filter(user_request__proposal__in=self.request.user.proposal_set.all())
+                if self.request.user.profile.view_authored_requests_only:
+                    requests = requests.filter(user_request__submitter=self.request.user)
+        else:
+            requests = Request.objects.filter(user_request__proposal__public=True)
+
+        return requests
 
 
 class RequestCreateView(LoginRequiredMixin, TemplateView):
