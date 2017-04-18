@@ -33,7 +33,7 @@
                          :errors="errors.filter" :options="filterOptions"
                          desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
           </customselect>
-          <customselect v-model="molecule.bin_x" v-if="datatype != 'SPECTRA'" label="Binning"
+          <customselect v-model="molecule.bin_x" v-if="datatype != 'SPECTRA' && !simple_interface" label="Binning"
                         v-on:input="binningsUpdated" :errors="errors.bin_x" :options="binningsOptions"
                          desc="Number of CCD pixels in X and Y to bin together. The recommended binning will be selected by default.">
           </customselect>
@@ -47,7 +47,7 @@
           <customfield v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
-          <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA'" label="Defocus"
+          <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus"
                        field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Offset of the secondary mirror in mm. Limits are ± 3mm.">
           </customfield>
@@ -57,7 +57,7 @@
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
           </customselect>
-          <div class="spectra" v-if="datatype === 'SPECTRA'">
+          <div class="spectra" v-if="datatype === 'SPECTRA' && !simple_interface">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                           desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
@@ -87,7 +87,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'parentshow', 'duration_data'],
+  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'parentshow', 'duration_data', 'simple_interface'],
   components: {customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){
