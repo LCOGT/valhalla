@@ -81,7 +81,7 @@
 
                 {% bootstrap_label 'Observing budget explanation' label_for=id_budget_details %}
                 <div class="help-block">
-                Describe the expected distribution of targets and requests through the semester.In particular, estimate the fraction of targets that will be north of declination=+20degrees, and therefore, only observable from one of our northern sites.
+                Describe your observing strategy and justify the number of hours you are requesting. Requests for Rapid Response observations must be justified separately. If your targets are known, list them and their expected brightnesses.
                 </div>
                 {% bootstrap_field form.budget_details show_label=false %}
             {% endif %}
@@ -186,6 +186,9 @@
             {% if form.ddt_justification %}
                 {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
                 {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
+                <div class="help-block">
+                Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester.
+                </div>
             {% endif %}
         </form>
         <a href="#">Back to top</a>
