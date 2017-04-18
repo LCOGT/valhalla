@@ -37,8 +37,8 @@ class Call(models.Model):
     eligibility_short = models.TextField(blank=True, default='')
 
     @classmethod
-    def open_calls(clazz):
-        return clazz.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
+    def open_calls(cls):
+        return cls.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
 
     def __str__(self):
         return '{0} call for {1}'.format(self.get_proposal_type_display(), self.semester)
