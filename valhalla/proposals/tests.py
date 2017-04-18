@@ -14,7 +14,8 @@ from valhalla.proposals.models import ProposalInvite, Proposal, Membership, Prop
 from valhalla.userrequests.models import UserRequest
 from valhalla.accounts.models import Profile
 from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
-from valhalla.proposals.tasks import run_accounting, update_time_allocation
+from valhalla.proposals.tasks import run_accounting
+
 
 class TestProposal(TestCase):
     def test_add_users(self):
@@ -80,6 +81,22 @@ class TestProposalNotifications(TestCase):
         self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+    def test_notifications_only_authored(self):
+        mixer.blend(Profile, user=self.user, notifications_enabled=True, notifications_on_authored_only=True)
+        self.userrequest.submitter = self.user
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
+
+    def test_no_notifications_only_authored(self):
+        mixer.blend(Profile, user=self.user, notifications_enabled=True, notifications_on_authored_only=True)
+        self.userrequest.author = mixer.blend(User)
+        self.userrequest.state = 'COMPLETED'
+        self.userrequest.save()
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_no_notifications(self):
         self.userrequest.state = 'COMPLETED'

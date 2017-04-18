@@ -62,6 +62,7 @@ class TestRegistration(TestCase):
             'last_name': 'Shaftoe',
             'institution': 'US Army',
             'title': 'Jarhead',
+            'education_user': False,
             'email': 'bshaftoe@army.gov',
             'username': 'bshaftoe',
             'password1': 'imnotcrazy',
@@ -101,6 +102,18 @@ class TestRegistration(TestCase):
         self.assertTrue(invitation.used)
         self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
 
+    def test_education_register(self):
+        reg_data = self.reg_data.copy()
+        reg_data['education_user'] = True
+        response = self.client.post(reverse('registration_register'), reg_data, follow=True)
+        self.assertContains(response, 'check your email')
+
+        user = User.objects.get(username=reg_data['username'])
+        self.assertTrue(user.profile.education_user)
+        self.assertTrue(user.profile.notifications_enabled)
+        self.assertTrue(user.profile.notifications_on_authored_only)
+        self.assertTrue(user.profile.view_authored_requests_only)
+
 
 class TestProfile(ConfigDBTestMixin, TestCase):
     def setUp(self):
@@ -123,6 +136,24 @@ class TestProfile(ConfigDBTestMixin, TestCase):
         response = self.client.post(reverse('profile'), good_data, follow=True)
         self.assertContains(response, 'Profile successfully updated')
         self.assertEqual(Profile.objects.get(pk=self.profile.id).user.email, 'hi@lco.global')
+
+    def test_cannot_set_staff_view(self):
+        good_data = self.data.copy()
+        good_data['staff_view'] = True
+        response = self.client.post(reverse('profile'), good_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.staff_view)
+
+    def test_staff_can_enable_staff_view(self):
+        self.profile.user.is_staff = True
+        self.profile.user.save()
+        good_data = self.data.copy()
+        good_data['staff_view'] = True
+        response = self.client.post(reverse('profile'), good_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.staff_view)
 
     def test_unique_email(self):
         mixer.blend(User, email='first@example.com')

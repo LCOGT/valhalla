@@ -11,17 +11,18 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
     last_name = forms.CharField(max_length=200)
     institution = forms.CharField(max_length=200)
     title = forms.CharField(max_length=200)
+    education_user = forms.BooleanField(required=False)
 
     field_order = [
         'first_name', 'last_name', 'institution', 'title',
-        'email', 'username', 'password1', 'password2', 'tos'
+        'email', 'username', 'password1', 'password2', 'education_user', 'tos'
     ]
 
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name')
         help_texts = {
-            'username': 'Will be present under the USERID fits header.'
+            'username': 'Will be present under the USERID fits header.',
         }
 
     def save(self, commit=True):
@@ -29,7 +30,12 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
         Profile.objects.create(
             user=new_user_instance,
             title=self.cleaned_data['title'],
-            institution=self.cleaned_data['institution']
+            institution=self.cleaned_data['institution'],
+            education_user=self.cleaned_data['education_user'],
+            notifications_enabled=self.cleaned_data['education_user'],
+            notifications_on_authored_only=self.cleaned_data['education_user'],
+            view_authored_requests_only=self.cleaned_data['education_user'],
+            simple_interface=self.cleaned_data['education_user']
         )
         for invite in ProposalInvite.objects.filter(email=new_user_instance.email):
             invite.accept(new_user_instance)
@@ -50,11 +56,29 @@ class UserForm(forms.ModelForm):
 
 
 class ProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.instance.user.is_staff:
+            self.fields.pop('staff_view')
+
     class Meta:
         model = Profile
-        fields = ['institution', 'title', 'notifications_enabled', 'simple_interface']
+        fields = [
+            'institution', 'title', 'simple_interface', 'notifications_enabled',
+            'notifications_on_authored_only', 'view_authored_requests_only', 'staff_view'
+        ]
         help_texts = {
-            'notifications_enabled': ('Recieve email notifications for every completed observation on all proposals. '
-                                      'To recieve email notifications for a single proposal, update your preferences '
-                                      'on that proposal\'s detail page.')
+            'notifications_enabled': (
+                'Recieve email notifications for every completed observation on all proposals. '
+                'To recieve email notifications for a single proposal, update your preferences '
+                'on that proposal\'s detail page.'
+            ),
+            'simple_interface': 'Hide advanced fields on the request composition page.',
+            'notifications_on_authored_only': (
+                'Only recieve email notifications for requests you have submitted yourself. '
+                'Note this setting alone does not enable any notifications. You must either '
+                'enable the \"Noficiations enabled\" setting above or enable notifications '
+                'on a specific proposal for this to take effect.'
+            ),
+            'view_authored_requests_only': 'Only requests that were authored by you will be visible.',
         }

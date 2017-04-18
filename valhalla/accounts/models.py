@@ -16,8 +16,12 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     institution = models.CharField(max_length=200)
     title = models.CharField(max_length=200)
+    education_user = models.BooleanField(default=False)
     notifications_enabled = models.BooleanField(default=False)
+    notifications_on_authored_only = models.BooleanField(default=False)
     simple_interface = models.BooleanField(default=False)
+    view_authored_requests_only = models.BooleanField(default=False)
+    staff_view = models.BooleanField(default=False)
 
     @property
     def archive_bearer_token(self):
