@@ -10,8 +10,8 @@
         <ul>
           <li>
             Try the
-            <a target="_blank" href="https://lco.global/files/etc/exposure_time_calculator.html">
-              online exposure time calculator.
+            <a href="https://lco.global/files/etc/exposure_time_calculator.html" target="_blank" >
+              online Exposure Time Calculator.
             </a>
           </li>
         </ul>

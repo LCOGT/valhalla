@@ -27,7 +27,7 @@
           <li v-for="(molecule, molIndex) in request.molecules">
             <a :href="'#molecule' + index + molIndex">
               <i class="fa fa-fw" :class="hasError(['requests', index, 'molecules', molIndex]) ? 'fa-warning text-danger' : 'fa-check text-success'"></i>
-              Configutation #{{ molIndex + 1}}
+              Configuration #{{ molIndex + 1}}
               <div class="errorlist text-danger" v-html="errorList(['requests', index, 'molecules', molIndex])"></div>
             </a>
           </li>

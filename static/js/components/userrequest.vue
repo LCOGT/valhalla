@@ -12,7 +12,7 @@
           <br/>
           <ul>
             <li>
-              <a target="_blank" href="https://lco.global/documentation/">More information about Rapid Response mode.</a>
+              <a target="_blank" href="https://lco.global/documentation/rapid-response-mode/">More information about Rapid Response mode.</a>
             </li>
             <li>
               <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
@@ -34,9 +34,9 @@
                           :errors="errors.observation_type"
                           :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
                                      {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
-                          desc="Rapid response mode means the request should be executed immediately.">
+                          desc="Rapid Response (RR) requests bypass normal scheduling and are executed immediately. This mode is only available if a proposal was granted RR time.">
             </customselect>
-            <customfield v-model="userrequest.ipp_value" label="Ipp Factor" field="ipp_value"
+            <customfield v-model="userrequest.ipp_value" label="IPP Factor" field="ipp_value"
                          v-on:input="update" :errors="errors.ipp_value"
                          desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
