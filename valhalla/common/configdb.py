@@ -220,7 +220,7 @@ class ConfigDB(object):
 
     @staticmethod
     def is_spectrograph(instrument_type):
-        return instrument_type.upper() in ['2M0-FLOYDS-SCICAM', '0M8-NRES-SCICAM']
+        return instrument_type.upper() in ['2M0-FLOYDS-SCICAM', '0M8-NRES-SCICAM', '1M0-NRES-SCICAM']
 
 
 configdb = ConfigDB()

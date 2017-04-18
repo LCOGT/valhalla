@@ -18,7 +18,9 @@
 <div class="row">
     <div class="col-md-9">
         <p>You are creating a proposal for {{ call.semester }}.</p>
+        {% if call.proposal_type != 'DDT' %}
         <p>Deadline: <strong>{{ call.deadline|date:"j M Y P" }}</strong> ({{ call.deadline|timeuntil }})</p>
+        {% endif %}
         <p>{{ call.eligibility }}</p>
         {% bootstrap_form_errors form %}
         <form method="post" action="" enctype="multipart/form-data" id="app_form">
@@ -56,7 +58,7 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for <a href="https://lco.global/documentation/" target="_blank">rapid response</a> (immediate-within 15 minutes) observations separately.
+                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately.
                 If you are applying to the LCO TAC, you may request time on any size telescope.
                 {% endblocktrans %}
                 </div>

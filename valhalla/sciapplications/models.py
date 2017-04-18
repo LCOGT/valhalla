@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 
 from valhalla.proposals.models import (
@@ -34,6 +35,10 @@ class Call(models.Model):
     proposal_type = models.CharField(max_length=5, choices=PROPOSAL_TYPE_CHOICES)
     eligibility = models.TextField(blank=True, default='')
     eligibility_short = models.TextField(blank=True, default='')
+
+    @classmethod
+    def open_calls(cls):
+        return cls.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
 
     def __str__(self):
         return '{0} call for {1}'.format(self.get_proposal_type_display(), self.semester)

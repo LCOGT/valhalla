@@ -133,9 +133,10 @@ export default {
     },
     generateCalibs: function(molecule_id){
       var request = this.request;
-      var calibs = [{}, {}, {}, {}]
+      var calibs = [{}, {}, {}, {}];
       for(var x in calibs){
         calibs[x] = _.cloneDeep(request.molecules[molecule_id]);
+        calibs[x].exposure_time = 60;
       }
       calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
       request.molecules.unshift(calibs[0], calibs[1]);

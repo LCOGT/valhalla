@@ -42,6 +42,9 @@ class Proposal(models.Model):
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
+    class Meta:
+        ordering = ('title',)
+
     @property
     def pi(self):
         return self.users.filter(membership__role=Membership.PI).first()
