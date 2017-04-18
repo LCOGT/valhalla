@@ -6,6 +6,16 @@ from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import get_telescope_states, filter_telescope_states_by_intervals
 from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_interval_for_target_and_site
 
+MOLECULE_TYPE_DISPLAY = {
+  'EXPOSE': 'Imaging',
+  'SKY_FLAT': 'Sky Flat',
+  'STANDARD': 'Standard',
+  'ARC': 'Arc',
+  'LAMP_FLAT': 'Lamp Flat',
+  'SPECTRUM': 'Spectrum',
+  'AUTO_FOCUS': 'Auto Focus',
+}
+
 
 def get_telescope_states_for_request(request):
     instrument_type = request.molecules.first().instrument_name

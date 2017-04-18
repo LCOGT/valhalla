@@ -54,5 +54,7 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = ['institution', 'title', 'notifications_enabled']
         help_texts = {
-            'notifications_enabled': 'Recieve email notifications for every completed observation on all proposals.'
+            'notifications_enabled': ('Recieve email notifications for every completed observation on all proposals. '
+                                      'To recieve email notifications for a single proposal, update your preferences '
+                                      'on that proposal\'s detail page.')
         }

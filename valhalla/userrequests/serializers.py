@@ -13,6 +13,7 @@ from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import configdb
+from valhalla.userrequests.request_utils import MOLECULE_TYPE_DISPLAY
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict, OVERHEAD_ALLOWANCE,
                                                   get_molecule_duration, get_num_exposures)
 from datetime import timedelta
@@ -88,8 +89,8 @@ class MoleculeSerializer(serializers.ModelSerializer):
         elif data['type'].lower() in types_that_require_filter:
             if not data.get('filter'):
                 raise serializers.ValidationError(
-                    {'filter': _("Molecule type {} with instrument {} must specify a filter.").format(
-                        data['type'], data['instrument_name']
+                    {'filter': _("You must specify a filter for {} exposures with {}.").format(
+                        MOLECULE_TYPE_DISPLAY[data['type']], data['instrument_name']
                     )}
                 )
             elif data['filter'].lower() not in available_filters:

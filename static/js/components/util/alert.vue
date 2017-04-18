@@ -15,7 +15,7 @@
         var that = this;
         setTimeout(function(){
             that.show = false;
-        }, 2000)
+        }, 10000)
     }
   };
 </script>
