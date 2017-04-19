@@ -58,8 +58,8 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Specify time requested for rapid response (immediate-within 15 minutes) observations separately.
-                If you are applying to the LCO TAC, you may request time on any size telescope.
+                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a>
+                (within 15 minutes of submission) observations must be requested separately.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
@@ -84,7 +84,7 @@
 
                 {% bootstrap_label 'Observing budget explanation' label_for=id_budget_details %}
                 <div class="help-block">
-                Describe the expected distribution of targets and requests through the semester.In particular, estimate the fraction of targets that will be north of declination=+20degrees, and therefore, only observable from one of our northern sites.
+                Describe your observing strategy and justify the number of hours you are requesting. Requests for Rapid Response observations must be justified separately. If your targets are known, list them and their expected brightnesses.
                 </div>
                 {% bootstrap_field form.budget_details show_label=false %}
             {% endif %}
@@ -188,6 +188,9 @@
 
             {% if form.ddt_justification %}
                 {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
+                <div class="help-block">
+                Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester.
+                </div>
                 {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
             {% endif %}
         </form>
