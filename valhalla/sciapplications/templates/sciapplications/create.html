@@ -58,7 +58,7 @@
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a> 
+                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a>
                 (within 15 minutes of submission) observations must be requested separately.
                 {% endblocktrans %}
                 </div>
@@ -188,10 +188,10 @@
 
             {% if form.ddt_justification %}
                 {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
-                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
                 <div class="help-block">
                 Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester.
                 </div>
+                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
             {% endif %}
         </form>
         <a href="#">Back to top</a>
