@@ -101,7 +101,7 @@ import thumbnail from './components/thumbnail.vue';
 import archivetable from './components/archivetable.vue';
 import blockhistory from './components/blockhistory.vue';
 import airmass_telescope_states from './components/airmass_telescope_states.vue';
-import {formatDate} from './utils.js';
+import {formatDate, formatField} from './utils.js';
 import {login, getLatestFrame} from './archive.js';
 
 Vue.filter('formatDate', function(value){
@@ -109,11 +109,7 @@ Vue.filter('formatDate', function(value){
 });
 
 Vue.filter('formatField', function(value){
-  var words = value.split('_');
-  words = words.map(function(word){
-    return word.charAt(0).toUpperCase() + word.substr(1);
-  });
-  return words.join(' ');
+  return formatField(value);
 });
 
 Vue.filter('formatValue', function(value){

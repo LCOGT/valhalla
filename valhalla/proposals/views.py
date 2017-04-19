@@ -12,7 +12,7 @@ from django_filters.views import FilterView
 from django.utils.translation import ugettext as _
 from django.contrib.auth.mixins import UserPassesTestMixin
 
-
+from valhalla.sciapplications.models import Call
 from valhalla.proposals.forms import ProposalNotificationForm
 from valhalla.proposals.models import Proposal, Membership, ProposalNotification, Semester
 from valhalla.proposals.filters import ProposalFilter
@@ -50,6 +50,11 @@ class ProposalListView(LoginRequiredMixin, FilterView):
 
     def get_queryset(self):
         return self.request.user.proposal_set.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['calls'] = Call.open_calls()
+        return context
 
 
 class InviteCreateView(LoginRequiredMixin, View):

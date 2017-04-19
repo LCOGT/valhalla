@@ -10,16 +10,18 @@
           </h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
-          <ul>
-            <li>
-              <a target="_blank" href="https://lco.global/documentation/rapid-response-mode/">More information about Rapid Response mode.</a>
-            </li>
-            <li>
-              <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
-                More information about IPP.
-              </a>
-            </li>
-          </ul>
+          <div v-if="!simple_interface">
+            <ul>
+              <li>
+                <a target="_blank" href="https://lco.global/documentation/rapid-response-mode/">More information about Rapid Response mode.</a>
+              </li>
+              <li>
+                <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
+                  More information about IPP.
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
         <div :class="show ? 'col-md-6' : 'col-md-12'">
           <form class="form-horizontal">
@@ -32,12 +34,13 @@
             <customselect v-model="userrequest.observation_type" label="Mode"
                           field="observation_type" v-on:input="update"
                           :errors="errors.observation_type"
+                          v-if="!simple_interface"
                           :options="[{value: 'NORMAL', text: 'Queue scheduled (default)'},
                                      {value:'TARGET_OF_OPPORTUNITY', text: 'Rapid Response'}]"
                           desc="Rapid Response (RR) requests bypass normal scheduling and are executed immediately. This mode is only available if a proposal was granted RR time.">
             </customselect>
             <customfield v-model="userrequest.ipp_value" label="IPP Factor" field="ipp_value"
-                         v-on:input="update" :errors="errors.ipp_value"
+                         v-on:input="update" :errors="errors.ipp_value" v-if="!simple_interface"
                          desc="Provide an InterProposal Priority factor for this request. Acceptable values are between 0.5 and 2.0">
             </customfield>
             <div class="collapse-inline" v-show="!show">Total Duration: <strong>{{ durationDisplay }}</strong></div>
@@ -54,6 +57,7 @@
         </modal>
         <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
                  v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
+                 :simple_interface="simple_interface"
                  :errors="_.get(errors, ['requests', idx], {})"
                  :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})"
                  v-on:remove="removeRequest(idx)" v-on:copy="addRequest(idx)">
@@ -84,6 +88,7 @@ export default {
     return {
       show: true,
       showCadence: false,
+      simple_interface: false,
       cadenceRequests: [],
       available_instruments: {},
       proposals: [],
@@ -95,6 +100,7 @@ export default {
     var allowed_instruments = {};
     $.getJSON('/api/profile/', function(data){
       that.proposals = data.proposals;
+      that.simple_interface = data.profile.simple_interface;
       for(var ai in data.available_instrument_types){
         allowed_instruments[data.available_instrument_types[ai]] = {};
       }

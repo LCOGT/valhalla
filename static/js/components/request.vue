@@ -14,7 +14,8 @@
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
            <customselect v-model="data_type" label="Observation Type" v-on:input="update" :errors="errors.data_type"
-                          :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
+                         v-if="!simple_interface"
+                         :options="[{value:'IMAGE', text: 'Image'}, {value:'SPECTRA', text:'Spectrum'}]">
           </customselect>
           <customselect v-model="instrument_name" label="Instrument" field="instrument_name"
                          :errors="errors.instrument_name" :options="availableInstrumentOptions"
@@ -23,23 +24,24 @@
         </form>
       </div>
     </div>
-    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})">
+    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})" :simple_interface="simple_interface">
     </target>
     <div v-for="(molecule, idx) in request.molecules">
       <molecule :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
                 v-on:moleculeupdate="moleculeUpdated" v-on:moleculefillwindow="moleculeFillWindow" :available_instruments="available_instruments"
                 :errors="_.get(errors, ['molecules', idx], {})"
                 :duration_data="_.get(duration_data, ['molecules', idx], {'duration':0})"
+                :simple_interface="simple_interface"
                 v-on:remove="removeMolecule(idx)" v-on:copy="addMolecule(idx)" v-on:generateCalibs="generateCalibs">
       </molecule>
     </div>
     <div v-for="(window, idx) in request.windows">
       <window ref="window" :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
-              :errors="_.get(errors, ['windows', idx], {})" :parentshow="show"
+              :errors="_.get(errors, ['windows', idx], {})" :parentshow="show" :simple_interface="simple_interface"
               v-on:remove="removeWindow(idx)" v-on:copy="addWindow(idx)">
       </window>
     </div>
-    <constraints :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})">
+    <constraints :constraints="request.constraints" v-on:constraintsupdate="constraintsUpdated" :parentshow="show" :errors="_.get(errors, 'constraints', {})" v-if="!simple_interface">
     </constraints>
   </panel>
 </template>
@@ -56,7 +58,7 @@ import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 
 export default {
-  props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data'],
+  props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data', 'simple_interface'],
   components: {target, molecule, window, constraints, customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){
@@ -133,9 +135,10 @@ export default {
     },
     generateCalibs: function(molecule_id){
       var request = this.request;
-      var calibs = [{}, {}, {}, {}]
+      var calibs = [{}, {}, {}, {}];
       for(var x in calibs){
         calibs[x] = _.cloneDeep(request.molecules[molecule_id]);
+        calibs[x].exposure_time = 60;
       }
       calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
       request.molecules.unshift(calibs[0], calibs[1]);
