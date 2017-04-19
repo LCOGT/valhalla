@@ -47,7 +47,7 @@ function sexagesimalDecToDecimal(dec){
       var dd = parseInt(m[2], 10);
       var mm = parseFloat(m[3]);
       var ss = m[4] ? parseFloat(m[4]) : 0.0;
-      if (dd >= 0 && dd <= 90 && mm >= 0 && mm <= 59 && ss >= 0 && ss <= 59) {
+      if (dd >= 0 && dd <= 90 && mm >= 0 && mm <= 59 && ss >= 0 && ss < 60) {
         dec = (sign * (dd + mm / 60.0 + ss / 3600.0)).toFixed(10);
       }
     }
@@ -77,6 +77,14 @@ function formatDate(date){
   if(date){
     return moment(String(date)).format(datetimeFormat);
   }
+}
+
+function formatField(value){
+  var words = value.split('_');
+  words = words.map(function(word){
+    return word.charAt(0).toUpperCase() + word.substr(1);
+  });
+  return words.join(' ');
 }
 
 export const datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
@@ -129,4 +137,5 @@ export const colorPalette = [  // useful assigning colors to datasets.
   '#3B5DFF', '#4A3B53', '#FF2F80'
 ];
 
-export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString, formatDate};
+export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
+        formatDate, formatField};

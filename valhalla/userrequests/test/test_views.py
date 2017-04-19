@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.utils import timezone
 from mixer.backend.django import mixer
 
+from valhalla.accounts.models import Profile
 from valhalla.proposals.models import Proposal, Membership
 from valhalla.userrequests.models import UserRequest, Request, Molecule
 from valhalla.common.test_telescope_states import TelescopeStatesFromFile
@@ -13,6 +14,7 @@ from valhalla.common.test_helpers import ConfigDBTestMixin
 class TestUserRequestList(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.proposals = mixer.cycle(3).blend(Proposal)
         for proposal in self.proposals:
             mixer.blend(Membership, proposal=proposal, user=self.user)
@@ -41,12 +43,28 @@ class TestUserRequestList(TestCase):
 
     def test_userrequest_admin(self):
         user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:list'))
+        for ur in self.userrequests:
+            self.assertNotContains(response, ur.group_id)
+
+    def test_userrequest_admin_staff_view_enabled(self):
+        user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user, staff_view=True)
         self.client.force_login(user)
         response = self.client.get(reverse('userrequests:list'))
         for ur in self.userrequests:
             self.assertContains(response, ur.group_id)
-            for request in ur.requests.all():
-                self.assertContains(response, request.id)
+
+    def test_userrequest_list_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        self.userrequests[0].submitter = self.user
+        self.userrequests[0].save()
+        response = self.client.get(reverse('userrequests:list'))
+        self.assertContains(response, self.userrequests[0].group_id)
+        self.assertNotContains(response, self.userrequests[1].group_id)
 
     def test_no_other_requests(self):
         proposal = mixer.blend(Proposal)
@@ -66,6 +84,7 @@ class TestUserRequestList(TestCase):
 class TestUserrequestDetail(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, proposal=self.proposal, user=self.user)
         self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
@@ -86,10 +105,27 @@ class TestUserrequestDetail(TestCase):
 
     def test_userrequest_detail_admin(self):
         user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_userrequest_detail_admin_staff_view_enabled(self):
+        user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user, staff_view=True)
         self.client.force_login(user)
         response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
         for request in self.requests:
             self.assertContains(response, request.id)
+
+    def test_userrequest_detail_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM, submitter=self.user)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': self.userrequest.id}))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': userrequest.id}))
+        self.assertContains(response, userrequest.group_id)
 
     def test_public_userrequest_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)
@@ -105,6 +141,7 @@ class TestUserrequestDetail(TestCase):
 class TestRequestDetail(TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, proposal=self.proposal, user=self.user)
         self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
@@ -122,9 +159,27 @@ class TestRequestDetail(TestCase):
 
     def test_request_detail_admin(self):
         user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user)
+        self.client.force_login(user)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_request_detail_admin_staff_view_enabled(self):
+        user = mixer.blend(User, is_staff=True)
+        mixer.blend(Profile, user=user, staff_view=True)
         self.client.force_login(user)
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
         self.assertContains(response, self.request.id)
+
+    def test_request_detail_only_authored(self):
+        self.user.profile.view_authored_requests_only = True
+        self.user.profile.save()
+        userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM, submitter=self.user)
+        request = mixer.blend(Request, user_request=userrequest)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
+        self.assertEqual(response.status_code, 404)
+        response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': request.id}))
+        self.assertContains(response, request.id)
 
     def test_public_request_detail_no_auth(self):
         proposal = mixer.blend(Proposal, public=True)

@@ -20,7 +20,8 @@
             <h2>Automatic generation of calibration frames</h2>
             <p>
               Since you are taking a spectrum, it is recommended you also schedule calibrations for before
-              and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request.
+              and after your exposure. Clicking 'Create calibration frames' will add four calibration configurations to this request: one arc and one flat before and one arc and one flat after
+              your spectrum.
             </p>
             <a class="btn btn-default" v-on:click="generateCalibs" v-show="molecule.type === 'SPECTRUM'">Create calibration frames</a>
           </div>
@@ -31,10 +32,6 @@
           <customselect v-model="molecule.filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
                          :errors="errors.filter" :options="filterOptions"
                          desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
-          </customselect>
-          <customselect v-model="molecule.bin_x" label="Binning" v-on:input="binningsUpdated"
-                         :errors="errors.bin_x" :options="binningsOptions"
-                         desc="Number of CCD pixels in X and Y to bin together. Only supported binning modes for the selected imager are displayed.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
@@ -47,7 +44,7 @@
           <customfield v-model="molecule.exposure_time" label="Exposure Time" field="exposure_time" v-on:input="update"
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
-          <customfield v-model="molecule.defocus" label="Defocus" field="defocus" v-on:input="update"
+          <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset from default focus of the secondary mirror in mm. The limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
@@ -56,7 +53,7 @@
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
           </customselect>
-          <div class="spectra" v-if="datatype === 'SPECTRA'">
+          <div class="spectra" v-if="datatype === 'SPECTRA' && !simple_interface">
             <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
                           desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
@@ -65,8 +62,8 @@
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
                           desc="The method for positioning the slit."
-                          :options="[{value: 'WCS', text: 'On Target Coordinates'},
-                                     {value: 'BRIGHTEST', text: 'On Brightest Object'}]">
+                          :options="[{value: 'WCS', text: 'Target Coordinates'},
+                                     {value: 'BRIGHTEST', text: 'Brightest Object'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
                          label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">
@@ -85,14 +82,14 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'parentshow', 'duration_data'],
+  props: ['molecule', 'index', 'errors', 'selectedinstrument', 'available_instruments', 'datatype', 'parentshow', 'duration_data', 'simple_interface'],
   components: {customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){
     return {
       show: true,
       acquire_params: {
-        acquire_mode: 'OFF',
+        acquire_mode: 'WCS',
         acquire_radius_arcsec: null
       }
     };
@@ -109,6 +106,7 @@ export default {
       return _.sortBy(options, 'text');
     },
     binningsOptions: function(){
+      // Binning has been removed from the ui, but may be added later.
       var options = [];
       var binnings = _.get(this.available_instruments, [this.selectedinstrument, 'binnings'], []);
       binnings.forEach(function(binning){
@@ -130,7 +128,7 @@ export default {
       this.$emit('moleculefillwindow', this.index);
     },
     generateCalibs: function(){
-      this.$emit('generateCalibs', this.index)
+      this.$emit('generateCalibs', this.index);
     }
   },
   watch: {
@@ -153,6 +151,7 @@ export default {
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
+        this.molecule.ag_mode = 'ON';
         this.molecule.acquire_mode = this.acquire_params.acquire_mode;
         if (this.molecule.acquire_mode === 'BRIGHTEST'){
           this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;

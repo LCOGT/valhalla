@@ -5,7 +5,7 @@
       <a :href="guiLink" target="_blank">
         {{ resultCount }}
       </a>
-      existing frames have been found on the LCO science archive covering this RA/Dec.
+      existing frames (that you have access to) have been found on the LCO science archive covering this RA/Dec.
     </h3>
   </div>
 </template>

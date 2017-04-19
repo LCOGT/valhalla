@@ -8,6 +8,8 @@ $('#downloadall').click(function(){
   downloadAll($(this).data('requestid'));
 });
 
+$('.tt').tooltip();
+
 $(document).ready(function(){
   $('.thumbnail-small').each(function(idx, elem){
     getLatestFrame($(elem).data('request'), function(frame){

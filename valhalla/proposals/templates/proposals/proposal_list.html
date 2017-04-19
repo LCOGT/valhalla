@@ -3,7 +3,7 @@
 {% block title %} Proposal List {% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-9">
         <h2>Your Proposals</h2>
         <p>
             Below is a list of all proposals for which you are either the principal investigator (PI)
@@ -18,6 +18,18 @@
             </a>
             {% endif %}
         {% endif %}
+    </div>
+    <div class="col-md-3">
+        <h4>
+            <a href="{% url 'sciapplications:index' %}"><i class="fa fa-pencil-square-o fa-2x fa-fw"></i> Submit Proposal</a>
+        </h4>
+        <p>
+            There {{ calls|length|pluralize:"is,are" }} currently <a href="{% url 'sciapplications:index' %}">{{ calls|length }}</a> open call{{ calls|length|pluralize }} for proposals.
+        </p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
         <form method="get" action="" class="form-inline pull-right">
             {% bootstrap_form filter.form %}
             {% bootstrap_button button_type="submit" content="Filter" %}

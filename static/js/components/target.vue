@@ -12,9 +12,9 @@
         <form class="form-horizontal">
           <customfield v-model="target.name" label="Target Name" field="name" v-on:input="update" :errors="errors.name">
           </customfield>
-          <div class="row" v-show="lookingUP">
+          <div class="row" v-show="lookingUP || lookupFail">
               <span class="col-md-12" style="text-align: right">
-                <i class="fa fa-spinner fa-spin fa-fw"></i> Looking up coordinates...
+                <i v-show="lookingUP" class="fa fa-spinner fa-spin fa-fw"></i> {{ lookupText }}
               </span>
           </div>
           <customselect v-model="target.type" label="Type" field="type" v-on:input="update"
@@ -29,15 +29,16 @@
                          desc="Decimal degrees of DD:MM:SS.S">
             </customfield>
             <customfield v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
-                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year">
+                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year. Max 20000.">
             </customfield>
             <customfield v-model="target.proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
-                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year">
+                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year. Max 20000.">
             </customfield>
-            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch" desc="Julian Years">
+            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
+                         desc="Julian Years. Max 2100.">
             </customfield>
             <customfield v-model="target.parallax" label="Parallax" field="parallax" v-on:input="update"
-                         :errors="errors.parallax" desc="+0.45 mas">
+                         :errors="errors.parallax" desc="+0.45 mas. Max 2000.">
             </customfield>
           </div>
           <div class="non-sidereal" v-show="target.type === 'NON_SIDEREAL'">
@@ -47,6 +48,9 @@
             </customselect>
             <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
                          desc="Modified Julian Days">
+            </customfield>
+            <customfield v-model="target.epochofel" label="Epoch of Elements" field="epochofel"
+                         v-on:input="update" :errors="errors.epochofel" desc="Epoch of Elements">
             </customfield>
             <customfield v-model="target.orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
                         :errors="errors.orbinc">
@@ -110,7 +114,14 @@ export default {
     delete sid_target_params['name'];
     delete sid_target_params['epoch'];
     delete sid_target_params['type'];
-    return {show: true, lookingUP: false, ns_target_params: ns_target_params, sid_target_params: sid_target_params, rot_target_params: rot_target_params};
+    return {
+      show: true,
+      lookingUP: false,
+      lookupFail: false,
+      lookupText: '',
+      ns_target_params: ns_target_params,
+      sid_target_params: sid_target_params,
+      rot_target_params: rot_target_params};
   },
   methods: {
     update: function(){
@@ -128,6 +139,8 @@ export default {
   watch: {
     'target.name': _.debounce(function(name){
       this.lookingUP = true;
+      this.lookupFail = false;
+      this.lookupText = 'Searching for coordinates...';
       var that = this;
       $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
         that.target.ra = _.get(data, ['ra', 'decimal'], null);
@@ -135,6 +148,9 @@ export default {
         that.target.proper_motion_ra = data.pmra;
         that.target.proper_motion_dec = data.pmdec;
         that.update();
+      }).fail(function(){
+        that.lookupText = 'Could not find any matching objects';
+        that.lookupFail = true;
       }).always(function(){
         that.lookingUP = false;
       });

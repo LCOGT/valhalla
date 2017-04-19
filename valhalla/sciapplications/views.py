@@ -5,7 +5,6 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.utils import timezone
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from weasyprint import HTML
@@ -37,7 +36,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form.fields['instruments'].queryset = self.call.instruments.all()
+        if form.fields.get('instruments'):
+            form.fields['instruments'].queryset = self.call.instruments.all()
         return form
 
     def get_success_url(self):
@@ -104,7 +104,8 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
-        form.fields['instruments'].queryset = self.object.call.instruments.all()
+        if form.fields.get('instruments'):
+            form.fields['instruments'].queryset = self.object.call.instruments.all()
         return form
 
     def get(self, request, *args, **kwargs):
@@ -160,7 +161,7 @@ class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
     template_name = 'sciapplications/index.html'
 
     def get_context_data(self):
-        calls = Call.objects.filter(opens__lte=timezone.now(), deadline__gte=timezone.now())
+        calls = Call.open_calls()
         draft_proposals = ScienceApplication.objects.filter(
             submitter=self.request.user, status=ScienceApplication.DRAFT
         )

@@ -7,6 +7,7 @@
 <form method="post" action="">
     {% csrf_token %}
     {% bootstrap_form form %}
+    <p>Read the <a href="https://lco.global/observatory/termsofuse/" target="_blank">Terms of Service</a></p>
     {% buttons submit='Register' %}{% endbuttons %}
 </form>
 {% endblock %}

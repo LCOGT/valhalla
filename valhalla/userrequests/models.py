@@ -240,10 +240,10 @@ class Target(models.Model):
     # Pointing details
     coordinate_system = models.CharField(max_length=255, default='', blank=True)
     equinox = models.CharField(max_length=20, default='', blank=True)
-    proper_motion_ra = models.FloatField(null=True, blank=True)
-    proper_motion_dec = models.FloatField(null=True, blank=True)
-    epoch = models.FloatField(max_length=20, null=True, blank=True)
-    parallax = models.FloatField(null=True, blank=True)
+    proper_motion_ra = models.FloatField(null=True, blank=True, validators=[MaxValueValidator(20000)])
+    proper_motion_dec = models.FloatField(null=True, blank=True, validators=[MaxValueValidator(20000)])
+    epoch = models.FloatField(max_length=20, null=True, blank=True, validators=[MaxValueValidator(2100)])
+    parallax = models.FloatField(null=True, blank=True, validators=[MaxValueValidator(2000)])
 
     # Nonsidereal rate
     diff_pitch_rate = models.FloatField(verbose_name='Differential Pitch Rate (arcsec/s)', null=True, blank=True)
