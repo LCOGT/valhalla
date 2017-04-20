@@ -179,6 +179,12 @@ class ConfigDB(object):
                 return instrument['science_camera']['camera_type']['default_mode']['binning']
         return None
 
+    def get_instrument_name(self, instrument_type):
+        for instrument in self.get_instruments():
+            if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
+                return instrument['science_camera']['camera_type']['name']
+        return instrument_type
+
     def get_active_instrument_types(self, location):
         '''
             Function uses the configdb to get a set of the available instrument_types.
