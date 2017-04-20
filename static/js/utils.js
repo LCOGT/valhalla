@@ -87,9 +87,9 @@ function formatField(value){
   return words.join(' ');
 }
 
-export const datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
+var datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
 
-export const collapseMixin = {
+var collapseMixin = {
   watch: {
     parentshow: function(value){
       this.show = value;
@@ -97,7 +97,7 @@ export const collapseMixin = {
   }
 };
 
-export const siteToColor = {
+var siteToColor = {
   'tfn': '#263c6f',
   'elp': '#700000',
   'lsc': '#f04e23',
@@ -107,7 +107,7 @@ export const siteToColor = {
   'sqa': '#009d00'
 };
 
-export const siteCodeToName = {
+var siteCodeToName = {
   'tfn': 'Teide',
   'elp': 'McDonald',
   'lsc': 'Cerro Tololo',
@@ -118,7 +118,7 @@ export const siteCodeToName = {
   'ngq': 'Ali'
 };
 
-export const colorPalette = [  // useful assigning colors to datasets.
+var colorPalette = [  // useful assigning colors to datasets.
   '#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#3B3EAC', '#0099C6', '#DD4477',
   '#66AA00', '#B82E2E', '#316395', '#994499', '#22AA99', '#AAAA11', '#6633CC', '#E67300',
   '#8B0707', '#329262', '#5574A6', '#3B3EAC', '#FFFF00', '#1CE6FF', '#FF34FF', '#FF4A46',
@@ -138,4 +138,4 @@ export const colorPalette = [  // useful assigning colors to datasets.
 ];
 
 export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
-        formatDate, formatField};
+        formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName, colorPalette};
