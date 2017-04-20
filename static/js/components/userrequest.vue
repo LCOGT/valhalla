@@ -17,7 +17,7 @@
               </li>
               <li>
                 <a target="_blank" href="https://lco.global/files/User_Documentation/the_new_priority_factor.pdf">
-                  More information about IPP.
+                  More information about IntraProprosal Priority (IPP).
                 </a>
               </li>
             </ul>
