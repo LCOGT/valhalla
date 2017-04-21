@@ -1,8 +1,8 @@
 import $ from 'jquery';
 import 'jquery-file-download';
-export const archiveRoot = 'https://archive-api.lco.global/';
-export const archiveUIRoot = 'https://archive.lco.global/';
-export {archiveAjaxSetup, login, downloadZip, downloadAll, getThumbnail, getLatestFrame};
+var archiveRoot = 'https://archive-api.lco.global/';
+var archiveUIRoot = 'https://archive.lco.global/';
+export {archiveAjaxSetup, login, downloadZip, downloadAll, getThumbnail, getLatestFrame, archiveRoot, archiveUIRoot};
 
 function archiveAjaxSetup(){
   login(function(){

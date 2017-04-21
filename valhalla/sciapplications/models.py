@@ -60,7 +60,7 @@ class ScienceApplication(models.Model):
     )
 
     MOON_CHOICES = (
-        ('EITHER', 'Either'),
+        ('EITHER', 'Any'),
         ('BRIGHT', 'Bright'),
         ('DARK', 'Dark'),
     )

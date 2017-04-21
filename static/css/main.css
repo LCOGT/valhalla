@@ -55,6 +55,10 @@ a:hover {
     padding: 2px 4px;
 }
 
+.caret {
+    display: inline-block;
+}
+
 .noauth {
     line-height: 1.4em;
 }
