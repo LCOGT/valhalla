@@ -91,7 +91,6 @@ class TargetAdmin(admin.ModelAdmin):
         'meananom',
         'dailymot',
         'epochofperih',
-        'acquire_mode',
         'rot_mode',
         'rot_angle',
     )

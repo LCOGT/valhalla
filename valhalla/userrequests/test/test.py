@@ -158,8 +158,8 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, (1000 + 5*10 + 3*3 + 9*14.5 + 9*1 + 3*5 + 3*11))
 
     def test_floyds_single_molecule_request_duration_with_acquire_on(self):
-        self.request.target = self.target_acquire_on
         self.molecule_spectrum.request = self.request
+        self.molecule_spectrum.acquire_mode = 'WCS'
         self.molecule_spectrum.save()
 
         duration = self.request.duration
@@ -167,7 +167,6 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, math.ceil(1800 + 240 + 25 + 0.5 + 30 + 30 + 60 + 5 + 11))
 
     def test_floyds_single_molecule_request_duration_with_acquire_off(self):
-        self.request.target = self.target_acquire_off
         self.molecule_spectrum.request = self.request
         self.molecule_spectrum.save()
 
@@ -181,12 +180,12 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, (1800 + 25 + 0.5 + 5 + 11))
 
     def test_floyds_multiple_molecule_request_duration_with_acquire_on(self):
-        self.request.target = self.target_acquire_on
         self.molecule_lampflat.request = self.request
         self.molecule_lampflat.save()
         self.molecule_arc.request = self.request
         self.molecule_arc.save()
         self.molecule_spectrum.request = self.request
+        self.molecule_spectrum.acquire_mode = 'WCS'
         self.molecule_spectrum.save()
 
         duration = self.request.duration
@@ -194,7 +193,6 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
         self.assertEqual(duration, math.ceil(1800 + 60 + 2*30 + 240 + 4*25 + 4*0.5 + 30*3 + 30 + 60 + 3*5 + 3*11))
 
     def test_floyds_multiple_molecule_request_duration_with_acquire_off(self):
-        self.request.target = self.target_acquire_off
         self.molecule_lampflat.request = self.request
         self.molecule_lampflat.save()
         self.molecule_arc.request = self.request

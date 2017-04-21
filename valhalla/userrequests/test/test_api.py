@@ -190,16 +190,18 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_post_userrequest_default_acquire_mode(self):
         bad_data = self.generic_payload.copy()
-        # verify default acquire mode is 'optional' for non-floyds
+        # verify default acquire mode is 'off' for non-floyds
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'OPTIONAL')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'OFF')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
 
-        # check that default acquire mode is 'on' for floyds
+        # check that default acquire mode is 'wcs' for floyds
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'ON')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
 
     def test_post_userrequest_single_must_have_one_request(self):
         bad_data = self.generic_payload.copy()

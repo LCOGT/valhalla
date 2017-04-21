@@ -218,11 +218,6 @@ class Target(models.Model):
         ('VFLOAT', 'VFLOAT'),
     )
 
-    ACQUIRE_MODES = (
-        ('OPTIONAL', 'OPTIONAL'),
-        ('ON', 'ON'),
-    )
-
     name = models.CharField(max_length=255)
     request = models.OneToOneField(Request)
 
@@ -282,7 +277,6 @@ class Target(models.Model):
                                      validators=[MinValueValidator(10000), MaxValueValidator(100000)])
 
     # Spectrograph parameters
-    acquire_mode = models.CharField(max_length=50, choices=ACQUIRE_MODES, default=ACQUIRE_MODES[0][0])
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
     rot_angle = models.FloatField(default=0.0, blank=True)
 
