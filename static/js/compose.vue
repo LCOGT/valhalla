@@ -6,7 +6,7 @@
       </div>
     </div>
     <div id="tabs">
-      <ul class="nav nav-tabs col-md-6">
+      <ul class="nav nav-tabs col-md-7">
         <li :class="{ active: tab === 1 }" v-on:click="tab = 1">
           <a title="Observing request form."><i class="fa fa-fw fa-pencil-square-o fa-2x"></i> Form</a>
         </li>
@@ -17,10 +17,10 @@
           <a title="Your saved observing requests."><i class="fa fa-fw fa-file-text-o fa-2x"></i> Drafts</a>
         </li>
         <li :class="{ active: tab === 4 }" v-on:click="tab = 4">
-          <a title="Help"><i class="fa fa-question fa-fw fa-2x"></i> Help</a>
+          <a title="Help"><i class="fa fa-question fa-fw fa-2x"></i> How to use this page</a>
         </li>
       </ul>
-      <div class="col-md-5 panel-actions">
+      <div class="col-md-4 panel-actions">
         <a class="btn btn-warning" v-on:click="clear()" title="Clear form"><i class="fa fa-times"></i> Clear</a>
         <span :class="draftId > -1 ? 'btn-group' : ''">
           <button class="btn btn-info" title="Save a draft of this observing request. The request will not be submitted"
