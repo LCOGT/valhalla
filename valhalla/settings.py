@@ -128,6 +128,9 @@ LOGGING = {
         },
         'django': {
             'level': 'INFO',
+        },
+        'rise_set': {
+            'level': 'WARNING'
         }
     }
 }
