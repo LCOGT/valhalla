@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import $ from 'jquery';
 import {siteCodeToName, observatoryCodeToNumber, telescopeCodeToName} from './utils.js';
-import App from './telescope_availability_app.vue';
+import App from './telescope_availability_chart.vue';
 
 Vue.filter('readableSiteName', function(value){
   var split_string = value.split(".");
@@ -13,7 +13,7 @@ Vue.filter('readableSiteName', function(value){
 });
 
 new Vue({
-  el: '#telescope_availability_app',
+  el: '#telescope_availability_chart',
   render: function(h){
     return h(App);
   }
