@@ -1,5 +1,5 @@
 <template>
-  <telescope_availability :availabilityData="availabilityData2"></telescope_availability>
+  <telescope_availability :availabilityData="telescopeAvailabilityData"></telescope_availability>
 </template>
 <script>
 import Vue from 'vue';
@@ -11,7 +11,7 @@ export default {
   components: {telescope_availability,},
   data: function(){
     return {
-      availabilityData2: {},
+      telescopeAvailabilityData: {},
     };
   },
   created: function(){
@@ -24,7 +24,7 @@ export default {
     startDate.setSeconds(0);
     $.getJSON('/api/telescope_availability/?start=' + startDate.toISOString() + "&end=" + endDate.toISOString(),
       function(data){
-        that.availabilityData2 = data;
+        that.telescopeAvailabilityData = data;
     });
   }
 };

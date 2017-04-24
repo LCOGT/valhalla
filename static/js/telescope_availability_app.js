@@ -1,8 +1,6 @@
 import Vue from 'vue';
 import $ from 'jquery';
-import {siteCodeToName} from './utils.js';
-import {observatoryCodeToNumber} from './utils.js';
-import {telescopeCodeToName} from './utils.js';
+import {siteCodeToName, observatoryCodeToNumber, telescopeCodeToName} from './utils.js';
 import App from './telescope_availability_app.vue';
 
 Vue.filter('readableSiteName', function(value){
