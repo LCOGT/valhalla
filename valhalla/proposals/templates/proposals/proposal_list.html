@@ -21,7 +21,7 @@
     </div>
     <div class="col-md-3">
         <h4>
-            <a href="{% url 'sciapplications:index' %}"><i class="fa fa-pencil-square-o fa-2x fa-fw"></i> Submit Proposal</a>
+            <a href="{% url 'sciapplications:index' %}"><i class="fa fa-pencil-square-o fa-fw"></i> Submit Proposal</a>
         </h4>
         <p>
             There {{ calls|length|pluralize:"is,are" }} currently <a href="{% url 'sciapplications:index' %}">{{ calls|length }}</a> open call{{ calls|length|pluralize }} for proposals.
@@ -52,10 +52,16 @@
                     <td>{{ proposal.cis|slice:"3"|join:", " }}{% if proposal.cis|length > 3 %}...{% endif %}</td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="4">You are not a member of any proposals. Would you like to
-                    <a href="{% url 'sciapplications:index' %}">submit a proposal?</a></td>
-                </tr>
+                    {% if user.proposal_set.count < 1 %}
+                        <tr>
+                            <td colspan="4">You are not a member of any proposals. Would you like to
+                            <a href="{% url 'sciapplications:index' %}">submit a proposal?</a></td>
+                        </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">No proposals for this semester.</td>
+                    </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
