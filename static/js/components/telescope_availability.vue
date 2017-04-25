@@ -9,7 +9,7 @@
             <tr v-for="telescope in sortedTelescopes">
                 <td>{{ telescope | readableSiteName}}</td>
                 <td v-for="availabilities in availabilityData[telescope]" :class="[availabilityToColor(availabilities[1])]">
-                    {{ availabilities[1].toFixed(2) * 100 }}
+                    {{ (availabilities[1] * 100).toFixed() }}
                 </td>
             </tr>
         </tbody>
