@@ -18,9 +18,9 @@
   },
   "homepage": "https://github.com/LCOGT/valhalla#readme",
   "dependencies": {
-    "babel": "^6.5.2",
-    "babel-core": "^6.24.0",
-    "babel-loader": "^6.4.1",
+    "babel-cli": "^6.5.2",
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
     "bootstrap": "^3.3.5",
     "bootstrap-table": "^1.11.1",
     "chart.js": "^2.5.0",
@@ -37,6 +37,6 @@
     "vue": "^2.2.6",
     "vue-loader": "^11.3.4",
     "vue-template-compiler": "^2.2.6",
-    "webpack": "^2.3.3"
+    "webpack": "^2.4.1"
   }
 }
