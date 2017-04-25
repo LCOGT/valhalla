@@ -46,9 +46,6 @@
                           :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'}, {value: 'MPC_COMET', text: 'MPC Comet'}]"
                           desc="The orbital elements scheme to use with this target.">
             </customselect>
-            <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
-                         desc="Modified Julian Days">
-            </customfield>
             <customfield v-model="target.epochofel" label="Epoch of Elements" field="epochofel"
                          v-on:input="update" :errors="errors.epochofel" desc="Epoch of Elements">
             </customfield>
@@ -61,14 +58,24 @@
             <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
                           v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
             </customfield>
-            <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
-                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
-            </customfield>
             <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
                           v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
             </customfield>
+          </div>
+          <div class="minor-planet" v-show="target.scheme === 'MPC_MINOR_PLANET'">
+            <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
+                         v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
+            </customfield>
             <customfield v-model="target.meananom" label="Mean Anomoly" field="meananom"
-                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
+                         v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
+            </customfield>
+          </div>
+          <div class="mpc-comet" v-show="target.scheme === 'MPC_COMET'">
+            <customfield v-model="target.perihdist" label="Perihelion Distance" field="perihdist"
+                         v-on:input="update" :errors="errors.perihdist" desc="in AU">
+            </customfield>
+            <customfield v-model="target.epochofperih" label="Epoch of Perihelion" field="epochofperih"
+                         v-on:input="update" :errors="errors.epochofperih" desc="Modified Juian Days">
             </customfield>
           </div>
           <div class="spectra" v-if="datatype === 'SPECTRA'">
@@ -102,17 +109,18 @@ export default {
   data: function(){
     var ns_target_params = {
       scheme: 'MPC_MINOR_PLANET',
-      orbinc: 0,
-      longascnode: 0,
-      argofperih: 0,
-      meandist: 0,
-      eccentricity: 0,
-      meananom: 0
+      orbinc: null,
+      longascnode: null,
+      argofperih: null,
+      eccentricity: null,
+      meandist: null,
+      meananom: null,
+      perihdist: null,
+      epochofperih: null
     };
     var rot_target_params = {rot_mode: 'VFLOAT', rot_angle: 0};
     var sid_target_params = _.cloneDeep(this.target);
     delete sid_target_params['name'];
-    delete sid_target_params['epoch'];
     delete sid_target_params['type'];
     return {
       show: true,
@@ -121,7 +129,8 @@ export default {
       lookupText: '',
       ns_target_params: ns_target_params,
       sid_target_params: sid_target_params,
-      rot_target_params: rot_target_params};
+      rot_target_params: rot_target_params
+    };
   },
   methods: {
     update: function(){
@@ -169,12 +178,12 @@ export default {
     },
     'target.type': function(value){
       var that = this;
-      if(this.target.type === 'SIDEREAL'){
-        for(var x in this.ns_target_params){
+      if(value === 'SIDEREAL'){
+        for(var x in that.ns_target_params){
           that.ns_target_params[x] = that.target[x];
           that.target[x] = undefined;
         }
-        for(var y in this.sid_target_params){
+        for(var y in that.sid_target_params){
           that.target[y] = that.sid_target_params[y];
         }
       }else if(value === 'NON_SIDEREAL'){
@@ -182,7 +191,7 @@ export default {
           that.sid_target_params[z] = that.target[z];
           that.target[z] = undefined;
         }
-        for(var a in this.ns_target_params){
+        for(var a in that.ns_target_params){
           that.target[a] = that.ns_target_params[a];
         }
       }
