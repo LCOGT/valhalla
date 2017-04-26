@@ -26,7 +26,7 @@
           <customfield v-model="window.end" type="datetime" label="End (UT)" field="end" v-on:input="update"
                       :errors="errors.end" desc="Time when the observing window closes.">
           </customfield>
-          <customselect v-model="cadence" label="Cadence" field="cadence"
+          <customselect v-model="cadence" label="Cadence" field="cadence" v-if="!simple_interface"
                         desc="A cadence will replace your current observing window with a set of windows, one for each cycle of the cadence."
                         :options="[{'text':'None','value':'none'}, {'text':'Simple Period',value:'simple'}]">
           </customselect>
@@ -54,7 +54,7 @@ import customselect from './util/customselect.vue';
 import airmass from './airmass.vue';
 
 export default {
-  props: ['window', 'index', 'errors', 'parentshow'],
+  props: ['window', 'index', 'errors', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, airmass},
   mixins: [collapseMixin],
   data: function(){

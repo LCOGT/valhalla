@@ -47,7 +47,7 @@
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset from default focus of the secondary mirror in mm. The limits are ± 3mm.">
           </customfield>
-          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
+          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface"
                         :errors="errors.ag_mode" desc="Guiding keeps the field stable during exposures. If OPTIONAL is selected, then guiding is initially attempted, but the observations will be carried out even if guiding fails. If ON is selected, then guiding must be successful for the observations to continue."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},

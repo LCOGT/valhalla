@@ -17,7 +17,7 @@
                 <i v-show="lookingUP" class="fa fa-spinner fa-spin fa-fw"></i> {{ lookupText }}
               </span>
           </div>
-          <customselect v-model="target.type" label="Type" field="type" v-on:input="update"
+          <customselect v-model="target.type" label="Type" field="type" v-on:input="update" v-if="!simple_interface"
                         :errors="errors.type" desc="Please select whether this is a sidereal or non-sidereal target."
                         :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
           </customselect>
@@ -29,16 +29,18 @@
                          desc="Decimal degrees of DD:MM:SS.S">
             </customfield>
             <customfield v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
-                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year. Max 20000.">
+                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year. Max 20000."
+                         v-if="!simple_interface">
             </customfield>
             <customfield v-model="target.proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
-                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year. Max 20000.">
+                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year. Max 20000."
+                         v-if="!simple_interface">
             </customfield>
             <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
-                         desc="Julian Years. Max 2100.">
+                         desc="Julian Years. Max 2100." v-if="!simple_interface">
             </customfield>
             <customfield v-model="target.parallax" label="Parallax" field="parallax" v-on:input="update"
-                         :errors="errors.parallax" desc="+0.45 mas. Max 2000.">
+                         :errors="errors.parallax" desc="+0.45 mas. Max 2000." v-if="!simple_interface">
             </customfield>
           </div>
           <div class="non-sidereal" v-show="target.type === 'NON_SIDEREAL'">
@@ -103,7 +105,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['target', 'errors', 'datatype', 'parentshow'],
+  props: ['target', 'errors', 'datatype', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, archive},
   mixins: [collapseMixin],
   data: function(){
