@@ -203,6 +203,22 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
 
+    def test_post_userrequest_acquire_mode_brightest_no_radius(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Acquire radius must be positive', str(response.content))
+
+    def test_post_userrequest_acquire_mode_brightest(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
+        bad_data['requests'][0]['molecules'][0]['acquire_radius_arcsec'] = 2
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 201)
+
     def test_post_userrequest_single_must_have_one_request(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'].append(bad_data['requests'][0].copy())
