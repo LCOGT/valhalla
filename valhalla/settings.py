@@ -28,8 +28,7 @@ ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.g
 
 SITE_ID = 1
 
-
-# Application definition
+ADMINS = [('softies', 'softies@lco.global')]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -128,6 +127,9 @@ LOGGING = {
         },
         'django': {
             'level': 'INFO',
+        },
+        'rise_set': {
+            'level': 'WARNING'
         }
     }
 }

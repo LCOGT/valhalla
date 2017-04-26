@@ -123,6 +123,18 @@ class TestProposalList(TestCase):
         self.assertContains(response, 'You are not a member of any proposals')
         self.assertNotContains(response, 'Admin only')
 
+    def test_no_proposals_for_semester(self):
+        user = mixer.blend(User)
+        semester = mixer.blend(Semester, code='2016A')
+        other_semester = mixer.blend(Semester, code='2017A')
+        proposal = mixer.blend(Proposal)
+        mixer.blend(TimeAllocation, semester=semester)
+        mixer.blend(Membership, user=user, proposal=proposal)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('proposals:list') + '?semester={}'.format(other_semester.code))
+        self.assertContains(response, 'No proposals for this semester.')
+
     def test_proposals_show_in_list(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('proposals:list'))

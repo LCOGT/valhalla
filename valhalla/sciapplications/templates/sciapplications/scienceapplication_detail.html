@@ -110,8 +110,8 @@
         </ul>
     {% endif %}
 
-    {% if object.moon %}
-            <h2>{% trans 'Moon' %}</h2>
+    {% if object.call.proposal_type != 'DDT' %}
+            <h2>{% trans 'Moon Phase' %}</h2>
             <p>{{ object.moon }}</p>
     {% endif %}
 

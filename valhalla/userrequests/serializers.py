@@ -195,6 +195,9 @@ class TargetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Target
         exclude = ('request', 'id')
+        extra_kwargs = {
+            'name': {'error_messages': {'blank': 'Please provide a name.'}}
+        }
 
     def to_representation(self, instance):
         # Only return data for the speific target type
@@ -322,6 +325,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'submitter', 'created', 'state', 'modified'
         )
+        extra_kwargs = {
+            'proposal': {'error_messages': {'null': 'Please provide a proposal.'}},
+            'group_id': {'error_messages': {'blank': 'Please provide a title.'}}
+        }
 
     @transaction.atomic
     def create(self, validated_data):

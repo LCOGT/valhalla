@@ -68,20 +68,5 @@
 </div>
 {% endblock %}
 {% block extra_javascript %}
-<script src="{% static 'js/telescope_availability.js' %}"></script>
-<script type="text/javascript">
-$(document).ready(function(){
-    var end_date = new Date();
-    var start_date = new Date(end_date);
-    start_date.setDate(start_date.getDate() - 3);
-    start_date.setHours(0);
-    start_date.setMinutes(0);
-    start_date.setSeconds(0);
-    var state_url = "{% url 'api:telescope_availability' %}" + "?start=" +
-                     start_date.toISOString() + "&end=" + end_date.toISOString()
-    $.getJSON(state_url, function(data) {
-        create_telescope_availability_chart(data);
-    });
-});
-</script>
+<script type="text/javascript" src="{% static '/bundles/telescope_availability.js' %}"></script>
 {% endblock %}

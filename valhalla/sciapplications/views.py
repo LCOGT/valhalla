@@ -1,7 +1,7 @@
 from django.utils.translation import ugettext as _
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -175,7 +175,6 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
     """Generate a pdf from the detailview, and append and file attachments to the end
     """
     model = ScienceApplication
-    content_type = 'application/pdf'
 
     def get_queryset(self):
         if self.request.user.is_staff:
@@ -185,6 +184,7 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
 
     def render_to_response(self, context, **kwargs):
         context['pdf'] = True
+        pdf_response = HttpResponse(content_type='application/pdf')
         response = super().render_to_response(context, **kwargs)
         response.render()
         try:
@@ -197,9 +197,9 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
                 merger.append(self.object.science_case_file.file)
             if self.object.experimental_design_file:
                 merger.append(self.object.experimental_design_file.file)
-            merger.write(response)
+            merger.write(pdf_response)
         except Exception as exc:
             error = 'There was an error generating your pdf. {}'
             messages.error(self.request, error.format(str(exc)))
             return HttpResponseRedirect(reverse('sciapplications:index'))
-        return response
+        return pdf_response
