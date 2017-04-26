@@ -18,13 +18,22 @@ from valhalla.proposals.tasks import run_accounting
 
 
 class TestProposal(TestCase):
-    def test_add_users(self):
+    def test_add_existing_user(self):
         proposal = mixer.blend(Proposal)
         user = mixer.blend(User, email='email1@lcogt.net')
-        emails = ['email1@lcogt.net', 'notexist@lcogt.net']
+        emails = ['email1@lcogt.net']
         proposal.add_users(emails, Membership.CI)
         self.assertIn(proposal, user.proposal_set.all())
-        self.assertTrue(ProposalInvite.objects.filter(email='notexist@lcogt.net').exists())
+        self.assertIn(proposal.title, str(mail.outbox[0].message()))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [user.email])
+
+    def test_add_nonexisting_user(self):
+        proposal = mixer.blend(Proposal)
+        emails = ['email1@lcogt.net']
+        proposal.add_users(emails, Membership.CI)
+        self.assertFalse(proposal.users.count())
+        self.assertTrue(ProposalInvite.objects.filter(email='email1@lcogt.net').exists())
 
     def test_no_dual_membership(self):
         proposal = mixer.blend(Proposal)

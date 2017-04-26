@@ -60,11 +60,12 @@ class Proposal(models.Model):
     def add_users(self, emails, role):
         for email in emails:
             if User.objects.filter(email=email).exists():
-                Membership.objects.create(
+                membership = Membership.objects.create(
                     proposal=self,
                     user=User.objects.get(email=email),
                     role=role
                 )
+                membership.send_notification()
             else:
                 proposal_invite = ProposalInvite.objects.create(
                     proposal=self,
@@ -117,6 +118,17 @@ class Membership(models.Model):
     class Meta:
         unique_together = ('user', 'proposal')
 
+    def send_notification(self):
+        subject = _('You have been added to a proposal at LCO.global')
+        message = render_to_string(
+            'proposals/added.txt',
+            {
+                'proposal': self.proposal,
+                'user': self.user,
+            }
+        )
+        send_mail.delay(subject, message, 'portal@lco.glboal', [self.user.email])
+
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
 
@@ -141,7 +153,7 @@ class ProposalInvite(models.Model):
         self.save()
 
     def send_invitation(self):
-        subject = _('You have been added to a proposal for observing at LCO.global')
+        subject = _('You have been added to a proposal at LCO.global')
         message = render_to_string(
             'proposals/invitation.txt',
             {
