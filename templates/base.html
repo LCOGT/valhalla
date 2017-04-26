@@ -33,7 +33,9 @@
               <a href="{% url 'userrequests:list' %}" title="Observation Portal" rel="home" class="navbar-brand"><img src="https://cdn.lco.global/mainstyle/img/LCO-logo-web.jpg" alt="Las Cumbres Observatory" /></a>
             </div>
             <div class="navbar-header branding">
-              <div id="lco-name">Observing <br/> Portal</div>
+              <div id="lco-name">
+                Observing <br/> Portal {% if user.profile.simple_interface %}<span class="basic">basic mode</span>{% endif %}
+              </div>
             </div>
             <div id="navbar" class="navbar-collapse collapse headNav">
               <ul class="nav navbar-nav navbar-main">

@@ -25,6 +25,12 @@ a:hover {
     line-height: 1.1em;
 }
 
+#lco-name > .basic {
+    font-size: 15px;
+    color: green;
+    font-weight: 600;
+}
+
 .nav > li > a:focus, .nav > li > a:hover {
     background-color: inherit;
 }
@@ -109,7 +115,7 @@ a:hover {
 
 .head.downPage .headNav {
     font-size: 1.2em;
-    width: 80%;
+    width: 75%;
 }
 
 .head {
