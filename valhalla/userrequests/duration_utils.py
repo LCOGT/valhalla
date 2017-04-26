@@ -122,13 +122,9 @@ def get_request_duration(request_dict):
     if configdb.is_spectrograph(request_dict['molecules'][0]['instrument_name']):
         duration += get_num_mol_changes(request_dict['molecules']) * request_overheads['config_change_time']
 
-        if request_dict['target'].get('acquire_mode', '').upper() != 'OFF':
-            mol_types = [mol['type'].upper() for mol in request_dict['molecules']]
-            # Only add the overhead if we have on-sky targets to acquire
-            if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
-                duration += request_overheads['acquire_exposure_time'] + \
-                    request_overheads['acquire_processing_time']
-
+        for molecule in request_dict['molecules']:
+            if molecule['acquire_mode'].upper() != 'OFF' and molecule['type'].upper() == 'SPECTRUM':
+                duration += request_overheads['acquire_exposure_time'] + request_overheads['acquire_processing_time']
     else:
         duration += get_num_filter_changes(request_dict['molecules']) * request_overheads['filter_change_time']
 

@@ -72,8 +72,13 @@ class MoleculeSerializer(serializers.ModelSerializer):
         if configdb.is_spectrograph(data['instrument_name']):
             if 'ag_mode' not in data:
                 data['ag_mode'] = 'ON'
+            if 'acquire_mode' not in data:
+                data['acquire_mode'] = 'WCS'
             if 'spectra_slit' not in data:
                 data['spectra_slit'] = 'floyds_slit_default'
+
+            if data['acquire_mode'] == 'BRIGHTEST' and not data.get('acquire_radius_arcsec'):
+                raise serializers.ValidationError({'acquire_radius_arcsec': 'Acquire radius must be positive.'})
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
 
@@ -251,11 +256,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Target special validation
-        if data['molecules'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
-            if 'acquire_mode' not in data['target']:
-                # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
-                data['target']['acquire_mode'] = 'ON'
-            if 'rot_mode' not in data['target']:
+        if configdb.is_spectrograph(data['molecules'][0]['instrument_name']) and 'rot_mode' not in data['target']:
                 data['target']['rot_mode'] = 'VFLOAT'
 
         # check if the instrument specified is allowed
