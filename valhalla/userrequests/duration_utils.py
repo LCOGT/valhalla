@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
-PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
+PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses initial pointing
 OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
 MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
