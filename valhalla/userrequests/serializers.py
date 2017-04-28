@@ -292,13 +292,25 @@ class RequestSerializer(serializers.ModelSerializer):
                     del molecule['fill_window']
                 except KeyError:
                     pass
-
+            if largest_interval.total_seconds() <= 0:
+                raise serializers.ValidationError(
+                    _(
+                        'According to the constraints of the request, the target is never visible within the time '
+                        'window. Check that the target is in the nighttime sky. Consider modifying the time '
+                        'window or loosening the airmass or lunar separation constraints. '
+                    )
+                )
             if largest_interval.total_seconds() <= duration:
                 raise serializers.ValidationError(
-                    _("The request duration {} did not fit into any visible intervals. "
-                      "The largest visible interval within your window was {}").format(
-                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
-
+                    (
+                        'According to the constraints of the request, the target is visible for a maximum of {0:.2f} '
+                        'min within the time window. This is less than the duration of your request {1:.2f}. Consider '
+                        'expanding the time window or loosening the airmass or lunar separation constraints.'
+                    ).format(
+                        largest_interval.total_seconds() / 3600.0,
+                        duration / 3600.0
+                    )
+                )
         return data
 
 

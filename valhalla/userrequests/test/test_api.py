@@ -255,6 +255,13 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['errors']['operator'][0], 'This field is required.')
 
+    def test_post_userrequest_duration_too_long(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['exposure_time'] = 999999999999
+        response = self.client.post(reverse('api:user_requests-list'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('the target is visible for a maximum of', str(response.content))
+
 
 class TestDisallowedMethods(APITestCase):
     def setUp(self):
@@ -750,7 +757,7 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertIn('the target is never visible within the time window', str(response.content))
 
     def test_post_userrequest_non_sidereal_missing_fields(self):
         bad_data = self.generic_payload.copy()
@@ -1040,7 +1047,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         }
         bad_data['requests'][0]['molecules'][0]['fill_window'] = True
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
-        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertIn('the target is never visible within the time window', str(response.content))
         self.assertEqual(response.status_code, 400)
 
     def test_fill_window_confined_window_fills_the_window(self):
