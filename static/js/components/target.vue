@@ -49,7 +49,7 @@
                           desc="The orbital elements scheme to use with this target.">
             </customselect>
             <customfield v-model="target.epochofel" label="Epoch of Elements" field="epochofel"
-                         v-on:input="update" :errors="errors.epochofel" desc="Epoch of Elements">
+                         v-on:input="update" :errors="errors.epochofel" desc="The epoch of the orbital elements in MJD.">
             </customfield>
             <customfield v-model="target.orbinc" label="Orbital Inclination" field="orbinc" v-on:input="update"
                         :errors="errors.orbinc">
