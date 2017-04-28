@@ -4,10 +4,40 @@
 <div class="row">
     <div class="col-md-12">
         <h1>Help</h1>
-        <p>For information about the LCO network, please see the <a href="https://lco.global/documentation/">Documentation page.</a>
+        <p>The Observing Portal is your access point to Las Cumbres Observatory's global network of telescopes. Registered users can:</p>
+        <ul class="list-unstyled">
+            <li><i class="fa fa-group fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span><a href="{% url 'sciapplications:index' %}">Write and submit proposals</a> and manage the membership of their research teams.</span>
+            </li>
+            <li><i class="fa fa-wpexplorer fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span><a href="{% url 'userrequests:create' %}">Plan, compose, and submit observing requests</a> for approved proposals.</span>
+            </li>
+            <li><i class="fa fa-check fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span><a href="{% url 'userrequests:list' %}">Track the status</a> of submitted requests.</span>
+            </li>
+            <li><i class="fa fa-cloud-download fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span>Identify and <a href="{% url 'userrequests:list' %}">download data from completed observations.</a></span>
+            </li>
+            <li><i class="fa fa-time fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span><a href="{% url 'proposals:list' %}">Monitor the hours used by approved proposals.</a></span>
+            </li>
+            <li><i class="fa fa-question fa-3x fa-pull-left" aria-hidden="true"></i>
+                <span><a href="mailto:science-support@lco.global" class="btn btn-default">Report problems, ask questions, and make suggestions.</a></span>
+            </li>
+        </ul>
+
+        <p>If you are a new user of this Observing Portal, we strongly recommend that you read the <a href="https://lco.global/files/User_Documentation/gettingstartedonthelcogtnetwork_30jan17.pdf">"Getting Started on the LCO Global Telescope Network" Guide.</a>
+        </p>
+        <p>If you are a new user of the LCO network, information about the <a href="http://lcogt.net/observatory/telescopes">telescopes</a>,
+           <a href="http://lcogt.net/observatory/instruments">instruments</a>, <a href="http://lcogt.net/observatory/data">data handling and quality</a>,
+           <a href="http://lcogt.net/observatory/scheduling">scheduling</a> and other technical aspects of the network is available on the
+           <a href="http://lcogt.net/observatory/capabilities">observatory capabilities</a> pages.
+        </p>
+        <p>
+        </p>
         <p>
             If you require additional support, you may contact science support at <a href="mailto:science-support@lco.global">science-support@lco.global</a>.
-            For enquires related to particual observation requests, please include the tracking and request numbers in your email.
+            For inquiries about particular observation requests, please include the tracking and request numbers in your email.
         </p>
         <a href="mailto:science-support@lco.global" class="btn btn-default">Email Science Support</a>
     </div>
