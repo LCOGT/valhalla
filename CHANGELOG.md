@@ -1,3 +1,26 @@
+## 0.4.0
+2017-04-28
+
+* Use more consistent validation messages for fields that are required
+* Rename help on compose page to How to use this page
+* Fix pdf rendering for non firefox browsers
+* Remove moon phase from ddt proposal views
+* Dont ask user to submit a proposal if they actually do have proposals
+* Make sure users can always view their data when viewing a request in the archive by setting the start date to 2014
+* Make planning tools link to planning tools on lco.global
+* Correct behaviour of minor planet vs comet target composition. Make sure that 0 values in target helper do no validate as false
+* Remove STANDARD from molecules that should be counted for acquire duration. Add acquire duration for every spectrum in the request
+* Indicate simple interface by header logo
+* hide proposal memebers from education users
+* In compose form, use proposal titles instead of ids
+* Hide even more stuff in simple interface
+* Notify existing users when they have been added to a proposal
+* Add better error messages when a request does not fit in any visible windows
+* Made telescope availability chart more readable
+* Description of epoch of elements
+* Misc typo fixes
+* Expanded help text; added internal/external links
+
 ## 0.3.0
 2017-04-21
 
