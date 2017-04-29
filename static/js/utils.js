@@ -79,12 +79,20 @@ function formatDate(date){
   }
 }
 
+var apiFieldToReadable = {
+  'group_id': 'Title'
+};
+
 function formatField(value){
-  var words = value.split('_');
-  words = words.map(function(word){
-    return word.charAt(0).toUpperCase() + word.substr(1);
-  });
-  return words.join(' ');
+  if(value in apiFieldToReadable){
+    return apiFieldToReadable[value];
+  }else{
+    var words = value.split('_');
+    words = words.map(function(word){
+      return word.charAt(0).toUpperCase() + word.substr(1);
+    });
+    return words.join(' ');
+  }
 }
 
 var datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
