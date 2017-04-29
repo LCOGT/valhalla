@@ -94,8 +94,8 @@ class MoleculeSerializer(serializers.ModelSerializer):
         elif data['type'].lower() in types_that_require_filter:
             if not data.get('filter'):
                 raise serializers.ValidationError(
-                    {'filter': _("You must specify a filter for {} exposures with {}.").format(
-                        MOLECULE_TYPE_DISPLAY[data['type']], data['instrument_name']
+                    {'filter': _("You must specify a filter for {} exposures.").format(
+                        MOLECULE_TYPE_DISPLAY[data['type']]
                     )}
                 )
             elif data['filter'].lower() not in available_filters:
