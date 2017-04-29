@@ -266,3 +266,7 @@ a:hover {
 .progress-bar {
     font-family: sans-serif;
 }
+
+.help-list > li {
+    height: 30px;
+}
