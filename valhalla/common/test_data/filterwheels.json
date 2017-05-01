@@ -262,44 +262,9 @@
                     "name": "1.2 A slit",
                     "code": "slit_1.2as",
                     "filter_type": "Slit"
-                },
-                {
-                    "id": 57,
-                    "modified": "2015-12-02T00:47:14.448519Z",
-                    "name": "Floyds default slit",
-                    "code": "floyds_slit_default",
-                    "filter_type": "VirtualSlit"
-                },
-                {
-                    "id": 56,
-                    "modified": "2015-12-02T00:47:14.446886Z",
-                    "name": "Floyds extra large slit",
-                    "code": "floyds_slit_xl",
-                    "filter_type": "VirtualSlit"
-                },
-                {
-                    "id": 55,
-                    "modified": "2015-12-02T00:47:14.445238Z",
-                    "name": "Floyds large slit",
-                    "code": "floyds_slit_l",
-                    "filter_type": "VirtualSlit"
-                },
-                {
-                    "id": 54,
-                    "modified": "2015-12-02T00:47:14.443679Z",
-                    "name": "Floyds medium slit",
-                    "code": "floyds_slit_m",
-                    "filter_type": "VirtualSlit"
-                },
-                {
-                    "id": 53,
-                    "modified": "2015-12-02T00:47:14.442002Z",
-                    "name": "Floyds small slit",
-                    "code": "floyds_slit_s",
-                    "filter_type": "VirtualSlit"
                 }
             ],
-            "__str__": "slit_6.0as,slit_1.6as,slit_2.0as,slit_1.2as,floyds_slit_default,floyds_slit_xl,floyds_slit_l,floyds_slit_m,floyds_slit_s"
+            "__str__": "slit_6.0as,slit_1.6as,slit_2.0as,slit_1.2as"
         },
         {
             "id": 2,

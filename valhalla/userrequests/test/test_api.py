@@ -198,6 +198,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         # check that default acquire mode is 'wcs' for floyds
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
@@ -214,6 +215,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_post_userrequest_acquire_mode_brightest(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
         bad_data['requests'][0]['molecules'][0]['acquire_radius_arcsec'] = 2
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
@@ -319,6 +321,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.generic_multi_payload = copy.deepcopy(self.generic_payload)
         self.second_request = copy.deepcopy(generic_payload['requests'][0])
         self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        self.second_request['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         self.second_request['location']['telescope_class'] = '2m0'
         self.generic_multi_payload['requests'].append(self.second_request)
 
@@ -685,6 +688,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data, follow=True)
         self.assertEqual(response.json()['requests'][0]['target']['rot_mode'], 'VFLOAT')
 
@@ -913,12 +917,13 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(molecule['spectra_slit'], '')
 
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
         molecule = response.json()['requests'][0]['molecules'][0]
         # now with spectral instrument, defaults have changed
         self.assertEqual(molecule['ag_mode'], 'ON')
-        self.assertEqual(molecule['spectra_slit'], 'floyds_slit_default')
+        self.assertEqual(molecule['spectra_slit'], 'slit_6.0as')
 
     def test_invalid_filter_for_instrument(self):
         bad_data = self.generic_payload.copy()
@@ -984,8 +989,10 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_molecules_with_different_instrument_names(self):
         bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'].append(bad_data['requests'][0]['molecules'][0].copy())
         bad_data['requests'][0]['molecules'][1]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][1]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
         self.assertEqual(response.status_code, 400)
