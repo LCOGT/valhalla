@@ -5,11 +5,11 @@
   <link rel="stylesheet" href="{% static 'css/userrequest_list.css' %}">
 {% endblock %}
 {% block request_list %}
-  {% if user.userrequest_set.count < 1 %}
+  {% if object_list|length < 1 %}
   <div class="empty-requests">
     <center>
     {% if user.proposal_set.count > 0 %}
-      <h2>{% trans 'You have not submitted any observation requests.' %}</h2>
+      <h2>{% trans 'No observation requests found.' %}</h2>
       <a class="btn btn-success btn-lg" href="#">{% trans 'Submit an Observation Request' %}</a>
     {% else %}
       <h2> You are not a member of any proposals yet.</h2>
