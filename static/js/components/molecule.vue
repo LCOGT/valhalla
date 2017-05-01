@@ -29,9 +29,11 @@
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
-          <customselect v-model="molecule.filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
-                         :errors="errors.filter" :options="filterOptions"
-                         desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
+          <customselect v-if="datatype === 'IMAGE'" v-model="molecule.filter" label="Filter" v-on:input="update"
+                         :errors="errors.filter" :options="filterOptions" desc="The filter to be used with this instrument">
+          </customselect>
+          <customselect v-if="datatype === 'SPECTRA'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
+                         :errors="errors.spectra_slit" :options="filterOptions" desc="The width the of the slit to be used.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
@@ -152,12 +154,14 @@ export default {
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
         this.molecule.ag_mode = 'ON';
+        this.molecule.filter = undefined;
         this.molecule.acquire_mode = this.acquire_params.acquire_mode;
         if (this.molecule.acquire_mode === 'BRIGHTEST'){
           this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
         }
       }
       else{
+        this.molecule.spectra_slit = undefined;
         this.acquire_params.acquire_mode = this.molecule.acquire_mode;
         this.molecule.acquire_mode = undefined;
         this.molecule.acquire_radius_arcsec = undefined;
