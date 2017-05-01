@@ -1,3 +1,11 @@
+## 0,4,1
+2017-05-01
+
+* Reformat Help page
+* Make group id appear as Title in error messages
+* Fix bug preventing call to action from showing up on homepage
+
+
 ## 0.4.0
 2017-04-28
 
