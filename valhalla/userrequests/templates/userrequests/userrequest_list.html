@@ -5,7 +5,7 @@
   <link rel="stylesheet" href="{% static 'css/userrequest_list.css' %}">
 {% endblock %}
 {% block request_list %}
-  {% if user.userrequests_set.count < 1 %}
+  {% if user.userrequest_set.count < 1 %}
   <div class="empty-requests">
     <center>
     {% if user.proposal_set.count > 0 %}
