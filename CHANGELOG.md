@@ -1,4 +1,8 @@
-## 0,4,1
+## 0.4.2
+2017-05-01
+Fix for removal of default floyds slit
+
+## 0.4.2
 2017-05-01
 
 * Reformat Help page
