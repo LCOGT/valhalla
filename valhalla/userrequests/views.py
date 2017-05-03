@@ -118,7 +118,7 @@ class TelescopeAvailabilityView(APIView):
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
         combine = request.query_params.get('combine')
-        sites = request.query_params.getlist('sites')
+        sites = request.query_params.getlist('site')
         telescopes = request.query_params.getlist('telescope')
         telescope_availability = get_telescope_availability_per_day(
             start, end, sites=sites, telescopes=telescopes
