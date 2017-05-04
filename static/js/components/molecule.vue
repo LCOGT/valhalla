@@ -67,12 +67,12 @@
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                          desc="The method for positioning the slit."
-                          :options="[{value: 'WCS', text: 'Target Coordinates'},
-                                     {value: 'BRIGHTEST', text: 'Brightest Object'}]">
+                          desc="The method for positioning the slit. If Brightest Object is selected, the slit is placed on the brightest object near the target coordinates."
+                          :options="[{value: 'WCS', text: 'On Target Coordinates'},
+                                     {value: 'BRIGHTEST', text: 'On Brightest Object'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
-                         label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">
+                         label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="The radius (in arcseconds) within which to search for the brightest object.">
             </customfield>
           </div>
         </form>
