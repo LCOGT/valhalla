@@ -29,10 +29,10 @@
                          desc="Decimal degrees of DD:MM:SS.S">
             </customfield>
             <customfield v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
-                         v-on:input="update" :errors="errors.proper_motion_ra" desc="&plusmn;0.33 mas/year. Max 20000.">
+                         v-on:input="update" :errors="errors.proper_motion_ra" desc="Units are milliarcseconds per year. Max 20000.">
             </customfield>
             <customfield v-model="target.proper_motion_dec" label="Proper Motion: Dec" field="proper_motion_dec"
-                         v-on:input="update" :errors="errors.proper_motion_dec" desc="&plusmn;0.33 mas/year. Max 20000.">
+                         v-on:input="update" :errors="errors.proper_motion_dec" desc="Units are milliarcseconds per year. Max 20000.">
             </customfield>
             <customfield v-model="target.epoch" label="Epoch" field="epoch" v-on:input="update" :errors="errors.epoch"
                          desc="Julian Years. Max 2100.">
