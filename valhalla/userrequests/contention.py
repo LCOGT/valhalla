@@ -3,7 +3,7 @@ from datetime import timedelta
 import math
 
 from valhalla.userrequests.models import Request
-from valhalla.common.rise_set_utils import get_rise_set_intervals_for_site
+from valhalla.common.rise_set_utils import get_rise_set_intervals
 from valhalla.common.configdb import configdb
 
 
@@ -53,6 +53,7 @@ class Pressure(object):
         self.requests = self._requests(instrument_name, site)
         self.site = site
         self.sites = self._sites()
+        self.telescopes = {}
 
     def _requests(self, instrument_name, site):
         requests = Request.objects.filter(
@@ -62,11 +63,16 @@ class Pressure(object):
             target__type='SIDEREAL'
         )
         if instrument_name:
-            requests = requests.filter(molecules__instrument_name=instrument_name).distinct()
+            requests = requests.filter(molecules__instrument_name=instrument_name)
 
         return requests.prefetch_related(
             'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
-        )
+        ).distinct()
+
+    def _telescopes(self, instrument_name):
+        if instrument_name not in self.telescopes:
+            self.telescopes[instrument_name] = configdb.get_telescopes_per_instrument_type(instrument_name)
+        return self.telescopes[instrument_name]
 
     def _sites(self):
         if self.site:
@@ -74,54 +80,58 @@ class Pressure(object):
         else:
             return configdb.get_site_data()
 
-    def _n_telescopes_available_at_site(self, site, request):
+    def _n_possible_telescopes(self, site, request):
         total_tel = 0
-        for molecule in request.molecules.all():
-            telescopes_for_instrument_type = configdb.get_telescopes_per_instrument_type(molecule.instrument_name)
-            total_tel += min([len(t) for t in telescopes_for_instrument_type if t.site is site], default=0)
+        for instrument_name in [m.instrument_name for m in request.molecules.all()]:
+            total_tel += min([len(t) for t in self._telescopes(instrument_name) if t.site == site], default=0)
         avg_telescopes = total_tel / request.molecules.count()
         return avg_telescopes
 
     def _visible_intervals(self, request):
-        visible_intervals = []
+        visible_intervals = {}
         for site in self.sites:
-            if not request.location.site or request.location.site is site:
-                intervals = get_rise_set_intervals_for_site(request.as_dict, site['code'])
+            if not request.location.site or request.location.site == site['code']:
+                intervals = get_rise_set_intervals(request.as_dict, site['code'])
                 for r, s in intervals:
                     if (s-r).seconds >= request.duration and r >= self.now:
-                        visible_intervals.append(dict(site=site['code'], interval=(r, s)))
+                        if site['code'] in visible_intervals:
+                            visible_intervals[site['code']].append((r, s))
+                        else:
+                            visible_intervals[site['code']] = [(r, s)]
         return visible_intervals
 
-    def _total_time_visible(self, request_intervals):
-        # TODO: Compensate for overlap at different sites.
-        return sum([(i['interval'][1] - i['interval'][0]).seconds for i in request_intervals])
+    def _time_visible(self, intervals):
+        return sum([(i[1] - i[0]).seconds for i in intervals])
 
     def _binned_pressure_by_hours_from_now(self):
         quarter_hour_bins = [{} for x in range(0, 24 * 4)]
         bin_start_times = [self.now + timedelta(minutes=15 * x) for x in range(0, 24 * 4)]
 
         for request in self.requests:
-            visible_intervals = self._visible_intervals(request)
-            total_time_visible = self._total_time_visible(visible_intervals)
-            if total_time_visible < 1:
-                continue
-            base_pressure = request.duration / total_time_visible
+            site_intervals = self._visible_intervals(request)
+            for site in site_intervals:
+                time_visible = self._time_visible(site_intervals[site])
 
-            for i, bin_start in enumerate(bin_start_times):
-                n_telescopes = 0
-                for interval in visible_intervals:
-                    if interval['interval'][0] <= bin_start < interval['interval'][1]:
-                        n_telescopes += self._n_telescopes_available_at_site(interval['site'], request)
-                if n_telescopes < 1:
+                if time_visible < 1:
                     continue
-                pressure = base_pressure / n_telescopes
-                proposal = request.user_request.proposal.id
-                # TODO: If self.site is set, only add on pressure from requests that are visible from there.
-                if not quarter_hour_bins[i].get(proposal):
-                    quarter_hour_bins[i][proposal] = pressure
-                else:
-                    quarter_hour_bins[i][proposal] += pressure
 
+                base_pressure = request.duration / time_visible
+                for i, bin_start in enumerate(bin_start_times):
+                    n_telescopes = 0
+
+                    for interval in site_intervals[site]:
+                        if interval[0] <= bin_start < interval[1]:
+                            n_telescopes = self._n_possible_telescopes(site, request)
+
+                    if n_telescopes < 1:
+                        continue
+
+                    pressure = base_pressure / n_telescopes
+                    proposal = request.user_request.proposal.id
+                    if not quarter_hour_bins[i].get(proposal):
+                        quarter_hour_bins[i][proposal] = pressure
+                    else:
+                        quarter_hour_bins[i][proposal] += pressure
         return quarter_hour_bins
 
     def _anonymize(self, data):
