@@ -78,7 +78,7 @@
                         }
                       ]
                     },
-                    "filters": "slit_1.2as,floyds_slit_default"
+                    "filters": "slit_6.0as,slit_1.6as,slit_2.0as,slit_1.2as"
                   },
                   "__str__": "tst.doma.1m0a.xx02-xx02"
                 }
@@ -157,7 +157,7 @@
                         }
                       ]
                     },
-                    "filters": "slit_1.2as,floyds_slit_default"
+                    "filters": "slit_6.0as,slit_1.6as,slit_2.0as,slit_1.2as"
                   },
                   "__str__": "tst.domb.1m0a.xx02-xx02"
                 }

@@ -7,6 +7,7 @@ module.exports = {
     compose: './static/js/compose',
     userrequest_detail: './static/js/userrequest_detail',
     request_detail: './static/js/request_detail',
+    telescope_availability: './static/js/telescope_availability_chart',
     tools: './static/js/tools.js'
   },
   output: {

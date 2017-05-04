@@ -72,25 +72,28 @@ class MoleculeSerializer(serializers.ModelSerializer):
         if configdb.is_spectrograph(data['instrument_name']):
             if 'ag_mode' not in data:
                 data['ag_mode'] = 'ON'
-            if 'spectra_slit' not in data:
-                data['spectra_slit'] = 'floyds_slit_default'
+            if 'acquire_mode' not in data:
+                data['acquire_mode'] = 'WCS'
+
+            if data['acquire_mode'] == 'BRIGHTEST' and not data.get('acquire_radius_arcsec'):
+                raise serializers.ValidationError({'acquire_radius_arcsec': 'Acquire radius must be positive.'})
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
 
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):
-            if data['spectra_slit'].lower() not in available_filters:
+            if data.get('spectra_slit', '').lower() not in available_filters:
                 raise serializers.ValidationError(
-                    {'filter': _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
-                        data['spectra_slit'], data['instrument_name'], ", ".join(available_filters)
+                    {'spectra_slit': _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
+                        data.get('spectra_slit', ''), data['instrument_name'], ", ".join(available_filters)
                     )}
                 )
         elif data['type'].lower() in types_that_require_filter:
             if not data.get('filter'):
                 raise serializers.ValidationError(
-                    {'filter': _("You must specify a filter for {} exposures with {}.").format(
-                        MOLECULE_TYPE_DISPLAY[data['type']], data['instrument_name']
+                    {'filter': _("You must specify a filter for {} exposures.").format(
+                        MOLECULE_TYPE_DISPLAY[data['type']]
                     )}
                 )
             elif data['filter'].lower() not in available_filters:
@@ -190,6 +193,9 @@ class TargetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Target
         exclude = ('request', 'id')
+        extra_kwargs = {
+            'name': {'error_messages': {'blank': 'Please provide a name.'}}
+        }
 
     def to_representation(self, instance):
         # Only return data for the speific target type
@@ -248,11 +254,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Target special validation
-        if data['molecules'][0]['instrument_name'].upper() == '2M0-FLOYDS-SCICAM':
-            if 'acquire_mode' not in data['target']:
-                # the normal default is 'OPTIONAL', but for floyds the default is 'ON'
-                data['target']['acquire_mode'] = 'ON'
-            if 'rot_mode' not in data['target']:
+        if configdb.is_spectrograph(data['molecules'][0]['instrument_name']) and 'rot_mode' not in data['target']:
                 data['target']['rot_mode'] = 'VFLOAT'
 
         # check if the instrument specified is allowed
@@ -288,13 +290,25 @@ class RequestSerializer(serializers.ModelSerializer):
                     del molecule['fill_window']
                 except KeyError:
                     pass
-
+            if largest_interval.total_seconds() <= 0:
+                raise serializers.ValidationError(
+                    _(
+                        'According to the constraints of the request, the target is never visible within the time '
+                        'window. Check that the target is in the nighttime sky. Consider modifying the time '
+                        'window or loosening the airmass or lunar separation constraints. '
+                    )
+                )
             if largest_interval.total_seconds() <= duration:
                 raise serializers.ValidationError(
-                    _("The request duration {} did not fit into any visible intervals. "
-                      "The largest visible interval within your window was {}").format(
-                        duration / 3600.0, largest_interval.total_seconds() / 3600.0))
-
+                    (
+                        'According to the constraints of the request, the target is visible for a maximum of {0:.2f} '
+                        'min within the time window. This is less than the duration of your request {1:.2f}. Consider '
+                        'expanding the time window or loosening the airmass or lunar separation constraints.'
+                    ).format(
+                        largest_interval.total_seconds() / 3600.0,
+                        duration / 3600.0
+                    )
+                )
         return data
 
 
@@ -321,6 +335,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'submitter', 'created', 'state', 'modified'
         )
+        extra_kwargs = {
+            'proposal': {'error_messages': {'null': 'Please provide a proposal.'}},
+            'group_id': {'error_messages': {'blank': 'Please provide a title.'}}
+        }
 
     @transaction.atomic
     def create(self, validated_data):

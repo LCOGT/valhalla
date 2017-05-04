@@ -123,7 +123,7 @@ export default {
   },
   computed:{
     proposalOptions: function(){
-      return _.sortBy(_.map(this.proposals, function(p){return {'value': p, 'text': p};}), 'text');
+      return _.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text');
     },
     durationDisplay: function(){
       var duration =  moment.duration(this.duration_data.duration, 'seconds');

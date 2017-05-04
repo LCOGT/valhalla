@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 PER_MOLECULE_GAP = 5.0             # in-between molecule gap - shared for all instruments
-PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses filter changes
+PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasses initial pointing
 OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
 MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
@@ -122,13 +122,9 @@ def get_request_duration(request_dict):
     if configdb.is_spectrograph(request_dict['molecules'][0]['instrument_name']):
         duration += get_num_mol_changes(request_dict['molecules']) * request_overheads['config_change_time']
 
-        if request_dict['target'].get('acquire_mode', '').upper() != 'OFF':
-            mol_types = [mol['type'].upper() for mol in request_dict['molecules']]
-            # Only add the overhead if we have on-sky targets to acquire
-            if 'SPECTRUM' in mol_types or 'STANDARD' in mol_types:
-                duration += request_overheads['acquire_exposure_time'] + \
-                    request_overheads['acquire_processing_time']
-
+        for molecule in request_dict['molecules']:
+            if molecule['acquire_mode'].upper() != 'OFF' and molecule['type'].upper() == 'SPECTRUM':
+                duration += request_overheads['acquire_exposure_time'] + request_overheads['acquire_processing_time']
     else:
         duration += get_num_filter_changes(request_dict['molecules']) * request_overheads['filter_change_time']
 

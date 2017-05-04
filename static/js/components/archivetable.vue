@@ -43,7 +43,7 @@ export default{
   },
   computed: {
     archiveLink: function(){
-      return archiveUIRoot + '?REQNUM=' + this.requestid;
+      return archiveUIRoot + '?REQNUM=' + this.requestid + '&start=2014-01-01';
     }
   },
   mounted: function(){

@@ -73,7 +73,7 @@ export default {
       var options = [];
       for(var i in this.available_instruments){
         if(this.available_instruments[i].type === this.data_type){
-          options.push({value: i, text: i});
+          options.push({value: i, text: this.available_instruments[i].name});
         }
       }
       this.update();

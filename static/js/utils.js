@@ -79,17 +79,25 @@ function formatDate(date){
   }
 }
 
+var apiFieldToReadable = {
+  'group_id': 'Title'
+};
+
 function formatField(value){
-  var words = value.split('_');
-  words = words.map(function(word){
-    return word.charAt(0).toUpperCase() + word.substr(1);
-  });
-  return words.join(' ');
+  if(value in apiFieldToReadable){
+    return apiFieldToReadable[value];
+  }else{
+    var words = value.split('_');
+    words = words.map(function(word){
+      return word.charAt(0).toUpperCase() + word.substr(1);
+    });
+    return words.join(' ');
+  }
 }
 
-export const datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
+var datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
 
-export const collapseMixin = {
+var collapseMixin = {
   watch: {
     parentshow: function(value){
       this.show = value;
@@ -97,7 +105,7 @@ export const collapseMixin = {
   }
 };
 
-export const siteToColor = {
+var siteToColor = {
   'tfn': '#263c6f',
   'elp': '#700000',
   'lsc': '#f04e23',
@@ -107,7 +115,7 @@ export const siteToColor = {
   'sqa': '#009d00'
 };
 
-export const siteCodeToName = {
+var siteCodeToName = {
   'tfn': 'Teide',
   'elp': 'McDonald',
   'lsc': 'Cerro Tololo',
@@ -118,7 +126,24 @@ export const siteCodeToName = {
   'ngq': 'Ali'
 };
 
-export const colorPalette = [  // useful assigning colors to datasets.
+var observatoryCodeToNumber = {
+  'doma': '1',
+  'domb': '2',
+  'domc': '3',
+  'clma': '',
+  'aqwa': '1',
+  'aqwb': '2'
+}
+
+var telescopeCodeToName = {
+  '1m0a': '1m',
+  '0m4a': '0.4m A',
+  '0m4b': '0.4m B',
+  '2m0a': '2m',
+  '0m8a': '0.8m'
+}
+
+var colorPalette = [  // useful assigning colors to datasets.
   '#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#3B3EAC', '#0099C6', '#DD4477',
   '#66AA00', '#B82E2E', '#316395', '#994499', '#22AA99', '#AAAA11', '#6633CC', '#E67300',
   '#8B0707', '#329262', '#5574A6', '#3B3EAC', '#FFFF00', '#1CE6FF', '#FF34FF', '#FF4A46',
@@ -138,4 +163,5 @@ export const colorPalette = [  // useful assigning colors to datasets.
 ];
 
 export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
-        formatDate, formatField};
+        formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
+        observatoryCodeToNumber, telescopeCodeToName, colorPalette};

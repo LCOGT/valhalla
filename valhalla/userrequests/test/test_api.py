@@ -190,16 +190,36 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_post_userrequest_default_acquire_mode(self):
         bad_data = self.generic_payload.copy()
-        # verify default acquire mode is 'optional' for non-floyds
+        # verify default acquire mode is 'off' for non-floyds
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'OPTIONAL')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'OFF')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
 
-        # check that default acquire mode is 'on' for floyds
+        # check that default acquire mode is 'wcs' for floyds
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()['requests'][0]['target']['acquire_mode'], 'ON')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
+        self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
+
+    def test_post_userrequest_acquire_mode_brightest_no_radius(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Acquire radius must be positive', str(response.content))
+
+    def test_post_userrequest_acquire_mode_brightest(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
+        bad_data['requests'][0]['molecules'][0]['acquire_radius_arcsec'] = 2
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 201)
 
     def test_post_userrequest_single_must_have_one_request(self):
         bad_data = self.generic_payload.copy()
@@ -236,6 +256,13 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-validate'), data=bad_data)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['errors']['operator'][0], 'This field is required.')
+
+    def test_post_userrequest_duration_too_long(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['exposure_time'] = 999999999999
+        response = self.client.post(reverse('api:user_requests-list'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('the target is visible for a maximum of', str(response.content))
 
 
 class TestDisallowedMethods(APITestCase):
@@ -294,6 +321,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.generic_multi_payload = copy.deepcopy(self.generic_payload)
         self.second_request = copy.deepcopy(generic_payload['requests'][0])
         self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        self.second_request['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         self.second_request['location']['telescope_class'] = '2m0'
         self.generic_multi_payload['requests'].append(self.second_request)
 
@@ -660,6 +688,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data, follow=True)
         self.assertEqual(response.json()['requests'][0]['target']['rot_mode'], 'VFLOAT')
 
@@ -732,7 +761,7 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertIn('the target is never visible within the time window', str(response.content))
 
     def test_post_userrequest_non_sidereal_missing_fields(self):
         bad_data = self.generic_payload.copy()
@@ -888,12 +917,13 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(molecule['spectra_slit'], '')
 
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
         molecule = response.json()['requests'][0]['molecules'][0]
         # now with spectral instrument, defaults have changed
         self.assertEqual(molecule['ag_mode'], 'ON')
-        self.assertEqual(molecule['spectra_slit'], 'floyds_slit_default')
+        self.assertEqual(molecule['spectra_slit'], 'slit_6.0as')
 
     def test_invalid_filter_for_instrument(self):
         bad_data = self.generic_payload.copy()
@@ -959,8 +989,10 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_molecules_with_different_instrument_names(self):
         bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'].append(bad_data['requests'][0]['molecules'][0].copy())
         bad_data['requests'][0]['molecules'][1]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][1]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
         self.assertEqual(response.status_code, 400)
@@ -1022,7 +1054,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         }
         bad_data['requests'][0]['molecules'][0]['fill_window'] = True
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
-        self.assertIn('did not fit into any visible intervals', str(response.content))
+        self.assertIn('the target is never visible within the time window', str(response.content))
         self.assertEqual(response.status_code, 400)
 
     def test_fill_window_confined_window_fills_the_window(self):

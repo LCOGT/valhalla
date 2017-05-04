@@ -35,9 +35,11 @@
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
-          <customselect v-model="molecule.filter" :label="datatype === 'IMAGE' ? 'Filter':'Slit Width'" v-on:input="update"
-                         :errors="errors.filter" :options="filterOptions"
-                         desc="The filter to be used if used with an imaging instrument, or slit to be used with a spectrograph.">
+          <customselect v-if="datatype === 'IMAGE'" v-model="molecule.filter" label="Filter" v-on:input="update"
+                         :errors="errors.filter" :options="filterOptions" desc="The filter to be used with this instrument">
+          </customselect>
+          <customselect v-if="datatype === 'SPECTRA'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
+                         :errors="errors.spectra_slit" :options="filterOptions" desc="The width the of the slit to be used.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
@@ -53,7 +55,7 @@
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset (in mm) of the secondary mirror from its default (focused) position. The limits are ± 3mm.">
           </customfield>
-          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
+          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface"
                         :errors="errors.ag_mode" desc="Guiding keeps the field stable during long exposures. If OPTIONAL is selected, then guiding is attempted, but the observations will be carried out even if guiding fails. If ON is selected, then if guiding fails, the observations will be aborted."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
@@ -158,12 +160,14 @@ export default {
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
         this.molecule.ag_mode = 'ON';
+        this.molecule.filter = undefined;
         this.molecule.acquire_mode = this.acquire_params.acquire_mode;
         if (this.molecule.acquire_mode === 'BRIGHTEST'){
           this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
         }
       }
       else{
+        this.molecule.spectra_slit = undefined;
         this.acquire_params.acquire_mode = this.molecule.acquire_mode;
         this.molecule.acquire_mode = undefined;
         this.molecule.acquire_radius_arcsec = undefined;

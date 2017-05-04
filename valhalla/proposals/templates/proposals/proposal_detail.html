@@ -73,56 +73,57 @@
             <button type="submit" class="btn btn-default">Save</button>
         </form>
         <br/>
-    <dl>
-        <dt>{% trans 'Principal Investigator' %}</dt>
-        <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
-        <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
-    </dl>
-    <dl>
-        <dt>{% trans 'Co-Investigators' %} <a id="toggleci" title="Show/hide CI list" class="fa fa-eye fa-eye-slash"></a></dt>
-        <div id="cilist">
-            {% for mem in object.membership_set.all %}
-            {% if mem.role != 'PI' %}
-            <dd>{{ mem.user.first_name }} {{ mem.user.last_name }}</dd>
-            <dd><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></dd>
-                {% if user == object.pi %}
-                    <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
+        {% if not user.profile.simple_interface or user == object.pi %}
+        <dl>
+            <dt>{% trans 'Principal Investigator' %}</dt>
+            <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
+            <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
+        </dl>
+        <dl>
+            <dt>{% trans 'Co-Investigators' %} <a id="toggleci" title="Show/hide CI list" class="fa fa-eye fa-eye-slash"></a></dt>
+            <div id="cilist">
+                {% for mem in object.membership_set.all %}
+                {% if mem.role != 'PI' %}
+                <dd>{{ mem.user.first_name }} {{ mem.user.last_name }}</dd>
+                <dd><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></dd>
+                    {% if user == object.pi %}
+                        <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-            {% endfor %}
-        </div>
-    </dl>
-    {% if user == object.pi %}
-    <div class="help-block">
-        {% blocktrans %}
-        Invite co-investigators by entering their email address below and
-        pressing "add". If you would like to add multiple address at once, enter them below,
-        comma separated. If the user is already registered with LCOGT, they will be added to
-        this proposal. If not, they will be invited.
-        {% endblocktrans %}
-    </div>
-    <form method="POST" action="{% url 'proposals:invite' pk=object.id %}" class="form-inline">
-        {% csrf_token %}
-        <div class="form-group">
-            <label class="sr-only" for="email">Invite a Co-Investigator</label>
-            <input name="email" class="form-control" placeholder="Invite Co-Investigators"/>
-        </div>
-        <button type="submit" class="btn btn-default">Add</button>
-    </form>
-    <br/>
-    <dl>
-        <dt>{% trans 'Pending Invitations' %}</dt>
-        {% for invite in object.proposalinvite_set.all %}
-        {% if not invite.used %}
-        <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
-        <dd>Invited: {{ invite.sent }}</dd>
+                {% endfor %}
+            </div>
+        </dl>
         {% endif %}
-        {% empty %}
-        <p>No pending invitations.</p>
-        {% endfor %}
-    </dl>
-
-    {% endif %}
+        {% if user == object.pi %}
+        <div class="help-block">
+            {% blocktrans %}
+            Invite co-investigators by entering their email address below and
+            pressing "add". If you would like to add multiple address at once, enter them below,
+            comma separated. If the user is already registered with LCO, they will be added to
+            this proposal. If not, they will be invited.
+            {% endblocktrans %}
+        </div>
+        <form method="POST" action="{% url 'proposals:invite' pk=object.id %}" class="form-inline">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="sr-only" for="email">Invite a Co-Investigator</label>
+                <input name="email" class="form-control" placeholder="Invite Co-Investigators"/>
+            </div>
+            <button type="submit" class="btn btn-default">Add</button>
+        </form>
+        <br/>
+        <dl>
+            <dt>{% trans 'Pending Invitations' %}</dt>
+            {% for invite in object.proposalinvite_set.all %}
+            {% if not invite.used %}
+            <dd><a href="mailto:{{ invite.email }}">{{ invite.email }}</a></dd>
+            <dd>Invited: {{ invite.sent }}</dd>
+            {% endif %}
+            {% empty %}
+            <p>No pending invitations.</p>
+            {% endfor %}
+        </dl>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

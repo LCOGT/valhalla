@@ -1,4 +1,5 @@
 from django.utils.translation import ugettext as _
+from numbers import Number
 
 
 class BaseTargetHelper(object):
@@ -21,7 +22,7 @@ class BaseTargetHelper(object):
                 self._data[field] = self.defaults[field]
 
         for field in self.required_fields:
-            if not self._data.get(field):
+            if not self._data.get(field) and not isinstance(self._data.get(field), Number):
                 self.error_dict[field] = ['This field is required']
 
         self.validate()
