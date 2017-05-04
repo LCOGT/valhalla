@@ -14,6 +14,12 @@
               online Exposure Time Calculator.
             </a>
           </li>
+          <li>
+            For more information on the Defocus and Guiding options, see the "Getting Started" guide in the
+            <a href="https://lco.global/documentation/" target="_blank" >
+              Documentation section.
+            </a>
+          </li>
         </ul>
         <div class="row" v-show="molecule.type === 'SPECTRUM'">
           <div class="col-md-12">
@@ -45,10 +51,10 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset from default focus of the secondary mirror in mm. The limits are ± 3mm.">
+                       :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset (in mm) of the secondary mirror from its default (focused) position. The limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update"
-                        :errors="errors.ag_mode" desc="Guiding keeps the field stable during exposures. If OPTIONAL is selected, then guiding is initially attempted, but the observations will be carried out even if guiding fails. If ON is selected, then guiding must be successful for the observations to continue."
+                        :errors="errors.ag_mode" desc="Guiding keeps the field stable during long exposures. If OPTIONAL is selected, then guiding is attempted, but the observations will be carried out even if guiding fails. If ON is selected, then if guiding fails, the observations will be aborted."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
