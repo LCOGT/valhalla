@@ -12,7 +12,7 @@
   <select id="pressure-site" v-model="site">
     <option value="">All</option>
     <option value="coj">Siding Spring (coj)</option>
-    <option value="cpt">Sutherlan, South Africa (cpt)</option>
+    <option value="cpt">Sutherland, South Africa (cpt)</option>
     <option value="elp">McDonald, Texas (elp)</option>
     <option value="lsc">Cerro Tololo, Chile (lsc)</option>
     <option value="ogg">Maui, Hawaii (ogg)</option>
