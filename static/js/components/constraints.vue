@@ -18,8 +18,8 @@
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
           <customfield v-model="constraints.max_airmass" label="Maximum Airmass" field="max_airmass"
-                       v-on:input="update" :errors="errors.max_airmass" desc="Maximum acceptable airmass (X) for scheduling.
-                       X = sec(zenith angle)">
+                       v-on:input="update" :errors="errors.max_airmass" desc="Maximum acceptable airmass at which the observation can be scheduled.
+                       A plane-parallel atmosphere is assumed.">
           </customfield>
           <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Separation"
                        field="min_lunar_distance" v-on:input="update" :errors="errors.min_lunar_distance"
