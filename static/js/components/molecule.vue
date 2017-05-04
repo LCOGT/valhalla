@@ -35,7 +35,7 @@
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
-                       the count is set to the number of exposures (including overheads) the will fit in the observing window.">
+                       the count is set to the number of exposures (including overheads) that will fit in the observing window.">
             <div class="input-group-btn" slot="inlineButton">
               <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow"
                       :disabled="duration_data.duration > 0 ? false : true"><b>Fill</b></button>
