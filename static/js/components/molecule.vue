@@ -14,6 +14,12 @@
               online Exposure Time Calculator.
             </a>
           </li>
+          <li>
+            For more information on the Defocus and Guiding options, see the "Getting Started" guide in the
+            <a href="https://lco.global/documentation/" target="_blank" >
+              Documentation section.
+            </a>
+          </li>
         </ul>
         <div class="row" v-show="molecule.type === 'SPECTRUM'">
           <div class="col-md-12">
@@ -37,7 +43,7 @@
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
                        :errors="errors.exposure_count" desc="Number of exposures to make with this configuration. If the 'Fill' option is selected,
-                       the count is set to the number of exposures (including overheads) the will fit in the observing window.">
+                       the count is set to the number of exposures (including overheads) that will fit in the observing window.">
             <div class="input-group-btn" slot="inlineButton">
               <button class="btn btn-default" type="button" style="font-size:16px" v-on:click="fillWindow"
                       :disabled="duration_data.duration > 0 ? false : true"><b>Fill</b></button>
@@ -47,10 +53,10 @@
                        :errors="errors.exposure_time" desc="Seconds">
           </customfield>
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
-                       :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset from default focus of the secondary mirror in mm. The limits are ± 3mm.">
+                       :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset (in mm) of the secondary mirror from its default (focused) position. The limits are ± 3mm.">
           </customfield>
           <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface"
-                        :errors="errors.ag_mode" desc="Guiding keeps the field stable during exposures. If OPTIONAL is selected, then guiding is initially attempted, but the observations will be carried out even if guiding fails. If ON is selected, then guiding must be successful for the observations to continue."
+                        :errors="errors.ag_mode" desc="Guiding keeps the field stable during long exposures. If OPTIONAL is selected, then guiding is attempted, but the observations will be carried out even if guiding fails. If ON is selected, then if guiding fails, the observations will be aborted."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
@@ -63,12 +69,12 @@
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
-                          desc="The method for positioning the slit."
-                          :options="[{value: 'WCS', text: 'Target Coordinates'},
-                                     {value: 'BRIGHTEST', text: 'Brightest Object'}]">
+                          desc="The method for positioning the slit. If Brightest Object is selected, the slit is placed on the brightest object near the target coordinates."
+                          :options="[{value: 'WCS', text: 'On Target Coordinates'},
+                                     {value: 'BRIGHTEST', text: 'On Brightest Object'}]">
             </customselect>
             <customfield v-show="molecule.acquire_mode === 'BRIGHTEST'" v-model="molecule.acquire_radius_arcsec" field="acquire_radius_arcsec"
-                         label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="Arc seconds">
+                         label="Acquire Radius" v-on:input="update" :errors="errors.acquire_radius_arcsec" desc="The radius (in arcseconds) within which to search for the brightest object.">
             </customfield>
           </div>
         </form>
