@@ -7,7 +7,7 @@
         Observations requested where contention is high are more likely to
         incur scheduling conflicts.
     </p>
-    <p>This plot excludes moving targets and overheads.</p>
+    <p>This plot excludes moving targets.</p>
     <Contention></Contention>
     <h1>Network Pressure</h1>
     <p>
@@ -16,7 +16,7 @@
       An overall pressure of 1 (dashed line) means the network is perfectly subscribed on average (&gt; 1 is over-subscription, &lt; 1 is
       under-subscription).
     </p>
-    <p>This plot excludes moving targets and overheads.</p>
+    <p>This plot excludes moving targets.</p>
     <Pressure></Pressure>
   </div>
 </div>
