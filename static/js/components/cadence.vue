@@ -8,7 +8,11 @@ export default {
   props: ['data'],
   data: function(){
     return {
-      options: {},
+      options: {
+        moment: function(date){
+          return vis.moment(date).utc();
+        }
+      },
       items: this.toVis
     };
   },
