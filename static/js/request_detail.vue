@@ -114,7 +114,7 @@ Vue.filter('formatField', function(value){
 
 Vue.filter('formatValue', function(value){
   if(!isNaN(value)){
-    return Number(value.toFixed(7));
+    return Number(value).toFixed(7);
   }
   return value;
 });
