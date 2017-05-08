@@ -152,7 +152,7 @@ def get_request_state_from_pond_blocks(request_state, request_blocks):
     for block in request_blocks:
         start_time = dateutil.parser.parse(block['start']).replace(tzinfo=timezone.utc)
         end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
-        if all(molecule['complete'] for molecule in block['molecules']):
+        if all(molecule['completed'] for molecule in block['molecules']):
             return 'COMPLETED'
         if (not block['canceled'] and not any(molecule['failed'] for molecule in block['molecules'])
                 and start_time < now < end_time):
@@ -233,21 +233,22 @@ def update_request_states_for_window_expiration():
 
 def update_request_states_from_pond_blocks(pond_blocks):
     '''Update the states of requests and user_requests given a set of recently changed pond blocks.'''
-    sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_number'])
-    blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_number'])
+    sorted_blocks = sorted(pond_blocks, key=lambda x: x['molecules'][0]['tracking_num'])
+    blocks_by_tracking_num = itertools.groupby(sorted_blocks, lambda x: x['molecules'][0]['tracking_num'])
     now = timezone.now()
     states_changed = False
 
     for tracking_num, blocks in blocks_by_tracking_num:
-        sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_number'])
-        blocks_by_request_num = {k: list(v) for k, v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_number'])}
-        user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
-        ur_expired = user_request.max_window_time < now
-        requests = user_request.requests.all()
-        for request in requests:
-            if request.id in blocks_by_request_num:
-                states_changed |= update_request_state(request, blocks_by_request_num[request.id], ur_expired)
-        states_changed |= update_user_request_state(user_request)
+        if tracking_num:
+            sorted_blocks_by_request = sorted(blocks, key=lambda x: x['molecules'][0]['request_num'])
+            blocks_by_request_num = {int(k): list(v) for k, v in itertools.groupby(sorted_blocks_by_request, key=lambda x: x['molecules'][0]['request_num'])}
+            user_request = UserRequest.objects.prefetch_related('requests').get(pk=tracking_num)
+            ur_expired = user_request.max_window_time < now
+            requests = user_request.requests.all()
+            for request in requests:
+                if request.id in blocks_by_request_num:
+                    states_changed |= update_request_state(request, blocks_by_request_num[request.id], ur_expired)
+            states_changed |= update_user_request_state(user_request)
 
     return states_changed
 

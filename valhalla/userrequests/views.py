@@ -168,8 +168,11 @@ class UserRequestStatusIsDirty(APIView):
     permission_classes = (IsAdminUser,)
 
     def get(self, request):
-
-        last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
+        try:
+            last_query_time = parse(request.query_params.get('last_query_time'))
+        except TypeError:
+            last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
+        
         url = settings.POND_URL + '/pond/pond/blocks/new/?since={}'.format(last_query_time)
         now = timezone.now()
         try:
