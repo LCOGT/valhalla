@@ -23,7 +23,7 @@
           </customfield>
           <customfield v-model="constraints.min_lunar_distance" label="Min. Lunar Separation"
                        field="min_lunar_distance" v-on:input="update" :errors="errors.min_lunar_distance"
-                       desc="Minimum acceptable angular separation between the target and the moon.">
+                       desc="Minimum acceptable angular separation (degrees) between the target and the moon.">
           </customfield>
         </form>
       </div>
