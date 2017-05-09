@@ -38,7 +38,9 @@ export default {
   props: ['id', 'errors', 'show', 'canremove', 'cancopy', 'icon', 'title', 'index'],
   methods:{
     remove: function(){
-      this.$emit('remove');
+      if(confirm('Are you sure you want to remove this item?')){
+        this.$emit('remove');
+      }
     },
     copy: function(){
       this.$emit('copy');
