@@ -5,6 +5,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from json import JSONDecodeError
+import logging
 import json
 
 from valhalla.proposals.models import TimeAllocation
@@ -18,6 +19,9 @@ from valhalla.userrequests.duration_utils import (get_request_duration, get_tota
                                                   get_molecule_duration, get_num_exposures)
 from datetime import timedelta
 from valhalla.common.rise_set_utils import get_rise_set_intervals
+
+
+logger = logging.getLogger(__name__)
 
 
 class CadenceSerializer(serializers.Serializer):
@@ -364,6 +368,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 Molecule.objects.create(request=request, **data)
 
         debit_ipp_time(user_request)
+
+        logger.info('UserRequest created', extra={'tags': {'user': user_request.submitter.username,
+                                                           'tracking_num': user_request.id,
+                                                           'group_id': user_request.group_id}})
 
         return user_request
 
