@@ -54,6 +54,10 @@
           These requests will replace the current request.</p>
           <p>Press cancel to discard the cadence. Once a cadence is accepted, the individual generated requests may be edited.</p>
           <cadence :data="cadenceRequests"></cadence>
+          <p v-if="cadenceRequests.length < 1"><strong>
+            A valid cadence could not be generated. Please try adjusting jitter or period and make sure your target is visible
+            during the selected window.
+          </strong></p>
         </modal>
         <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
                  v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"

@@ -1,8 +1,23 @@
-## 0.4.2
-2017-05-01
-Fix for removal of default floyds slit
+## 0.5.0
+2017-05-05
+
+* Fix milliseconds to 0 for telescope availability
+* Fix wrong paramter name in telescope availability
+* capitalize Observing Budget Explanation
+* capitalize Observing Budget Explanation
+* Added more specific language about what proposals should and should not be submitted through the portal
+* CHange help text for proper motions
+* fix typo
+* changes to defocus, guiding help text
+* change Airmass help text
+* Modify acquire mode/radius help text
 
 ## 0.4.2
+2017-05-01
+
+* Fix for removal of default floyds slit
+
+## 0.4.1
 2017-05-01
 
 * Reformat Help page
