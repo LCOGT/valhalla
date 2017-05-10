@@ -1,12 +1,12 @@
 import itertools
 from django.utils.translation import ugettext as _
 from math import ceil
+import logging
 
 from valhalla.proposals.models import TimeAllocationKey, Proposal, Semester
 from valhalla.common.configdb import configdb
 from valhalla.common.rise_set_utils import get_rise_set_intervals, get_largest_interval
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -15,9 +15,9 @@ PER_MOLECULE_STARTUP_TIME = 11.0   # per-molecule startup time, which encompasse
 OVERHEAD_ALLOWANCE = 1.1           # amount of leeway in a proposals timeallocation before rejecting that request
 MAX_IPP_LIMIT = 2.0                # the maximum allowed value of ipp
 MIN_IPP_LIMIT = 0.5                # the minimum allowed value of ipp
-
-
 semesters = None
+
+
 def get_semesters():
     global semesters
     if not semesters:
@@ -143,7 +143,7 @@ def get_time_allocation(telescope_class, proposal_id, min_window_time, max_windo
             semester__public=True,
             telescope_class=telescope_class)
     except Exception:
-        logger.warn(_("proposal {} has overlapping time allocations for {}").format(proposal_id, telescope_class))
+        logger.warn(_("proposal {0} has overlapping time allocations for {1}").format(proposal_id, telescope_class))
     return timeall
 
 
