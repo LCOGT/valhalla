@@ -3,7 +3,7 @@ from datetime import timedelta
 import math
 
 from valhalla.userrequests.models import Request
-from valhalla.common.rise_set_utils import get_rise_set_intervals
+from valhalla.common.rise_set_utils import get_rise_set_intervals, get_site_rise_set_intervals
 from valhalla.common.configdb import configdb
 
 
@@ -21,7 +21,7 @@ class Contention(object):
             target__type='SIDEREAL'
         ).prefetch_related(
             'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
-        )
+        ).distinct()
 
     def _binned_durations_by_proposal_and_ra(self):
         ra_bins = [{} for x in range(0, 24)]
@@ -81,6 +81,25 @@ class Pressure(object):
         else:
             return configdb.get_site_data()
 
+    def _site_nights(self):
+        site_nights = {}
+        for site in self.sites:
+            site_nights[site['code']] = get_site_rise_set_intervals(
+                self.now, self.now + timedelta(hours=24), site['code']
+            )
+        flattened = []
+        for site in site_nights:
+            for r, s in site_nights[site]:
+                if s > self.now:
+                    hours_until_rise = (max(self.now, r) - self.now).seconds / 3600
+                    hours_until_set = min((s - self.now).days * 24 + (s - self.now).seconds / 3600, 24)
+                    flattened.append(
+                        dict(name=site,
+                             start=hours_until_rise,
+                             stop=hours_until_set)
+                    )
+        return flattened
+
     def _n_possible_telescopes(self, time, site_intervals, instrument_name):
         n_telescopes = 0
         for site in site_intervals:
@@ -139,6 +158,12 @@ class Pressure(object):
 
     def data(self):
         if self.anonymous:
-            return self._anonymize(self._binned_pressure_by_hours_from_now())
+            return {
+                'pressure': self._anonymize(self._binned_pressure_by_hours_from_now()),
+                'site_nights': self._site_nights()
+            }
         else:
-            return self._binned_pressure_by_hours_from_now()
+            return {
+                'pressure': self._binned_pressure_by_hours_from_now(),
+                'site_nights': self._site_nights()
+            }
