@@ -55,12 +55,22 @@
         <td>{{ ta.proposal.pi }}</td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
-        <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>{{ ta.std_time_used|floatformat }}</td>
+        <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>
+          {{ ta.std_time_used|floatformat }}
+        </td>
         <td>{{ ta.too_allocation|floatformat }}</td>
-        <td{% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation %} class="bg-danger" {% endif %}>{{ ta.too_time_used|floatformat }}</td>
+        <td {% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation %} class="bg-danger" {% endif %}>
+          {{ ta.too_time_used|floatformat }}
+        </td>
         <td>{{ ta.ipp_limit|floatformat }}</td>
         <td>{{ ta.ipp_time_available|floatformat }}</td>
-        <td>{% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation  %}true{% else %}false{% endif %}</td>
+        <td>
+          {% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %}
+            true
+          {% else %}
+            false
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
       </tbody>
