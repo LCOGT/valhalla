@@ -1601,14 +1601,14 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
 
     def test_pressure_no_auth(self):
         response = self.client.get(reverse('api:pressure'))
-        self.assertEqual(len(response.json()), 24 * 4)
-        self.assertIn('All Proposals', response.json()[0])
+        self.assertEqual(len(response.json()['pressure']), 24 * 4)
+        self.assertIn('All Proposals', response.json()['pressure'][0])
 
     def test_pressure_auth(self):
         user = mixer.blend(User, is_staff=True)
         self.client.force_login(user)
         response = self.client.get(reverse('api:pressure'))
-        self.assertNotIn('All Proposals', response.json()[0])
+        self.assertNotIn('All Proposals', response.json()['pressure'][0])
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
