@@ -947,6 +947,13 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
+    def test_filter_necessary_for_type(self):
+        bad_data = self.generic_payload.copy()
+        del bad_data['requests'][0]['molecules'][0]['filter']
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('must specify a filter', str(response.content))
+
     def test_invalid_spectra_slit_for_instrument(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
