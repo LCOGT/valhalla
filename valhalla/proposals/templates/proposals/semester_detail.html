@@ -32,19 +32,21 @@
       <thead>
         <tr>
           <th>Proposal</th>
-          <th>Telescope Class</th>
-          <th>Std Time Alloc</th>
-          <th>Std Time Used</th>
-          <th>RR Time Alloc</th>
-          <th>RR Time Used</th>
+          <th>Class</th>
+          <th>PI</th>
+          <th>Std Alloc</th>
+          <th>Std Used</th>
+          <th>RR Alloc</th>
+          <th>RR Used</th>
           <th>IPP Limit</th>
-          <th>IPP Time Avail</th>
+          <th>IPP Avail</th>
         </tr>
       </thead>
       <tbody>
       {% for ta in object.timeallocation_set.all.distinct %}
       <tr>
         <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
+        <td>{{ ta.proposal.pi }}</td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
         <td {% if ta.std_time_used > ta.std_allocation %} class="bg-danger" {% endif %}>{{ ta.std_time_used|floatformat }}</td>
@@ -79,31 +81,36 @@ $('#semester-table').bootstrapTable({
       footerFormatter: function(){return 'Totals:'}
     },
     {
-      field: 'telescope_class',
-      title: 'Telescope Class',
+      field: 'pi',
+      title: 'PI',
+      sortable: true,
+    },
+    {
+      field: 'class',
+      title: 'Class',
       sortable: true,
     },
     {
       field: 'std_allocation',
-      title: 'Std time Alloc',
+      title: 'Std Alloc',
       sortable: true,
       footerFormatter: sumFormatter
     },
     {
-      field: 'std_time_used',
-      title: 'Std Time Used',
+      field: 'std_used',
+      title: 'Std Used',
       sortable: true,
       footerFormatter: sumFormatter
     },
     {
       field: 'too_allocation',
-      title: 'RR Time Alloc',
+      title: 'RR Alloc',
       sortable: true,
       footerFormatter: sumFormatter
     },
     {
-      field: 'too_time_used',
-      title: 'RR Time Used',
+      field: 'too_used',
+      title: 'RR Used',
       sortable: true,
       footerFormatter: sumFormatter
     },
@@ -114,8 +121,8 @@ $('#semester-table').bootstrapTable({
       footerFormatter: sumFormatter
     },
     {
-      field: 'ipp_time_available',
-      title: 'IPP Time Available',
+      field: 'ipp_available',
+      title: 'IPP Available',
       sortable: true,
       footerFormatter: sumFormatter
     },
