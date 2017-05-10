@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django.utils import timezone
 from dateutil.parser import parse
+import logging
 
 from valhalla.proposals.models import Proposal, Semester, TimeAllocation
 from valhalla.userrequests.models import UserRequest, Request, DraftUserRequest
@@ -16,7 +17,6 @@ from valhalla.userrequests.duration_utils import (get_request_duration_dict, get
 from valhalla.userrequests.state_changes import InvalidStateChange, TERMINAL_STATES
 from valhalla.userrequests.request_utils import (get_airmasses_for_request_at_sites,
                                                  get_telescope_states_for_request)
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -85,8 +85,11 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                     ur_data.append(serialized_ur.data)
                     break
                 else:
-                    logging.warning('not enough time left {} in proposal {} for ur {} of duration {}, skipping'
-                                    .format(time_left, ur.proposal.id, ur.id, (duration / 3600.0)))
+                    logger.warning(
+                        'not enough time left {0} in proposal {1} for ur {2} of duration {3}, skipping'.format(
+                            time_left, ur.proposal.id, ur.id, (duration / 3600.0)
+                        )
+                    )
 
         return Response(ur_data)
 
