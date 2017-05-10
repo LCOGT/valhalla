@@ -22,6 +22,14 @@ class TestIndex(TestCase):
         response = self.client.get(reverse('userrequests:list'))
         self.assertContains(response, 'Observation Portal')
 
+    def test_no_such_user(self):
+        self.client.post(
+            reverse('auth_login'),
+            {'username': 'imnotreal', 'password': 'wrongpass'},
+        )
+        user = auth.get_user(self.client)
+        self.assertFalse(user.is_authenticated())
+
     def test_login_fails(self):
         self.client.post(
             reverse('auth_login'),
