@@ -512,7 +512,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertGreater(time_allocation.ipp_time_available, 5.0)
 
 
-class TestWindowApi(ConfigDBTestMixin, APITestCase):
+class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
         self.proposal = mixer.blend(Proposal)
@@ -525,9 +525,14 @@ class TestWindowApi(ConfigDBTestMixin, APITestCase):
 
     def test_post_userrequest_window_end_before_start(self):
         bad_data = self.generic_payload.copy()
-        bad_data['requests'][0]['windows'][0]['end'] = '2016-09-28T21:12:18Z'
+        end = bad_data['requests'][0]['windows'][0]['end']
+        start = bad_data['requests'][0]['windows'][0]['start']
+        bad_data['requests'][0]['windows'][0]['end'] = start
+        bad_data['requests'][0]['windows'][0]['start'] = end
+
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+        self.assertIn('cannot be earlier than window start', str(response.content))
 
     def test_post_userrequest_no_windows_invalid(self):
         bad_data = self.generic_payload.copy()
