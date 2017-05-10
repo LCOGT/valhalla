@@ -23,7 +23,7 @@ class SemesterFilter(django_filters.FilterSet):
             date_value = parse(value)
             date_value = date_value.replace(tzinfo=timezone.utc)
             return queryset.filter(start__lte=date_value, end__gte=date_value)
-        except TypeError:
+        except ValueError:
             return queryset
 
     class Meta:

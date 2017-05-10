@@ -87,6 +87,12 @@ class TestSemesterApi(APITestCase):
             self.assertNotContains(response, semester.id)
         self.assertNotContains(response, self.tim_semester.id)
 
+    def test_semester_contains_nonsense_param(self):
+        response = self.client.get(reverse('api:semesters-list') + '?semester_contains=icantmakedates')
+        for semester in self.semesters:
+            self.assertContains(response, semester.id)
+        self.assertNotContains(response, self.tim_semester.id)
+
     def test_no_semester_contains_filter(self):
         response = self.client.get(reverse('api:semesters-list') + '?semester_contains=2018-01-10')
         self.assertEqual(response.json()['count'], 0)
