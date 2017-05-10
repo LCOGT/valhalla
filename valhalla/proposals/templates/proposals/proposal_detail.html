@@ -73,6 +73,10 @@
             <button type="submit" class="btn btn-default">Save</button>
         </form>
         <br/>
+        <dl>
+          <dt>Links</dt>
+          <dd><a href="https://archive.lco.global/?PROPID={{ object.id }}" target="_blank">View Data on the LCO Science Archive</a></dd>
+        </dl>
         {% if not user.profile.simple_interface or user == object.pi %}
         <dl>
             <dt>{% trans 'Principal Investigator' %}</dt>
