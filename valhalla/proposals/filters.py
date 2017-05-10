@@ -12,7 +12,7 @@ class ProposalFilter(django_filters.FilterSet):
 
     class Meta:
         model = Proposal
-        fields = ('active', 'semester')
+        fields = ('active', 'semester', 'id', 'tac_rank', 'tac_priority', 'public', 'title')
 
 
 class SemesterFilter(django_filters.FilterSet):
@@ -28,7 +28,8 @@ class SemesterFilter(django_filters.FilterSet):
 
     class Meta:
         model = Semester
-        fields = {'start': ['gte',],
-                  'end': ['lte',],
-                  'id': ['contains',],
-                  }
+        fields = {
+            'start': ['gte'],
+            'end': ['lte'],
+            'id': ['contains'],
+        }
