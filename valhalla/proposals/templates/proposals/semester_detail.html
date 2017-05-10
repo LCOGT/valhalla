@@ -70,11 +70,13 @@ $('#semester-table').bootstrapTable({
   toolbar: '#toolbar',
   showExport: true,
   search: true,
+  showFooter: true,
   columns: [
     {
       field: 'proposal',
       title: 'Proposal',
       sortable: true,
+      footerFormatter: function(){return 'Totals:'}
     },
     {
       field: 'telescope_class',
@@ -85,33 +87,47 @@ $('#semester-table').bootstrapTable({
       field: 'std_allocation',
       title: 'Std time Alloc',
       sortable: true,
+      footerFormatter: sumFormatter
     },
     {
       field: 'std_time_used',
       title: 'Std Time Used',
       sortable: true,
+      footerFormatter: sumFormatter
     },
     {
       field: 'too_allocation',
       title: 'RR Time Alloc',
       sortable: true,
+      footerFormatter: sumFormatter
     },
     {
       field: 'too_time_used',
       title: 'RR Time Used',
       sortable: true,
+      footerFormatter: sumFormatter
     },
     {
       field: 'ipp_limit',
       title: 'IPP Limit',
       sortable: true,
+      footerFormatter: sumFormatter
     },
     {
       field: 'ipp_time_available',
       title: 'IPP Time Available',
       sortable: true,
+      footerFormatter: sumFormatter
     },
   ],
 });
+
+function sumFormatter(data){
+  var field = this.field;
+  var total_sum = data.reduce(function(sum, row){
+    return sum + (parseFloat(row[field]) || 0);
+  }, 0);
+  return total_sum.toFixed(3);
+}
 </script>
 {% endblock %}
