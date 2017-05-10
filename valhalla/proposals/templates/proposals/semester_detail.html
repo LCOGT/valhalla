@@ -4,7 +4,7 @@
 <style type="text/css">
   .table {
     font-family: monospace;
-    font-size: 13px;
+    font-size: 12px;
   }
 </style>
 {% endblock %}
@@ -23,6 +23,11 @@
           </option>
           {% endfor %}
         </select>
+        <div class="checkbox">
+          <label>
+            <input id="completed" type="checkbox" onclick="selectCompleted()"> Completed
+          </label>
+        </div>
       </div>
     </div>
     </div>
@@ -40,6 +45,7 @@
           <th>RR Used</th>
           <th>IPP Limit</th>
           <th>IPP Avail</th>
+          <th>Completed</th>
         </tr>
       </thead>
       <tbody>
@@ -49,11 +55,12 @@
         <td>{{ ta.proposal.pi }}</td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
-        <td {% if ta.std_time_used > ta.std_allocation %} class="bg-danger" {% endif %}>{{ ta.std_time_used|floatformat }}</td>
+        <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>{{ ta.std_time_used|floatformat }}</td>
         <td>{{ ta.too_allocation|floatformat }}</td>
-        <td{% if ta.too_time_used > ta.too_allocation %} class="bg-danger" {% endif %}>{{ ta.too_time_used|floatformat }}</td>
+        <td{% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation %} class="bg-danger" {% endif %}>{{ ta.too_time_used|floatformat }}</td>
         <td>{{ ta.ipp_limit|floatformat }}</td>
         <td>{{ ta.ipp_time_available|floatformat }}</td>
+        <td>{% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation  %}true{% else %}false{% endif %}</td>
       </tr>
       {% endfor %}
       </tbody>
@@ -128,6 +135,11 @@ $('#semester-table').bootstrapTable({
       sortable: true,
       footerFormatter: sumFormatter
     },
+    {
+      field: 'completed',
+      title: 'completed',
+      visible: false
+    }
   ],
 });
 
@@ -137,6 +149,14 @@ function sumFormatter(data){
     return sum + (parseFloat(row[field]) || 0);
   }, 0);
   return total_sum.toFixed(3);
+}
+
+function selectCompleted(){
+  if($('#completed').is(':checked')){
+    $('#semester-table').bootstrapTable('filterBy', {completed:'true'});
+  }else{
+    $('#semester-table').bootstrapTable('filterBy', {});
+  }
 }
 </script>
 {% endblock %}
