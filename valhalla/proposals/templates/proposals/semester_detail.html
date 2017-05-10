@@ -78,7 +78,9 @@ $('#semester-table').bootstrapTable({
       field: 'proposal',
       title: 'Proposal',
       sortable: true,
-      footerFormatter: function(){return 'Totals:'}
+      footerFormatter: function(data){
+        return 'Total: ' + data.length;
+      }
     },
     {
       field: 'pi',
