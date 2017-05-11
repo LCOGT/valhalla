@@ -396,8 +396,6 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         try:
             total_duration_dict = get_total_duration_dict(data)
-            # TODO Add 10% rule
-            # check the proposal has a time allocation with enough time for all requests depending on operator
             for tak, duration in total_duration_dict.items():
                 time_allocation = TimeAllocation.objects.get(
                     semester=tak.semester,
