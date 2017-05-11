@@ -1,3 +1,17 @@
+## 0.6.0
+2017-05-11
+
+* Fix bugs with cadence UI not using UTC.
+* Fix bug that was caused by target names being strictly numerical.
+* Add confirmation dialog to panels on the compose page before removal.
+* Text updates and corrections.
+* Added Google Analytics and improved logging
+* Improvements to admin proposal view (/proposals/semester/2017AB) etc.
+* Improve/fix some unit tests
+* Add an ordering filter to the homepage. Ability to order by title, created time, updated time, last window.
+* Added a target name filter to the front page.
+* Minor CSS improvements for a more consistent appearance.
+
 ## 0.5.0
 2017-05-05
 
