@@ -5,8 +5,11 @@ from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 from django.urls import reverse
 from collections import namedtuple
+import logging
 
 from valhalla.celery import send_mail
+
+logger = logging.getLogger(__name__)
 
 
 class Semester(models.Model):
@@ -73,6 +76,8 @@ class Proposal(models.Model):
                     email=email
                 )
                 proposal_invite.send_invitation()
+
+        logger.info('Users added to proposal {0}: {1}'.format(self, emails))
 
     def __str__(self):
         return self.id
