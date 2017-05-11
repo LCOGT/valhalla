@@ -274,7 +274,7 @@ class RequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(msg)
 
         # check that the requests window has enough rise_set visible time to accomodate the requests duration
-        if data['windows']:
+        if data.get('windows'):
             duration = get_request_duration(data)
             rise_set_intervals = get_rise_set_intervals(data)
             largest_interval = timedelta(seconds=0)
@@ -318,6 +318,7 @@ class RequestSerializer(serializers.ModelSerializer):
 
 class CadenceRequestSerializer(RequestSerializer):
     cadence = CadenceSerializer()
+    windows = WindowSerializer(required=False, many=True)
 
     def validate_cadence(self, value):
         return value

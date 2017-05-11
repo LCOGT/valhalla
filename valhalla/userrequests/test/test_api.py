@@ -567,7 +567,7 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
-        self.generic_payload['requests'][0]['windows'] = []
+        del self.generic_payload['requests'][0]['windows']
         self.generic_payload['requests'][0]['cadence'] = {
             'start': '2016-09-01T21:12:18Z',
             'end': '2016-09-03T22:12:19Z',
@@ -619,6 +619,12 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['cadence']['jitter'], ['A valid number is required.'])
+
+    def test_cadence_with_windows_invalid(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'] = [{'start': '2016-09-29T21:12:18Z', 'end': '2016-10-29T21:12:19Z'}]
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertIn('requests may not contain windows', str(response.content))
 
     def test_cadence_invalid_period(self):
         bad_data = self.generic_payload.copy()
