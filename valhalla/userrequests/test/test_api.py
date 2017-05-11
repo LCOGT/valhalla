@@ -182,6 +182,23 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have enough time allocated', str(response.content))
 
+    def test_post_userrequest_not_enough_too_time_allocation_for_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['observation_type'] = UserRequest.TOO
+        self.time_allocation_1m0.too_time_used = 9.99
+        self.time_allocation_1m0.save()
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('does not have enough time allocated', str(response.content))
+
+    def test_post_userrequest_not_have_any_time_left(self):
+        bad_data = self.generic_payload.copy()
+        self.time_allocation_1m0.std_time_used = 120
+        self.time_allocation_1m0.save()
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('does not have any time left allocated', str(response.content))
+
     def test_post_userrequest_bad_ipp(self):
         bad_data = self.generic_payload.copy()
         bad_data['ipp_value'] = 0.0
