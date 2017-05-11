@@ -270,3 +270,16 @@ a:hover {
 .help-list > li {
     height: 30px;
 }
+
+.pagination > li > a {
+    color: #009cc3;
+}
+
+
+.pagination > .active > a {
+    background-color: #009cc3;
+}
+
+.pagination > .active > a:hover {
+    background-color: #009cc3;
+}
