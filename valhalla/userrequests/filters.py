@@ -15,7 +15,7 @@ class UserRequestFilter(filters.FilterSet):
     target = django_filters.CharFilter(
             name='requests__target__name', lookup_expr='icontains', label='Target name contains'
     )
-    o = django_filters.OrderingFilter(
+    order = django_filters.OrderingFilter(
         fields=(
             ('group_id', 'title'),
             ('modified', 'modified'),
