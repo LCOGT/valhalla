@@ -221,12 +221,16 @@ export default {
         scales:{
           xAxes: [{
             stacked: true,
+            gridLines: {
+              offsetGridLines: false
+            },
             scaleLabel: {
               display: true,
               labelString: 'Hours From Now'
             },
             ticks: {
-              maxTicksLimit: 25
+              maxTicksLimit: 25,
+              maxRotation: 0,
             }
           }],
           yAxes: [{
