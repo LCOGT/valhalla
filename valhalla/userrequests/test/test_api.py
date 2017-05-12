@@ -1597,17 +1597,17 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
         self.mock_site_intervals = self.site_intervals_patch.start()
 
         for i in range(24):
-            self.request = mixer.blend(Request, state='PENDING')
+            request = mixer.blend(Request, state='PENDING')
             mixer.blend(
-                Window, start=timezone.now(), end=timezone.now() + timedelta(hours=i), request=self.request
+                Window, start=timezone.now(), end=timezone.now() + timedelta(hours=i), request=request
             )
             mixer.blend(
                 Target, ra=random.randint(0, 360), dec=random.randint(-180, 180),
-                proper_motion_ra=0.0, proper_motion_dec=0.0, type='SIDEREAL', request=self.request
+                proper_motion_ra=0.0, proper_motion_dec=0.0, type='SIDEREAL', request=request
             )
-            mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=self.request)
-            mixer.blend(Location, request=self.request)
-            mixer.blend(Constraints, request=self.request)
+            mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=request)
+            mixer.blend(Location, request=request)
+            mixer.blend(Constraints, request=request)
 
     def tearDown(self):
         self.timezone_patch.stop()
@@ -1711,7 +1711,7 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
         mixer.blend(Window, request=request)
         mixer.blend(Target, request=request)
         mixer.blend(Molecule, request=request)
-        mixer.blend(Location, request=request, site='tst')
+        mixer.blend(Location, request=request)
         mixer.blend(Constraints, request=request)
 
         mock_intervals.return_value = [
@@ -1721,7 +1721,8 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
             [self.now + timedelta(hours=14), self.now + timedelta(hours=15)]  # Duration longer than interval.
         ]
         expected = {
-            'tst': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))]
+            'tst': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))],
+            'non': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))]
         }
         returned = Pressure()._visible_intervals(request=request)
         self.assertEqual(returned, expected)
