@@ -4,6 +4,7 @@ from valhalla.proposals.models import Proposal, Membership, TimeAllocation, Seme
 from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
 from valhalla.userrequests.test.test_state_changes import PondMolecule, PondBlock
+from valhalla.userrequests.contention import Pressure
 
 from django.core.urlresolvers import reverse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -1583,32 +1584,181 @@ class TestContention(ConfigDBTestMixin, APITestCase):
 
 
 class TestPressure(ConfigDBTestMixin, APITestCase):
-    # Todo: Improve these tests
     def setUp(self):
         super().setUp()
+
+        self.now = datetime(year=2017, month=5, day=12, hour=10, tzinfo=timezone.utc)
+
+        self.timezone_patch = patch('valhalla.userrequests.contention.timezone')
+        self.mock_timezone = self.timezone_patch.start()
+        self.mock_timezone.now.return_value = self.now
+
+        self.site_intervals_patch = patch('valhalla.userrequests.contention.get_site_rise_set_intervals')
+        self.mock_site_intervals = self.site_intervals_patch.start()
+
         for i in range(24):
-            request = mixer.blend(Request, state='PENDING')
+            self.request = mixer.blend(Request, state='PENDING')
             mixer.blend(
-                Window, start=timezone.now(), end=timezone.now() + timedelta(hours=i), request=request
+                Window, start=timezone.now(), end=timezone.now() + timedelta(hours=i), request=self.request
             )
             mixer.blend(
                 Target, ra=random.randint(0, 360), dec=random.randint(-180, 180),
-                proper_motion_ra=0.0, proper_motion_dec=0.0, type='SIDEREAL', request=request
+                proper_motion_ra=0.0, proper_motion_dec=0.0, type='SIDEREAL', request=self.request
             )
-            mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=request)
-            mixer.blend(Location, request=request)
-            mixer.blend(Constraints, request=request)
+            mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', request=self.request)
+            mixer.blend(Location, request=self.request)
+            mixer.blend(Constraints, request=self.request)
+
+    def tearDown(self):
+        self.timezone_patch.stop()
+        self.site_intervals_patch.stop()
 
     def test_pressure_no_auth(self):
         response = self.client.get(reverse('api:pressure'))
         self.assertEqual(len(response.json()['pressure']), 24 * 4)
         self.assertIn('All Proposals', response.json()['pressure'][0])
+        self.assertIn('pressure', response.json())
+        self.assertIn('site_nights', response.json())
 
     def test_pressure_auth(self):
         user = mixer.blend(User, is_staff=True)
         self.client.force_login(user)
         response = self.client.get(reverse('api:pressure'))
         self.assertNotIn('All Proposals', response.json()['pressure'][0])
+
+    def test_get_site_data_should_get_one_site(self):
+        pressure = Pressure(site='tst')
+        self.assertEqual(len(pressure.sites), 1)
+
+    def test_site_data_should_get_all_sites(self):
+        pressure = Pressure(site='')
+        self.assertEqual(len(pressure.sites), 2)
+
+    def test_site_nights_ends_before_now(self):
+        self.mock_site_intervals.return_value = [
+            [self.now - timedelta(hours=10), self.now - timedelta(hours=1)]
+        ]
+        self.assertEqual(len(Pressure(site='tst')._site_nights()), 0)
+
+    def test_site_nights_starts_before_now_ends_before_24hrs_from_now(self):
+        self.mock_site_intervals.return_value = [
+            [self.now - timedelta(hours=1), self.now + timedelta(hours=1)]
+        ]
+        returned = Pressure(site='tst')._site_nights()
+        expected = [dict(name='tst', start=0, stop=1)]
+        self.assertEqual(len(returned), 1)
+        self.assertEqual(returned, expected)
+
+    def test_site_nights_starts_after_now_ends_before_24hrs_from_now(self):
+        self.mock_site_intervals.return_value = [
+            [self.now + timedelta(hours=1), self.now + timedelta(hours=10)]
+        ]
+        returned = Pressure(site='tst')._site_nights()
+        expected = [dict(name='tst', start=1, stop=10)]
+        self.assertEqual(len(returned), 1)
+        self.assertEqual(returned, expected)
+
+    def test_site_nights_starts_after_now_ends_after_24hrs_from_now(self):
+        self.mock_site_intervals.return_value = [
+            [self.now + timedelta(hours=10), self.now + timedelta(hours=25)]
+        ]
+        returned = Pressure(site='tst')._site_nights()
+        expected = [dict(name='tst', start=10, stop=24)]
+        self.assertEqual(len(returned), 1)
+        self.assertEqual(returned, expected)
+
+    def test_site_nights_starts_after_24hrs_from_now(self):
+        self.mock_site_intervals.return_value = [
+            [self.now + timedelta(hours=25), self.now + timedelta(hours=26)]
+        ]
+        returned = Pressure(site='tst')._site_nights()
+        self.assertEqual(len(returned), 0)
+
+    def test_n_possible_telescopes_should_be_none_possible(self):
+        intervals = {
+            'tst': [(self.now + timedelta(hours=2), self.now + timedelta(hours=4))],
+            'non': [(self.now + timedelta(hours=4), self.now + timedelta(hours=6))]
+        }
+        expected = 0
+        returned = Pressure()._n_possible_telescopes(self.now + timedelta(hours=5), intervals, '1M0-SCICAM-SBIG')
+        self.assertEqual(returned, expected)
+
+    def test_n_possible_telescopes_should_be_some_possible(self):
+        intervals = {
+            'tst': [(self.now + timedelta(hours=2), self.now + timedelta(hours=4))],
+            'non': [(self.now + timedelta(hours=4), self.now + timedelta(hours=6))]
+        }
+        expected = 2
+        returned = Pressure()._n_possible_telescopes(self.now + timedelta(hours=3), intervals, '1M0-SCICAM-SBIG')
+        self.assertEqual(returned, expected)
+
+    def test_telescopes_for_instrument_type(self):
+        p = Pressure()
+        # Check that 1M0-SCICAM-SBIG is added to the telescopes dict, and it's the only thing in there.
+        p._telescopes('1M0-SCICAM-SBIG')
+        self.assertEqual(len(p.telescopes), 1)
+        self.assertIn('1M0-SCICAM-SBIG', p.telescopes)
+        # Check that 2M0-FLOYDS-SCICAM is added to the telescopes dict, and that there are not two things in there.
+        floyds_returned = p._telescopes('2M0-FLOYDS-SCICAM')
+        self.assertEqual(len(p.telescopes), 2)
+        self.assertIn('2M0-FLOYDS-SCICAM', p.telescopes)
+        # Check that the correct telescopes are returned.
+        self.assertEqual(floyds_returned, p.telescopes['2M0-FLOYDS-SCICAM'])
+
+    @patch('valhalla.userrequests.contention.get_rise_set_intervals')
+    def test_visible_intervals(self, mock_intervals):
+        request = mixer.blend(Request, state='PENDING', duration=70*60)  # Request duration is 70 minutes.
+        mixer.blend(Window, request=request)
+        mixer.blend(Target, request=request)
+        mixer.blend(Molecule, request=request)
+        mixer.blend(Location, request=request, site='tst')
+        mixer.blend(Constraints, request=request)
+
+        mock_intervals.return_value = [
+            [self.now - timedelta(hours=6), self.now - timedelta(hours=2)],  # Sets before now.
+            [self.now + timedelta(hours=8), self.now + timedelta(hours=12)],
+            [self.now - timedelta(hours=1), self.now + timedelta(minutes=30)],  # Sets too soon after now.
+            [self.now + timedelta(hours=14), self.now + timedelta(hours=15)]  # Duration longer than interval.
+        ]
+        expected = {
+            'tst': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))]
+        }
+        returned = Pressure()._visible_intervals(request=request)
+        self.assertEqual(returned, expected)
+
+    def test_time_visible(self):
+        intervals = {
+            'tst': [
+                (self.now + timedelta(hours=1), self.now + timedelta(hours=2)),
+                (self.now + timedelta(hours=4), self.now + timedelta(hours=5))
+            ],
+            'non': [
+                (self.now + timedelta(hours=1), self.now + timedelta(hours=2))
+            ]
+        }
+        expected = 3 * 3600  # 3 hours.
+        returned = Pressure()._time_visible(intervals)
+        self.assertEqual(returned, expected)
+
+    def test_anonymize(self):
+        data = [
+            {
+                'proposal1': 1,
+                'proposal2': 3,
+            },
+            {
+                'proposal1': 4
+            }
+        ]
+        expected = [
+            {
+                'All Proposals': 4
+            },
+            {
+                'All Proposals': 4
+            }
+        ]
+        self.assertEqual(Pressure()._anonymize(data), expected)
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
