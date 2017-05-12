@@ -2,6 +2,7 @@ from valhalla.common.telescope_states import (get_telescope_states, get_telescop
                                               combine_telescope_availabilities_by_site_and_class)
 from valhalla.common.configdb import TelescopeKey
 from valhalla.common.test_helpers import ConfigDBTestMixin
+from valhalla.common import rise_set_utils
 
 from django.test import TestCase
 from datetime import datetime
@@ -410,3 +411,21 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                     self.assertTrue(previous_event['event_type'] != event['event_type'] or
                                     previous_event['event_reason'] != event['event_reason'])
                 previous_event = event
+
+
+class TestRiseSetUtils(ConfigDBTestMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_get_site_rise_set_intervals_should_return_an_interval(self):
+        start = timezone.datetime(year=2017, month=5, day=5, tzinfo=timezone.utc)
+        end = timezone.datetime(year=2017, month=5, day=6, tzinfo=timezone.utc)
+        self.assertTrue(rise_set_utils.get_site_rise_set_intervals(start=start, end=end, site_code='tst'))
+
+    def test_get_site_rise_set_intervals_should_not_return_an_interval(self):
+        start = timezone.datetime(year=2017, month=5, day=5, tzinfo=timezone.utc)
+        end = timezone.datetime(year=2017, month=5, day=6, tzinfo=timezone.utc)
+        self.assertFalse(rise_set_utils.get_site_rise_set_intervals(start=start, end=end, site_code='bpl'))
