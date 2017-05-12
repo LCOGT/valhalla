@@ -90,7 +90,7 @@ class Pressure(object):
         flattened = []
         for site in site_nights:
             for r, s in site_nights[site]:
-                if s > self.now:
+                if s > self.now and r < self.now + timedelta(hours=24):
                     hours_until_rise = (max(self.now, r) - self.now).seconds / 3600
                     hours_until_set = min((s - self.now).days * 24 + (s - self.now).seconds / 3600, 24)
                     flattened.append(
@@ -114,11 +114,12 @@ class Pressure(object):
             if not request.location.site or request.location.site == site['code']:
                 intervals = get_rise_set_intervals(request.as_dict, site['code'])
                 for r, s in intervals:
-                    if (s-r).seconds >= request.duration and s > self.now:
+                    effective_rise = max(r, self.now)
+                    if s > self.now and (s-effective_rise).seconds >= request.duration:
                         if site['code'] in visible_intervals:
-                            visible_intervals[site['code']].append((r, s))
+                            visible_intervals[site['code']].append((effective_rise, s))
                         else:
-                            visible_intervals[site['code']] = [(r, s)]
+                            visible_intervals[site['code']] = [(effective_rise, s)]
         return visible_intervals
 
     def _time_visible(self, site_intervals):
