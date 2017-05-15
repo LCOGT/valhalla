@@ -279,6 +279,8 @@ class Target(models.Model):
     # Spectrograph parameters
     rot_mode = models.CharField(max_length=50, choices=ROT_MODES, default='', blank=True)
     rot_angle = models.FloatField(default=0.0, blank=True)
+    vmag = models.FloatField(null=True, blank=True)
+    radvel = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return 'Target {}: {} type'.format(self.id, self.type)
@@ -316,6 +318,11 @@ class Molecule(models.Model):
         ('LAMP_FLAT', 'LAMP_FLAT'),
         ('SPECTRUM', 'SPECTRUM'),
         ('AUTO_FOCUS', 'AUTO_FOCUS'),
+        ('TRIPLE', 'TRIPLE'),
+        ('NRES_TEST', 'NRES_TEST'),
+        ('NRES_SPECTRUM', 'NRES_SPECTRUM'),
+        ('NRES_EXPOSE', 'NRES_EXPOSE'),
+        ('ENGINEERING', 'ENGINEERING')
     )
 
     AG_MODES = (
@@ -333,8 +340,7 @@ class Molecule(models.Model):
     request = models.ForeignKey(Request, related_name='molecules')
 
     # The type of molecule being requested.
-    # Valid types are: DARK, BIAS, EXPOSE, SKY_FLAT, HARTMANN, STANDARD,
-    #                  ARC, LAMP_FLAT, SPECTRUM, AUTO_FOCUS, ZERO_POINTING
+    # Valid types are in MOLECULE_TYPES
     type = models.CharField(max_length=50, choices=MOLECULE_TYPES)
 
     # Place-holder for future functionality, allowing arguments to be
@@ -348,6 +354,7 @@ class Molecule(models.Model):
     ag_mode = models.CharField(max_length=50, choices=AG_MODES, default=AG_MODES[0][0])
     ag_filter = models.CharField(max_length=50, default='', blank=True)
     ag_exp_time = models.FloatField(default=10.0, blank=True)
+    ag_strategy = models.CharField(max_length=55, default='', blank=True)
 
     # Instrument
     instrument_name = models.CharField(max_length=255)
@@ -359,6 +366,9 @@ class Molecule(models.Model):
     spectra_slit = models.CharField(max_length=50, default='', blank=True)
     acquire_mode = models.CharField(max_length=50, choices=ACQUIRE_MODES, default=ACQUIRE_MODES[0][0], blank=True)
     acquire_radius_arcsec = models.FloatField(default=0.0, blank=True)
+    acquire_strategy = models.CharField(max_length=55, default='', blank=True)
+    expmeter_mode = models.CharField(max_length=12, default='OFF', blank=True)
+    expmeter_snr = models.FloatField(null=True, blank=True)
 
     # Exposure
     exposure_time = models.FloatField(validators=[MinValueValidator(0)])
