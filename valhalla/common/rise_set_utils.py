@@ -11,27 +11,6 @@ from valhalla.common.configdb import configdb
 HOURS_PER_DEGREES = 15.0
 
 
-def get_rise_set_intervals(request_dict):
-    target = get_rise_set_target(request_dict['target'])
-    airmass = request_dict['constraints']['max_airmass']
-    moon_distance = request_dict['constraints']['min_lunar_distance']
-    location = request_dict['location']
-    instrument_type = request_dict['molecules'][0]['instrument_name']
-
-    site_details = configdb.get_sites_with_instrument_type_and_location(
-            instrument_type, location.get('site', ''), location.get('observatory', ''), location.get('telescope', '')
-    )
-    intervals = []
-    for site_detail in site_details.values():
-        intervals.extend(get_rise_set_interval_for_target_and_site(
-            target, site_detail, request_dict['windows'], airmass, moon_distance)
-        )
-
-    intervals = coalesce_adjacent_intervals(intervals)
-
-    return intervals
-
-
 def get_largest_interval(intervals):
     largest_interval = timedelta(seconds=0)
     for interval in intervals:
@@ -40,24 +19,45 @@ def get_largest_interval(intervals):
     return largest_interval
 
 
-def get_rise_set_interval_for_target_and_site(rise_set_target, site_detail, windows, airmass, moon_distance):
-    rise_set_site = {'latitude': Angle(degrees=site_detail['latitude']),
-                     'longitude': Angle(degrees=site_detail['longitude']),
-                     'horizon': Angle(degrees=site_detail['horizon']),
-                     'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
-                     'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)}
+def get_rise_set_intervals(request_dict, site=''):
+    site = site if site else request_dict['location'].get('site', '')
+    site_details = configdb.get_sites_with_instrument_type_and_location(
+            request_dict['molecules'][0]['instrument_name'],
+            site,
+            request_dict['location'].get('observatory', ''),
+            request_dict['location'].get('telescope', '')
+    )
     intervals = []
-    for window in windows:
-        v = Visibility(site=rise_set_site,
-                       start_date=window['start'],
-                       end_date=window['end'],
-                       horizon=site_detail['horizon'],
-                       ha_limit_neg=site_detail['ha_limit_neg'],
-                       ha_limit_pos=site_detail['ha_limit_pos'],
-                       twilight='nautical'
-                       )
-        intervals.extend(v.get_observable_intervals(rise_set_target, airmass=airmass,
-                                                    moon_distance=Angle(degrees=moon_distance)))
+    if not site_details:
+        return intervals
+    for site_detail in site_details.values():
+        rise_set_site = {
+            'latitude': Angle(degrees=site_detail['latitude']),
+            'longitude': Angle(degrees=site_detail['longitude']),
+            'horizon': Angle(degrees=site_detail['horizon']),
+            'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
+            'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)
+        }
+        for window in request_dict['windows']:
+            v = Visibility(
+                site=rise_set_site,
+                start_date=window['start'],
+                end_date=window['end'],
+                horizon=site_detail['horizon'],
+                ha_limit_neg=site_detail['ha_limit_neg'],
+                ha_limit_pos=site_detail['ha_limit_pos'],
+                twilight='nautical'
+            )
+            intervals.extend(
+                v.get_observable_intervals(
+                    get_rise_set_target(
+                        request_dict['target']
+                    ),
+                    airmass=request_dict['constraints']['max_airmass'],
+                    moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
+                )
+            )
+    intervals = coalesce_adjacent_intervals(intervals)
 
     return intervals
 

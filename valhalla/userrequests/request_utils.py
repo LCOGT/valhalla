@@ -4,7 +4,7 @@ from rise_set.astrometry import calculate_airmass_at_times
 
 from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import get_telescope_states, filter_telescope_states_by_intervals
-from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_interval_for_target_and_site
+from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
 
 MOLECULE_TYPE_DISPLAY = {
   'EXPOSE': 'Imaging',
@@ -19,8 +19,6 @@ MOLECULE_TYPE_DISPLAY = {
 
 def get_telescope_states_for_request(request):
     instrument_type = request.molecules.first().instrument_name
-    rs_target = request.target.rise_set_target
-    constraints = request.constraints
     site_intervals = {}
     # Build up the list of telescopes and their rise set intervals for the target on this request
     site_data = configdb.get_sites_with_instrument_type_and_location(
@@ -31,12 +29,7 @@ def get_telescope_states_for_request(request):
     )
     for site, details in site_data.items():
         if site not in site_intervals:
-            site_intervals[site] = get_rise_set_interval_for_target_and_site(
-              rise_set_target=rs_target,
-              site_detail=details,
-              windows=[w.as_dict for w in request.windows.all()],
-              airmass=constraints.max_airmass,
-              moon_distance=constraints.min_lunar_distance)
+            site_intervals[site] = get_rise_set_intervals(request.as_dict)
     # If you have no sites, return the empty dict here
     if not site_intervals:
         return {}
@@ -86,13 +79,7 @@ def get_airmasses_for_request_at_sites(request_dict):
             site_lat = Angle(degrees=site_details['latitude'])
             site_lon = Angle(degrees=site_details['longitude'])
             site_alt = site_details['altitude']
-            intervals = get_rise_set_interval_for_target_and_site(
-              rise_set_target=rs_target,
-              site_detail=site_details,
-              windows=request_dict['windows'],
-              airmass=constraints['max_airmass'],
-              moon_distance=constraints['min_lunar_distance']
-            )
+            intervals = get_rise_set_intervals(request_dict)
             for interval in intervals:
                 night_times.extend(
                     [time for time in date_range_from_interval(interval[0], interval[1], dt=timedelta(minutes=10))])

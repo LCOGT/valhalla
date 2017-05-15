@@ -11,8 +11,8 @@
   <label for="pressure-site">Site</label>
   <select id="pressure-site" v-model="site">
     <option value="">All</option>
-    <option value="coj">Siding Spring (coj)</option>
-    <option value="cpt">Sutherlan, South Africa (cpt)</option>
+    <option value="coj">Siding Spring, Australia (coj)</option>
+    <option value="cpt">Sutherland, South Africa (cpt)</option>
     <option value="elp">McDonald, Texas (elp)</option>
     <option value="lsc">Cerro Tololo, Chile (lsc)</option>
     <option value="ogg">Maui, Hawaii (ogg)</option>
@@ -35,10 +35,13 @@ export default {
     return {
       instrument: '',
       site: '',
+      maxY: 1,
       rawData: [],
+      rawSiteData: [],
+      siteNights: [],
       data: {
         datasets: [],
-        labels: Array.apply(null, {length: 24 * 4}).map(Number.call, Number).map(function(x){ return (x / 4).toString(); })
+        labels: Array.apply(null, {length: 24 * 4 + 1}).map(Number.call, Number).map(function(x){ return (x / 4).toString(); })
       }
     };
   },
@@ -60,6 +63,36 @@ export default {
         color++;
       }
       return grouped;
+    },
+    maxPressureInGraph: function() {
+      var maxPressure = 0;
+      for (var time = 0; time < this.rawData.length; time++) {
+        var pressure = 0;
+        for(var proposal in this.rawData[time]){
+           pressure += this.rawData[time][proposal];
+        }
+        if (pressure > maxPressure) {
+          maxPressure = pressure;
+        }
+      }
+      return maxPressure;
+    },
+    toSiteNightData: function(){
+      var nights = [];
+      var siteSpacing = 0.6;
+      var height = this.maxY + siteSpacing * 2;
+      for (var i = 0; i < this.rawSiteData.length; i++) {
+        var longSiteName = $("#pressure-site option[value=" + this.rawSiteData[i].name + "]").text();
+        nights.push({
+          name: longSiteName,
+          start: this.roundToOneQuarter(this.rawSiteData[i].start).toString(),
+          end: this.roundToOneQuarter(this.rawSiteData[i].stop).toString(),
+          height: height
+        });
+        height += siteSpacing;
+      }
+      this.maxY = Math.ceil(height);
+      return nights;
     }
   },
   created: function(){
@@ -68,15 +101,26 @@ export default {
   methods: {
     fetchData: function(){
       this.rawData = [];
+      this.rawSiteData = [];
       var urlstring = '/api/pressure/?x=0';
       if(this.site) urlstring += ('&site=' + this.site);
       if(this.instrument) urlstring += ('&instrument=' + this.instrument);
       var that = this;
       $.getJSON(urlstring, function(data){
-        that.rawData = data;
+        that.rawData = data.pressure;
+        that.rawSiteData = data.site_nights;
+        that.maxY = that.maxPressureInGraph;
+        that.siteNights = that.toSiteNightData;
         that.data.datasets = that.toChartData;
-        that.chart.update();
       });
+    },
+    updateChart(){
+      this.chart.options.siteNights = this.siteNights;
+      this.chart.options.scales.yAxes[0].ticks.max = this.maxY;
+      this.chart.update();
+    },
+    roundToOneQuarter: function(n){
+      return Math.ceil(n * 4) / 4;
     }
   },
   watch: {
@@ -87,9 +131,78 @@ export default {
       this.fetchData();
     }
   },
+  updated: function(){
+    this.updateChart();
+  },
   mounted: function(){
+
+    Chart.pluginService.register({
+
+    afterDraw: function(chart) {
+      var xScale = chart.scales['x-axis-0'];
+      var yScale = chart.scales['y-axis-0'];
+      var startHourOfGraph = '0';
+      var endHourOfGraph = '24';
+      var textPadding = 3;
+      var textX;
+      var end;
+      var start;
+      var height;
+      var textHeight;
+      var tickWidth;
+      var night;
+
+       if (chart.options.siteNights) {
+        for (var i = 0; i < chart.options.siteNights.length; i++) {
+          night = chart.options.siteNights[i];
+
+          height = yScale.getPixelForValue(night.height);
+          start = xScale.getPixelForValue(night.start);
+          end = xScale.getPixelForValue(night.end);
+          textHeight = height - 14;
+
+          textX = (start + end) / 2;
+          tickWidth = 8;
+
+          // Draw the main site-night line.
+          chart.chart.ctx.strokeStyle = 'black';
+          chart.chart.ctx.lineWidth = 2;
+          chart.chart.ctx.beginPath();
+          chart.chart.ctx.moveTo(start, height);
+          chart.chart.ctx.lineTo(end, height);
+          chart.chart.ctx.stroke();
+
+          // Draw the tick at the end of the left side of the line.
+          chart.chart.ctx.beginPath();
+          chart.chart.ctx.moveTo(start, height - tickWidth / 2);
+          chart.chart.ctx.lineTo(start, height + tickWidth / 2);
+          chart.chart.ctx.stroke();
+
+          // Draw the tick at the end of the right side of the line.
+          chart.chart.ctx.beginPath();
+          chart.chart.ctx.moveTo(end, height - tickWidth / 2);
+          chart.chart.ctx.lineTo(end, height + tickWidth / 2);
+          chart.chart.ctx.stroke();
+
+          // Add the label to the line.
+          chart.chart.ctx.fillStyle = 'black';
+          chart.chart.ctx.textAlign = "center";
+          if (night.start === startHourOfGraph){
+            textX = start + textPadding;
+            chart.chart.ctx.textAlign = "left";
+          }
+          if (night.end === endHourOfGraph){
+            textX = end - textPadding;
+            chart.chart.ctx.textAlign = "right";
+          }
+          chart.chart.ctx.fillText(night.name, textX, textHeight);
+        }
+      }
+    }
+    });
     var that = this;
-    var ctx = document.getElementById('pressureplot');
+    var ctx = document.getElementById('pressureplot').getContext('2d');
+
     this.chart = new Chart(ctx, {
       type: 'bar',
       data: that.data,
@@ -108,12 +221,16 @@ export default {
         scales:{
           xAxes: [{
             stacked: true,
+            gridLines: {
+              offsetGridLines: false
+            },
             scaleLabel: {
               display: true,
               labelString: 'Hours From Now'
             },
             ticks: {
-              maxTicksLimit: 25
+              maxTicksLimit: 25,
+              maxRotation: 0,
             }
           }],
           yAxes: [{

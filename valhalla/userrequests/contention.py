@@ -21,7 +21,7 @@ class Contention(object):
             target__type='SIDEREAL'
         ).prefetch_related(
             'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
-        )
+        ).distinct()
 
     def _binned_durations_by_proposal_and_ra(self):
         ra_bins = [{} for x in range(0, 24)]
@@ -49,15 +49,16 @@ class Contention(object):
 class Pressure(object):
     def __init__(self, instrument_name=None, site=None, anonymous=True):
         self.anonymous = anonymous
-        self.site = site
+        self.now = timezone.now()
         self.requests = self._requests(instrument_name, site)
-        self.request_visibility = self._request_visibility()
-        self.site_nights = self._site_nights()
+        self.site = site
+        self.sites = self._sites()
+        self.telescopes = {}
 
     def _requests(self, instrument_name, site):
         requests = Request.objects.filter(
-            windows__start__lte=timezone.now() + timedelta(days=1),
-            windows__end__gte=timezone.now(),
+            windows__start__lte=self.now + timedelta(days=1),
+            windows__end__gte=self.now,
             state='PENDING',
             target__type='SIDEREAL'
         )
@@ -66,70 +67,90 @@ class Pressure(object):
 
         return requests.prefetch_related(
             'molecules', 'windows', 'target', 'constraints', 'location', 'user_request', 'user_request__proposal'
-        )
+        ).distinct()
 
-    def _request_visibility(self):
-        vis = {}
-        for req in self.requests:
-            if req.id not in vis:
-                vis[req.id] = sum((s - r).seconds for s, r in get_rise_set_intervals(req.as_dict) if r > timezone.now())
-        return vis
+    def _telescopes(self, instrument_name):
+        if instrument_name not in self.telescopes:
+            telescopes = configdb.get_telescopes_per_instrument_type(instrument_name, only_schedulable=True)
+            self.telescopes[instrument_name] = telescopes
+        return self.telescopes[instrument_name]
+
+    def _sites(self):
+        if self.site:
+            return [{'code': self.site}]
+        else:
+            return configdb.get_site_data()
 
     def _site_nights(self):
         site_nights = {}
-        if self.site:
-            sites = [{'code': self.site}]
-        else:
-            sites = configdb.get_site_data()
-        for site in sites:
+        for site in self.sites:
             site_nights[site['code']] = get_site_rise_set_intervals(
-                timezone.now(), timezone.now() + timedelta(hours=24), site['code']
+                self.now, self.now + timedelta(hours=24), site['code']
             )
+        flattened = []
+        for site in site_nights:
+            for r, s in site_nights[site]:
+                if s > self.now and r < self.now + timedelta(hours=24):
+                    hours_until_rise = (max(self.now, r) - self.now).seconds / 3600
+                    hours_until_set = min((s - self.now).days * 24 + (s - self.now).seconds / 3600, 24)
+                    flattened.append(
+                        dict(name=site,
+                             start=hours_until_rise,
+                             stop=hours_until_set)
+                    )
+        return flattened
 
-        return site_nights
+    def _n_possible_telescopes(self, time, site_intervals, instrument_name):
+        n_telescopes = 0
+        for site in site_intervals:
+            for interval in site_intervals[site]:
+                if interval[0] <= time < interval[1]:
+                    n_telescopes += sum([1 for t in self._telescopes(instrument_name) if t.site == site])
+        return n_telescopes
 
-    def _available_sites(self, start, end):
-        sites = set()
-        for site in self.site_nights:
-            for rise_set in self.site_nights[site]:
-                if rise_set[0] <= start and rise_set[1] >= end:
-                    sites.add(site)
-        return sites
+    def _visible_intervals(self, request):
+        visible_intervals = {}
+        for site in self.sites:
+            if not request.location.site or request.location.site == site['code']:
+                intervals = get_rise_set_intervals(request.as_dict, site['code'])
+                for r, s in intervals:
+                    effective_rise = max(r, self.now)
+                    if s > self.now and (s-effective_rise).seconds >= request.duration:
+                        if site['code'] in visible_intervals:
+                            visible_intervals[site['code']].append((effective_rise, s))
+                        else:
+                            visible_intervals[site['code']] = [(effective_rise, s)]
+        return visible_intervals
+
+    def _time_visible(self, site_intervals):
+        return sum(sum((s - r).seconds for r, s in site_intervals[site]) for site in site_intervals)
 
     def _binned_pressure_by_hours_from_now(self):
-        #  Quarter hour bins
         quarter_hour_bins = [{} for x in range(0, 24 * 4)]
-        for x in range(0, 24 * 4):
-            start = timezone.now() + timedelta(minutes=15 * x)
-            end = timezone.now() + timedelta(minutes=15 * (x + 1))
-            available_sites = self._available_sites(start, end)
-            requests = [
-                r for r in self.requests if
-                min(w.start for w in r.windows.all()) <= start and max(w.end for w in r.windows.all()) >= end
-            ]
-            for request in requests:
+        bin_start_times = [self.now + timedelta(minutes=15 * x) for x in range(0, 24 * 4)]
+
+        for request in self.requests:
+            site_intervals = self._visible_intervals(request)
+            total_time_visible = self._time_visible(site_intervals)
+            instrument_name = request.molecules.all()[0].instrument_name
+
+            if total_time_visible < 1:
+                continue
+
+            base_pressure = request.duration / total_time_visible
+            for i, bin_start in enumerate(bin_start_times):
+                n_telescopes = self._n_possible_telescopes(bin_start, site_intervals, instrument_name)
+
+                if n_telescopes < 1:
+                    continue
+
+                pressure = base_pressure / n_telescopes
                 proposal = request.user_request.proposal.id
-                pressure = self._pressure_for_request(request, available_sites)
-                if not quarter_hour_bins[x].get(proposal):
-                    quarter_hour_bins[x][proposal] = pressure
+                if not quarter_hour_bins[i].get(proposal):
+                    quarter_hour_bins[i][proposal] = pressure
                 else:
-                    quarter_hour_bins[x][proposal] += pressure
-
+                    quarter_hour_bins[i][proposal] += pressure
         return quarter_hour_bins
-
-    def _pressure_for_request(self, request, available_sites):
-        visible_seconds = self.request_visibility[request.id]
-        if visible_seconds < 1:
-            return 0
-        duration = request.duration
-        total_tel = 0
-        for molecule in request.molecules.all():
-            telescopes_for_instrument_type = configdb.get_telescopes_per_instrument_type(molecule.instrument_name)
-            total_tel += min([len(t) for t in telescopes_for_instrument_type if t.site in available_sites], default=0)
-        if total_tel < 1:
-            return 0
-        avg_telescopes = total_tel / request.molecules.count()
-        return (duration / visible_seconds) / avg_telescopes
 
     def _anonymize(self, data):
         for index, time in enumerate(data):
@@ -138,6 +159,12 @@ class Pressure(object):
 
     def data(self):
         if self.anonymous:
-            return self._anonymize(self._binned_pressure_by_hours_from_now())
+            return {
+                'pressure': self._anonymize(self._binned_pressure_by_hours_from_now()),
+                'site_nights': self._site_nights()
+            }
         else:
-            return self._binned_pressure_by_hours_from_now()
+            return {
+                'pressure': self._binned_pressure_by_hours_from_now(),
+                'site_nights': self._site_nights()
+            }
