@@ -147,6 +147,7 @@ class TestRequestState(TestCase):
 
     def test_request_state_pond_state_initial_state_pending(self):
         request = dmixer.blend(Request, state='PENDING')
+        fail_count = request.fail_count
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=False)
@@ -159,6 +160,7 @@ class TestRequestState(TestCase):
         request.refresh_from_db()
         self.assertFalse(state_changed)
         self.assertEqual(request.state, 'PENDING')
+        self.assertEqual(fail_count, request.fail_count)
 
     def test_request_state_pond_state_initial_state_pending_ur_expired(self):
         request = dmixer.blend(Request, state='PENDING')
@@ -176,6 +178,7 @@ class TestRequestState(TestCase):
 
     def test_request_state_pond_state_failed_initial_state_expired(self):
         request = dmixer.blend(Request, state='WINDOW_EXPIRED')
+        fail_count = request.fail_count
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True)
@@ -187,9 +190,11 @@ class TestRequestState(TestCase):
         request.refresh_from_db()
         self.assertFalse(state_changed)
         self.assertEqual(request.state, 'WINDOW_EXPIRED')
+        self.assertEqual(fail_count + 1, request.fail_count)
 
     def test_request_state_pond_state_failed_initial_state_canceled(self):
         request = dmixer.blend(Request, state='CANCELED')
+        fail_count = request.fail_count
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True)
@@ -201,9 +206,11 @@ class TestRequestState(TestCase):
         request.refresh_from_db()
         self.assertFalse(state_changed)
         self.assertEqual(request.state, 'CANCELED')
+        self.assertEqual(fail_count + 1, request.fail_count)
 
     def test_request_state_pond_state_failed(self):
         request = dmixer.blend(Request, state='PENDING')
+        fail_count = request.fail_count
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True)
@@ -215,10 +222,11 @@ class TestRequestState(TestCase):
         request.refresh_from_db()
         self.assertTrue(state_changed)
         self.assertEqual(request.state, 'PENDING')
+        self.assertEqual(fail_count + 1, request.fail_count)
 
     def test_request_state_pond_state_failed_2(self):
         request = dmixer.blend(Request, state='PENDING')
-
+        fail_count = request.fail_count
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=False)
@@ -229,6 +237,7 @@ class TestRequestState(TestCase):
         request.refresh_from_db()
         self.assertTrue(state_changed)
         self.assertEqual(request.state, 'PENDING')
+        self.assertEqual(fail_count + 1, request.fail_count)
 
 
 class TestAggregateRequestStates(TestCase):

@@ -172,8 +172,13 @@ def update_request_state(request, request_blocks, ur_expired):
         return False
 
     state_changed = False
+    fail_count = 0
+
     # Get the state from the pond blocks
     new_r_state = get_request_state_from_pond_blocks(request.state, request_blocks)
+    # update the fail_count if the pond state was failed, before overwriting pond state
+    if new_r_state == 'FAILED':
+        fail_count = 1
     # If the state is not a terminal state and the ur has expired, mark the request as expired
     if new_r_state not in TERMINAL_STATES and ur_expired:
         new_r_state = 'WINDOW_EXPIRED'
@@ -184,10 +189,11 @@ def update_request_state(request, request_blocks, ur_expired):
     with transaction.atomic():
         # Re-get the request and lock. If the new state is a valid state transition, set it on the request atomically.
         req = Request.objects.select_for_update().get(pk=request.id)
+        req.fail_count += fail_count
         if new_r_state in REQUEST_STATE_MAP[req.state]:
             state_changed = True
             req.state = new_r_state
-            req.save()
+        req.save()
 
     return state_changed
 
