@@ -12,11 +12,11 @@
         <i class="fa fa-{{ userrequest.state|state_to_icon }}"></i> {{ userrequest.state }}
       </dd>
     </dl>
-    <dl class="col-md-2">
-      <dt>{% trans 'Last Update' %}</dt>
+    <dl class="col-md-1">
+      <dt>{% trans 'Updated' %}</dt>
       <dd>{{ userrequest.modified }}</dd>
     </dl>
-    <dl class="col-md-2">
+    <dl class="col-md-1">
       <dt>{% trans 'Submitted' %}</dt>
       <dd>{{ userrequest.created }}</dd>
     </dl>
@@ -26,11 +26,11 @@
         <a href="{% url 'proposals:detail' pk=userrequest.proposal.id %}">{{ userrequest.proposal }}</a>
       </dd>
     </dl>
-    <dl class="col-md-1">
+    <dl class="col-md-2">
       <dt>{% trans 'Submitter' %}</dt>
       <dd>{{ userrequest.submitter }}</dd>
     </dl>
-    <dl class="col-md-1">
+    <dl class="col-md-2">
       <dt>IPP</dt>
       <dd>{{ userrequest.ipp_value }}</dd>
     </dl>
