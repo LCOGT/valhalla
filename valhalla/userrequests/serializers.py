@@ -306,7 +306,7 @@ class RequestSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     (
                         'According to the constraints of the request, the target is visible for a maximum of {0:.2f} '
-                        'min within the time window. This is less than the duration of your request {1:.2f}. Consider '
+                        'hours within the time window. This is less than the duration of your request {1:.2f} hours. Consider '
                         'expanding the time window or loosening the airmass or lunar separation constraints.'
                     ).format(
                         largest_interval.total_seconds() / 3600.0,
