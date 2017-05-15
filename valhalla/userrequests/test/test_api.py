@@ -1768,18 +1768,21 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
         mixer.blend(Window, request=request)
         mixer.blend(Target, request=request)
         mixer.blend(Molecule, request=request)
-        mixer.blend(Location, request=request)
+        mixer.blend(Location, request=request, site='tst')
         mixer.blend(Constraints, request=request)
 
         mock_intervals.return_value = [
             [self.now - timedelta(hours=6), self.now - timedelta(hours=2)],  # Sets before now.
+            [self.now + timedelta(hours=2), self.now + timedelta(hours=6)],
             [self.now + timedelta(hours=8), self.now + timedelta(hours=12)],
             [self.now - timedelta(hours=1), self.now + timedelta(minutes=30)],  # Sets too soon after now.
             [self.now + timedelta(hours=14), self.now + timedelta(hours=15)]  # Duration longer than interval.
         ]
         expected = {
-            'tst': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))],
-            'non': [(self.now + timedelta(hours=8), self.now + timedelta(hours=12))]
+            'tst': [
+                (self.now + timedelta(hours=2), self.now + timedelta(hours=6)),
+                (self.now + timedelta(hours=8), self.now + timedelta(hours=12))
+            ]
         }
         returned = Pressure()._visible_intervals(request=request)
         self.assertEqual(returned, expected)
@@ -1817,6 +1820,29 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
             }
         ]
         self.assertEqual(Pressure()._anonymize(data), expected)
+
+    @patch('valhalla.userrequests.contention.get_rise_set_intervals')
+    def test_binned_pressure_by_hours_from_now_should_be_gtzero_pressure(self, mock_intervals):
+        request = mixer.blend(Request, state='PENDING', duration=120*60)  # 2 hour duration.
+        mixer.blend(Window, request=request)
+        mixer.blend(Target, request=request)
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
+        mixer.blend(Location, request=request, site='tst')
+        mixer.blend(Constraints, request=request)
+
+        mock_intervals.return_value = [
+            [self.now + timedelta(hours=2), self.now + timedelta(hours=6)],
+        ]
+        p = Pressure()
+        p.requests = [request]
+        sum_of_pressure = sum(sum(time.values()) for i, time in enumerate(p._binned_pressure_by_hours_from_now()))
+        self.assertGreater(sum_of_pressure, 0)
+
+    def test_binned_pressure_by_hours_from_now_should_be_zero_pressure(self):
+        p = Pressure()
+        p.requests = []
+        sum_of_pressure = sum(sum(time.values()) for i, time in enumerate(p._binned_pressure_by_hours_from_now()))
+        self.assertEqual(sum_of_pressure, 0)
 
 
 class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
