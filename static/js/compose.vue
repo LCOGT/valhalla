@@ -150,7 +150,6 @@
               type: 'EXPOSE',
               instrument_name: '',
               filter: '',
-              exposure_time: 30,
               exposure_count: 1,
               bin_x: null,
               bin_y: null,
