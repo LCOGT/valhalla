@@ -29,7 +29,7 @@ def get_telescope_states_for_request(request):
     )
     for site, details in site_data.items():
         if site not in site_intervals:
-            site_intervals[site] = get_rise_set_intervals(request.as_dict)
+            site_intervals[site] = get_rise_set_intervals(request.as_dict, site)
     # If you have no sites, return the empty dict here
     if not site_intervals:
         return {}
@@ -79,7 +79,7 @@ def get_airmasses_for_request_at_sites(request_dict):
             site_lat = Angle(degrees=site_details['latitude'])
             site_lon = Angle(degrees=site_details['longitude'])
             site_alt = site_details['altitude']
-            intervals = get_rise_set_intervals(request_dict)
+            intervals = get_rise_set_intervals(request_dict, site_id)
             for interval in intervals:
                 night_times.extend(
                     [time for time in date_range_from_interval(interval[0], interval[1], dt=timedelta(minutes=10))])
