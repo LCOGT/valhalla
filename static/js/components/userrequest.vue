@@ -130,7 +130,7 @@ export default {
       return _.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text');
     },
     durationDisplay: function(){
-      var duration =  moment.duration(this.duration_data.duration, 'seconds');
+      var duration = moment.duration(this.duration_data.duration, 'seconds');
       return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
     }
   },
