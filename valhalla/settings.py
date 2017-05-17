@@ -213,7 +213,15 @@ REST_FRAMEWORK = {
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 50
+    'PAGE_SIZE': 50,
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '5000/day',
+        'userrequests.cancel': '10/day'
+    }
 }
 
 CELERY_TASK_ALWAYS_EAGER = not os.getenv('CELERY_ENABLED', False)
