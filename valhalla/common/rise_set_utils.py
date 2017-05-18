@@ -5,6 +5,7 @@ from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
 from rise_set.utils import coalesce_adjacent_intervals
 from rise_set.visibility import Visibility
+from django.core.cache import cache
 
 from valhalla.common.configdb import configdb
 
@@ -20,6 +21,7 @@ def get_largest_interval(intervals):
 
 
 def get_rise_set_intervals(request_dict, site=''):
+    intervals = []
     site = site if site else request_dict['location'].get('site', '')
     site_details = configdb.get_sites_with_instrument_type_and_location(
             request_dict['molecules'][0]['instrument_name'],
@@ -27,36 +29,31 @@ def get_rise_set_intervals(request_dict, site=''):
             request_dict['location'].get('observatory', ''),
             request_dict['location'].get('telescope', '')
     )
-    intervals = []
     if not site_details:
         return intervals
     for site_detail in site_details.values():
-        rise_set_site = {
-            'latitude': Angle(degrees=site_detail['latitude']),
-            'longitude': Angle(degrees=site_detail['longitude']),
-            'horizon': Angle(degrees=site_detail['horizon']),
-            'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
-            'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)
-        }
-        for window in request_dict['windows']:
-            v = Visibility(
-                site=rise_set_site,
-                start_date=window['start'],
-                end_date=window['end'],
-                horizon=site_detail['horizon'],
-                ha_limit_neg=site_detail['ha_limit_neg'],
-                ha_limit_pos=site_detail['ha_limit_pos'],
-                twilight='nautical'
-            )
-            intervals.extend(
-                v.get_observable_intervals(
-                    get_rise_set_target(
-                        request_dict['target']
-                    ),
-                    airmass=request_dict['constraints']['max_airmass'],
-                    moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
+        site_intervals = []
+        if request_dict.get('id'):
+            cache_key = '{0}.rsi.{1}'.format(request_dict['id'], site)
+            site_intervals = cache.get(cache_key, [])
+        if site_intervals:
+            intervals.extend(site_intervals)
+        else:
+            rise_set_site = get_rise_set_site(site_detail)
+            rise_set_target = get_rise_set_target(request_dict['target'])
+            for window in request_dict['windows']:
+                visibility = get_rise_set_visibility(rise_set_site, window['start'], window['end'], site_detail)
+
+                site_intervals.extend(
+                    visibility.get_observable_intervals(
+                        rise_set_target,
+                        airmass=request_dict['constraints']['max_airmass'],
+                        moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
+                    )
                 )
-            )
+            intervals.extend(site_intervals)
+            if request_dict.get('id'):
+                cache.set(cache_key, site_intervals, 86400 * 30)  # cache for 30 days
     intervals = coalesce_adjacent_intervals(intervals)
 
     return intervals
@@ -103,24 +100,34 @@ def get_rise_set_target(target_dict):
                                      )
 
 
+def get_rise_set_site(site_detail):
+    return {
+        'latitude': Angle(degrees=site_detail['latitude']),
+        'longitude': Angle(degrees=site_detail['longitude']),
+        'horizon': Angle(degrees=site_detail['horizon']),
+        'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
+        'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)
+    }
+
+
+def get_rise_set_visibility(rise_set_site, start, end, site_detail):
+        return Visibility(
+            site=rise_set_site,
+            start_date=start,
+            end_date=end,
+            horizon=site_detail['horizon'],
+            ha_limit_neg=site_detail['ha_limit_neg'],
+            ha_limit_pos=site_detail['ha_limit_pos'],
+            twilight='nautical'
+        )
+
+
 def get_site_rise_set_intervals(start, end, site_code):
     site_details = configdb.get_sites_with_instrument_type_and_location(site_code=site_code)
     if site_code in site_details:
         site_detail = site_details[site_code]
-        rise_set_site = {'latitude': Angle(degrees=site_detail['latitude']),
-                         'longitude': Angle(degrees=site_detail['longitude']),
-                         'horizon': Angle(degrees=site_detail['horizon']),
-                         'ha_limit_neg': Angle(degrees=site_detail['ha_limit_neg'] * HOURS_PER_DEGREES),
-                         'ha_limit_pos': Angle(degrees=site_detail['ha_limit_pos'] * HOURS_PER_DEGREES)}
-
-        v = Visibility(site=rise_set_site,
-                       start_date=start,
-                       end_date=end,
-                       horizon=site_detail['horizon'],
-                       ha_limit_neg=site_detail['ha_limit_neg'],
-                       ha_limit_pos=site_detail['ha_limit_pos'],
-                       twilight='nautical'
-                       )
+        rise_set_site = get_rise_set_site(site_detail)
+        v = get_rise_set_visibility(rise_set_site, start, end, site_detail)
 
         return v.get_dark_intervals()
 
