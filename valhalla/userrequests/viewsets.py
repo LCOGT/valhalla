@@ -32,7 +32,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     ordering = ('-id',)
 
     def get_throttles(self):
-        actions_to_throttle = ['cancel']
+        actions_to_throttle = ['cancel', 'validate']
         if self.action in actions_to_throttle:
             self.throttle_scope = 'userrequests.' + self.action
         return super().get_throttles()
