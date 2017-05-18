@@ -31,30 +31,31 @@ def get_rise_set_intervals(request_dict, site=''):
     )
     if not site_details:
         return intervals
+    intervals_by_site = {}
+    if request_dict.get('id'):
+        cache_key = '{0}.rsi'.format(request_dict['id'])
+        intervals_by_site = cache.get(cache_key, {})
     for site_detail in site_details.values():
-        site_intervals = []
-        if request_dict.get('id'):
-            cache_key = '{0}.rsi.{1}'.format(request_dict['id'], site)
-            site_intervals = cache.get(cache_key, [])
-        if site_intervals:
-            intervals.extend(site_intervals)
+        if intervals_by_site.get(site):
+            intervals.extend(intervals_by_site.get(site))
         else:
+            intervals_by_site[site] = []
             rise_set_site = get_rise_set_site(site_detail)
             rise_set_target = get_rise_set_target(request_dict['target'])
             for window in request_dict['windows']:
                 visibility = get_rise_set_visibility(rise_set_site, window['start'], window['end'], site_detail)
 
-                site_intervals.extend(
+                intervals_by_site[site].extend(
                     visibility.get_observable_intervals(
                         rise_set_target,
                         airmass=request_dict['constraints']['max_airmass'],
                         moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
                     )
                 )
-            intervals.extend(site_intervals)
-            if request_dict.get('id'):
-                cache.set(cache_key, site_intervals, 86400 * 30)  # cache for 30 days
-    intervals = coalesce_adjacent_intervals(intervals)
+            intervals.extend(intervals_by_site[site])
+    if request_dict.get('id'):
+        cache.set(cache_key, intervals_by_site, 86400 * 30)  # cache for 30 days
+    intervals = coalesce_adjacent_intervals([interval for interval in intervals])
 
     return intervals
 
