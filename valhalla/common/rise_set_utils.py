@@ -35,15 +35,15 @@ def get_rise_set_intervals(request_dict, site=''):
     if request_dict.get('id'):
         cache_key = '{0}.rsi'.format(request_dict['id'])
         intervals_by_site = cache.get(cache_key, {})
-    for site_detail in site_details.values():
+    for site in site_details:
         if intervals_by_site.get(site):
             intervals.extend(intervals_by_site.get(site))
         else:
             intervals_by_site[site] = []
-            rise_set_site = get_rise_set_site(site_detail)
+            rise_set_site = get_rise_set_site(site_details[site])
             rise_set_target = get_rise_set_target(request_dict['target'])
             for window in request_dict['windows']:
-                visibility = get_rise_set_visibility(rise_set_site, window['start'], window['end'], site_detail)
+                visibility = get_rise_set_visibility(rise_set_site, window['start'], window['end'], site_details[site])
 
                 intervals_by_site[site].extend(
                     visibility.get_observable_intervals(
@@ -55,9 +55,8 @@ def get_rise_set_intervals(request_dict, site=''):
             intervals.extend(intervals_by_site[site])
     if request_dict.get('id'):
         cache.set(cache_key, intervals_by_site, 86400 * 30)  # cache for 30 days
-    intervals = coalesce_adjacent_intervals([interval for interval in intervals])
 
-    return intervals
+    return coalesce_adjacent_intervals([interval for interval in intervals])
 
 
 def get_rise_set_target(target_dict):
