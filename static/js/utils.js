@@ -24,7 +24,7 @@ function sexagesimalRaToDecimal(ra) {
   // algorithm: ra_decimal = 15 * ( hh + mm/60 + ss/(60 * 60) )
   /*                 (    hh     ):(     mm            ):  (   ss  ) */
   if(typeof ra === 'string') {
-    var m = ra.match('^([0-9]?[0-9]):([0-5]?[0-9][.0-9]*):?([.0-9]+)?$');
+    var m = ra.match('^([0-9]?[0-9])[: ]([0-5]?[0-9][.0-9]*)[: ]?([.0-9]+)?$');
     if (m) {
       var hh = parseInt(m[1], 10);
       var mm = parseFloat(m[2]);
@@ -41,7 +41,7 @@ function sexagesimalDecToDecimal(dec){
   // algorithm: dec_decimal = sign * ( dd + mm/60 + ss/(60 * 60) )
   /*                  ( +/-   ) (    dd     ):(     mm            ): (   ss   ) */
   if(typeof dec === 'string') {
-    var m = dec.match('^([+-])?([0-9]?[0-9]):([0-5]?[0-9][.0-9]*):?([.0-9]+)?$');
+    var m = dec.match('^([+-])?([0-9]?[0-9])[: ]([0-5]?[0-9][.0-9]*)[: ]?([.0-9]+)?$');
     if (m) {
       var sign = m[1] === '-' ? -1 : 1;
       var dd = parseInt(m[2], 10);

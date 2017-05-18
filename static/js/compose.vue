@@ -150,7 +150,6 @@
               type: 'EXPOSE',
               instrument_name: '',
               filter: '',
-              exposure_time: 30,
               exposure_count: 1,
               bin_x: null,
               bin_y: null,
@@ -191,16 +190,24 @@
         });
       }, 200),
       submit: function(){
-        var that = this;
-        $.ajax({
-          type: 'POST',
-          url: '/api/userrequests/',
-          data: JSON.stringify(that.userrequest),
-          contentType: 'application/json',
-          success: function(data){
-            window.location = '/userrequests/' + data.id;
-          }
-        });
+        var duration = moment.duration(this.duration_data.duration, 'seconds');
+        var duration_string = '';
+        if(duration.hours() > 0){
+          duration_string += duration.hours() + ' hours, ';
+        }
+        duration_string += duration.minutes() + ' minutes, ' + duration.seconds() + ' seconds';
+        if(confirm('The request will take approximately ' + duration_string + ' of telescope time. Are you sure you want to submit the request?')){
+          var that = this;
+          $.ajax({
+            type: 'POST',
+            url: '/api/userrequests/',
+            data: JSON.stringify(that.userrequest),
+            contentType: 'application/json',
+            success: function(data){
+              window.location = '/userrequests/' + data.id;
+            }
+          });
+        }
       },
       userrequestUpdated: function(){
         console.log('userrequest updated');

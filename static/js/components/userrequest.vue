@@ -6,7 +6,7 @@
         <div class="col-md-6 compose-help" v-show="show">
           <h3>
             Duration of Observing Request:
-            <sup><a id="durationtip" title="Time that will be deducted from your proposal when this request is completed">?</a></sup>
+            <sup><a id="durationtip" title="The time that will be deducted from your proposal when this request is completed. Includes exposure times, slew times, and instrument overheads.">?</a></sup>
           </h3>
           <h2>{{ durationDisplay }}</h2>
           <br/>
@@ -130,7 +130,7 @@ export default {
       return _.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text');
     },
     durationDisplay: function(){
-      var duration =  moment.duration(this.duration_data.duration, 'seconds');
+      var duration = moment.duration(this.duration_data.duration, 'seconds');
       return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
     }
   },

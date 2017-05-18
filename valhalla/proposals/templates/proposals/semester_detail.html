@@ -45,14 +45,14 @@
           <th>RR Used</th>
           <th>IPP Limit</th>
           <th>IPP Avail</th>
-          <th>Completed</th>
+          <th>completed</th>
         </tr>
       </thead>
       <tbody>
       {% for ta in object.timeallocation_set.all.distinct %}
       <tr>
         <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
-        <td>{{ ta.proposal.pi }}</td>
+        <td>{{ ta.proposal.pi.first_name }} {{ ta.proposal.pi.last_name }}</td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
         <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>
@@ -66,9 +66,7 @@
         <td>{{ ta.ipp_time_available|floatformat }}</td>
         <td>
           {% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %}
-            true
-          {% else %}
-            false
+            isComplete
           {% endif %}
         </td>
       </tr>
@@ -163,9 +161,9 @@ function sumFormatter(data){
 
 function selectCompleted(){
   if($('#completed').is(':checked')){
-    $('#semester-table').bootstrapTable('filterBy', {completed:'true'});
+    $('#semester-table').bootstrapTable('resetSearch', 'isComplete');
   }else{
-    $('#semester-table').bootstrapTable('filterBy', {});
+    $('#semester-table').bootstrapTable('resetSearch', '');
   }
 }
 </script>
