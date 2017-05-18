@@ -69,7 +69,7 @@ export default {
       for (var time = 0; time < this.rawData.length; time++) {
         var pressure = 0;
         for(var proposal in this.rawData[time]){
-           pressure += this.rawData[time][proposal];
+          pressure += this.rawData[time][proposal];
         }
         if (pressure > maxPressure) {
           maxPressure = pressure;
@@ -82,7 +82,7 @@ export default {
       var siteSpacing = 0.6;
       var height = this.maxY + siteSpacing * 2;
       for (var i = 0; i < this.rawSiteData.length; i++) {
-        var longSiteName = $("#pressure-site option[value=" + this.rawSiteData[i].name + "]").text();
+        var longSiteName = $('#pressure-site option[value=' + this.rawSiteData[i].name + ']').text();
         nights.push({
           name: longSiteName,
           start: this.roundToOneQuarter(this.rawSiteData[i].start).toString(),
@@ -114,7 +114,7 @@ export default {
         that.data.datasets = that.toChartData;
       });
     },
-    updateChart(){
+    updateChart: function(){
       this.chart.options.siteNights = this.siteNights;
       this.chart.options.scales.yAxes[0].ticks.max = this.maxY;
       this.chart.update();
@@ -138,67 +138,67 @@ export default {
 
     Chart.pluginService.register({
 
-    afterDraw: function(chart) {
-      var xScale = chart.scales['x-axis-0'];
-      var yScale = chart.scales['y-axis-0'];
-      var startHourOfGraph = '0';
-      var endHourOfGraph = '24';
-      var textPadding = 3;
-      var textX;
-      var end;
-      var start;
-      var height;
-      var textHeight;
-      var tickWidth;
-      var night;
+      afterDraw: function(chart) {
+        var xScale = chart.scales['x-axis-0'];
+        var yScale = chart.scales['y-axis-0'];
+        var startHourOfGraph = '0';
+        var endHourOfGraph = '24';
+        var textPadding = 3;
+        var textX;
+        var end;
+        var start;
+        var height;
+        var textHeight;
+        var tickWidth;
+        var night;
 
-       if (chart.options.siteNights) {
-        for (var i = 0; i < chart.options.siteNights.length; i++) {
-          night = chart.options.siteNights[i];
+        if (chart.options.siteNights) {
+          for (var i = 0; i < chart.options.siteNights.length; i++) {
+            night = chart.options.siteNights[i];
 
-          height = yScale.getPixelForValue(night.height);
-          start = xScale.getPixelForValue(night.start);
-          end = xScale.getPixelForValue(night.end);
-          textHeight = height - 14;
+            height = yScale.getPixelForValue(night.height);
+            start = xScale.getPixelForValue(night.start);
+            end = xScale.getPixelForValue(night.end);
+            textHeight = height - 14;
 
-          textX = (start + end) / 2;
-          tickWidth = 8;
+            textX = (start + end) / 2;
+            tickWidth = 8;
 
-          // Draw the main site-night line.
-          chart.chart.ctx.strokeStyle = 'black';
-          chart.chart.ctx.lineWidth = 2;
-          chart.chart.ctx.beginPath();
-          chart.chart.ctx.moveTo(start, height);
-          chart.chart.ctx.lineTo(end, height);
-          chart.chart.ctx.stroke();
+            // Draw the main site-night line.
+            chart.chart.ctx.strokeStyle = 'black';
+            chart.chart.ctx.lineWidth = 2;
+            chart.chart.ctx.beginPath();
+            chart.chart.ctx.moveTo(start, height);
+            chart.chart.ctx.lineTo(end, height);
+            chart.chart.ctx.stroke();
 
-          // Draw the tick at the end of the left side of the line.
-          chart.chart.ctx.beginPath();
-          chart.chart.ctx.moveTo(start, height - tickWidth / 2);
-          chart.chart.ctx.lineTo(start, height + tickWidth / 2);
-          chart.chart.ctx.stroke();
+            // Draw the tick at the end of the left side of the line.
+            chart.chart.ctx.beginPath();
+            chart.chart.ctx.moveTo(start, height - tickWidth / 2);
+            chart.chart.ctx.lineTo(start, height + tickWidth / 2);
+            chart.chart.ctx.stroke();
 
-          // Draw the tick at the end of the right side of the line.
-          chart.chart.ctx.beginPath();
-          chart.chart.ctx.moveTo(end, height - tickWidth / 2);
-          chart.chart.ctx.lineTo(end, height + tickWidth / 2);
-          chart.chart.ctx.stroke();
+            // Draw the tick at the end of the right side of the line.
+            chart.chart.ctx.beginPath();
+            chart.chart.ctx.moveTo(end, height - tickWidth / 2);
+            chart.chart.ctx.lineTo(end, height + tickWidth / 2);
+            chart.chart.ctx.stroke();
 
-          // Add the label to the line.
-          chart.chart.ctx.fillStyle = 'black';
-          chart.chart.ctx.textAlign = "center";
-          if (night.start === startHourOfGraph){
-            textX = start + textPadding;
-            chart.chart.ctx.textAlign = "left";
+            // Add the label to the line.
+            chart.chart.ctx.fillStyle = 'black';
+            chart.chart.ctx.textAlign = 'center';
+            if (night.start === startHourOfGraph){
+              textX = start + textPadding;
+              chart.chart.ctx.textAlign = 'left';
+            }
+            if (night.end === endHourOfGraph){
+              textX = end - textPadding;
+              chart.chart.ctx.textAlign = 'right';
+            }
+            chart.chart.ctx.fillText(night.name, textX, textHeight);
           }
-          if (night.end === endHourOfGraph){
-            textX = end - textPadding;
-            chart.chart.ctx.textAlign = "right";
-          }
-          chart.chart.ctx.fillText(night.name, textX, textHeight);
         }
       }
-    }
     });
     var that = this;
     var ctx = document.getElementById('pressureplot').getContext('2d');
@@ -244,7 +244,7 @@ export default {
         tooltips: {
           callbacks: {
             label: function(tooltipItem){
-              return that.data.datasets[tooltipItem.datasetIndex].label + ' ' +tooltipItem.yLabel.toFixed(3);
+              return that.data.datasets[tooltipItem.datasetIndex].label + ' ' + tooltipItem.yLabel.toFixed(3);
             }
           }
         }
