@@ -37,7 +37,7 @@ def get_rise_set_intervals(request_dict, site=''):
         intervals_by_site = cache.get(cache_key, {})
     for site in site_details:
         if intervals_by_site.get(site):
-            intervals.extend(intervals_by_site.get(site))
+            intervals.extend(intervals_by_site[site])
         else:
             intervals_by_site[site] = []
             rise_set_site = get_rise_set_site(site_details[site])
