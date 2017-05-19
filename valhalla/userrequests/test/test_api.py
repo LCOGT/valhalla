@@ -1627,8 +1627,8 @@ class TestContention(ConfigDBTestMixin, APITestCase):
         response = self.client.get(
             reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
         )
-        self.assertNotEqual(response.json()[1]['All Proposals'], 0)
-        self.assertEqual(response.json()[2]['All Proposals'], 0)
+        self.assertNotEqual(response.json()['contention_data'][1]['All Proposals'], 0)
+        self.assertEqual(response.json()['contention_data'][2]['All Proposals'], 0)
 
     def test_contention_staff(self):
         user = mixer.blend(User, is_staff=True)
@@ -1636,8 +1636,8 @@ class TestContention(ConfigDBTestMixin, APITestCase):
         response = self.client.get(
            reverse('api:contention', kwargs={'instrument_name': '1M0-SCICAM-SBIG'})
         )
-        self.assertNotEqual(response.json()[1][self.request.user_request.proposal.id], 0)
-        self.assertNotIn(self.request.user_request.proposal.id, response.json()[2])
+        self.assertNotEqual(response.json()['contention_data'][1][self.request.user_request.proposal.id], 0)
+        self.assertNotIn(self.request.user_request.proposal.id, response.json()['contention_data'][2])
 
 
 class TestPressure(ConfigDBTestMixin, APITestCase):
@@ -1672,16 +1672,18 @@ class TestPressure(ConfigDBTestMixin, APITestCase):
 
     def test_pressure_no_auth(self):
         response = self.client.get(reverse('api:pressure'))
-        self.assertEqual(len(response.json()['pressure']), 24 * 4)
-        self.assertIn('All Proposals', response.json()['pressure'][0])
-        self.assertIn('pressure', response.json())
+        self.assertEqual(len(response.json()['pressure_data']), 24 * 4)
+        self.assertIn('All Proposals', response.json()['pressure_data'][0])
+        self.assertIn('pressure_data', response.json())
         self.assertIn('site_nights', response.json())
+        self.assertIn('site', response.json())
+        self.assertIn('instrument_name', response.json())
 
     def test_pressure_auth(self):
         user = mixer.blend(User, is_staff=True)
         self.client.force_login(user)
         response = self.client.get(reverse('api:pressure'))
-        self.assertNotIn('All Proposals', response.json()['pressure'][0])
+        self.assertNotIn('All Proposals', response.json()['pressure_data'][0])
 
     def test_get_site_data_should_get_one_site(self):
         pressure = Pressure(site='tst')

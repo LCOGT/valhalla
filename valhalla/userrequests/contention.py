@@ -10,12 +10,14 @@ from valhalla.common.configdb import configdb
 class Contention(object):
     def __init__(self, instrument_name, anonymous=True):
         self.anonymous = anonymous
+        self.now = timezone.now()
+        self.instrument_name = instrument_name
         self.requests = self._requests(instrument_name)
 
     def _requests(self, instrument_name):
         return Request.objects.filter(
-            windows__start__lt=timezone.now() + timedelta(days=1),
-            windows__end__gt=timezone.now(),
+            windows__start__lt=self.now + timedelta(days=1),
+            windows__end__gt=self.now,
             state='PENDING',
             molecules__instrument_name=instrument_name,
             target__type='SIDEREAL'
@@ -40,10 +42,16 @@ class Contention(object):
         return data
 
     def data(self):
+        c_data = {
+            'ra_hours': list(range(0, 24)),
+            'instrument_name': self.instrument_name,
+            'time_calculated': self.now
+        }
         if self.anonymous:
-            return self._anonymize(self._binned_durations_by_proposal_and_ra())
+            c_data['contention_data'] = self._anonymize(self._binned_durations_by_proposal_and_ra())
         else:
-            return self._binned_durations_by_proposal_and_ra()
+            c_data['contention_data'] = self._binned_durations_by_proposal_and_ra()
+        return c_data
 
 
 class Pressure(object):
@@ -52,6 +60,7 @@ class Pressure(object):
         self.now = timezone.now()
         self.requests = self._requests(instrument_name, site)
         self.site = site
+        self.instrument_name = instrument_name
         self.sites = self._sites()
         self.telescopes = {}
 
@@ -125,9 +134,12 @@ class Pressure(object):
     def _time_visible(self, site_intervals):
         return sum(sum((s - r).seconds for r, s in site_intervals[site]) for site in site_intervals)
 
+    def _time_bins(self):
+        return [self.now + timedelta(minutes=15 * x) for x in range(0, 24 * 4)]
+
     def _binned_pressure_by_hours_from_now(self):
         quarter_hour_bins = [{} for x in range(0, 24 * 4)]
-        bin_start_times = [self.now + timedelta(minutes=15 * x) for x in range(0, 24 * 4)]
+        bin_start_times = self._time_bins()
 
         for request in self.requests:
             site_intervals = self._visible_intervals(request)
@@ -158,13 +170,15 @@ class Pressure(object):
         return data
 
     def data(self):
+        p_data = {
+            'site_nights': self._site_nights(),
+            'time_bins': self._time_bins(),
+            'instrument_name': self.instrument_name if self.instrument_name else 'all',
+            'site': self.site if self.site else 'all',
+            'time_calculated': self.now
+        }
         if self.anonymous:
-            return {
-                'pressure': self._anonymize(self._binned_pressure_by_hours_from_now()),
-                'site_nights': self._site_nights()
-            }
+            p_data['pressure_data'] = self._anonymize(self._binned_pressure_by_hours_from_now())
         else:
-            return {
-                'pressure': self._binned_pressure_by_hours_from_now(),
-                'site_nights': self._site_nights()
-            }
+            p_data['pressure_data'] = self._binned_pressure_by_hours_from_now()
+        return p_data

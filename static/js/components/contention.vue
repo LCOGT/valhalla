@@ -54,7 +54,7 @@ export default {
       this.rawData = [];
       var that = this;
       $.getJSON('/api/contention/' + instrument + '/', function(data){
-        that.rawData = data;
+        that.rawData = data.contention_data;
         that.data.datasets = that.toChartData;
         that.chart.update();
       });

@@ -107,7 +107,7 @@ export default {
       if(this.instrument) urlstring += ('&instrument=' + this.instrument);
       var that = this;
       $.getJSON(urlstring, function(data){
-        that.rawData = data.pressure;
+        that.rawData = data.pressure_data;
         that.rawSiteData = data.site_nights;
         that.maxY = that.maxPressureInGraph;
         that.siteNights = that.toSiteNightData;
