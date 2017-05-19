@@ -1,3 +1,22 @@
+## 0.7.0
+2017-05-19
+
+* Show instrument name instead of fail count on request details
+* Remove Valhalla from page titles
+* Allow input of RA/Dec with spaces instead of colons
+* Minor bug fixes on compose page
+* Locked dependencies
+* Add API throttling
+* Cache rise/set calculations on a per request basis
+* Accurate Pressure plot. Backend and UI updates. Now with site lines!
+* Fixes for scheduler interface
+* Enable failed count
+* Add confirmation before submitting observation on compose page
+* Misc bug fixes for rise/set calculations
+* Exposure time no longer defaults to 30 seconds. It is now blank.
+* Added extra context to pressure and contention endpoints
+* Misc text updates.
+
 ## 0.6.0
 2017-05-11
 
