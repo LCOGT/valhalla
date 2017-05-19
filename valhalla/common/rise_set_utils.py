@@ -56,7 +56,7 @@ def get_rise_set_intervals(request_dict, site=''):
     if request_dict.get('id'):
         cache.set(cache_key, intervals_by_site, 86400 * 30)  # cache for 30 days
 
-    return coalesce_adjacent_intervals([interval for interval in intervals])
+    return coalesce_adjacent_intervals(intervals)
 
 
 def get_rise_set_target(target_dict):
