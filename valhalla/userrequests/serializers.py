@@ -83,11 +83,13 @@ class MoleculeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'acquire_radius_arcsec': 'Acquire radius must be positive.'})
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
+        types_that_require_slit = ['spectrum', 'arc', 'lamp_flat']
 
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):
-            if data.get('spectra_slit', '').lower() not in available_filters:
+            if (data['type'].lower() in types_that_require_slit
+                    and data.get('spectra_slit', '').lower() not in available_filters):
                 raise serializers.ValidationError(
                     {'spectra_slit': _("Invalid spectra slit {} for instrument {}. Valid slits are: {}").format(
                         data.get('spectra_slit', ''), data['instrument_name'], ", ".join(available_filters)

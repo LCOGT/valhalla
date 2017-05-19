@@ -985,6 +985,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_invalid_spectra_slit_for_instrument(self):
         bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         del bad_data['requests'][0]['molecules'][0]['filter']
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_really_small'
