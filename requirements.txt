@@ -4,7 +4,7 @@ djangorestframework>=3.6,<3.7
 django-oauth-toolkit>=-0.12,<0.13
 django-cors-headers>=2.0,<2.1
 requests>=2.14,<2.15
-django-filter==1.0.2
+django-filter>=1.0,<1.1
 django-bootstrap3>=8.0<9.0
 WeasyPrint>=0.36,<0.37
 PyPDF2>=1.26,<1.27
