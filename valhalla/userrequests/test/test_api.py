@@ -700,6 +700,8 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         target = response.json()['requests'][0]['target']
         self.assertEqual(target['proper_motion_ra'], 0.0)
         self.assertEqual(target['proper_motion_dec'], 0.0)
+        self.assertEqual(target['radvel'], 0.0)
+        self.assertIsNone(target['vmag'])
         self.assertEqual(target['parallax'], 0.0)
         self.assertEqual(target['coordinate_system'], 'ICRS')
         self.assertEqual(target['equinox'], 'J2000')
@@ -975,6 +977,38 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         del good_data['requests'][0]['molecules'][0]['filter']
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
+
+    def test_slit_not_necessary_for_nres(self):
+        good_data = self.generic_payload.copy()
+        del good_data['requests'][0]['molecules'][0]['filter']
+        good_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+        good_data['requests'][0]['molecules'][0]['type'] = 'NRES_EXPOSE'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+        good_data['requests'][0]['molecules'][0]['type'] = 'NRES_TEST'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_nres_parameters_passthrough(self):
+        good_data = self.generic_payload.copy()
+        del good_data['requests'][0]['molecules'][0]['filter']
+        good_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
+        good_data['requests'][0]['molecules'][0]['acquire_strategy'] = 'window'
+        good_data['requests'][0]['molecules'][0]['ag_strategy'] = 'super'
+        good_data['requests'][0]['molecules'][0]['expmeter_snr'] = 10.0
+        good_data['requests'][0]['molecules'][0]['expmeter_mode'] = 'OFF'
+
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        molecule = response.json()['requests'][0]['molecules'][0]
+        self.assertEqual(molecule['expmeter_snr'], 10.0)
+        self.assertEqual(molecule['expmeter_mode'], 'OFF')
+        self.assertEqual(molecule['acquire_strategy'], 'window')
+        self.assertEqual(molecule['ag_strategy'], 'super')
 
     def test_filter_necessary_for_type(self):
         bad_data = self.generic_payload.copy()
