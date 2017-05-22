@@ -13,7 +13,7 @@ numpy>=1.12,<1.13
 celery[redis]>=4.0.<4.1
 django-redis-cache>=1.7,<1.8
 psycopg2>=2.7,<2.8
-django_extensions>=1.7,<1.8
+django-extensions>=1.7,<1.8
 rise-set
 lcogt-logging
 
