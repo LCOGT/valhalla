@@ -42,8 +42,8 @@ class BaseTargetHelper(object):
 class SiderealTargetHelper(BaseTargetHelper):
     def __init__(self, target):
         self.fields = (
-            'type', 'name', 'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax',
-            'coordinate_system', 'equinox', 'epoch', 'acquire_mode', 'rot_mode', 'rot_angle'
+            'type', 'name', 'ra', 'dec', 'proper_motion_ra', 'proper_motion_dec', 'parallax', 'radvel',
+            'coordinate_system', 'equinox', 'epoch', 'acquire_mode', 'rot_mode', 'rot_angle', 'vmag'
         )
 
         self.required_fields = ('ra', 'dec')
@@ -54,6 +54,7 @@ class SiderealTargetHelper(BaseTargetHelper):
             'parallax': 0.0,
             'proper_motion_ra': 0.0,
             'proper_motion_dec': 0.0,
+            'radvel': 0.0,
             'epoch': 2000.0
         }
         super().__init__(target)
@@ -62,7 +63,7 @@ class SiderealTargetHelper(BaseTargetHelper):
 class NonSiderealTargetHelper(BaseTargetHelper):
     def __init__(self, target):
         self.defaults = {}
-        self.fields = ('acquire_mode', 'rot_mode', 'rot_angle')
+        self.fields = ('acquire_mode', 'rot_mode', 'rot_angle', 'vmag')
         self.required_fields = (
             'type', 'name', 'epochofel', 'orbinc', 'longascnode', 'eccentricity', 'scheme'
         )
@@ -103,5 +104,6 @@ class SatelliteTargetHelper(BaseTargetHelper):
             'diff_epoch_rate', 'diff_pitch_acceleration', 'diff_roll_acceleration'
         )
         self.required_fields = self.fields
+        self.fields += ('vmag',)
         self.defaults = {}
         super().__init__(target)

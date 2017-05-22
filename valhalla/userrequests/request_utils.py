@@ -14,6 +14,11 @@ MOLECULE_TYPE_DISPLAY = {
   'LAMP_FLAT': 'Lamp Flat',
   'SPECTRUM': 'Spectrum',
   'AUTO_FOCUS': 'Auto Focus',
+  'TRIPLE': 'Triple',
+  'NRES_TEST': 'NRES Test',
+  'NRES_SPECTRUM': 'NRES Spectrum',
+  'NRES_EXPOSE': 'NRES Expose',
+  'ENGINEERING': 'Engineering'
 }
 
 
