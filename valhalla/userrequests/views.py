@@ -14,7 +14,7 @@ import requests
 from rest_framework.views import APIView
 
 from valhalla.common.configdb import configdb
-from valhalla.common.telescope_states import (get_telescope_states, get_telescope_availability_per_day,
+from valhalla.common.telescope_states import (TelescopeStates, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class)
 from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
 from valhalla.userrequests.models import UserRequest, Request
@@ -24,11 +24,11 @@ from valhalla.userrequests.state_changes import update_request_states_from_pond_
 from valhalla.userrequests.contention import Contention, Pressure
 
 
-def get_start_end_paramters(request):
+def get_start_end_paramters(request, default_days_back):
     try:
         start = parse(request.query_params.get('start'))
     except TypeError:
-        start = timezone.now() - timedelta(days=1)
+        start = timezone.now() - timedelta(days=default_days_back)
     start = start.replace(tzinfo=timezone.utc)
     try:
         end = parse(request.query_params.get('end'))
@@ -96,12 +96,12 @@ class TelescopeStatesView(APIView):
 
     def get(self, request):
         try:
-            start, end = get_start_end_paramters(request)
+            start, end = get_start_end_paramters(request, default_days_back=0)
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
         sites = request.query_params.getlist('site')
         telescopes = request.query_params.getlist('telescope')
-        telescope_states = get_telescope_states(start, end, sites=sites, telescopes=telescopes)
+        telescope_states = TelescopeStates(start, end, sites=sites, telescopes=telescopes).get()
         str_telescope_states = {str(k): v for k, v in telescope_states.items()}
 
         return Response(str_telescope_states)
@@ -114,7 +114,7 @@ class TelescopeAvailabilityView(APIView):
 
     def get(self, request):
         try:
-            start, end = get_start_end_paramters(request)
+            start, end = get_start_end_paramters(request, default_days_back=1)
         except ValueError as e:
             return HttpResponseBadRequest(str(e))
         combine = request.query_params.get('combine')

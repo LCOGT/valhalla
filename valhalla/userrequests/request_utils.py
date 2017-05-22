@@ -3,7 +3,7 @@ from rise_set.angle import Angle
 from rise_set.astrometry import calculate_airmass_at_times
 
 from valhalla.common.configdb import configdb
-from valhalla.common.telescope_states import get_telescope_states, filter_telescope_states_by_intervals
+from valhalla.common.telescope_states import TelescopeStates, filter_telescope_states_by_intervals
 from valhalla.common.rise_set_utils import get_rise_set_target, get_rise_set_intervals
 
 MOLECULE_TYPE_DISPLAY = {
@@ -40,12 +40,12 @@ def get_telescope_states_for_request(request):
         return {}
 
     # Retrieve the telescope states for that set of sites
-    telescope_states = get_telescope_states(
+    telescope_states = TelescopeStates(
       start=request.min_window_time,
       end=request.max_window_time,
       sites=list(site_intervals.keys()),
       instrument_types=[instrument_type]
-    )
+    ).get()
     # Remove the empty intervals from the dictionary
     site_intervals = {site: intervals for site, intervals in site_intervals.items() if intervals}
 
