@@ -7,7 +7,7 @@ from urllib3.exceptions import LocationValueError
 from django.core.exceptions import ImproperlyConfigured
 import logging
 
-from valhalla.common.configdb import ConfigDB, TelescopeKey
+from valhalla.common.configdb import configdb, TelescopeKey
 from valhalla.common.rise_set_utils import get_site_rise_set_intervals
 
 logger = logging.getLogger(__name__)
@@ -15,22 +15,31 @@ logger = logging.getLogger(__name__)
 ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
 
 
+def string_to_datetime(timestamp, time_format=ES_STRING_FORMATTER):
+    return datetime.strptime(timestamp, time_format).replace(tzinfo=timezone.utc)
+
+
 class TelescopeStates(object):
     def __init__(self, start, end, telescopes=None, sites=None, instrument_types=None):
-        self.start = start.replace(tzinfo=timezone.utc).replace(microsecond=0)
-        self.end = end.replace(tzinfo=timezone.utc).replace(microsecond=0)
+        try:
+            self.es = Elasticsearch([settings.ELASTICSEARCH_URL])
+        except LocationValueError:
+            logger.error('Could not find host. Make sure ELASTICSEARCH_URL is set.')
+            raise ImproperlyConfigured('ELASTICSEARCH_URL')
+
         self.instrument_types = instrument_types
         self.available_telescopes = self._get_available_telescopes()
 
-        sites = list({telescope_key.site for telescope_key in self.available_telescopes}) \
-            if not sites else sites
+        sites = list({tk.site for tk in self.available_telescopes}) if not sites else sites
         telescopes = list({tk.telescope for tk in self.available_telescopes if tk.site in sites}) \
             if not telescopes else telescopes
 
+        self.start = start.replace(tzinfo=timezone.utc).replace(microsecond=0)
+        self.end = end.replace(tzinfo=timezone.utc).replace(microsecond=0)
         self.event_data = self._get_es_data(sites, telescopes)
 
     def _get_available_telescopes(self):
-        telescope_to_instruments = ConfigDB().get_instrument_types_per_telescope(only_schedulable=True)
+        telescope_to_instruments = configdb.get_instrument_types_per_telescope(only_schedulable=True)
         if not self.instrument_types:
             available_telescopes = telescope_to_instruments.keys()
         else:
@@ -47,6 +56,7 @@ class TelescopeStates(object):
                             {
                                 "range": {
                                     "timestamp": {
+                                        # Retrieve documents 1 hour back to capture the telescope state at the start.
                                         "gte": (self.start - timedelta(hours=1)).strftime(ES_STRING_FORMATTER),
                                         "lte": self.end.strftime(ES_STRING_FORMATTER),
                                         "format": "yyyy-MM-dd HH:mm:ss"
@@ -68,23 +78,17 @@ class TelescopeStates(object):
                 }
             }
         }
-        try:
-            es = Elasticsearch([settings.ELASTICSEARCH_URL])
-        except LocationValueError:
-            logger.error('Could not find host. Make sure ELASTICSEARCH_URL is set.')
-            raise ImproperlyConfigured('ELASTICSEARCH_URL')
-
         event_data = []
         query_size = 10000
-        data = es.search(index="telescope_events", body=date_range_query, size=query_size, scroll='1m',
-                         _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'],
-                         sort=['site', 'enclosure', 'telescope', 'timestamp'])  # noqa
+        data = self.es.search(index="telescope_events", body=date_range_query, size=query_size, scroll='1m',
+                              _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'],
+                              sort=['site', 'enclosure', 'telescope', 'timestamp'])  # noqa
         event_data.extend(data['hits']['hits'])
         total_events = data['hits']['total']
         events_read = min(query_size, total_events)
         scroll_id = data.get('_scroll_id', 0)
         while events_read < total_events:
-            data = es.scroll(scroll_id=scroll_id, scroll='1m') # noqa
+            data = self.es.scroll(scroll_id=scroll_id, scroll='1m') # noqa
             scroll_id = data.get('_scroll_id', 0)
             event_data.extend(data['hits']['hits'])
             events_read += len(data['hits']['hits'])
@@ -94,7 +98,7 @@ class TelescopeStates(object):
         if str(lump_data['telescope']) != str(self._telescope(event_source)):
             return False
 
-        time_diff = (self._es_to_datetime(event_source['timestamp']) - lump_data['latest_timestamp']).total_seconds()
+        time_diff = (string_to_datetime(event_source['timestamp']) - lump_data['latest_timestamp']).total_seconds()
 
         # If the event is close enough to the latest timestamp in the lump, it belongs in that lump.
         if time_diff < dt:
@@ -112,7 +116,8 @@ class TelescopeStates(object):
 
         return False
 
-    def _categorize(self, lump):
+    @staticmethod
+    def _categorize(lump):
         # TODO: Categorize each lump in a useful way for network users.
         event_type, event_reason = lump['types'][0], lump['reasons'][0]
         for this_type, this_reason in zip(lump['types'], lump['reasons']):
@@ -125,22 +130,23 @@ class TelescopeStates(object):
     def _lump_end(self, lump, next_event=None):
         if not next_event or str(lump['telescope']) != str(self._telescope(next_event)):
             return self.end
-        return self._es_to_datetime(next_event['timestamp'])
+        return string_to_datetime(next_event['timestamp'])
 
     def _set_lump(self, event):
         return {
             'reasons': [event['_source']['reason']],
             'types': [event['_source']['type']],
-            'start': self._es_to_datetime(event['_source']['timestamp']),
+            'start': string_to_datetime(event['_source']['timestamp']),
             'telescope': self._telescope(event['_source']),
-            'latest_timestamp': self._es_to_datetime(event['_source']['timestamp'])
+            'latest_timestamp': string_to_datetime(event['_source']['timestamp'])
         }
 
-    def _update_lump(self, lump, event):
+    @staticmethod
+    def _update_lump(lump, event):
         if event['_source']['type'] not in lump['types'] or event['_source']['reason'] not in lump['reasons']:
             lump['reasons'].append(event['_source']['reason'])
             lump['types'].append(event['_source']['type'])
-        lump['latest_timestamp'] = self._es_to_datetime(event['_source']['timestamp'])
+        lump['latest_timestamp'] = string_to_datetime(event['_source']['timestamp'])
         return lump
 
     def get(self):
@@ -159,12 +165,9 @@ class TelescopeStates(object):
                 current_lump = self._update_lump(current_lump, event)
             else:
                 lump_end = self._lump_end(current_lump, event['_source'])
-                if lump_end < self.start:
+                if lump_end >= self.start:
+                    telescope_states = self._update_states(telescope_states, current_lump, lump_end)
                     current_lump = self._set_lump(event)
-                    continue
-
-                telescope_states = self._update_states(telescope_states, current_lump, lump_end)
-                current_lump = self._set_lump(event)
 
         if current_lump['start']:
             lump_end = self._lump_end(current_lump)
@@ -188,10 +191,8 @@ class TelescopeStates(object):
         )
         return states
 
-    def _es_to_datetime(self, timestamp):
-        return datetime.strptime(timestamp, ES_STRING_FORMATTER).replace(tzinfo=timezone.utc)
-
-    def _telescope(self, event_source):
+    @staticmethod
+    def _telescope(event_source):
         return TelescopeKey(
             site=event_source['site'],
             observatory=event_source['enclosure'],
