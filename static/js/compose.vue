@@ -51,6 +51,9 @@
         <div class="tab-pane" :class="{ active: tab === 2 }">
           <div class="row">
             <div class="col-md-12">
+              <a id="dldjson" :href="dataAsB64" download="apiview.json" class="btn btn-default" title="download">
+                <i class="fa fa-download"></i> Download as JSON
+              </a>
               <pre>{{ JSON.stringify(userrequest, null, 4) }}</pre>
             </div>
           </div>
@@ -175,6 +178,11 @@
         alerts: []
       };
     },
+    computed: {
+      dataAsB64: function(){
+        return 'data:application/json;charset=utf16le;base64,' +  btoa(JSON.stringify(this.userrequest));
+      }
+    },
     methods: {
       validate: _.debounce(function(){
         var that = this;
@@ -265,3 +273,11 @@
     }
   };
   </script>
+<style>
+  #dldjson {
+    float: right;
+    position: relative;
+    top: 10px;
+    right: 175px;
+  }
+</style>
