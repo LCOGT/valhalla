@@ -2,6 +2,7 @@ from django_filters.views import FilterView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
 from django.http import HttpResponseBadRequest, HttpResponseServerError
@@ -66,6 +67,21 @@ class UserRequestDetailView(DetailView):
 
     def get_queryset(self):
         return userrequest_queryset(self.request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        requests = self.get_object().requests.all().order_by('id')
+        paginator = Paginator(requests, 25)
+        page = self.request.GET.get('page')
+        try:
+            requests = paginator.page(page)
+        except PageNotAnInteger:
+            requests = paginator.page(1)
+        except EmptyPage:
+            requests = paginator.page(paginator.num_pages)
+        context['requests'] = requests
+
+        return context
 
 
 class RequestDetailView(DetailView):
@@ -172,7 +188,7 @@ class UserRequestStatusIsDirty(APIView):
             last_query_time = parse(request.query_params.get('last_query_time'))
         except TypeError:
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
-        
+
         url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=default'.format(last_query_time)
         now = timezone.now()
         try:

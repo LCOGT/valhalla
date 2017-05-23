@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static bootstrap3 %}
 {% block title %} User Request Detail {% endblock %}
 {% block content %}
 {% include 'userrequests/partials/userrequest_header.html' with userrequest=userrequest %}
@@ -10,11 +10,14 @@
     </ol>
   </div>
 </div>
-{% for request in object.requests.all %}
+{% for request in requests %}
 <section class="request-list">
   {% include 'userrequests/partials/request_row.html' with request=request link=True %}
 </section>
 {% endfor %}
+{% if requests.paginator.num_pages > 1 %}
+  {% bootstrap_pagination requests extra=request.GET.urlencode %}
+{% endif %}
 {% endblock %}
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/bundles/userrequest_detail.js' %}"></script>
