@@ -57,7 +57,7 @@ class UserRequest(models.Model):
         return self.get_id_display()
 
     def get_id_display(self):
-        return str(self.id).zfill(10)
+        return str(self.id)
 
     def get_absolute_url(self):
         return reverse('userrequests:detail', kwargs={'pk': self.pk})
@@ -116,7 +116,7 @@ class Request(models.Model):
         return self.get_id_display()
 
     def get_id_display(self):
-        return str(self.id).zfill(10)
+        return str(self.id)
 
     @property
     def as_dict(self):
