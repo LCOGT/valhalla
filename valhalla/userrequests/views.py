@@ -186,10 +186,10 @@ class UserRequestStatusIsDirty(APIView):
     def get(self, request):
         try:
             last_query_time = parse(request.query_params.get('last_query_time'))
-        except TypeError:
+        except (TypeError, ValueError):
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
 
-        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=default'.format(last_query_time)
+        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=default'.format(last_query_time.strftime('%Y-%m-%dT%H:%M:%S'))
         now = timezone.now()
         try:
             response = requests.get(url)
