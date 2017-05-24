@@ -315,7 +315,7 @@ class TestPostUpdateSciApp(TestCase):
         tr = mixer.blend(TimeRequest, science_application=app)
 
         data = {
-            'call': 1,
+            'call': self.call.id,
             'title': 'updates',
             'status': 'DRAFT',
             'timerequest_set-TOTAL_FORMS': 1,

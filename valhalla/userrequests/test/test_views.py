@@ -20,8 +20,7 @@ class TestUserRequestList(TestCase):
             mixer.blend(Membership, proposal=proposal, user=self.user)
         self.userrequests = mixer.cycle(3).blend(
             UserRequest,
-            proposal=(p for p in self.proposals),
-            group_id=mixer.RANDOM
+            proposal=(p for p in self.proposals)
         )
         self.requests = mixer.cycle(3).blend(
             Request,
@@ -33,8 +32,6 @@ class TestUserRequestList(TestCase):
         response = self.client.get(reverse('userrequests:list'))
         for ur in self.userrequests:
             self.assertContains(response, ur.group_id)
-            for request in ur.requests.all():
-                self.assertContains(response, request.id)
 
     def test_userrequest_no_auth(self):
         self.client.logout()
@@ -76,7 +73,7 @@ class TestUserRequestList(TestCase):
         response = self.client.get(
             reverse('userrequests:list') + '?title={}'.format(self.userrequests[0].group_id)
         )
-        self.assertContains(response, self.userrequests[0].requests.all()[0].id)
+        self.assertContains(response, self.userrequests[0].group_id)
         self.assertNotContains(response, self.userrequests[1].group_id)
         self.assertNotContains(response, self.userrequests[2].group_id)
 
