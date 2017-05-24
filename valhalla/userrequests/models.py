@@ -112,6 +112,9 @@ class Request(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     completed = models.DateTimeField(null=True, blank=True)
 
+    class Meta:
+        ordering = ('id',)
+
     def __str__(self):
         return self.get_id_display()
 
@@ -184,6 +187,9 @@ class Location(models.Model):
     site = models.CharField(max_length=20, default='', blank=True)
     observatory = models.CharField(max_length=20, default='', blank=True)
     telescope = models.CharField(max_length=20, default='', blank=True)
+
+    class Meta:
+        ordering = ('id',)
 
     @property
     def as_dict(self):
@@ -282,6 +288,9 @@ class Target(models.Model):
     vmag = models.FloatField(null=True, blank=True)
     radvel = models.FloatField(null=True, blank=True)
 
+    class Meta:
+        ordering = ('id',)
+
     def __str__(self):
         return 'Target {}: {} type'.format(self.id, self.type)
 
@@ -298,6 +307,9 @@ class Window(models.Model):
     request = models.ForeignKey(Request, related_name='windows')
     start = models.DateTimeField(db_index=True)
     end = models.DateTimeField(db_index=True)
+
+    class Meta:
+        ordering = ('id',)
 
     @property
     def as_dict(self):
@@ -387,6 +399,9 @@ class Molecule(models.Model):
     # Other options
     defocus = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-3.0), MaxValueValidator(3.0)])
 
+    class Meta:
+        ordering = ('id',)
+
     def __str__(self):
         return 'Molecule {0}: {1} type, {2} instrument, {3} exposures @ {4}s'.format(
             self.id, self.type, self.instrument_name, self.exposure_count, self.exposure_time
@@ -409,6 +424,10 @@ class Constraints(models.Model):
     max_seeing = models.FloatField(null=True, blank=True)
     min_transparency = models.FloatField(null=True, blank=True)
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name_plural = 'Constraints'
+
     @property
     def as_dict(self):
         return model_to_dict(self)
@@ -416,9 +435,6 @@ class Constraints(models.Model):
     def __str__(self):
         return 'Constraints {}: {} max airmass, {} min_lunar_distance'.format(self.id, self.max_airmass,
                                                                               self.min_lunar_distance)
-
-    class Meta:
-        verbose_name_plural = 'Constraints'
 
 
 class DraftUserRequest(models.Model):
