@@ -1,7 +1,33 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 
 from .models import UserRequest, Request, Location, Target, Window, Molecule, Constraints
+
+
+class MoleculeInline(admin.TabularInline):
+    model = Molecule
+    extra = 0
+
+
+class LocationInline(admin.TabularInline):
+    model = Location
+    extra = 0
+
+
+class TargetInline(admin.TabularInline):
+    model = Target
+    extra = 0
+
+
+class WindowInline(admin.TabularInline):
+    model = Window
+    extra = 0
+
+
+class ConstraintsInline(admin.TabularInline):
+    model = Constraints
+    extra = 0
 
 
 class UserRequestAdmin(admin.ModelAdmin):
@@ -16,10 +42,24 @@ class UserRequestAdmin(admin.ModelAdmin):
         'created',
         'state',
         'modified',
+        'requests_count',
     )
     list_filter = ('state', 'created', 'modified')
     search_fields = ('group_id',)
-admin.site.register(UserRequest, UserRequestAdmin)
+    readonly_fields = ('requests', 'requests_count')
+
+    def requests_count(self, obj):
+        return obj.requests.count()
+
+    def requests(self, obj):
+        html = ''
+        for request in obj.requests.all():
+            html += '<a href="{0}">{1}</a></p>'.format(
+                reverse('admin:userrequests_request_change', args=(request.id,)),
+                request.id
+            )
+        return html
+    requests.allow_tags = True
 
 
 class RequestAdmin(admin.ModelAdmin):
@@ -38,7 +78,7 @@ class RequestAdmin(admin.ModelAdmin):
         'user_request',
     )
     list_filter = ('state', 'modified', 'created', 'completed')
-admin.site.register(Request, RequestAdmin)
+    inlines = [MoleculeInline, WindowInline, TargetInline, ConstraintsInline, LocationInline]
 
 
 class LocationAdmin(admin.ModelAdmin):
@@ -51,7 +91,6 @@ class LocationAdmin(admin.ModelAdmin):
         'telescope',
     )
     list_filter = ('telescope_class',)
-admin.site.register(Location, LocationAdmin)
 
 
 class TargetAdmin(admin.ModelAdmin):
@@ -96,7 +135,6 @@ class TargetAdmin(admin.ModelAdmin):
     )
     list_filter = ('type',)
     search_fields = ('name',)
-admin.site.register(Target, TargetAdmin)
 
 
 class WindowAdmin(admin.ModelAdmin):
@@ -105,7 +143,6 @@ class WindowAdmin(admin.ModelAdmin):
     raw_id_fields = (
         'request',
     )
-admin.site.register(Window, WindowAdmin)
 
 
 class MoleculeAdmin(admin.ModelAdmin):
@@ -140,7 +177,6 @@ class MoleculeAdmin(admin.ModelAdmin):
         'request',
     )
     list_filter = ('type',)
-admin.site.register(Molecule, MoleculeAdmin)
 
 
 class ConstraintsAdmin(admin.ModelAdmin):
@@ -153,4 +189,12 @@ class ConstraintsAdmin(admin.ModelAdmin):
         'max_seeing',
         'min_transparency',
     )
+
+
 admin.site.register(Constraints, ConstraintsAdmin)
+admin.site.register(Molecule, MoleculeAdmin)
+admin.site.register(Window, WindowAdmin)
+admin.site.register(Target, TargetAdmin)
+admin.site.register(UserRequest, UserRequestAdmin)
+admin.site.register(Location, LocationAdmin)
+admin.site.register(Request, RequestAdmin)
