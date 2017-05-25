@@ -17,6 +17,9 @@ class ProposalFilter(django_filters.FilterSet):
 
 class SemesterFilter(django_filters.FilterSet):
     semester_contains = django_filters.CharFilter(method='semester_contains_filter', label='Contains Date')
+    start = django_filters.DateTimeFilter(name='start', lookup_expr='gte')
+    end = django_filters.DateTimeFilter(name='end', lookup_expr='lt')
+    id = django_filters.CharFilter(name='id', lookup_expr='icontains')
 
     def semester_contains_filter(self, queryset, name, value):
         try:
@@ -28,8 +31,4 @@ class SemesterFilter(django_filters.FilterSet):
 
     class Meta:
         model = Semester
-        fields = {
-            'start': ['gte'],
-            'end': ['lte'],
-            'id': ['contains'],
-        }
+        fields = ['semester_contains', 'start', 'end', 'id']
