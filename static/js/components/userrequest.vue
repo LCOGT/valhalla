@@ -106,7 +106,10 @@ export default {
       that.proposals = data.proposals;
       that.simple_interface = data.profile.simple_interface;
       for(var ai in data.available_instrument_types){
-        allowed_instruments[data.available_instrument_types[ai]] = {};
+        // TODO remove this hardocded exclusion of NRES
+        if(!data.available_instrument_types[ai].includes('NRES')){
+          allowed_instruments[data.available_instrument_types[ai]] = {};
+        }
       }
     }).done(function(){
       $.getJSON('/api/instruments/', function(data){
