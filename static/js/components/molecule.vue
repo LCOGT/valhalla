@@ -104,14 +104,22 @@ export default {
   },
   computed: {
     filterOptions: function(){
-      var options = [{value: '', text: ''}];
-      var filters = _.get(this.available_instruments, [this.selectedinstrument, 'filters'], []);
-      for(var filter in filters){
-        if(['Standard', 'Slit', 'VirtualSlit'].indexOf(filters[filter].type) > -1){ // TODO select on mode
-          options.push({value: filter, text: filters[filter].name});
+      if(this.simple_interface){
+        return [
+          {value: 'b', text: 'Blue'},
+          {value: 'v', text: 'Green'},
+          {value: 'r', text: 'Red'}
+        ];
+      }else{
+        var options = [{value: '', text: ''}];
+        var filters = _.get(this.available_instruments, [this.selectedinstrument, 'filters'], []);
+        for(var filter in filters){
+          if(['Standard', 'Slit', 'VirtualSlit'].indexOf(filters[filter].type) > -1){ // TODO select on mode
+            options.push({value: filter, text: filters[filter].name});
+          }
         }
+        return _.sortBy(options, 'text');
       }
-      return _.sortBy(options, 'text');
     },
     binningsOptions: function(){
       // Binning has been removed from the ui, but may be added later.
