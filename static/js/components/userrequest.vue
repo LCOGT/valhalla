@@ -69,6 +69,17 @@
         <div class="request-margin"></div>
       </div>
     </div>
+    <modal :show="showEdPopup" v-on:close="closeEdPopup" v-on:submit="closeEdPopup" :showCancel=false>
+      <h3>Welcome to the LCO observation request page!</h3>
+      <p>Using this form you can instruct the LCO telescope network to perform an astronomical observation on your behalf.</p>
+      <p>Fields should be filled out from top to bottom. If you need help understanding a field, hovering your
+          cursor over the field name will reveal additional information.</p>
+      <p>A field highlighted in red means that there is a problem with the given value. Additionally, errors will appear on the right
+          hand side in the request index. An observation request cannot be submitted until there are no errors.</p>
+      <p>Some elements may be copied using the <i class="fa fa-copy text-success"></i> copy button. For example: to create a RGB image you
+          can copy the configuration twice so that there are three, and set the filters appropriately.</p>
+      <p>Thanks for using Las Cumbres Observatory!</p>
+    </modal>
   </panel>
 </template>
 <script>
@@ -135,6 +146,9 @@ export default {
     durationDisplay: function(){
       var duration = moment.duration(this.duration_data.duration, 'seconds');
       return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
+    },
+    showEdPopup: function(){
+      return localStorage.getItem('hasVisited') != 'true' && this.simple_interface;
     }
   },
   watch: {
@@ -216,6 +230,9 @@ export default {
           that.update();
         });
       });
+    },
+    closeEdPopup: function(){
+      localStorage.setItem('hasVisited', 'true');
     }
   }
 };
