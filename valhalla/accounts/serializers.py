@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'profile', 'proposals', 'available_instrument_types', 'tokens')
+        fields = ('username', 'email', 'profile', 'proposals', 'available_instrument_types', 'tokens')
 
     def get_proposals(self, obj):
         return [{'id': proposal.id, 'title': proposal.title} for proposal in obj.profile.current_proposals]
