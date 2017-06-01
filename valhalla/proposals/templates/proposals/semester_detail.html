@@ -39,6 +39,7 @@
           <th>Proposal</th>
           <th>Class</th>
           <th>PI</th>
+          <th>Priority</th>
           <th>Std Alloc</th>
           <th>Std Used</th>
           <th>RR Alloc</th>
@@ -53,6 +54,7 @@
       <tr>
         <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
         <td>{{ ta.proposal.pi.first_name }} {{ ta.proposal.pi.last_name }}</td>
+        <td>{{ ta.proposal.tac_priority }}</td>
         <td>{{ ta.telescope_class }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
         <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>
@@ -100,6 +102,10 @@ $('#semester-table').bootstrapTable({
     {
       field: 'pi',
       title: 'PI',
+      sortable: true,
+    },
+    { field: 'priority',
+      title: 'Priority',
       sortable: true,
     },
     {
