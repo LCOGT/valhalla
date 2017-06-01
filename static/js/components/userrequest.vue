@@ -141,7 +141,8 @@ export default {
   },
   computed:{
     proposalOptions: function(){
-      return _.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text');
+      var options = [{'value': '', 'text': ''}];
+      return options.concat(_.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text'));
     },
     durationDisplay: function(){
       var duration = moment.duration(this.duration_data.duration, 'seconds');
