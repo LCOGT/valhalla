@@ -1,3 +1,16 @@
+## 1.0.0
+2017-06-02
+
+* Added button to download API view json on compose page.
+* Enable pagination of child requests.
+* Fix various inconsistencies between documentation and code.
+* Improve UserRequest admin pages.
+* Hardcode out NRES.
+* Provide simple filter names for ed users.
+* Fixed bug with old version of firefox on compose page.
+* Refactored telescope states endpoint.
+* isDirty fixes.
+
 ## 0.7.1
 2017-05-22
 
@@ -40,11 +53,11 @@
 2017-05-05
 
 * Fix milliseconds to 0 for telescope availability
-* Fix wrong paramter name in telescope availability
+* Fix wrong parameter name in telescope availability
 * capitalize Observing Budget Explanation
 * capitalize Observing Budget Explanation
 * Added more specific language about what proposals should and should not be submitted through the portal
-* CHange help text for proper motions
+* Change help text for proper motions
 * fix typo
 * changes to defocus, guiding help text
 * change Airmass help text
@@ -70,13 +83,13 @@
 * Rename help on compose page to How to use this page
 * Fix pdf rendering for non firefox browsers
 * Remove moon phase from ddt proposal views
-* Dont ask user to submit a proposal if they actually do have proposals
+* Don't ask user to submit a proposal if they actually do have proposals
 * Make sure users can always view their data when viewing a request in the archive by setting the start date to 2014
 * Make planning tools link to planning tools on lco.global
 * Correct behaviour of minor planet vs comet target composition. Make sure that 0 values in target helper do no validate as false
 * Remove STANDARD from molecules that should be counted for acquire duration. Add acquire duration for every spectrum in the request
 * Indicate simple interface by header logo
-* hide proposal memebers from education users
+* hide proposal members from education users
 * In compose form, use proposal titles instead of ids
 * Hide even more stuff in simple interface
 * Notify existing users when they have been added to a proposal
@@ -110,7 +123,7 @@
 * Increase alert timeout to 10 seconds
 * Allow dec input to accept seconds gt 59 and less than 60
 * Only show observation type if it is rapid response
-* Chage Child Requests to Sub-requests
+* Change Child Requests to Sub-requests
 * Add tooltip to duration on userrequest row
 * Add additional wording to automatic calibration generation
 * Simple interface
@@ -122,7 +135,7 @@
 * Use friendly instrument names in compose form
 * Add link to Rapid Response webpage
 * Add link to ETC in new tab
-* Fix configutation typo
+* Fix configuration typo
 * All caps IPP
 * Add text for RR mode
 * Add link to airmass limit webpage
