@@ -10,11 +10,13 @@ class UserRequestFilter(filters.FilterSet):
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains', label='Title contains')
     user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains', label='Username contains')
     telescope_class = django_filters.ChoiceFilter(
-        choices=Location.TELESCOPE_CLASSES, name='requests__location__telescope_class'
+        choices=Location.TELESCOPE_CLASSES, name='requests__location__telescope_class', distinct=True,
     )
     target = django_filters.CharFilter(
-            name='requests__target__name', lookup_expr='icontains', label='Target name contains'
+            name='requests__target__name', lookup_expr='icontains', label='Target name contains', distinct=True
     )
+    modified_after = django_filters.DateTimeFilter(name='requests__modified', lookup_expr='gte', label='Modified After', distinct=True)
+    modified_before = django_filters.DateTimeFilter(name='requests__modified', lookup_expr='lte', label='Modified Before', distinct=True)
     order = django_filters.OrderingFilter(
         fields=(
             ('group_id', 'title'),
@@ -32,7 +34,7 @@ class UserRequestFilter(filters.FilterSet):
         model = UserRequest
         fields = (
             'id', 'submitter', 'proposal', 'title', 'observation_type', 'operator', 'ipp_value',
-            'state', 'created_after', 'created_before', 'user'
+            'state', 'created_after', 'created_before', 'user', 'modified_after', 'modified_before'
         )
 
 
