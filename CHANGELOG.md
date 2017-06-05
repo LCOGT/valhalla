@@ -1,3 +1,8 @@
+## 1.0.1
+2017-06-05
+
+* Added two additional filters to userrequests for fitlering on sub requests last update time
+
 ## 1.0.0
 2017-06-02
 
