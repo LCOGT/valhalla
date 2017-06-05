@@ -165,7 +165,7 @@ class Request(models.Model):
         try:
             response = requests.get(
                 '{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_URL, self.get_id_display()  # the pond hardcodes 0 padded strings... awesome
+                    settings.POND_URL, self.get_id_display().zfill(10)  # the pond hardcodes 0 padded strings... awesome
                 )
             )
             response.raise_for_status()
