@@ -230,7 +230,7 @@ class RequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Request
         read_only_fields = (
-            'id', 'fail_count', 'scheduled_count', 'created', 'completed', 'duration',
+            'id', 'fail_count', 'scheduled_count', 'created', 'completed', 'duration', 'state',
         )
         exclude = ('user_request',)
 
