@@ -9,6 +9,7 @@ class UserRequestFilter(filters.FilterSet):
     state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains', label='Title contains')
     user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains', label='Username contains')
+    exclude_state = django_filters.BooleanFilter(name='state', lookup_expr='exact', label='Exclude State', exclude=True)
     telescope_class = django_filters.ChoiceFilter(
         choices=Location.TELESCOPE_CLASSES, name='requests__location__telescope_class', distinct=True,
     )
@@ -33,7 +34,7 @@ class UserRequestFilter(filters.FilterSet):
     class Meta:
         model = UserRequest
         fields = (
-            'id', 'submitter', 'proposal', 'title', 'observation_type', 'operator', 'ipp_value',
+            'id', 'submitter', 'proposal', 'title', 'observation_type', 'operator', 'ipp_value',  'exclude_state',
             'state', 'created_after', 'created_before', 'user', 'modified_after', 'modified_before'
         )
 
