@@ -1226,7 +1226,7 @@ class TestBlocksApi(APITestCase):
         responses.add(
             responses.GET,
             '{0}/pond/pond/block/request/{1}.json'.format(
-                settings.POND_URL, self.request.get_id_display()
+                settings.POND_URL, self.request.get_id_display().zfill(10)
             ),
             body='[]',
             status=200
@@ -1240,7 +1240,7 @@ class TestBlocksApi(APITestCase):
             responses.add(
                 responses.GET,
                 '{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_URL, self.request.get_id_display()
+                    settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
                 body=f.read(),
                 status=200
@@ -1254,7 +1254,7 @@ class TestBlocksApi(APITestCase):
             responses.add(
                 responses.GET,
                 '{0}/pond/pond/block/request/{1}.json'.format(
-                    settings.POND_URL, self.request.get_id_display()
+                    settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
                 body=f.read(),
                 status=200
