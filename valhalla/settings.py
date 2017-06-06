@@ -215,13 +215,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
     'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.UserRateThrottle',
+        'valhalla.accounts.throttling.AllowStaffUserRateThrottle',
         'rest_framework.throttling.ScopedRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'user': '5000/day',
-        'userrequests.cancel': '10/day',
-        'userrequests.validate': '10000/day'
+        'user': '50000/day',
+        'userrequests.cancel': '1000/day',
+        'userrequests.validate': '100000/day'
     }
 }
 
