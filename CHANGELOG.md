@@ -1,3 +1,9 @@
+## 1.0.2
+2017-06-05
+
+* Added processes to uwsgi
+* Fix a bug with zero padding and the pond
+
 ## 1.0.1
 2017-06-05
 
