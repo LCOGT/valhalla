@@ -1,3 +1,9 @@
+## 1.0.3
+2017-06-06
+
+* Increased throttle limits
+* Made state read only in Request Serializer
+
 ## 1.0.2
 2017-06-05
 
