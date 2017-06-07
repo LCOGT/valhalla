@@ -39,13 +39,17 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return UserRequest.objects.all()
+            qs = UserRequest.objects.all()
         elif self.request.user.is_authenticated():
-            return UserRequest.objects.filter(
+            qs = UserRequest.objects.filter(
                 proposal__in=self.request.user.proposal_set.all()
             )
         else:
-            return UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+            qs = UserRequest.objects.filter(proposal__in=Proposal.objects.filter(public=True))
+        return qs.prefetch_related(
+            'requests', 'requests__windows', 'requests__molecules', 'requests__constraints',
+            'requests__target', 'requests__location'
+        )
 
     @list_route(methods=['get'], permission_classes=(IsAdminUser,))
     def schedulable_requests(self, request):
