@@ -25,6 +25,10 @@ a:hover {
     line-height: 1.1em;
 }
 
+.grey {
+    color: #333;
+}
+
 #lco-name > .basic {
     font-size: 15px;
     color: green;
