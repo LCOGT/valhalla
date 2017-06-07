@@ -11,7 +11,11 @@ function cancelUserRequest(id) {
     }).done(function(){
       window.location = '/userrequests/' + id + '/';
     }).fail(function(data){
-      alert(data.responseJSON.errors[0]);
+      if(data.status == 429){
+        alert('Too many cancel requests, your request to cancel has been throttled. Please contact support.');
+      }else{
+        alert(data.responseJSON.errors[0]);
+      }
     });
   }
 }
