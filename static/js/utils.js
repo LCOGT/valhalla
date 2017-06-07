@@ -75,7 +75,7 @@ function QueryString() {
 
 function formatDate(date){
   if(date){
-    return moment(String(date)).format(datetimeFormat);
+    return moment.utc(String(date)).format(datetimeFormat);
   }
 }
 
