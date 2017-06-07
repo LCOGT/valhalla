@@ -1,3 +1,12 @@
+## 1.0.4
+2017-06-06
+
+* Show dates in UT on request detail page
+* Change logo to link to lco.global
+* Add warning if user is throttled when trying to cancel request
+* Prefetch related models in userrequest viewset
+* add exclude state filter to userequests
+
 ## 1.0.3
 2017-06-06
 
