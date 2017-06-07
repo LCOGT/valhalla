@@ -9,7 +9,7 @@ class UserRequestFilter(filters.FilterSet):
     state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
     title = django_filters.CharFilter(name='group_id', lookup_expr='icontains', label='Title contains')
     user = django_filters.CharFilter(name='submitter__username', lookup_expr='icontains', label='Username contains')
-    exclude_state = django_filters.CharFilter(name='state', lookup_expr='icontains', label='Exclude State', exclude=True)
+    exclude_state = django_filters.ChoiceFilter(name='state', choices=UserRequest.STATE_CHOICES, label='Exclude State', exclude=True)
     telescope_class = django_filters.ChoiceFilter(
         choices=Location.TELESCOPE_CLASSES, name='requests__location__telescope_class', distinct=True,
     )
