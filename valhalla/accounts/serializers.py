@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username', 'email', 'profile', 'proposals', 'available_instrument_types', 'tokens')
 
     def get_proposals(self, obj):
-        return [{'id': proposal.id, 'title': proposal.title} for proposal in obj.profile.current_proposals]
+        return [{'id': proposal.id, 'title': proposal.title} for proposal in obj.proposal_set.all()]
 
     def get_available_instrument_types(self, obj):
         telescope_classes = set()
