@@ -63,14 +63,15 @@ class Proposal(models.Model):
     def add_users(self, emails, role):
         for email in emails:
             if User.objects.filter(email=email).exists():
-                membership = Membership.objects.create(
+                membership, created = Membership.objects.get_or_create(
                     proposal=self,
                     user=User.objects.get(email=email),
                     role=role
                 )
-                membership.send_notification()
+                if created:
+                    membership.send_notification()
             else:
-                proposal_invite = ProposalInvite.objects.create(
+                proposal_invite, created = ProposalInvite.objects.get_or_create(
                     proposal=self,
                     role=role,
                     email=email

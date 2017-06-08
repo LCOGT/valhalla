@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Membership
+from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Membership, ProposalInvite
 
 
 class SemesterAdmin(admin.ModelAdmin):
@@ -50,7 +50,12 @@ class MembershipAdmin(admin.ModelAdmin):
         return obj.proposal.title
 
 
+class ProposalInviteAdmin(admin.ModelAdmin):
+    model = ProposalInvite
+
+
 admin.site.register(Semester, SemesterAdmin)
 admin.site.register(TimeAllocationGroup, TimeAllocationGroupAdmin)
 admin.site.register(Proposal, ProposalAdmin)
 admin.site.register(Membership, MembershipAdmin)
+admin.site.register(ProposalInvite, ProposalInviteAdmin)

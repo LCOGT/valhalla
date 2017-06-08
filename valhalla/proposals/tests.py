@@ -35,12 +35,26 @@ class TestProposal(TestCase):
         self.assertFalse(proposal.users.count())
         self.assertTrue(ProposalInvite.objects.filter(email='email1@lcogt.net').exists())
 
+    def test_add_nonexisting_user_twice(self):
+        proposal = mixer.blend(Proposal)
+        proposal_invite = mixer.blend(ProposalInvite, proposal=proposal, role=Membership.CI)
+        proposal.add_users([proposal_invite.email], Membership.CI)
+        self.assertEqual(ProposalInvite.objects.filter(email=proposal_invite.email).count(), 1)
+
     def test_no_dual_membership(self):
         proposal = mixer.blend(Proposal)
         user = mixer.blend(User)
         Membership.objects.create(user=user, proposal=proposal, role=Membership.PI)
         with self.assertRaises(IntegrityError):
             Membership.objects.create(user=user, proposal=proposal, role=Membership.CI)
+
+    def test_user_already_member(self):
+        proposal = mixer.blend(Proposal)
+        user = mixer.blend(User)
+        mixer.blend(Membership, proposal=proposal, user=user, role=Membership.CI)
+        proposal.add_users([user.email], Membership.CI)
+        self.assertIn(proposal, user.proposal_set.all())
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class TestProposalInvitation(TestCase):
