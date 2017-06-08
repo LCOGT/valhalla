@@ -1,3 +1,8 @@
+## 1.0.5
+2017-06-07
+
+* Add socket-timeout uwsgi option in hopes of avoding corrupt reponse to scheduler enpoint
+
 ## 1.0.4
 2017-06-06
 
