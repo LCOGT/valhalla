@@ -27,7 +27,7 @@
         <div class="col-md-4 userrequest-block border-right">
           <a href="{% url 'api:requests-detail' pk=request.id %}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-code"></i> View in API</a>
           {% if request.state == 'COMPLETED' %}
-          <button id="downloadall" data-requestid="{{ request.id }}" class="btn btn-default btn-sm"><i class="fa fa-fw fa-download"></i> Download</button>
+          <button data-requestid="{{ request.id }}" class="downloadall btn btn-default btn-sm"><i class="fa fa-fw fa-download"></i> Download</button>
           {% endif %}
         </div>
       </div>

@@ -4,7 +4,7 @@ import {datetimeFormat} from './utils.js';
 
 import {getThumbnail, getLatestFrame, downloadAll} from './archive.js';
 
-$('#downloadall').click(function(){
+$('.downloadall').click(function(){
   downloadAll($(this).data('requestid'));
 });
 
