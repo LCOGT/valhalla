@@ -28,7 +28,9 @@ ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.g
 
 SITE_ID = 1
 
-ADMINS = [('softies', 'softies@lco.global')]
+ADMINS = [
+    ('Austin Riba', 'ariba@lco.global'), ('Jon Nation', 'jnation@lco.global'), ('Eric Saunders', 'esaunders@lco.global')
+]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
@@ -125,9 +127,6 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO'
         },
-        'django': {
-            'level': 'INFO',
-        },
         'rise_set': {
             'level': 'WARNING'
         }
@@ -196,7 +195,8 @@ EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
-DEFAULT_FROM_EMAIL = 'Webmaster <portal@lcogt.net>'
+DEFAULT_FROM_EMAIL = 'Webmaster <portal@lco.global>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://localhost')
 POND_URL = os.getenv('POND_URL', 'http://localhost')
