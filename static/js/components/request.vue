@@ -144,6 +144,7 @@ export default {
       request.molecules.unshift(calibs[0], calibs[1]);
       calibs[2].type = 'ARC'; calibs[3].type = 'LAMP_FLAT';
       request.molecules.push(calibs[2], calibs[3]);
+      this.update();
     },
     moleculeUpdated: function(){
       console.log('moleculeupdated');
