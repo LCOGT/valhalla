@@ -142,7 +142,13 @@ export default {
   computed:{
     proposalOptions: function(){
       var options = [{'value': '', 'text': ''}];
-      return options.concat(_.sortBy(_.map(this.proposals, function(p){return {'value': p.id, 'text': p.title};}), 'text'));
+      for(var p in this.proposals){
+        var proposal = this.proposals[p];
+        if(proposal.current){
+          options.push({'value': proposal.id, 'text': proposal.title});
+        }
+      }
+      return _.sortBy(options, 'text');
     },
     durationDisplay: function(){
       var duration = moment.duration(this.duration_data.duration, 'seconds');
