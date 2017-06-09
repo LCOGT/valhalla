@@ -1,3 +1,12 @@
+## 1.0.6
+2017-06-08
+
+* Fix ADMINS setting to send emails on server errors
+* Fix bug where adding a user to a proposal that was already a member caused a crash
+* Change profile endpoint to return all proposals for a user
+* Upgrade numpy to 1.13
+* Fix a bug in downloading data from userrequests that have many requests
+
 ## 1.0.5
 2017-06-07
 
