@@ -16,7 +16,7 @@ from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSidere
 from valhalla.common.configdb import configdb
 from valhalla.userrequests.request_utils import MOLECULE_TYPE_DISPLAY
 from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict, OVERHEAD_ALLOWANCE,
-                                                  get_molecule_duration, get_num_exposures)
+                                                  get_molecule_duration, get_num_exposures, get_semester_in)
 from datetime import timedelta
 from valhalla.common.rise_set_utils import get_rise_set_intervals
 
@@ -180,6 +180,9 @@ class WindowSerializer(serializers.ModelSerializer):
         if data['end'] <= data['start']:
             msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
             raise serializers.ValidationError(msg)
+
+        if not get_semester_in(data['start'], data['end']):
+            raise serializers.ValidationError('The observation window does not fit within any defined semester.')
         return data
 
     def validate_end(self, value):

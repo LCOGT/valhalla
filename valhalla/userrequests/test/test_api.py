@@ -538,6 +538,21 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
+
+        semester = mixer.blend(
+            Semester,
+            id='2016B',
+            start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc),
+            public=True
+        )
+
+        self.time_allocation_1m0 = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
 
@@ -561,6 +576,13 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         del bad_data['requests'][0]['windows']
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_window_does_not_fit_in_any_semester(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'][0]['start'] = '2015-01-01 00:00:00'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('The observation window does not fit within any defined semester', str(response.content))
 
 
 class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
@@ -1362,6 +1384,11 @@ class TestDraftUserRequestApi(APITestCase):
 class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
+        mixer.blend(
+            Semester, id='2016B', public=True,
+            start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
         self.request = {
             'target': {
                 'name': 'fake target',
