@@ -1,3 +1,11 @@
+## 1.0.7
+2017-06-13
+
+* Make UWSGI logs match LCO internal logging format
+* Fix bug where adding calibration frames did not update request duration
+* Add LogEntry admin so we can keep track of who changes what in the admin
+* Validate that windows fit within a defined semester
+
 ## 1.0.6
 2017-06-08
 
