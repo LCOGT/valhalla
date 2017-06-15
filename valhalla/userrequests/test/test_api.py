@@ -17,6 +17,7 @@ from unittest.mock import patch
 from django.utils import timezone
 from datetime import datetime, timedelta
 import responses
+import requests
 import os
 import copy
 import json
@@ -1286,6 +1287,11 @@ class TestBlocksApi(APITestCase):
 
     @patch('requests.get', side_effect=ConnectionError())
     def test_no_connection(self, request_patch):
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())
+
+    @patch('requests.get', side_effect=requests.exceptions.HTTPError())
+    def test_http_error(self, request_patch):
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
         self.assertFalse(result.json())
 
