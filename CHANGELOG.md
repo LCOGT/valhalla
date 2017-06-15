@@ -1,3 +1,9 @@
+## 1.0.8
+2017-06-15
+
+* Return empty block set when pond is unreachable instead of thowing exception
+* Inform user when data is in transit when request is in completed state
+
 ## 1.0.7
 2017-06-13
 
