@@ -13,18 +13,23 @@ $('.tt').tooltip();
 $(document).ready(function(){
   $('.thumbnail-small').each(function(idx, elem){
     getLatestFrame($(elem).data('request'), function(frame){
-      $(elem).fadeOut(200);
-      $(elem).attr('alt', frame.filename);
-      $(elem).attr('title', frame.filename);
-      $(elem).prev().show().html('<center><span class="fa fa-spinner fa-spin"></span></center>');
-      getThumbnail(frame.id, 75, function(data){
-        if(data.error){
-          $(elem).prev().html(data.error);
-        }else{
-          $(elem).attr('src', data.url).show();
-          $(elem).prev().hide();
-        }
-      });
+      if(!frame){
+        $(elem).prev().show().html('Waiting on data to become available');
+        $('button[data-requestid="' + $(elem).data('request') +'"]').prop('disabled', true);
+      }else{
+        $(elem).fadeOut(200);
+        $(elem).attr('alt', frame.filename);
+        $(elem).attr('title', frame.filename);
+        $(elem).prev().show().html('<center><span class="fa fa-spinner fa-spin"></span></center>');
+        getThumbnail(frame.id, 75, function(data){
+          if(data.error){
+            $(elem).prev().html(data.error);
+          }else{
+            $(elem).attr('src', data.url).show();
+            $(elem).prev().hide();
+          }
+        });
+      }
     });
   });
 

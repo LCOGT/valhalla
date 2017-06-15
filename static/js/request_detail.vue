@@ -74,8 +74,8 @@
       <div class="tab-pane" :class="{ active: tab === 'data' }">
         <div class="row">
           <div v-if="request.state === 'COMPLETED'" class="col-md-4">
-            <thumbnail :frame="curFrame" width="400" height="400"></thumbnail>
-            <span class="thumb-help">Click a file in the data table to preview</span>
+            <thumbnail v-show="curFrame" :frame="curFrame" width="400" height="400"></thumbnail>
+            <span v-show="curFrame" class="thumb-help">Click a file in the data table to preview</span>
           </div>
           <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
             <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event"></archivetable>

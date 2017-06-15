@@ -59,6 +59,9 @@ export default{
       onClickRow: function(row){
         that.$emit('rowClicked', row);
       },
+      formatNoMatches: function(){
+        return 'This request is complete but data is still in transit. Please check back in a few minutes.';
+      },
       queryParamsType: '',
       idField: 'id',
       pagination: true,
