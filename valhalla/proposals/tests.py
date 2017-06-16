@@ -173,3 +173,30 @@ class TestAccounting(TestCase):
         talloc.refresh_from_db()
         self.assertEqual(talloc.std_time_used, 1)
         self.assertEqual(talloc.too_time_used, 1)
+
+
+class TestDefaultIPP(TestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.semester = mixer.blend(Semester)
+
+    def test_default_ipp_time_is_set(self):
+        ta = TimeAllocation(semester=self.semester, proposal=self.proposal, std_allocation=100)
+        ta.save()
+        self.assertEqual(ta.ipp_limit, 10)
+        self.assertEqual(ta.ipp_time_available, 5)
+
+    def test_default_ipp_time_is_not_set(self):
+        ta = TimeAllocation(
+            semester=self.semester, proposal=self.proposal, std_allocation=100, ipp_limit=99, ipp_time_available=42
+        )
+        ta.save()
+        self.assertEqual(ta.ipp_limit, 99)
+        self.assertEqual(ta.ipp_time_available, 42)
+
+    def test_default_ipp_set_only_on_creation(self):
+        ta = TimeAllocation(semester=self.semester, proposal=self.proposal, std_allocation=100)
+        ta.save()
+        ta.ipp_time_available = 0
+        ta.save()
+        self.assertEqual(ta.ipp_time_available, 0)
