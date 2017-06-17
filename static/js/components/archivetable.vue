@@ -54,6 +54,7 @@ export default{
         if(res.count > 1000){
           alert('More than 1000 results found, please view on archive to view all data');
         }
+        that.$emit('dataLoaded', res.results);
         return res.results;
       },
       onClickRow: function(row){
@@ -65,7 +66,7 @@ export default{
       queryParamsType: '',
       idField: 'id',
       pagination: true,
-      pageSize: 15,
+      pageSize: 10,
       sortName: 'filename',
       sortOrder: 'asc',
       maintainSelected: true,

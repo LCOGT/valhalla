@@ -74,11 +74,17 @@
       <div class="tab-pane" :class="{ active: tab === 'data' }">
         <div class="row">
           <div v-if="request.state === 'COMPLETED'" class="col-md-4">
+            <p v-show="curFrame" class="thumb-help">Click a row in the data table to preview the file below. Click preview for a larger version.</p>
             <thumbnail v-show="curFrame" :frame="curFrame" width="400" height="400"></thumbnail>
-            <span v-show="curFrame" class="thumb-help">Click a file in the data table to preview</span>
+            <p v-show="curFrame && canViewColor">
+                RVB frames found.
+                <a :href="colorImage" title="Color Image" target="_blank" >
+                  View color image <i class="fa fa-external-link"></i>
+                </a>
+            </p>
           </div>
           <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
-            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event"></archivetable>
+            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event" v-on:dataLoaded="frames = $event"></archivetable>
           </div>
         </div>
       </div>
@@ -125,6 +131,7 @@ export default {
   data: function(){
     return {
       request: {},
+      frames: [],
       curFrame: null,
       blockData: [],
       activeBlock: null,
@@ -163,6 +170,33 @@ export default {
           }
         }
       }
+    }
+  },
+  computed: {
+    colorImage: function(){
+      if(this.curFrame){
+        return 'https://thumbnails.lco.global/' + this.curFrame.id + '/?image=true&width=4000&height=4000&color=true';
+      }else{
+        return '';
+      }
+    },
+    canViewColor: function(){
+      var colorFilters = {
+        'red': ['R', 'rp'],
+        'visual': ['V'],
+        'blue': ['B']
+      };
+      var filtersUsed = this.frames.map(function(frame){return frame.FILTER;});
+      var numColors = 0;
+      for(var color in colorFilters){
+        for(var filter in colorFilters[color]){
+          if(filtersUsed.includes(colorFilters[color][filter])){
+            numColors += 1;
+            break;
+          }
+        }
+      }
+      return numColors >= 3 ? true : false;
     }
   },
   methods: {
