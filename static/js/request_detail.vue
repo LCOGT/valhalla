@@ -34,7 +34,7 @@
             <table class="table table-condensed">
               <thead>
                 <tr>
-                  <td><strong>Instrument</strong></td>
+                  <td><strong>Instrument Code</strong></td>
                   <td><strong>Filter</strong></td>
                   <td><strong>Exposures</strong></td>
                   <td><strong>Binning</strong></td>
@@ -65,7 +65,7 @@
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
               <dt v-if="request.constraints[idx]">{{ idx | formatField }}</dt>
-              <dd v-if="x">{{ x | formatValue }}</dd>
+              <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
           </div>
@@ -120,7 +120,7 @@ Vue.filter('formatField', function(value){
 
 Vue.filter('formatValue', function(value){
   if(!isNaN(value)){
-    return Number(value).toFixed(7);
+    return Number(value).toFixed(4);
   }
   return value;
 });
