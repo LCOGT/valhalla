@@ -21,7 +21,7 @@ semesters = None
 def get_semesters():
     global semesters
     if not semesters:
-        semesters = list(Semester.objects.filter(public=True).order_by('-start').all())
+        semesters = list(Semester.objects.all().order_by('-start'))
     return semesters
 
 
@@ -140,7 +140,6 @@ def get_time_allocation(telescope_class, proposal_id, min_window_time, max_windo
         timeall = Proposal.objects.get(pk=proposal_id).timeallocation_set.get(
             semester__start__lte=min_window_time,
             semester__end__gte=max_window_time,
-            semester__public=True,
             telescope_class=telescope_class)
     except Exception:
         logger.warn(_("proposal {0} has overlapping time allocations for {1}").format(proposal_id, telescope_class))

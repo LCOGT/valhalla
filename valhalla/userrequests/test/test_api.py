@@ -114,7 +114,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -313,7 +313,6 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         semester = mixer.blend(
             Semester,
             id='2016B',
-            public=True,
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
@@ -436,7 +435,6 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc),
-            public=True
         )
 
         self.time_allocation_1m0 = mixer.blend(
@@ -545,7 +543,6 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc),
-            public=True
         )
 
         self.time_allocation_1m0 = mixer.blend(
@@ -595,7 +592,7 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-            end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
@@ -689,7 +686,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -763,7 +760,7 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
@@ -844,7 +841,7 @@ class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
 
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -892,7 +889,7 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
 
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -958,7 +955,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
@@ -1391,7 +1388,7 @@ class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
         mixer.blend(
-            Semester, id='2016B', public=True,
+            Semester, id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
@@ -1585,7 +1582,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal, ipp_value=1.0)
         semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-            end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
@@ -1922,8 +1919,8 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         super().setUp()
         self.proposal = mixer.blend(Proposal, id='temp')
         self.semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
-                               )
+                                    end=datetime(2016, 12, 31, tzinfo=timezone.utc))
+
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,

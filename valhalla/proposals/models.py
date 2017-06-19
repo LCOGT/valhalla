@@ -16,7 +16,6 @@ class Semester(models.Model):
     id = models.CharField(primary_key=True, max_length=20)
     start = models.DateTimeField()
     end = models.DateTimeField()
-    public = models.BooleanField(default=False)
     proposals = models.ManyToManyField("Proposal", through="TimeAllocation")
 
     @classmethod
