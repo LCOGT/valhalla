@@ -6,7 +6,7 @@ from valhalla.proposals.models import Semester, Proposal
 
 class ProposalFilter(django_filters.FilterSet):
     semester = django_filters.ModelChoiceFilter(
-        label="Semester", distinct=True, queryset=Semester.objects.filter(public=True).order_by('-start')
+        label="Semester", distinct=True, queryset=Semester.objects.all().order_by('-start')
     )
     active = django_filters.ChoiceFilter(choices=((False, 'Inactive'), (True, 'Active')), empty_label='All')
 

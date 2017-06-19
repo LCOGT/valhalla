@@ -5,8 +5,8 @@ from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Mem
 
 
 class SemesterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'start', 'end', 'public')
-    list_filter = ('start', 'end', 'public')
+    list_display = ('id', 'start', 'end')
+    list_filter = ('start', 'end')
     raw_id_fields = ('proposals',)
 
 

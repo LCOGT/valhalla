@@ -68,30 +68,26 @@ class TestProposalApiDetail(APITestCase):
 
 class TestSemesterApi(APITestCase):
     def setUp(self):
-        self.semesters = mixer.cycle(3).blend(Semester, public=True, start=datetime(2016, 1, 1, tzinfo=timezone.utc),
+        self.semesters = mixer.cycle(3).blend(Semester, start=datetime(2016, 1, 1, tzinfo=timezone.utc),
                                               end=datetime(2016, 2, 1, tzinfo=timezone.utc))
-        self.tim_semester = mixer.blend(Semester, public=False)
 
     def test_semester_list(self):
         response = self.client.get(reverse('api:semesters-list'))
         for semester in self.semesters:
             self.assertContains(response, semester.id)
-        self.assertNotContains(response, self.tim_semester.id)
 
     def test_semester_contains_filter(self):
-        later_semester = mixer.blend(Semester, public=True, start=datetime(2017, 1, 1, tzinfo=timezone.utc),
+        later_semester = mixer.blend(Semester, start=datetime(2017, 1, 1, tzinfo=timezone.utc),
                                      end=datetime(2017, 2, 1, tzinfo=timezone.utc))
         response = self.client.get(reverse('api:semesters-list') + '?semester_contains=2017-01-10')
         self.assertContains(response, later_semester.id)
         for semester in self.semesters:
             self.assertNotContains(response, semester.id)
-        self.assertNotContains(response, self.tim_semester.id)
 
     def test_semester_contains_nonsense_param(self):
         response = self.client.get(reverse('api:semesters-list') + '?semester_contains=icantmakedates')
         for semester in self.semesters:
             self.assertContains(response, semester.id)
-        self.assertNotContains(response, self.tim_semester.id)
 
     def test_no_semester_contains_filter(self):
         response = self.client.get(reverse('api:semesters-list') + '?semester_contains=2018-01-10')
@@ -100,4 +96,3 @@ class TestSemesterApi(APITestCase):
     def test_semester_detail(self):
         response = self.client.get(reverse('api:semesters-detail', kwargs={'pk': self.semesters[0].id}))
         self.assertContains(response, self.semesters[0].id)
-
