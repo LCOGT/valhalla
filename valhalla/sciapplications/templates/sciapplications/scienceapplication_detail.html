@@ -42,11 +42,11 @@
         <p>{{ object.abstract }}</p>
     {% endif %}
 
-    <h2>{% trans 'Prinicipal Investigator' %}</h2>
+    <h2>{% trans 'Principal Investigator' %}</h2>
     {% if object.pi %}
         <p>{{ object.pi }}</p>
     {% else %}
-        <p>{{ request.user.email }}</p>
+        <p>{{ object.submitter.email }}</p>
     {% endif %}
 
     {% if object.coi %}
@@ -101,8 +101,8 @@
             {% endif %}
     {% endif %}
 
-    {% if object.instruments %}
-        <p>{% trans 'Instruments' %}</p>
+    {% if object.instruments.count > 0 %}
+        <h2>{% trans 'Instruments' %}</h2>
         <ul>
             {% for instrument in object.instruments.all %}
             <li>{{ instrument }}</li>
