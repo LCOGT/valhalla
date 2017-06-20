@@ -2,7 +2,8 @@
   <div class="thumbnail-container">
     <span class="error" v-if="error"></span>
     <i class="fa fa-spinner fa-spin" v-show="!src && !error"></i>
-    <a :href="largeUrl" v-show="src" title="View high resolution" target="_blank"><img class="thumbnail img-responsive" :src="src"></a>
+    <img v-show="src" v-on:click="generateLarge" class="thumbnail img-responsive" :src="src">
+    <span v-show="loadLarge"><i class="fa fa-spin fa-spinner"></i> Generating high resolution image...</span>
   </div>
 </template>
 <script>
@@ -18,7 +19,7 @@ export default {
     }
   },
   data: function(){
-    return {src: '', error: null};
+    return {src: '', error: null, loadLarge: false};
   },
   watch: {
     frame: function(){
@@ -32,7 +33,7 @@ export default {
     },
     largeUrl: function(){
       if(this.frame){
-        return 'https://thumbnails.lco.global/' + this.frame.id + '/?width=4000&height=4000&image=true';
+        return 'https://thumbnails.lco.global/' + this.frame.id + '/?width=4000&height=4000';
       }else{
         return '';
       }
@@ -46,7 +47,20 @@ export default {
       }).fail(function(){
         that.error = 'Could not load thumbnail for this image';
       });
+    },
+    generateLarge: function(){
+      var that = this;
+      this.loadLarge = true;
+      $.getJSON(this.largeUrl, function(data){
+        that.loadLarge = false;
+        window.open(data['url'], '_blank');
+      });
     }
   }
 };
 </script>
+<style>
+.thumbnail {
+  cursor: pointer;
+}
+</style>

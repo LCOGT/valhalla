@@ -78,9 +78,10 @@
             <thumbnail v-show="curFrame" :frame="curFrame" width="400" height="400"></thumbnail>
             <p v-show="curFrame && canViewColor">
                 RVB frames found.
-                <a :href="colorImage" title="Color Image" target="_blank" >
+                <a v-on:click="viewColorImage" title="Color Image">
                   View color image <i class="fa fa-external-link"></i>
-                </a>
+                </a><br/>
+                <span v-show="loadingColor"><i class="fa fa-spin fa-spinner"></i> Generating color image...</span>
             </p>
           </div>
           <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
@@ -138,6 +139,7 @@ export default {
       airmassData: {},
       telescopeStatesData: {},
       tab: 'details',
+      loadingColor: false
     };
   },
   created: function(){
@@ -175,7 +177,7 @@ export default {
   computed: {
     colorImage: function(){
       if(this.curFrame){
-        return 'https://thumbnails.lco.global/' + this.curFrame.id + '/?image=true&width=4000&height=4000&color=true';
+        return 'https://thumbnails.lco.global/' + this.curFrame.id + '/?width=4000&height=4000&color=true';
       }else{
         return '';
       }
@@ -228,6 +230,14 @@ export default {
       var requestId = $('#request-detail').data('requestid');
       $.getJSON('/api/requests/' + requestId + '/telescope_states/', function(data){
         that.telescopeStatesData = data;
+      });
+    },
+    viewColorImage: function(){
+      var that = this;
+      this.loadingColor = true;
+      $.getJSON(this.colorImage, function(data){
+        that.loadingColor = false;
+        window.open(data['url'], '_blank');
       });
     }
   }
