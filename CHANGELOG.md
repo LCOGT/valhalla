@@ -1,3 +1,8 @@
+## 1.1.4
+2017-06-20
+
+* Enable color/high res images for proprietary data
+
 ## 1.1.3
 2017-06-20
 
