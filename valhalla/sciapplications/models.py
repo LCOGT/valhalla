@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 from valhalla.proposals.models import (
     Semester, TimeAllocation, Proposal, TimeAllocationGroup, Membership
@@ -112,6 +113,9 @@ class ScienceApplication(models.Model):
         return '{0}{1}-{2}'.format(
             proposal_type_to_name[self.call.proposal_type], self.call.semester, str(self.tac_rank).zfill(3)
         )
+
+    def get_absolute_url(self):
+        return reverse('sciapplications:detail', args=(self.id,))
 
     def convert_to_proposal(self):
         # Create the objects we need

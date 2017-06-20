@@ -7,10 +7,13 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
+from django.template.loader import render_to_string
+
 from weasyprint import HTML
 from PyPDF2 import PdfFileMerger
 import io
 
+from valhalla.celery import send_mail
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.sciapplications.forms import (
     ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, timerequest_formset
@@ -46,6 +49,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
             return reverse('sciapplications:update', kwargs={'pk': self.object.id})
         else:
             messages.add_message(self.request, messages.SUCCESS, _('Application successfully submitted'))
+            if self.object.call.proposal_type == Call.DDT_PROPOSAL:
+                ddt_submitted_email(self.object)
             return reverse('sciapplications:index')
 
     def get_initial(self):
@@ -97,6 +102,9 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
             return reverse('sciapplications:update', kwargs={'pk': self.object.id})
         else:
             messages.add_message(self.request, messages.SUCCESS, _('Application successfully submitted'))
+            if self.object.call.proposal_type == Call.DDT_PROPOSAL:
+                ddt_submitted_email(self.object)
+
             return reverse('sciapplications:index')
 
     def get_form_class(self):
@@ -203,3 +211,13 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
             messages.error(self.request, error.format(str(exc)))
             return HttpResponseRedirect(reverse('sciapplications:index'))
         return pdf_response
+
+
+def ddt_submitted_email(sciproposal):
+    message = render_to_string('sciapplications/ddt_submitted.txt', {'ddt': sciproposal})
+    send_mail.delay(
+        'LCO Director\'s Discretionary Time Submission',
+        message,
+        'portal@lco.global',
+        [sciproposal.submitter.email, 'ddt@lco.global']
+    )
