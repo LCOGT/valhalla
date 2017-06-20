@@ -199,7 +199,7 @@ class UserRequestStatusIsDirty(APIView):
 
         pond_blocks = response.json()
         is_dirty = update_request_states_from_pond_blocks(pond_blocks)
-        cache.set('isDirty_query_time', now)
+        cache.set('isDirty_query_time', now, None)
 
         return Response({'isDirty': is_dirty})
 
