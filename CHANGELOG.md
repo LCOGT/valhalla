@@ -1,3 +1,7 @@
+## 1.1.1
+2017-06-19
+* Removed any timeout from the cached isDirty_query_time
+
 ## 1.1
 2017-06-19
 
