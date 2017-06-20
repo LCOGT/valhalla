@@ -1,3 +1,16 @@
+## 1.1.3
+2017-06-20
+
+* Install libcairo2 from debian stretch as the version in jessie is too old for WeasyPrint
+
+## 1.1.2
+2017-06-20
+
+* Increase AccessToken expire time
+* Add periodic task to remove expired tokens every 24hrs
+* Send notification email when DDT proposal is submitted
+* Fix some typos and other erorrs in sciapplication detail template
+
 ## 1.1.1
 2017-06-19
 * Removed any timeout from the cached isDirty_query_time
