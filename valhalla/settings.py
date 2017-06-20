@@ -238,6 +238,10 @@ CELERY_BEAT_SCHEDULE = {
     'expire-requests-every-5-minutes': {
         'task': 'valhalla.userrequests.tasks.expire_requests',
         'schedule': 300.0
+    },
+    'expire-access-tokens-every-day': {
+        'task': 'valhalla.accounts.tasks.expire_access_tokens',
+        'schedule': 86400.0
     }
 }
 try:
