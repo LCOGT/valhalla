@@ -1,3 +1,13 @@
+## 1.1
+2017-06-19
+
+* Add default IPP values on timallocation creation
+* Make data jpg preview link to larger jpg version of frame
+* Add link to color version of jpg for a frame if available
+* Show instrument name instead of code in request detail
+* Remove public field from semester
+* Fix vis.js version as newest version breaks legend
+
 ## 1.0.8
 2017-06-15
 
