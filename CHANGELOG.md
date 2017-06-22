@@ -1,3 +1,8 @@
+## 1.1.5
+2017-06-22
+
+* Submitted a request will automatically set the priority of molecules in ascending order
+
 ## 1.1.4
 2017-06-20
 
