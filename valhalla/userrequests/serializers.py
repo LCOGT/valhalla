@@ -241,6 +241,11 @@ class RequestSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(_('You must specify at least 1 molecule'))
 
+        # Set the relative priority of molecules in order if they don't have a priority already set
+        for i, molecule in enumerate(value):
+            if 'priority' not in molecule:
+                molecule['priority'] = i + 1
+
         # Make sure each molecule has the same instrument name
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))

@@ -356,7 +356,7 @@ class Molecule(models.Model):
     # Place-holder for future functionality, allowing arguments to be
     # passed along with a molecule
     args = models.TextField(default='', blank=True)
-    # TODO we don't know if this is necessary or if it is used
+    # Used by the pond for ordering the molecules
     priority = models.IntegerField(default=500)
 
     # Autoguider
