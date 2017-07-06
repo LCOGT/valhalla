@@ -218,6 +218,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         # check that default acquire mode is 'wcs' for floyds
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
@@ -234,6 +235,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_post_userrequest_acquire_mode_brightest(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
         bad_data['requests'][0]['molecules'][0]['acquire_radius_arcsec'] = 2
@@ -339,6 +341,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.generic_multi_payload = copy.deepcopy(self.generic_payload)
         self.second_request = copy.deepcopy(generic_payload['requests'][0])
         self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        self.second_request['molecules'][0]['type'] = 'SPECTRUM'
         self.second_request['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         self.second_request['location']['telescope_class'] = '2m0'
         self.generic_multi_payload['requests'].append(self.second_request)
@@ -977,6 +980,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        good_data['requests'][0]['molecules'][0]['type'] = 'LAMP_FLAT'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
         molecule = response.json()['requests'][0]['molecules'][0]
@@ -994,6 +998,8 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_filter_not_necessary_for_type(self):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['type'] = 'ARC'
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         del good_data['requests'][0]['molecules'][0]['filter']
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
@@ -1091,6 +1097,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'].append(bad_data['requests'][0]['molecules'][0].copy())
         bad_data['requests'][0]['molecules'][1]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][1]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][1]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
@@ -1191,6 +1198,19 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         ur = response.json()
         self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 5)
         self.assertEqual(response.status_code, 201)
+
+    def test_molecule_type_matches_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid type SPECTRUM for an imager', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+        bad_data['requests'][0]['molecules'][0]['type'] = 'EXPOSE'
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid type EXPOSE for a spectrograph', str(response.content))
+        self.assertEqual(response.status_code, 400)
 
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
@@ -1966,7 +1986,7 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_get_max_ipp_reduced_max_ipp(self):
 
         good_data = self.generic_payload.copy()
-        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0 # 90 minute exposure (1.0 ipp available)
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0  # 90 minute exposure (1.0 ipp available)
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
         self.assertEqual(response.status_code, 200)
         ipp_dict = response.json()
