@@ -1293,7 +1293,7 @@ class TestBlocksApi(APITestCase):
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
             self.assertEqual(len(result.json()), 2)
 
-    @patch('requests.get', side_effect=ConnectionError())
+    @patch('requests.get', side_effect=requests.exceptions.ConnectionError())
     def test_no_connection(self, request_patch):
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
         self.assertFalse(result.json())

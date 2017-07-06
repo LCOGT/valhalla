@@ -168,7 +168,7 @@ class Request(models.Model):
             )
             response.raise_for_status()
             return BlockSerializer(response.json(), many=True).data
-        except (ConnectionError, requests.exceptions.HTTPError):
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data
 
