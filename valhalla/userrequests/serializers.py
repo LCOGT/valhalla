@@ -60,7 +60,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Molecule
-        exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
+        exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2', 'priority')
 
     def validate_instrument_name(self, value):
         if value and value not in configdb.get_active_instrument_types({}):
@@ -241,10 +241,9 @@ class RequestSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(_('You must specify at least 1 molecule'))
 
-        # Set the relative priority of molecules in order if they don't have a priority already set
+        # Set the relative priority of molecules in order
         for i, molecule in enumerate(value):
-            if 'priority' not in molecule:
-                molecule['priority'] = i + 1
+            molecule['priority'] = i + 1
 
         # Make sure each molecule has the same instrument name
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:
