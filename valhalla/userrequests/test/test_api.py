@@ -1111,8 +1111,8 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         ur = response.json()
         self.assertEqual(response.status_code, 201)
-        for i, molecule in enumerate(Request.objects.get(pk=ur['requests'][0]['id']).molecules.all()):
-            self.assertEqual(molecule.priority, i + 1)
+        for i, molecule in enumerate(ur['requests'][0]['molecules']):
+            self.assertEqual(molecule['priority'], i + 1)
 
     def test_fill_window_on_more_than_one_molecule_fails(self):
         bad_data = self.generic_payload.copy()

@@ -60,7 +60,8 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Molecule
-        exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2', 'priority')
+        exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
+        read_only_fields = ('priority',)
 
     def validate_instrument_name(self, value):
         if value and value not in configdb.get_active_instrument_types({}):
