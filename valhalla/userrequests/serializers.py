@@ -124,7 +124,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(_("Missing one of bin_x or bin_y. Specify both or neither."))
 
         # check that the molecule type matches the instruemnt
-        imager_only_types = ['EXPOSE']
+        imager_only_types = ['EXPOSE', 'SKY_FLAT', 'AUTO_FOCUS']
         spec_only_types = ['SPECTRUM', 'ARC', 'LAMP_FLAT']
         if configdb.is_spectrograph(data['instrument_name']) and data['type'] in imager_only_types:
             raise serializers.ValidationError(
