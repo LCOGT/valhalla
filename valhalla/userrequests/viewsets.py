@@ -149,14 +149,15 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                 expanded_requests.append(req)
 
         # now replace the originally sent requests with the cadence requests and send it back
-        request.data['requests'] = expanded_requests
+        ret_data = request.data.copy()
+        ret_data['requests'] = expanded_requests
 
-        if(len(request.data['requests']) > 1):
-            request.data['operator'] = 'MANY'
-        ur_serializer = UserRequestSerializer(data=request.data, context={'request': request})
+        if(len(ret_data['requests']) > 1):
+            ret_data['operator'] = 'MANY'
+        ur_serializer = UserRequestSerializer(data=ret_data, context={'request': request})
         if not ur_serializer.is_valid():
             return Response(ur_serializer.errors, status=400)
-        return Response(request.data)
+        return Response(ret_data)
 
 
 class RequestViewSet(viewsets.ReadOnlyModelViewSet):
