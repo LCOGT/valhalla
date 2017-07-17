@@ -29,7 +29,11 @@ ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.g
 SITE_ID = 1
 
 ADMINS = [
-    ('Austin Riba', 'ariba@lco.global'), ('Jon Nation', 'jnation@lco.global'), ('Eric Saunders', 'esaunders@lco.global')
+    ('Austin Riba', 'ariba@lco.global'),
+    ('Jon Nation', 'jnation@lco.global'),
+    ('Eric Saunders', 'esaunders@lco.global'),
+    ('Ira Snyder', 'isnyder@lco.global'),
+    ('Briand Haworth', 'bhaworth@lco.global')
 ]
 
 INSTALLED_APPS = [
