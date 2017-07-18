@@ -35,10 +35,10 @@
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
-          <customselect v-if="datatype === 'IMAGE'" v-model="molecule.filter" label="Filter" v-on:input="update"
+          <customselect v-if="molecule.type === 'EXPOSE'" v-model="molecule.filter" label="Filter" v-on:input="update"
                          :errors="errors.filter" :options="filterOptions" desc="The filter to be used with this instrument">
           </customselect>
-          <customselect v-if="datatype === 'SPECTRA'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
+          <customselect v-if="molecule.type === 'SPECTRUM'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
                          :errors="errors.spectra_slit" :options="filterOptions" desc="The width the of the slit to be used.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
@@ -150,8 +150,10 @@ export default {
   watch: {
     selectedinstrument: function(value){
       if(this.molecule.instrument_name != value){
+        if(value.includes('NRES')){
+          this.molecule.type = 'NRES_SPECTRUM'
+        }
         this.molecule.instrument_name = value;
-        this.molecule.filter = '';
         // wait for options to update, then set default
         var that = this;
         setTimeout(function(){
