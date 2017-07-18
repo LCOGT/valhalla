@@ -1,3 +1,20 @@
+## 1.1.9
+2017-07-19
+
+* Uprev some dependencies
+
+## 1.1.8
+2017-07-18
+
+* Use rp filter for "red"
+
+## 1.1.7
+2017-07-17
+
+ * Don't use html in plain text emails
+ * Remove use of mutable querydict
+ * Add additional users to admin list
+
 ## 1.1.6
 2017-07-06
 
