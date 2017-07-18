@@ -1,5 +1,10 @@
+## 1.1.10
+2017-07-18
+
+* Fix bug in lookUP so only last call is used
+
 ## 1.1.9
-2017-07-19
+2017-07-18
 
 * Uprev some dependencies
 
