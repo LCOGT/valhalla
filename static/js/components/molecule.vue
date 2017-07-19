@@ -151,7 +151,7 @@ export default {
     selectedinstrument: function(value){
       if(this.molecule.instrument_name != value){
         if(value.includes('NRES')){
-          this.molecule.type = 'NRES_SPECTRUM'
+          this.molecule.type = 'NRES_SPECTRUM';
         }
         this.molecule.instrument_name = value;
         // wait for options to update, then set default
@@ -168,6 +168,9 @@ export default {
     },
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
+      if(this.selectedinstrument.includes('NRES')){
+        this.molecule.type = 'NRES_SPECTRUM';
+      }
       if (value === 'SPECTRA'){
         this.molecule.ag_mode = 'ON';
         this.molecule.filter = undefined;
