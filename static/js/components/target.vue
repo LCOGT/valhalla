@@ -129,6 +129,7 @@ export default {
       lookingUP: false,
       lookupFail: false,
       lookupText: '',
+      lookupReq: undefined,
       ns_target_params: ns_target_params,
       sid_target_params: sid_target_params,
       rot_target_params: rot_target_params
@@ -153,17 +154,24 @@ export default {
       this.lookupFail = false;
       this.lookupText = 'Searching for coordinates...';
       var that = this;
-      $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
+      if(this.lookupReq){
+        this.lookupReq.abort();
+      }
+      this.lookupReq = $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
         that.target.ra = _.get(data, ['ra', 'decimal'], null);
         that.target.dec = _.get(data, ['dec', 'decimal'], null);
         that.target.proper_motion_ra = data.pmra;
         that.target.proper_motion_dec = data.pmdec;
         that.update();
-      }).fail(function(){
-        that.lookupText = 'Could not find any matching objects';
-        that.lookupFail = true;
-      }).always(function(){
-        that.lookingUP = false;
+      }).fail(function(_response, status){
+        if(status !== "abort"){
+          that.lookupText = 'Could not find any matching objects';
+          that.lookupFail = true;
+        }
+      }).always(function(_response, status){
+        if(status !== "abort"){
+          that.lookingUP = false;
+        }
       });
     }, 500),
     'datatype': function(value){
