@@ -62,14 +62,15 @@
                                    {value: 'ON', text: 'On'}]">
           </customselect>
           <div class="spectra" v-if="datatype === 'SPECTRA' && !simple_interface">
-            <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
-                          desc="The type of exposure (allows for calibrations)."
+            <customselect v-model="molecule.type" v-if="molecule.type === 'SPECTRUM'" label="Type" v-on:input="update"
+                          :errors="errors.type" desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                       {value: 'LAMP_FLAT', text: 'Lamp Flat'},
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
                           desc="The method for positioning the slit. If Brightest Object is selected, the slit is placed on the brightest object near the target coordinates."
+                          v-if="molecule.type === 'SPECTRUM'"
                           :options="[{value: 'WCS', text: 'On Target Coordinates'},
                                      {value: 'BRIGHTEST', text: 'On Brightest Object'}]">
             </customselect>
@@ -145,13 +146,18 @@ export default {
     },
     generateCalibs: function(){
       this.$emit('generateCalibs', this.index);
+    },
+    setupNRES: function(){
+       this.molecule.type = 'NRES_SPECTRUM';
+       this.molecule.acquire_mode = 'BRIGHTEST';
+       this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
     }
   },
   watch: {
     selectedinstrument: function(value){
       if(this.molecule.instrument_name != value){
         if(value.includes('NRES')){
-          this.molecule.type = 'NRES_SPECTRUM';
+          this.setupNRES();
         }
         this.molecule.instrument_name = value;
         // wait for options to update, then set default
@@ -168,9 +174,6 @@ export default {
     },
     datatype: function(value){
       this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
-      if(this.selectedinstrument.includes('NRES')){
-        this.molecule.type = 'NRES_SPECTRUM';
-      }
       if (value === 'SPECTRA'){
         this.molecule.ag_mode = 'ON';
         this.molecule.filter = undefined;
@@ -184,6 +187,9 @@ export default {
         this.acquire_params.acquire_mode = this.molecule.acquire_mode;
         this.molecule.acquire_mode = undefined;
         this.molecule.acquire_radius_arcsec = undefined;
+      }
+      if(this.selectedinstrument.includes('NRES')){
+        this.setupNRES();
       }
     },
     'molecule.acquire_mode': function(value){
