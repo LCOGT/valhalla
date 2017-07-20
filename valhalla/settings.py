@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'valhalla.common.middleware.RequestLogMiddleware',
 ]
 
 ROOT_URLCONF = 'valhalla.urls'
@@ -133,6 +134,10 @@ LOGGING = {
         },
         'rise_set': {
             'level': 'WARNING'
+        },
+        'valhalla_request': {
+            'level': 'INFO',
+            'propogate': False
         }
     }
 }
