@@ -1,3 +1,8 @@
+## 1.1.11
+2017-07-24
+
+* Add separate health check endpoint
+
 ## 1.1.10
 2017-07-24
 
