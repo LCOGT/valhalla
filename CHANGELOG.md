@@ -1,6 +1,7 @@
 ## 1.1.10
-2017-07-18
+2017-07-24
 
+* Add request logging at a more granular level
 * Fix bug in lookUP so only last call is used
 
 ## 1.1.9
