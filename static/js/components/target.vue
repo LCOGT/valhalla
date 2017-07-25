@@ -150,7 +150,7 @@ export default {
   },
   watch: {
     'target.name': _.debounce(function(name){
-      if(this.type === 'SIDERAL'){
+      if(this.target.type === 'SIDEREAL'){
         this.lookingUP = true;
         this.lookupFail = false;
         this.lookupText = 'Searching for coordinates...';
