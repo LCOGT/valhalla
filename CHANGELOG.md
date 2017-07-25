@@ -1,6 +1,12 @@
-## 1.1.10
-2017-07-18
+## 1.1.11
+2017-07-24
 
+* Add separate health check endpoint
+
+## 1.1.10
+2017-07-24
+
+* Add request logging at a more granular level
 * Fix bug in lookUP so only last call is used
 
 ## 1.1.9

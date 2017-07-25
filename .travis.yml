@@ -11,7 +11,7 @@ addons:
     packages:
     - gfortran
 install:
-- pip install -U setuptools coverage coveralls
+- pip install -U coverage coveralls
 - pip install -r requirements.txt
 - npm install
 - npm run build
