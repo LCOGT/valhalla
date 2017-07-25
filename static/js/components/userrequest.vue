@@ -115,7 +115,12 @@ export default {
     var allowed_instruments = {};
     $.getJSON('/api/profile/', function(data){
       that.proposals = data.proposals;
-      that.simple_interface = data.profile.simple_interface;
+      if(data.profile.simple_interface){
+        that.simple_interface = data.profile.simple_interface;
+        for (var i = 0; i < that.userrequest.requests.length; i++) {
+          that.userrequest.requests[i].constraints.max_airmass = 2.0
+        }
+      }
       for(var ai in data.available_instrument_types){
         // TODO remove this hardocded exclusion of NRES
         if(!data.available_instrument_types[ai].includes('NRES')){
