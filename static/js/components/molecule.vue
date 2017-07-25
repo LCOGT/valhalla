@@ -147,10 +147,30 @@ export default {
     generateCalibs: function(){
       this.$emit('generateCalibs', this.index);
     },
+    setupImager: function(){
+      this.molecule.type = 'EXPOSE';
+      this.molecule.spectra_slit = undefined;
+      this.acquire_params.acquire_mode = this.molecule.acquire_mode;
+      this.molecule.acquire_mode = undefined;
+      this.molecule.acquire_radius_arcsec = undefined;
+    },
+    setupSpectrograph: function(){
+      this.molecule.ag_mode = 'ON';
+      this.molecule.filter = undefined;
+    },
     setupNRES: function(){
-       this.molecule.type = 'NRES_SPECTRUM';
-       this.molecule.acquire_mode = 'BRIGHTEST';
-       this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+      this.molecule.type = 'NRES_SPECTRUM';
+      this.setupSpectrograph();
+      this.molecule.acquire_mode = 'BRIGHTEST';
+      this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+    },
+    setupFLOYDS: function(){
+       this.molecule.type = 'SPECTRUM';
+       this.setupSpectrograph();
+       this.molecule.acquire_mode = this.acquire_params.acquire_mode;
+       if (this.molecule.acquire_mode === 'BRIGHTEST'){
+         this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+       }
     }
   },
   watch: {
@@ -158,6 +178,9 @@ export default {
       if(this.molecule.instrument_name != value){
         if(value.includes('NRES')){
           this.setupNRES();
+        }
+        else if(value.includes('FLOYDS')){
+          this.setupFLOYDS();
         }
         this.molecule.instrument_name = value;
         // wait for options to update, then set default
@@ -173,23 +196,16 @@ export default {
       }
     },
     datatype: function(value){
-      this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
-        this.molecule.ag_mode = 'ON';
-        this.molecule.filter = undefined;
-        this.molecule.acquire_mode = this.acquire_params.acquire_mode;
-        if (this.molecule.acquire_mode === 'BRIGHTEST'){
-          this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+        if(this.selectedinstrument && this.selectedinstrument.includes('NRES')){
+          this.setupNRES();
+        }
+        else{
+          this.setupFLOYDS();
         }
       }
       else{
-        this.molecule.spectra_slit = undefined;
-        this.acquire_params.acquire_mode = this.molecule.acquire_mode;
-        this.molecule.acquire_mode = undefined;
-        this.molecule.acquire_radius_arcsec = undefined;
-      }
-      if(this.selectedinstrument.includes('NRES')){
-        this.setupNRES();
+        this.setupImager();
       }
     },
     'molecule.acquire_mode': function(value){
