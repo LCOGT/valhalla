@@ -26,7 +26,7 @@ class ConfigDBTestMixin(object):
 
     def tearDown(self):
         super().tearDown()
-        responses._default_mock.__exit__()
+        responses._default_mock.__exit__(None, None, None)
 
 
 class SetTimeMixin(object):

@@ -1,3 +1,13 @@
+## 1.1.12
+2017-07-27
+
+* Fix problem with setuptools and travis ci
+* Dont perform LookUP is target is not Sidereal
+* Fix compatibility with latest responses library
+* Set max airmass to 2 for simple interface users
+* Allow unicode in compose page
+* Fix paramter for active proposals in manage proposals link
+
 ## 1.1.11
 2017-07-24
 
