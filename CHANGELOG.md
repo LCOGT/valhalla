@@ -1,3 +1,9 @@
+## 1.2
+2017-08-04
+
+* Pin rise set
+* Revise throttle limits
+
 ## 1.1.12
 2017-07-27
 
