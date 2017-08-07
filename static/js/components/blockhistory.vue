@@ -1,6 +1,24 @@
 <template>
-  <div class="blockHistoryPlot">
-    <plot_controls v-show="showZoomControls" v-on:plotZoom="plotZoom"></plot_controls>
+  <div>
+    <div class="blockHistoryPlot" id="plot">
+      <plot_controls v-show="showZoomControls" v-on:plotZoom="plotZoom"></plot_controls>
+    </div>
+    <div class="blockHistoryPlotLegend">
+      <ul class="list-inline">
+        <li class="SCHEDULED legend-item"></li>
+        <li>Scheduled in the future</li>
+        <li class="SCHEDULED-PAST legend-item"></li>
+        <li>Scheduled in the past</li>
+        <li class="CANCELED legend-item"></li>
+        <li>Superseded by new schedule</li>
+        <li class="ATTEMPTED legend-item"></li>
+        <li>Currently running</li>
+        <li class="FAILED legend-item"></li>
+        <li>Failed</li>
+        <li class="COMPLETED legend-item"></li>
+        <li>Completed</li>
+      </ul>
+    </div>
   </div>
 </template>
 <script>
@@ -149,7 +167,7 @@ export default {
     buildPlot: function () {
       // Set a unique name for the plot element, since vis.js needs this to separate plots
       this.$el.setAttribute('class', _.uniqueId(this.$el.className));
-      var plot = new vis.Timeline(this.$el, new vis.DataSet([]), this.options);
+      var plot = new vis.Timeline(document.getElementById('plot'), new vis.DataSet([]), this.options);
       var that = this;
       plot.on('changed', function () {
         //HAX
@@ -162,3 +180,8 @@ export default {
   }
 };
 </script>
+<style>
+.blockHistoryPlotLegend ul {
+  text-align: center;
+}
+</style>
