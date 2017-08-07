@@ -169,6 +169,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
         filters.OrderingFilter
     )
     ordering = ('-id',)
+    ordering_fields = ('id', 'state', 'fail_count')
 
     def get_queryset(self):
         if self.request.user.is_staff:
