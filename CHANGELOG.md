@@ -1,3 +1,9 @@
+## 1.2.1
+2017-08-07
+
+* Add legend to block history plot
+* Fix bug in request serializer that would attempt to order by method attributes
+
 ## 1.2
 2017-08-04
 
