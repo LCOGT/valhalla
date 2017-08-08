@@ -108,7 +108,7 @@ export default {
         return [
           {value: 'b', text: 'Blue'},
           {value: 'v', text: 'Green'},
-          {value: 'r', text: 'Red'}
+          {value: 'rp', text: 'Red'}
         ];
       }else{
         var options = [{value: '', text: ''}];

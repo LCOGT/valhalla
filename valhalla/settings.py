@@ -24,12 +24,16 @@ SECRET_KEY = os.getenv('SECRET_KEY', '*j6j4auodqdo=nab#3je9mn6hkzxyxc%5#=ndj6np4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.global', 'observe-beta.lco.global']
+ALLOWED_HOSTS = ['valhallascheduler.lco.gtn', 'valhalla.lco.gtn', 'observe.lco.global', 'valhalladev.lco.gtn']
 
 SITE_ID = 1
 
 ADMINS = [
-    ('Austin Riba', 'ariba@lco.global'), ('Jon Nation', 'jnation@lco.global'), ('Eric Saunders', 'esaunders@lco.global')
+    ('Austin Riba', 'ariba@lco.global'),
+    ('Jon Nation', 'jnation@lco.global'),
+    ('Eric Saunders', 'esaunders@lco.global'),
+    ('Ira Snyder', 'isnyder@lco.global'),
+    ('Briand Haworth', 'bhaworth@lco.global')
 ]
 
 INSTALLED_APPS = [
@@ -64,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'valhalla.common.middleware.RequestLogMiddleware',
 ]
 
 ROOT_URLCONF = 'valhalla.urls'
@@ -129,6 +134,10 @@ LOGGING = {
         },
         'rise_set': {
             'level': 'WARNING'
+        },
+        'valhalla_request': {
+            'level': 'INFO',
+            'propogate': False
         }
     }
 }
@@ -157,7 +166,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 OAUTH2_PROVIDER = {
-    'REFRESH_TOKEN_EXPIRE_SECONDS': 36000,
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 86400 * 30,  # 30 days
+    'REFRESH_TOKEN_EXPIRE_SECONDS': 86400 * 30  # 30 days
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -210,7 +220,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-        'oauth2_provider.ext.rest_framework.OAuth2Authentication',
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50,
@@ -219,9 +229,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'user': '50000/day',
+        'user': '5000/day',
         'userrequests.cancel': '1000/day',
-        'userrequests.validate': '100000/day'
+        'userrequests.validate': '10000/day'
     }
 }
 
@@ -237,6 +247,10 @@ CELERY_BEAT_SCHEDULE = {
     'expire-requests-every-5-minutes': {
         'task': 'valhalla.userrequests.tasks.expire_requests',
         'schedule': 300.0
+    },
+    'expire-access-tokens-every-day': {
+        'task': 'valhalla.accounts.tasks.expire_access_tokens',
+        'schedule': 86400.0
     }
 }
 try:

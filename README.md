@@ -2,7 +2,6 @@
 [![Build Status](https://travis-ci.org/LCOGT/valhalla.svg?branch=master)](https://travis-ci.org/LCOGT/valhalla)
 [![Coverage Status](https://coveralls.io/repos/github/LCOGT/valhalla/badge.svg?branch=master)](https://coveralls.io/github/LCOGT/valhalla?branch=master)
 [![Code Health](https://landscape.io/github/LCOGT/valhalla/master/landscape.svg?style=flat)](https://landscape.io/github/LCOGT/valhalla/master)
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/6da4827702214bcf9c798ebe788110d9/badge.svg)](https://www.quantifiedcode.com/app/project/6da4827702214bcf9c798ebe788110d9)
 [![Dependency Status](https://www.versioneye.com/user/projects/589df7f4940b230036768664/badge.svg)](https://www.versioneye.com/user/projects/589df7f4940b230036768664)
 
 ## Getting Started

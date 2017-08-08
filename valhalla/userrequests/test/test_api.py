@@ -17,6 +17,7 @@ from unittest.mock import patch
 from django.utils import timezone
 from datetime import datetime, timedelta
 import responses
+import requests
 import os
 import copy
 import json
@@ -113,7 +114,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -217,6 +218,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         # check that default acquire mode is 'wcs' for floyds
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_mode'], 'WCS')
@@ -233,6 +235,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_post_userrequest_acquire_mode_brightest(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'][0]['acquire_mode'] = 'BRIGHTEST'
         bad_data['requests'][0]['molecules'][0]['acquire_radius_arcsec'] = 2
@@ -312,7 +315,6 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         semester = mixer.blend(
             Semester,
             id='2016B',
-            public=True,
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
@@ -339,6 +341,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.generic_multi_payload = copy.deepcopy(self.generic_payload)
         self.second_request = copy.deepcopy(generic_payload['requests'][0])
         self.second_request['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        self.second_request['molecules'][0]['type'] = 'SPECTRUM'
         self.second_request['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         self.second_request['location']['telescope_class'] = '2m0'
         self.generic_multi_payload['requests'].append(self.second_request)
@@ -435,7 +438,6 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc),
-            public=True
         )
 
         self.time_allocation_1m0 = mixer.blend(
@@ -544,7 +546,6 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc),
-            public=True
         )
 
         self.time_allocation_1m0 = mixer.blend(
@@ -594,7 +595,7 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-            end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
@@ -688,7 +689,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -762,7 +763,7 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
@@ -843,7 +844,7 @@ class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
 
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -891,7 +892,7 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
 
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -957,7 +958,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.user)
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True)
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc))
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
@@ -979,6 +980,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        good_data['requests'][0]['molecules'][0]['type'] = 'LAMP_FLAT'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
         molecule = response.json()['requests'][0]['molecules'][0]
@@ -996,6 +998,8 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_filter_not_necessary_for_type(self):
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['type'] = 'ARC'
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         del good_data['requests'][0]['molecules'][0]['filter']
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
@@ -1093,10 +1097,22 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'].append(bad_data['requests'][0]['molecules'][0].copy())
         bad_data['requests'][0]['molecules'][1]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][1]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][1]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Each Molecule must specify the same instrument name', str(response.content))
         self.assertEqual(response.status_code, 400)
+
+    def test_molecules_automatically_have_priority_set(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'].append(copy.deepcopy(self.extra_molecule))
+        good_data['requests'][0]['molecules'].append(copy.deepcopy(self.extra_molecule))
+        good_data['requests'][0]['molecules'].append(copy.deepcopy(self.extra_molecule))
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(response.status_code, 201)
+        for i, molecule in enumerate(ur['requests'][0]['molecules']):
+            self.assertEqual(molecule['priority'], i + 1)
 
     def test_fill_window_on_more_than_one_molecule_fails(self):
         bad_data = self.generic_payload.copy()
@@ -1182,6 +1198,19 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         ur = response.json()
         self.assertEqual(ur['requests'][0]['molecules'][0]['exposure_count'], 5)
         self.assertEqual(response.status_code, 201)
+
+    def test_molecule_type_matches_instrument(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid type SPECTRUM for an imager', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+        bad_data['requests'][0]['molecules'][0]['type'] = 'EXPOSE'
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('Invalid type EXPOSE for a spectrograph', str(response.content))
+        self.assertEqual(response.status_code, 400)
 
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
@@ -1284,8 +1313,13 @@ class TestBlocksApi(APITestCase):
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
             self.assertEqual(len(result.json()), 2)
 
-    @patch('requests.get', side_effect=ConnectionError())
+    @patch('requests.get', side_effect=requests.exceptions.ConnectionError())
     def test_no_connection(self, request_patch):
+        result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
+        self.assertFalse(result.json())
+
+    @patch('requests.get', side_effect=requests.exceptions.HTTPError())
+    def test_http_error(self, request_patch):
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
         self.assertFalse(result.json())
 
@@ -1385,7 +1419,7 @@ class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
         super().setUp()
         mixer.blend(
-            Semester, id='2016B', public=True,
+            Semester, id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
@@ -1579,7 +1613,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         mixer.blend(Membership, user=self.user, proposal=self.proposal, ipp_value=1.0)
         semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-            end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
@@ -1916,8 +1950,8 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         super().setUp()
         self.proposal = mixer.blend(Proposal, id='temp')
         self.semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
-                               )
+                                    end=datetime(2016, 12, 31, tzinfo=timezone.utc))
+
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
@@ -1952,7 +1986,7 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_get_max_ipp_reduced_max_ipp(self):
 
         good_data = self.generic_payload.copy()
-        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0 # 90 minute exposure (1.0 ipp available)
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0  # 90 minute exposure (1.0 ipp available)
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
         self.assertEqual(response.status_code, 200)
         ipp_dict = response.json()

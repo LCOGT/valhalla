@@ -148,14 +148,6 @@ class TestProposalList(TestCase):
         response = self.client.get(reverse('proposals:list'))
         self.assertContains(response, 'Admin only')
 
-    def test_only_public_semesters_filter(self):
-        public_semester = mixer.blend(Semester, public=True)
-        private_semester = mixer.blend(Semester, public=False)
-        self.client.force_login(self.user)
-        response = self.client.get(reverse('proposals:list'))
-        self.assertContains(response, public_semester)
-        self.assertNotContains(response, private_semester)
-
 
 class TestMembershipDelete(TestCase):
     def setUp(self):

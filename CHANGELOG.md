@@ -1,3 +1,113 @@
+## 1.2.1
+2017-08-07
+
+* Add legend to block history plot
+* Fix bug in request serializer that would attempt to order by method attributes
+
+## 1.2
+2017-08-04
+
+* Pin rise set
+* Revise throttle limits
+
+## 1.1.12
+2017-07-27
+
+* Fix problem with setuptools and travis ci
+* Dont perform LookUP is target is not Sidereal
+* Fix compatibility with latest responses library
+* Set max airmass to 2 for simple interface users
+* Allow unicode in compose page
+* Fix paramter for active proposals in manage proposals link
+
+## 1.1.11
+2017-07-24
+
+* Add separate health check endpoint
+
+## 1.1.10
+2017-07-24
+
+* Add request logging at a more granular level
+* Fix bug in lookUP so only last call is used
+
+## 1.1.9
+2017-07-18
+
+* Uprev some dependencies
+
+## 1.1.8
+2017-07-18
+
+* Use rp filter for "red"
+
+## 1.1.7
+2017-07-17
+
+ * Don't use html in plain text emails
+ * Remove use of mutable querydict
+ * Add additional users to admin list
+
+## 1.1.6
+2017-07-06
+
+* Return target name for satellite targets
+* Make molecule priority a read only field
+* Allow valhalladev host
+* Catch correct ConnectionError
+* Validate that molecule type matches instrument
+
+## 1.1.5
+2017-06-22
+
+* Submitted a request will automatically set the priority of molecules in ascending order
+
+## 1.1.4
+2017-06-20
+
+* Enable color/high res images for proprietary data
+
+## 1.1.3
+2017-06-20
+
+* Install libcairo2 from debian stretch as the version in jessie is too old for WeasyPrint
+
+## 1.1.2
+2017-06-20
+
+* Increase AccessToken expire time
+* Add periodic task to remove expired tokens every 24hrs
+* Send notification email when DDT proposal is submitted
+* Fix some typos and other erorrs in sciapplication detail template
+
+## 1.1.1
+2017-06-19
+* Removed any timeout from the cached isDirty_query_time
+
+## 1.1
+2017-06-19
+
+* Add default IPP values on timallocation creation
+* Make data jpg preview link to larger jpg version of frame
+* Add link to color version of jpg for a frame if available
+* Show instrument name instead of code in request detail
+* Remove public field from semester
+* Fix vis.js version as newest version breaks legend
+
+## 1.0.8
+2017-06-15
+
+* Return empty block set when pond is unreachable instead of thowing exception
+* Inform user when data is in transit when request is in completed state
+
+## 1.0.7
+2017-06-13
+
+* Make UWSGI logs match LCO internal logging format
+* Fix bug where adding calibration frames did not update request duration
+* Add LogEntry admin so we can keep track of who changes what in the admin
+* Validate that windows fit within a defined semester
+
 ## 1.0.6
 2017-06-08
 

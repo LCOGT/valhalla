@@ -81,7 +81,6 @@ class UserRequest(models.Model):
         return self.proposal.timeallocation_set.filter(
             semester__start__lte=self.min_window_time,
             semester__end__gte=self.max_window_time,
-            semester__public=True,
         )
 
     @property
@@ -159,7 +158,6 @@ class Request(models.Model):
         return self.user_request.proposal.timeallocation_set.get(
             semester__start__lte=self.min_window_time,
             semester__end__gte=self.max_window_time,
-            semester__public=True,
             telescope_class=self.location.telescope_class
         )
 
@@ -173,7 +171,7 @@ class Request(models.Model):
             )
             response.raise_for_status()
             return BlockSerializer(response.json(), many=True).data
-        except ConnectionError:
+        except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data
 
@@ -361,7 +359,7 @@ class Molecule(models.Model):
     # Place-holder for future functionality, allowing arguments to be
     # passed along with a molecule
     args = models.TextField(default='', blank=True)
-    # TODO we don't know if this is necessary or if it is used
+    # Used by the pond for ordering the molecules
     priority = models.IntegerField(default=500)
 
     # Autoguider

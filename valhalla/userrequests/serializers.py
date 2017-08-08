@@ -61,6 +61,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Molecule
         exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
+        read_only_fields = ('priority',)
 
     def validate_instrument_name(self, value):
         if value and value not in configdb.get_active_instrument_types({}):
@@ -122,6 +123,18 @@ class MoleculeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(msg)
         else:
             raise serializers.ValidationError(_("Missing one of bin_x or bin_y. Specify both or neither."))
+
+        # check that the molecule type matches the instruemnt
+        imager_only_types = ['EXPOSE', 'SKY_FLAT', 'AUTO_FOCUS']
+        spec_only_types = ['SPECTRUM', 'ARC', 'LAMP_FLAT']
+        if configdb.is_spectrograph(data['instrument_name']) and data['type'] in imager_only_types:
+            raise serializers.ValidationError(
+                _('Invalid type {0} for a spectrograph.'.format(data['type']))
+            )
+        if not configdb.is_spectrograph(data['instrument_name']) and data['type'] in spec_only_types:
+            raise serializers.ValidationError(
+                _('Invalid type {0} for an imager.'.format(data['type']))
+            )
 
         return data
 
@@ -240,6 +253,10 @@ class RequestSerializer(serializers.ModelSerializer):
     def validate_molecules(self, value):
         if not value:
             raise serializers.ValidationError(_('You must specify at least 1 molecule'))
+
+        # Set the relative priority of molecules in order
+        for i, molecule in enumerate(value):
+            molecule['priority'] = i + 1
 
         # Make sure each molecule has the same instrument name
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:

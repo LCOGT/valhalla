@@ -17,7 +17,7 @@ class BaseSetupRequest(ConfigDBTestMixin, SetTimeMixin, TestCase):
 
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
@@ -71,7 +71,7 @@ class TestRequestTelescopeStates(TelescopeStatesFakeInput):
         self.mock_now.return_value = datetime(2016, 10, 1, tzinfo=timezone.utc)
         self.proposal = mixer.blend(Proposal)
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc), public=True
+                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,

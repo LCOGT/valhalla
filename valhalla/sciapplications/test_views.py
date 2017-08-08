@@ -3,11 +3,13 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core import mail
 from datetime import timedelta
 from mixer.backend.django import mixer
 from PyPDF2 import PdfFileMerger
 from weasyprint import HTML
 from unittest.mock import MagicMock
+
 
 
 from valhalla.proposals.models import Semester
@@ -247,6 +249,17 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'We can only accept PDF files')
+
+    def test_submitting_ddt_sends_notification_email(self):
+        data = self.ddt_data.copy()
+        self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.ddt_call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(data['title'], str(mail.outbox[0].message()))
+        self.assertIn(self.user.email, mail.outbox[0].to)
 
 
 class TestGetUpdateSciApp(TestCase):

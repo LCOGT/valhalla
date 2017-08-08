@@ -133,7 +133,7 @@ var observatoryCodeToNumber = {
   'clma': '',
   'aqwa': '1',
   'aqwb': '2'
-}
+};
 
 var telescopeCodeToName = {
   '1m0a': '1m',
@@ -141,7 +141,7 @@ var telescopeCodeToName = {
   '0m4b': '0.4m B',
   '2m0a': '2m',
   '0m8a': '0.8m'
-}
+};
 
 var colorPalette = [  // useful assigning colors to datasets.
   '#3366CC', '#DC3912', '#FF9900', '#109618', '#990099', '#3B3EAC', '#0099C6', '#DD4477',
@@ -162,6 +162,8 @@ var colorPalette = [  // useful assigning colors to datasets.
   '#3B5DFF', '#4A3B53', '#FF2F80'
 ];
 
-export {semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
-        formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
-        observatoryCodeToNumber, telescopeCodeToName, colorPalette};
+export {
+  semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
+  formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
+  observatoryCodeToNumber, telescopeCodeToName, colorPalette
+};

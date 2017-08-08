@@ -54,15 +54,19 @@ export default{
         if(res.count > 1000){
           alert('More than 1000 results found, please view on archive to view all data');
         }
+        that.$emit('dataLoaded', res.results);
         return res.results;
       },
       onClickRow: function(row){
         that.$emit('rowClicked', row);
       },
+      formatNoMatches: function(){
+        return 'This request is complete but data is still in transit. Please check back in a few minutes.';
+      },
       queryParamsType: '',
       idField: 'id',
       pagination: true,
-      pageSize: 15,
+      pageSize: 10,
       sortName: 'filename',
       sortOrder: 'asc',
       maintainSelected: true,

@@ -100,7 +100,7 @@ class NonSiderealTargetHelper(BaseTargetHelper):
 class SatelliteTargetHelper(BaseTargetHelper):
     def __init__(self, target):
         self.fields = (
-            'type', 'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate',
+            'name', 'type', 'altitude', 'azimuth', 'diff_pitch_rate', 'diff_roll_rate',
             'diff_epoch_rate', 'diff_pitch_acceleration', 'diff_roll_acceleration'
         )
         self.required_fields = self.fields

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Membership, ProposalInvite
+from .models import Semester, TimeAllocationGroup, Proposal, TimeAllocation, Membership, ProposalInvite, ProposalNotification
 
 
 class SemesterAdmin(admin.ModelAdmin):
-    list_display = ('id', 'start', 'end', 'public')
-    list_filter = ('start', 'end', 'public')
+    list_display = ('id', 'start', 'end')
+    list_filter = ('start', 'end')
     raw_id_fields = ('proposals',)
 
 
@@ -54,8 +54,13 @@ class ProposalInviteAdmin(admin.ModelAdmin):
     model = ProposalInvite
 
 
+class ProposalNotificationAdmin(admin.ModelAdmin):
+    model = ProposalNotification
+
+
 admin.site.register(Semester, SemesterAdmin)
 admin.site.register(TimeAllocationGroup, TimeAllocationGroupAdmin)
 admin.site.register(Proposal, ProposalAdmin)
 admin.site.register(Membership, MembershipAdmin)
 admin.site.register(ProposalInvite, ProposalInviteAdmin)
+admin.site.register(ProposalNotification, ProposalNotificationAdmin)

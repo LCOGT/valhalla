@@ -1,4 +1,5 @@
 from django import template
+from valhalla.common.configdb import configdb
 
 register = template.Library()
 
@@ -30,3 +31,8 @@ def state_to_icon(value):
 @register.filter
 def request_state_count(userrequest, state):
     return userrequest.requests.filter(state=state).count()
+
+
+@register.filter
+def instrument_code_to_name(instrument_code):
+    return configdb.get_instrument_name(instrument_code)

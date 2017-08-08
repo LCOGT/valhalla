@@ -26,7 +26,5 @@ class SemesterViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SemesterSerialzer
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filter_class = SemesterFilter
-    ordering = ('-id',)
-
-    def get_queryset(self):
-        return Semester.objects.filter(public=True)
+    ordering = ('-start',)
+    queryset = Semester.objects.all()

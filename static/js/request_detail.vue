@@ -34,7 +34,7 @@
             <table class="table table-condensed">
               <thead>
                 <tr>
-                  <td><strong>Instrument</strong></td>
+                  <td><strong>Instrument Code</strong></td>
                   <td><strong>Filter</strong></td>
                   <td><strong>Exposures</strong></td>
                   <td><strong>Binning</strong></td>
@@ -65,7 +65,7 @@
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.constraints">
               <dt v-if="request.constraints[idx]">{{ idx | formatField }}</dt>
-              <dd v-if="x">{{ x | formatValue }}</dd>
+              <dd v-if="x">{{ x }}</dd>
               </span>
             </dl>
             <dl class="twocol dl-horizontal">
@@ -78,11 +78,18 @@
       <div class="tab-pane" :class="{ active: tab === 'data' }">
         <div class="row">
           <div v-if="request.state === 'COMPLETED'" class="col-md-4">
-            <thumbnail :frame="curFrame" width="400" height="400"></thumbnail>
-            <span class="thumb-help">Click a file in the data table to preview</span>
+            <p v-show="curFrame" class="thumb-help">Click a row in the data table to preview the file below. Click preview for a larger version.</p>
+            <thumbnail v-show="curFrame" :frame="curFrame" width="400" height="400"></thumbnail>
+            <p v-show="curFrame && canViewColor">
+                RVB frames found.
+                <a v-on:click="viewColorImage" title="Color Image">
+                  View color image <i class="fa fa-external-link"></i>
+                </a><br/>
+                <span v-show="loadingColor"><i class="fa fa-spin fa-spinner"></i> Generating color image...</span>
+            </p>
           </div>
           <div :class="[(request.state === 'COMPLETED') ? 'col-md-8' : 'col-md-12']">
-            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event"></archivetable>
+            <archivetable :requestid="request.id" v-on:rowClicked="curFrame = $event" v-on:dataLoaded="frames = $event"></archivetable>
           </div>
         </div>
       </div>
@@ -118,7 +125,7 @@ Vue.filter('formatField', function(value){
 
 Vue.filter('formatValue', function(value){
   if(!isNaN(value)){
-    return Number(value).toFixed(7);
+    return Number(value).toFixed(4);
   }
   return value;
 });
@@ -129,12 +136,14 @@ export default {
   data: function(){
     return {
       request: {},
+      frames: [],
       curFrame: null,
       blockData: [],
       activeBlock: null,
       airmassData: {},
       telescopeStatesData: {},
       tab: 'details',
+      loadingColor: false
     };
   },
   created: function(){
@@ -169,6 +178,33 @@ export default {
       }
     }
   },
+  computed: {
+    colorImage: function(){
+      if(this.curFrame){
+        return 'https://thumbnails.lco.global/' + this.curFrame.id + '/?width=4000&height=4000&color=true';
+      }else{
+        return '';
+      }
+    },
+    canViewColor: function(){
+      var colorFilters = {
+        'red': ['R', 'rp'],
+        'visual': ['V'],
+        'blue': ['B']
+      };
+      var filtersUsed = this.frames.map(function(frame){return frame.FILTER;});
+      var numColors = 0;
+      for(var color in colorFilters){
+        for(var filter in colorFilters[color]){
+          if(filtersUsed.includes(colorFilters[color][filter])){
+            numColors += 1;
+            break;
+          }
+        }
+      }
+      return numColors >= 3 ? true : false;
+    }
+  },
   methods: {
     loadBlockData: function(){
       var that = this;
@@ -198,6 +234,14 @@ export default {
       var requestId = $('#request-detail').data('requestid');
       $.getJSON('/api/requests/' + requestId + '/telescope_states/', function(data){
         that.telescopeStatesData = data;
+      });
+    },
+    viewColorImage: function(){
+      var that = this;
+      this.loadingColor = true;
+      $.getJSON(this.colorImage, function(data){
+        that.loadingColor = false;
+        window.open(data['url'], '_blank');
       });
     }
   }
