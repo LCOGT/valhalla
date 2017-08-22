@@ -1,3 +1,8 @@
+## 1.2.2
+2017-08-15
+
+* Add custom 404 page so users being redirected from the scheduler visualization don't get confused.
+
 ## 1.2.1
 2017-08-07
 
