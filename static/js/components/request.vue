@@ -21,6 +21,11 @@
                          :errors="errors.instrument_name" :options="availableInstrumentOptions"
                          desc="Select the instrument with which this observation will be made.">
           </customselect>
+          <customfield v-model="request.completion_threshold" label="Minimum Completable Observation Percent" field="completion_threshold" v-on:input="update"
+                        :errors="errors.completion_threshold" desc="The minimum percentage of the observation that must have completed in order to count the request as complete.
+                        This value should be set to the lowest acceptable completion threshold to prevent wasting observation time." 
+                        v-if="!simple_interface">
+          </customfield>
         </form>
       </div>
     </div>
