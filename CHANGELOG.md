@@ -1,3 +1,9 @@
+## 1.2.3
+2017-08-25
+
+* Add completion_threshold model field to request. 
+* Modify update request state with pond blocks code to calculate completion_percent and compare to threshold.
+
 ## 1.2.2
 2017-08-15
 
