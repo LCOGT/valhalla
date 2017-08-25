@@ -8,6 +8,7 @@ from valhalla.userrequests.models import UserRequest, Request
 import itertools
 import logging
 import dateutil.parser
+from math import isclose
 
 logger = logging.getLogger(__name__)
 
@@ -172,7 +173,8 @@ def get_request_state_from_pond_blocks(request_state, completion_threshold, requ
         start_time = dateutil.parser.parse(block['start']).replace(tzinfo=timezone.utc)
         end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
         # mark a block as complete if a % of the total exposures of all its molecules are complete
-        if exposure_completion_percentage_from_pond_block(block) >= completion_threshold:
+        completion_percent = exposure_completion_percentage_from_pond_block(block)
+        if isclose(completion_threshold, completion_percent) or completion_percent >= completion_threshold:
             return 'COMPLETED'
         if (not block['canceled'] and not any(molecule['failed'] for molecule in block['molecules'])
                 and start_time < now < end_time):
