@@ -60,3 +60,8 @@ export default {
   }
 };
 </script>
+<style>
+.modal {
+  overflow: auto;
+}
+</style>
