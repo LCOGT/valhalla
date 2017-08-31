@@ -104,7 +104,6 @@ class TestRequestIntervals(BaseSetupRequest):
 
         self.assertEqual(intervals, truth_intervals)
 
-
     @patch('valhalla.common.downtimedb.DowntimeDB._get_downtime_data')
     def test_request_intervals_for_one_week_removes_lots_of_downtime(self, downtime_data):
         downtime_data.return_value = [{'start': '2016-10-01T22:00:00Z',
@@ -155,6 +154,132 @@ class TestRequestIntervals(BaseSetupRequest):
                             datetime(2016, 10, 6, 3, 12, 5, 895932, tzinfo=timezone.utc)),
                            (datetime(2016, 10, 6, 18, 53, 36, 428629, tzinfo=timezone.utc),
                             datetime(2016, 10, 7, 3, 8, 10, 183626, tzinfo=timezone.utc))]
+
+        self.assertEqual(intervals, truth_intervals)
+
+    @patch('valhalla.common.downtimedb.DowntimeDB._get_downtime_data')
+    def test_request_intervals_for_one_week_all_downtime(self, downtime_data):
+        downtime_data.return_value = [{'start': '2016-09-01T22:00:00Z',
+                                       'end': '2016-11-03T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-09-01T22:00:00Z',
+                                       'end': '2016-11-03T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'}
+                                      ]
+
+        intervals = get_rise_set_intervals(self.request.as_dict)
+
+        truth_intervals = []
+
+        self.assertEqual(intervals, truth_intervals)
+
+    @patch('valhalla.common.downtimedb.DowntimeDB._get_downtime_data')
+    def test_request_intervals_for_one_week_downtime_out_of_range(self, downtime_data):
+        downtime_data.return_value = [{'start': '2016-09-01T22:00:00Z',
+                                       'end': '2016-10-01T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-09-01T22:00:00Z',
+                                       'end': '2016-10-01T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-08T00:00:00Z',
+                                       'end': '2016-11-01T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-08T00:00:00Z',
+                                       'end': '2016-11-01T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'}
+                                      ]
+
+        intervals = get_rise_set_intervals(self.request.as_dict)
+
+        truth_intervals = [(datetime(2016, 10, 1, 0, 0, tzinfo=timezone.utc),
+                            datetime(2016, 10, 1, 3, 20, 31, 366820, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 1, 19, 13, 14, 944205, tzinfo=timezone.utc),
+                            datetime(2016, 10, 2, 3, 19, 9, 181040, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 2, 19, 9, 19, 241762, tzinfo=timezone.utc),
+                            datetime(2016, 10, 3, 3, 17, 47, 117329, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 3, 19, 5, 23, 539011, tzinfo=timezone.utc),
+                            datetime(2016, 10, 4, 3, 16, 25, 202612, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 4, 19, 1, 27, 835928, tzinfo=timezone.utc),
+                            datetime(2016, 10, 5, 3, 15, 3, 464340, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 5, 18, 57, 32, 132481, tzinfo=timezone.utc),
+                            datetime(2016, 10, 6, 3, 12, 5, 895932, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 6, 18, 53, 36, 428629, tzinfo=timezone.utc),
+                            datetime(2016, 10, 7, 3, 8, 10, 183626, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 7, 18, 49, 40, 724307, tzinfo=timezone.utc),
+                            datetime(2016, 10, 8, 0, 0, tzinfo=timezone.utc))]
+
+        self.assertEqual(intervals, truth_intervals)
+
+    @patch('valhalla.common.downtimedb.DowntimeDB._get_downtime_data')
+    def test_request_intervals_for_one_week_overlapping_downtime(self, downtime_data):
+        downtime_data.return_value = [{'start': '2016-10-01T22:00:00Z',
+                                       'end': '2016-10-04T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-01T22:00:00Z',
+                                       'end': '2016-10-04T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-02T00:00:00Z',
+                                       'end': '2016-10-03T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-02T00:00:00Z',
+                                       'end': '2016-10-03T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-02T00:00:00Z',
+                                       'end': '2016-10-06T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'doma',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'},
+                                      {'start': '2016-10-02T00:00:00Z',
+                                       'end': '2016-10-06T00:00:00Z',
+                                       'site': 'tst',
+                                       'observatory': 'domb',
+                                       'telescope': '1m0a',
+                                       'reason': 'Whatever'}
+                                      ]
+
+        intervals = get_rise_set_intervals(self.request.as_dict)
+
+        truth_intervals = [(datetime(2016, 10, 1, 0, 0, tzinfo=timezone.utc),
+                            datetime(2016, 10, 1, 3, 20, 31, 366820, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 1, 19, 13, 14, 944205, tzinfo=timezone.utc),
+                            datetime(2016, 10, 1, 22, 0, 0, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 6, 0, 0, 0, tzinfo=timezone.utc),
+                            datetime(2016, 10, 6, 3, 12, 5, 895932, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 6, 18, 53, 36, 428629, tzinfo=timezone.utc),
+                            datetime(2016, 10, 7, 3, 8, 10, 183626, tzinfo=timezone.utc)),
+                           (datetime(2016, 10, 7, 18, 49, 40, 724307, tzinfo=timezone.utc),
+                            datetime(2016, 10, 8, 0, 0, tzinfo=timezone.utc))]
 
         self.assertEqual(intervals, truth_intervals)
 
