@@ -56,22 +56,35 @@ class ConfigDB(object):
 
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
+        telescope_details = self.get_telescopes_with_instrument_type_and_location(instrument_type, site_code,
+                                                                                  observatory_code, telescope_code)
+        site_details = {}
+        for code in telescope_details.keys():
+            site = code.split('.')[2]
+            if site not in site_details:
+                site_details[site] = telescope_details[code]
+
+        return site_details
+
+    def get_telescopes_with_instrument_type_and_location(self, instrument_type='', site_code='',
+                                                    observatory_code='', telescope_code=''):
         if not self.site_data:
             self.site_data = self._get_configdb_data('sites')
         site_data = self.site_data
-        site_details = {}
+        telescope_details = {}
         for site in site_data:
             if not site_code or site_code == site['code']:
                 for enclosure in site['enclosure_set']:
                     if not observatory_code or observatory_code == enclosure['code']:
                         for telescope in enclosure['telescope_set']:
                             if not telescope_code or telescope_code == telescope['code']:
+                                code = '.'.join([telescope['code'], enclosure['code'], site['code']])
                                 for instrument in telescope['instrument_set']:
                                     if instrument['state'] == 'SCHEDULABLE':
                                         camera_type = instrument['science_camera']['camera_type']['code']
                                         if not instrument_type or instrument_type.upper() == camera_type.upper():
-                                            if site['code'] not in site_details:
-                                                site_details[site['code']] = {
+                                            if code not in telescope_details:
+                                                telescope_details[code] = {
                                                     'latitude': telescope['lat'],
                                                     'longitude': telescope['long'],
                                                     'horizon': telescope['horizon'],
@@ -80,7 +93,7 @@ class ConfigDB(object):
                                                     'ha_limit_neg': telescope['ha_limit_neg']
                                                 }
 
-        return site_details
+        return telescope_details
 
     def get_instruments(self, only_schedulable=False):
         if not self.site_data:

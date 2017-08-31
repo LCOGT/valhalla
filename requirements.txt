@@ -6,6 +6,7 @@ django-cors-headers>=2.1,<2.2
 requests>=2.18,<2.19
 django-filter>=1.0,<1.1
 django-bootstrap3>=8.0<9.0
+datetime_intervals<0.2
 WeasyPrint>=0.39,<0.40
 PyPDF2>=1.26,<1.27
 elasticsearch>=5.4,<5.5

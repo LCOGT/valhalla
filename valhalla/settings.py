@@ -211,6 +211,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://localhost')
 POND_URL = os.getenv('POND_URL', 'http://localhost')
 CONFIGDB_URL = os.getenv('CONFIGDB_URL', 'http://localhost')
+DOWNTIMEDB_URL = os.getenv('DOWNTIMEDB_URL', 'http://localhost')
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
