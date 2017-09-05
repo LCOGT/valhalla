@@ -949,6 +949,13 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
 
+    def test_post_userrequest_location_no_blanks(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['site'] = 'tst'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response.json()['requests'][0]['location'].get('observatory'))
+
 
 class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
