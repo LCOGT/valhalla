@@ -97,5 +97,5 @@ class BlockSerializer(serializers.Serializer):
         for molecule in obj['molecules']:
             if molecule['failed']:
                 for event in molecule['event']:
-                    return event['state'] + ': ' + event['reason']
+                    return '{0}: {1}'.format(event['state'], event['reason'])
         return ''
