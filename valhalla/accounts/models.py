@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from django.core.cache import cache
 import uuid
 import logging
 from datetime import timedelta
@@ -49,6 +51,15 @@ class Profile(models.Model):
     @property
     def api_token(self):
         return Token.objects.get_or_create(user=self.user)[0]
+
+    @property
+    def api_quota(self):
+        '''Get's the amount of requests this user has made in the last 24
+        hours as well as the maximum allowed by DRF's throttling framework'''
+        hits = cache.get('throttle_user_{0}'.format(self.user.id))
+        used = len(hits) if hits else 0
+        allowed = settings.REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']['user']
+        return {'used': used, 'allowed': allowed}
 
     def __str__(self):
         return '{0} {1} at {2}'.format(self.user, self.title, self.institution)
