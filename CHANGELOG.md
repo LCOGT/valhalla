@@ -1,7 +1,18 @@
+## 1.3
+2017-09-12
+
+* Various typo fixes
+* Prevent large cadences from overflowing the screen and forcing user to refresh the page
+* Uprev python & JS deps
+* Properly format fail reason in external BlockSerialize
+* Update docker base image to stretch
+* Show api quota on profile page
+* Use cdn.lco.global for all assets
+
 ## 1.2.3
 2017-08-25
 
-* Add completion_threshold model field to request. 
+* Add completion_threshold model field to request.
 * Modify update request state with pond blocks code to calculate completion_percent and compare to threshold.
 
 ## 1.2.2
