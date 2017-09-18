@@ -122,6 +122,13 @@ class TestRegistration(TestCase):
         self.assertTrue(user.profile.notifications_on_authored_only)
         self.assertTrue(user.profile.view_authored_requests_only)
 
+    def test_username_max_length(self):
+        reg_data = self.reg_data.copy()
+        reg_data['username'] = 'x' * 55
+        response = self.client.post(reverse('registration_register'), reg_data, follow=True)
+        self.assertContains(response, 'at most 50 characters')
+        self.assertFalse(User.objects.count())
+
 
 class TestProfile(ConfigDBTestMixin, TestCase):
     def setUp(self):
