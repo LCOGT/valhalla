@@ -1,3 +1,9 @@
+## 1.3.1
+2017-09-18
+
+* Add API quota to profile API
+* Restrict lengths of username, target name to 50 characters
+
 ## 1.3
 2017-09-12
 
