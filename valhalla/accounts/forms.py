@@ -7,6 +7,7 @@ from valhalla.proposals.models import ProposalInvite
 
 
 class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUniqueEmail):
+    username = forms.CharField(max_length=50)
     first_name = forms.CharField(max_length=200)
     last_name = forms.CharField(max_length=200)
     institution = forms.CharField(max_length=200)
