@@ -35,10 +35,10 @@
       </div>
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal">
-          <customselect v-if="datatype === 'IMAGE'" v-model="molecule.filter" label="Filter" v-on:input="update"
+          <customselect v-if="molecule.type === 'EXPOSE'" v-model="molecule.filter" label="Filter" v-on:input="update"
                          :errors="errors.filter" :options="filterOptions" desc="The filter to be used with this instrument">
           </customselect>
-          <customselect v-if="datatype === 'SPECTRA'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
+          <customselect v-if="molecule.type === 'SPECTRUM'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
                          :errors="errors.spectra_slit" :options="filterOptions" desc="The width the of the slit to be used.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
@@ -62,14 +62,15 @@
                                    {value: 'ON', text: 'On'}]">
           </customselect>
           <div class="spectra" v-if="datatype === 'SPECTRA' && !simple_interface">
-            <customselect v-model="molecule.type" label="Type" v-on:input="update" :errors="errors.type"
-                          desc="The type of exposure (allows for calibrations)."
+            <customselect v-model="molecule.type" v-if="molecule.type === 'SPECTRUM'" label="Type" v-on:input="update"
+                          :errors="errors.type" desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                       {value: 'LAMP_FLAT', text: 'Lamp Flat'},
                                       {value: 'ARC', text:'Arc'}]">
             </customselect>
             <customselect v-model="molecule.acquire_mode" label="Acquire Mode" v-on:input="update" :errors="errors.acquire_mode"
                           desc="The method for positioning the slit. If Brightest Object is selected, the slit is placed on the brightest object near the target coordinates."
+                          v-if="molecule.type === 'SPECTRUM'"
                           :options="[{value: 'WCS', text: 'On Target Coordinates'},
                                      {value: 'BRIGHTEST', text: 'On Brightest Object'}]">
             </customselect>
@@ -145,13 +146,43 @@ export default {
     },
     generateCalibs: function(){
       this.$emit('generateCalibs', this.index);
+    },
+    setupImager: function(){
+      this.molecule.type = 'EXPOSE';
+      this.molecule.spectra_slit = undefined;
+      this.acquire_params.acquire_mode = this.molecule.acquire_mode;
+      this.molecule.acquire_mode = undefined;
+      this.molecule.acquire_radius_arcsec = undefined;
+    },
+    setupSpectrograph: function(){
+      this.molecule.ag_mode = 'ON';
+      this.molecule.filter = undefined;
+    },
+    setupNRES: function(){
+      this.molecule.type = 'NRES_SPECTRUM';
+      this.setupSpectrograph();
+      this.molecule.acquire_mode = 'BRIGHTEST';
+      this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+    },
+    setupFLOYDS: function(){
+       this.molecule.type = 'SPECTRUM';
+       this.setupSpectrograph();
+       this.molecule.acquire_mode = this.acquire_params.acquire_mode;
+       if (this.molecule.acquire_mode === 'BRIGHTEST'){
+         this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+       }
     }
   },
   watch: {
     selectedinstrument: function(value){
       if(this.molecule.instrument_name != value){
+        if(value.includes('NRES')){
+          this.setupNRES();
+        }
+        else if(value.includes('FLOYDS')){
+          this.setupFLOYDS();
+        }
         this.molecule.instrument_name = value;
-        this.molecule.filter = '';
         // wait for options to update, then set default
         var that = this;
         setTimeout(function(){
@@ -165,20 +196,16 @@ export default {
       }
     },
     datatype: function(value){
-      this.molecule.type = (value === 'IMAGE') ? 'EXPOSE': 'SPECTRUM';
       if (value === 'SPECTRA'){
-        this.molecule.ag_mode = 'ON';
-        this.molecule.filter = undefined;
-        this.molecule.acquire_mode = this.acquire_params.acquire_mode;
-        if (this.molecule.acquire_mode === 'BRIGHTEST'){
-          this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
+        if(this.selectedinstrument && this.selectedinstrument.includes('NRES')){
+          this.setupNRES();
+        }
+        else{
+          this.setupFLOYDS();
         }
       }
       else{
-        this.molecule.spectra_slit = undefined;
-        this.acquire_params.acquire_mode = this.molecule.acquire_mode;
-        this.molecule.acquire_mode = undefined;
-        this.molecule.acquire_radius_arcsec = undefined;
+        this.setupImager();
       }
     },
     'molecule.acquire_mode': function(value){

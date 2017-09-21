@@ -24,7 +24,9 @@
         </form>
       </div>
     </div>
-    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})" :simple_interface="simple_interface">
+    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show"
+            :errors="_.get(errors, 'target', {})" :simple_interface="simple_interface"
+            :selectedinstrument="instrument_name">
     </target>
     <div v-for="(molecule, idx) in request.molecules">
       <molecule :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"
