@@ -1,3 +1,14 @@
+## 1.3.3
+2017-09-21
+
+* Add softies to ADMINS
+* Add support for NRES to user interface
+
+## 1.3.2
+2017-09-19
+
+* Fix NRES overheads
+
 ## 1.3.1
 2017-09-18
 
