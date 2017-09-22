@@ -1,3 +1,9 @@
+## 1.3.4
+2017-09-22
+
+* Restrict username length on profile update page to 50 characters
+* Filter comissionig instruments from available instruments on compose page
+
 ## 1.3.3
 2017-09-21
 
