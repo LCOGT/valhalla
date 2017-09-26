@@ -1,3 +1,8 @@
+## 1.3.6
+2017-09-26
+
+* Add NRES to pressure and contention plots
+
 ## 1.3.5
 2017-09-26
 
