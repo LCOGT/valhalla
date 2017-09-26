@@ -4,6 +4,7 @@ node_modules/
 local_settings.py
 db.sqlite3
 scratch/
+media/
 .tox/
 .git/
 .venv/
