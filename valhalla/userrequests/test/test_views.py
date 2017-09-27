@@ -134,6 +134,12 @@ class TestUserrequestDetail(TestCase):
         for request in self.requests:
             self.assertContains(response, request.id)
 
+    def test_single_request_redirect(self):
+        userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
+        request = mixer.blend(Request, user_request=userrequest)
+        response = self.client.get(reverse('userrequests:detail', kwargs={'pk': userrequest.id}))
+        self.assertRedirects(response, reverse('userrequests:request-detail', args=(request.id,)))
+
 
 class TestRequestDetail(TestCase):
     def setUp(self):
