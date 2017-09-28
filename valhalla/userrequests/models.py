@@ -151,7 +151,7 @@ class Request(models.Model):
 
     @property
     def time_allocation_key(self):
-        return TimeAllocationKey(self.semester.id, self.location.telescope_class)
+        return TimeAllocationKey(self.semester.id, self.location.telescope_class, self.molecules.fist().instrument_name)
 
     @property
     def timeallocation(self):

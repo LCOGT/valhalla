@@ -905,6 +905,10 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
                                                ipp_time_available=5.0)
+        self.time_allocation_2m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
+                                               telescope_class='2m0', std_allocation=100.0, std_time_used=0.0,
+                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+                                               ipp_time_available=5.0)
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -962,6 +966,14 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
         self.assertIsNone(response.json()['requests'][0]['location'].get('observatory'))
+
+    def test_post_userrequest_location_instrument_doesnt_match_class(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['telescope_class'] = '2m0'
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '1M0-SCICAM-SBIG'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        print(response.content)
+        self.assertNotEqual(response.status_code, 201)
 
 
 class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):

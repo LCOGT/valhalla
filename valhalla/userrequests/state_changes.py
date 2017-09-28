@@ -106,7 +106,7 @@ def debit_ipp_time(ur):
         return
     try:
         time_allocations = ur.timeallocations
-        time_allocations_dict = {TimeAllocationKey(ta.semester.id, ta.telescope_class): ta
+        time_allocations_dict = {TimeAllocationKey(ta.semester.id, ta.telescope_class, ta.instrument_name): ta
                                  for ta in time_allocations.all()}
 
         total_duration_dict = ur.total_duration

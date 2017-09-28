@@ -23,7 +23,7 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
 
     total = 0
     try:
-        total += query_pond(timeallocation.proposal.id, start, end, timeallocation.telescope_class, too)
+        total += query_pond(timeallocation.proposal.id, start, end, timeallocation.telescope_class, timeallocation.instrument_name, too)
     except requests.HTTPError:
         logger.warn('We got a pond inception. Splitting further.')
         for start, end in split_time(start, end, 4):
@@ -32,11 +32,11 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
     return total
 
 
-def query_pond(proposal_id, start, end, telescope_class, too):
+def query_pond(proposal_id, start, end, telescope_class, instrument_name, too):
     logger.info('Attempting to get time used for %s from %s to %s', proposal_id, start, end)
-    url = '{0}/pond/pond/accounting/summary?proposal_id={1}&start={2}&end={3}&telescope_class={4}&too_time={5}'.format(
+    url = '{0}/pond/pond/accounting/summary?proposal_id={1}&start={2}&end={3}&telescope_class={4}&instrument_name={5}&too_time={6}'.format(
         settings.POND_URL, proposal_id, start.strftime('%Y-%m-%d %H:%M:%S'), end.strftime('%Y-%m-%d %H:%M:%S'),
-        telescope_class, too
+        telescope_class, instrument_name, too
     )
     response = requests.get(url)
     response.raise_for_status()
