@@ -1,3 +1,11 @@
+## 1.3.7
+2017-09-29
+
+* Auto redirect to first request detail if userrequest only contains a single request
+* Preserve linebreaks from textfields in proposal submission
+* Link to correct getting started guide
+* Add legend to visibility plot history on request detail page
+
 ## 1.3.6
 2017-09-26
 
