@@ -3,7 +3,7 @@
     <div class="blockHistoryPlot" id="plot">
       <plot_controls v-show="showZoomControls" v-on:plotZoom="plotZoom"></plot_controls>
     </div>
-    <div class="blockHistoryPlotLegend">
+    <div class="blockHistoryPlotLegend text-center">
       <ul class="list-inline">
         <li class="SCHEDULED legend-item"></li>
         <li>Scheduled in the future</li>
@@ -180,8 +180,3 @@ export default {
   }
 };
 </script>
-<style>
-.blockHistoryPlotLegend ul {
-  text-align: center;
-}
-</style>
