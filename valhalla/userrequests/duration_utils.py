@@ -75,14 +75,18 @@ def get_max_ipp_for_userrequest(userrequest_dict):
     request_durations = get_request_duration_sum(userrequest_dict)
     ipp_dict = {}
     for tak, duration in request_durations.items():
-        time_allocation = proposal.timeallocation_set.get(semester=tak.semester, telescope_class=tak.telescope_class)
+        time_allocation = proposal.timeallocation_set.get(
+            semester=tak.semester, telescope_class=tak.telescope_class, instrument_name=tak.instrument_name
+        )
         duration_hours = duration / 3600.0
         ipp_available = time_allocation.ipp_time_available
         max_ipp_allowable = min((ipp_available / duration_hours) + 1.0, MAX_IPP_LIMIT)
         max_ipp_allowable = float("{:.3f}".format(max_ipp_allowable))
         if tak.semester not in ipp_dict:
             ipp_dict[tak.semester] = {}
-        ipp_dict[tak.semester][tak.telescope_class] = {
+        if tak.telescope_class not in ipp_dict[tak.semester]:
+            ipp_dict[tak.semester][tak.telescope_class] = {}
+        ipp_dict[tak.semester][tak.telescope_class][tak.instrument_name] = {
             'ipp_time_available': ipp_available,
             'ipp_limit': time_allocation.ipp_limit,
             'request_duration': duration_hours,

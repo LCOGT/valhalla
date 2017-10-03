@@ -151,14 +151,15 @@ class Request(models.Model):
 
     @property
     def time_allocation_key(self):
-        return TimeAllocationKey(self.semester.id, self.location.telescope_class, self.molecules.fist().instrument_name)
+        return TimeAllocationKey(self.semester.id, self.location.telescope_class, self.molecules.first().instrument_name)
 
     @property
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
             semester__start__lte=self.min_window_time,
             semester__end__gte=self.max_window_time,
-            telescope_class=self.location.telescope_class
+            telescope_class=self.location.telescope_class,
+            instrument_name=self.molecules.first().instrument_name
         )
 
     @cached_property

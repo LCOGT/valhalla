@@ -113,13 +113,21 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
-        semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
-                               end=datetime(2016, 12, 31, tzinfo=timezone.utc)
-                               )
-        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
-                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0)
+        self.semester = mixer.blend(
+            Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
+            end=datetime(2016, 12, 31, tzinfo=timezone.utc)
+        )
+        self.time_allocation_1m0_sbig = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=self.semester,
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
+        )
+
+        self.time_allocation_2m0_floyds = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=self.semester,
+            telescope_class='2m0', instrument_name='2M0-FLOYDS-SCICAM', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
+        )
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -169,17 +177,20 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_post_userrequest_no_time_allocation_for_instrument(self):
+        self.time_allocation_2m0_floyds.delete()
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['location']['telescope_class'] = '2m0'
-        bad_data['requests'][0]['molecules'][0]['telescope_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('You do not have sufficient time', str(response.content))
 
     def test_post_userrequest_not_enough_time_allocation_for_instrument(self):
         bad_data = self.generic_payload.copy()
-        self.time_allocation_1m0.std_time_used = 99.99
-        self.time_allocation_1m0.save()
+        self.time_allocation_1m0_sbig.std_time_used = 99.99
+        self.time_allocation_1m0_sbig.save()
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have enough time allocated', str(response.content))
@@ -187,16 +198,16 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_post_userrequest_not_enough_too_time_allocation_for_instrument(self):
         bad_data = self.generic_payload.copy()
         bad_data['observation_type'] = UserRequest.TOO
-        self.time_allocation_1m0.too_time_used = 9.99
-        self.time_allocation_1m0.save()
+        self.time_allocation_1m0_sbig.too_time_used = 9.99
+        self.time_allocation_1m0_sbig.save()
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have enough time allocated', str(response.content))
 
     def test_post_userrequest_not_have_any_time_left(self):
         bad_data = self.generic_payload.copy()
-        self.time_allocation_1m0.std_time_used = 120
-        self.time_allocation_1m0.save()
+        self.time_allocation_1m0_sbig.std_time_used = 120
+        self.time_allocation_1m0_sbig.save()
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have any time left allocated', str(response.content))
@@ -216,6 +227,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.json()['requests'][0]['molecules'][0]['acquire_radius_arcsec'], 0)
 
         # check that default acquire mode is 'wcs' for floyds
+        bad_data['requests'][0]['location']['telescope_class'] = '2m0'
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
@@ -234,6 +246,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_post_userrequest_acquire_mode_brightest(self):
         bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['location']['telescope_class'] = '2m0'
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         bad_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
@@ -319,18 +332,16 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             end=datetime(2016, 12, 31, tzinfo=timezone.utc)
         )
 
-        self.time_allocation_1m0 = mixer.blend(
+        self.time_allocation_1m0_sbig = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
-            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-            ipp_time_available=5.0
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
         )
 
-        self.time_allocation_2m0 = mixer.blend(
+        self.time_allocation_2m0_floyds = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
-            telescope_class='2m0', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-            ipp_time_available=5.0
+            telescope_class='2m0', instrument_name='2M0-FLOYDS-SCICAM', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
         )
 
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -353,25 +364,25 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         return UserRequest.objects.get(group_id=ur_dict['group_id'])
 
     def test_user_request_debit_ipp_on_creation(self):
-        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+        self.assertEqual(self.time_allocation_1m0_sbig.ipp_time_available, 5.0)
 
         ur = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-list'), data=ur)
         self.assertEqual(response.status_code, 201)
 
         # verify that now that the object is saved, ipp has been debited
-        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertLess(time_allocation.ipp_time_available, 5.0)
 
     def test_user_request_credit_ipp_on_cancelation(self):
         user_request = self._build_user_request(self.generic_payload.copy())
         # verify that now that the TimeAllocation has been debited
-        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertLess(time_allocation.ipp_time_available, 5.0)
         user_request.state = 'CANCELED'
         user_request.save()
         # verify that now that the TimeAllocation has its original ipp value
-        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertEqual(time_allocation.ipp_time_available, 5.0)
         # also verify that the child request state has changed to window_expired as well
         self.assertEqual(user_request.requests.first().state, 'CANCELED')
@@ -379,18 +390,18 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_user_request_credit_ipp_on_expiration(self):
         user_request = self._build_user_request(self.generic_payload.copy())
         # verify that now that the TimeAllocation has been debited
-        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertLess(time_allocation.ipp_time_available, 5.0)
         user_request.state = 'WINDOW_EXPIRED'
         user_request.save()
         # verify that now that the TimeAllocation has its original ipp value
-        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertEqual(time_allocation.ipp_time_available, 5.0)
         # also verify that the child request state has changed to window_expired as well
         self.assertEqual(user_request.requests.first().state, 'WINDOW_EXPIRED')
 
     def test_user_request_debit_ipp_on_creation_fail(self):
-        self.assertEqual(self.time_allocation_1m0.ipp_time_available, 5.0)
+        self.assertEqual(self.time_allocation_1m0_sbig.ipp_time_available, 5.0)
 
         ur = self.generic_payload.copy()
         # ipp value that is too high, will be rejected
@@ -407,9 +418,9 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         ur['operator'] = 'MANY'
         user_request = self._build_user_request(ur)
         # verify that now that both the TimeAllocation has been debited
-        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertLess(time_allocation_1m0.ipp_time_available, 5.0)
-        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
+        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0_floyds.id)
         self.assertLess(time_allocation_2m0.ipp_time_available, 5.0)
         # now set one request to completed, then set the user request to unschedulable
         request = user_request.requests.first()
@@ -418,9 +429,9 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         user_request.state = 'WINDOW_EXPIRED'
         user_request.save()
         # now verify that time allocation 1 is still debited, but time allocation 2 has been credited back its time
-        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0.id)
+        time_allocation_1m0 = TimeAllocation.objects.get(pk=self.time_allocation_1m0_sbig.id)
         self.assertLess(time_allocation_1m0.ipp_time_available, 5.0)
-        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0.id)
+        time_allocation_2m0 = TimeAllocation.objects.get(pk=self.time_allocation_2m0_floyds.id)
         self.assertEqual(time_allocation_2m0.ipp_time_available, 5.0)
 
 
@@ -442,9 +453,8 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
-            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-            ipp_time_available=5.0
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
         )
 
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -691,11 +701,18 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
                                end=datetime(2016, 12, 31, tzinfo=timezone.utc)
                                )
-        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
-                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0
-                                               )
+        self.time_allocation_1m0_sbig = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', instruemnt_name='1M0-SCICAM-SBIG', std_allocation=100.0,
+            std_time_used=0.0, too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        self.time_allocation_2m0_floyds = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='2m0', instrument_name='2M0-FLOYDS-SCICAM', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
+        )
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -748,6 +765,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_floyds_gets_vfloat_default(self):
         good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['telescope_class'] = '2m0'
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
         good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
@@ -972,7 +990,6 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data['requests'][0]['location']['telescope_class'] = '2m0'
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '1M0-SCICAM-SBIG'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
-        print(response.content)
         self.assertNotEqual(response.status_code, 201)
 
 
@@ -985,10 +1002,20 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
                                end=datetime(2016, 12, 31, tzinfo=timezone.utc))
-        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
-                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0)
+
+        self.time_allocation_1m0_sbig = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0,
+            std_time_used=0.0, too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
+
+        self.time_allocation_2m0_floyds = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=semester,
+            telescope_class='2m0', instrument_name='2M0-FLOYDS-SCICAM', std_allocation=100.0,
+            std_time_used=0.0, too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
+            ipp_time_available=5.0
+        )
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
@@ -1004,6 +1031,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(molecule['ag_mode'], 'OPTIONAL')
         self.assertEqual(molecule['spectra_slit'], '')
 
+        good_data['requests'][0]['location']['telescope_class'] = '2m0'
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
         good_data['requests'][0]['molecules'][0]['type'] = 'LAMP_FLAT'
@@ -1023,6 +1051,8 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
     def test_filter_not_necessary_for_type(self):
         good_data = self.generic_payload.copy()
+
+        good_data['requests'][0]['location']['telescope_class'] = '2m0'
         good_data['requests'][0]['molecules'][0]['type'] = 'ARC'
         good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
         good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
@@ -1978,14 +2008,16 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.semester = mixer.blend(Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
                                     end=datetime(2016, 12, 31, tzinfo=timezone.utc))
 
-        self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
-                                               telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=1.0)
-        self.time_allocation_0m4 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=self.semester,
-                                               telescope_class='0m4', std_allocation=100.0, std_time_used=0.0,
-                                               too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=1.0)
+        self.time_allocation_1m0_sbig = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=self.semester, telescope_class='1m0',
+            instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=1.0
+        )
+        self.time_allocation_0m4_sbig = mixer.blend(
+            TimeAllocation, proposal=self.proposal, semester=self.semester, telescope_class='0m4',
+            instrument_name='0M4-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
+            too_allocation=10.0, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=1.0
+        )
         self.user = mixer.blend(User)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.client.force_login(self.user)
@@ -2003,14 +2035,16 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
         self.assertEqual(response.status_code, 200)
-
         ipp_dict = response.json()
         self.assertIn(self.semester.id, ipp_dict)
-        self.assertEqual(MAX_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
-        self.assertEqual(MIN_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['min_allowable_ipp_value'])
+        self.assertEqual(
+            MAX_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value']
+        )
+        self.assertEqual(
+            MIN_IPP_LIMIT, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['min_allowable_ipp_value']
+        )
 
     def test_get_max_ipp_reduced_max_ipp(self):
-
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0  # 90 minute exposure (1.0 ipp available)
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
@@ -2018,15 +2052,15 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         ipp_dict = response.json()
         self.assertIn(self.semester.id, ipp_dict)
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
-        self.assertEqual(1.649, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+        self.assertEqual(1.649, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value'])
 
     def test_get_max_ipp_no_ipp_available(self):
         good_data = self.generic_payload.copy()
-        self.time_allocation_1m0.ipp_time_available = 0.0
-        self.time_allocation_1m0.save()
+        self.time_allocation_1m0_sbig.ipp_time_available = 0.0
+        self.time_allocation_1m0_sbig.save()
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
         self.assertEqual(response.status_code, 200)
         ipp_dict = response.json()
         self.assertIn(self.semester.id, ipp_dict)
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
-        self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+        self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value'])

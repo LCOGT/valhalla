@@ -100,6 +100,7 @@ class TimeAllocation(models.Model):
         ('0M8-SCICAM-SBIG', '0M8-SCICAM-SBIG'),
         ('1M0-NRES-SCICAM', '1M0-NRES-SCICAM'),
         ('1M0-SCICAM-SINISTRO', '1M0-SCICAM-SINISTRO'),
+        ('1M0-SCICAM-SBIG', '1M0-SCICAM-SBIG'),
         ('2M0-FLOYDS-SCICAM', '2M0-FLOYDS-SCICAM'),
         ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL')
     )
