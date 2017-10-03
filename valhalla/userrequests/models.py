@@ -113,6 +113,8 @@ class Request(models.Model):
 
     # Minimum completable block threshold (percentage, 0-100)
     completion_threshold = models.FloatField(default=100.0, validators=[MinValueValidator(1.0), MaxValueValidator(100.0)])
+    # Whether this request has been counted towards the requester's time allocation
+    accounted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ('id',)
@@ -175,6 +177,10 @@ class Request(models.Model):
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data
+
+    @classmethod
+    def need_accounting(clazz):
+        return clazz.objects.filter(state__in=['COMPLETED', 'CANCELED', 'WINDOW_EXPIRED'], accounted=False)
 
 
 class Location(models.Model):
