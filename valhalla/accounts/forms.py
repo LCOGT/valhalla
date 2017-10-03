@@ -45,6 +45,8 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
 
 
 class UserForm(forms.ModelForm):
+    username = forms.CharField(max_length=50)
+
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email']

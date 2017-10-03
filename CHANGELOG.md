@@ -1,3 +1,38 @@
+## 1.3.7
+2017-09-29
+
+* Auto redirect to first request detail if userrequest only contains a single request
+* Preserve linebreaks from textfields in proposal submission
+* Link to correct getting started guide
+* Add legend to visibility plot history on request detail page
+
+## 1.3.6
+2017-09-26
+
+* Add NRES to pressure and contention plots
+
+## 1.3.5
+2017-09-26
+
+* Add media/ to dockerignore
+
+## 1.3.4
+2017-09-22
+
+* Restrict username length on profile update page to 50 characters
+* Filter comissionig instruments from available instruments on compose page
+
+## 1.3.3
+2017-09-21
+
+* Add softies to ADMINS
+* Add support for NRES to user interface
+
+## 1.3.2
+2017-09-19
+
+* Fix NRES overheads
+
 ## 1.3.1
 2017-09-18
 
