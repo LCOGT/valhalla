@@ -409,6 +409,7 @@ class TestUserRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=ur)
         self.assertEqual(response.status_code, 400)
         self.assertIn('TimeAllocationError', str(response.content))
+        self.assertIn('ipp_value of 100.0 requires more ipp_time then is available.', str(response.content))
 
         # verify that objects were not created by the send
         self.assertFalse(UserRequest.objects.filter(group_id='ipp_request').exists())
