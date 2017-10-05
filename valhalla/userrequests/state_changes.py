@@ -1,8 +1,9 @@
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
-from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
 
+from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
+from valhalla.userrequests.request_utils import exposure_completion_percentage_from_pond_block
 from valhalla.userrequests.models import UserRequest, Request
 
 import itertools
@@ -144,25 +145,6 @@ def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
             time_allocation.save()
     except Exception as e:
         logger.warn(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
-
-
-def exposure_completion_percentage_from_pond_block(pond_block):
-    total_exposure_time = 0
-    completed_exposure_time = 0
-    for molecule in pond_block['molecules']:
-        event = molecule['event'][0] if molecule['event'] else {}
-        exp_time = float(molecule['exp_time'])
-        exp_cnt = molecule['exp_cnt']
-        if molecule['completed']:
-            completed_exp_cnt = exp_cnt
-        elif 'completedExposures' in event:
-            completed_exp_cnt = event['completedExposures']
-        else:
-            completed_exp_cnt = 0
-        total_exposure_time += exp_time * exp_cnt
-        completed_exposure_time += exp_time * completed_exp_cnt
-
-    return (completed_exposure_time / total_exposure_time) * 100.0
 
 
 def get_request_state_from_pond_blocks(request_state, completion_threshold, request_blocks):

@@ -5,16 +5,20 @@
     </div>
     <div class="blockHistoryPlotLegend text-center">
       <ul class="list-inline">
-        <li class="SCHEDULED legend-item"></li>
-        <li>Scheduled in the future</li>
-        <li class="SCHEDULED-PAST legend-item"></li>
-        <li>Scheduled in the past</li>
         <li class="CANCELED legend-item"></li>
         <li>Superseded by new schedule</li>
-        <li class="ATTEMPTED legend-item"></li>
-        <li>Currently running</li>
+        <li class="NOT_ATTEMPTED legend-item"></li>
+        <li>Not Attempted</li>
+        <li class="SCHEDULED legend-item"></li>
+        <li>Scheduled</li>
+        <li class="IN_PROGRESS legend-item"></li>
+        <li>In Progress</li>
         <li class="FAILED legend-item"></li>
         <li>Failed</li>
+        <li class="ABORTED legend-item"></li>
+        <li>Aborted</li>
+        <li class="PARTIALLY-COMPLETED legend-item"></li>
+        <li>Partially Completed</li>
         <li class="COMPLETED legend-item"></li>
         <li>Completed</li>
       </ul>
@@ -70,18 +74,16 @@ export default {
           var block = this.data[i];
           block.start += 'Z';
           block.end += 'Z';
-          var state = '';
-          if (block.completed) state += ' COMPLETED';
-          else if (block.failed) {
-            state += ' FAILED';
-            block.fail_reason = '<br/>' + block.fail_reason;
+          if (block.failed) {
+            block.fail_reason = '<br/>reason: ' + block.fail_reason;
           }
-          else if (block.attempted) state += ' ATTEMPTED';
-          else if (block.canceled) state += ' CANCELED';
-          else if (new Date(block.end) < new Date().getTime()) state += 'SCHEDULED-PAST';
-          else state += 'SCHEDULED';
 
-          block.state = state;
+          if (block.percent_completed > 0) {
+            block.percent_completed = '<br/>percent completed: ' + block.percent_completed.toFixed(1);
+          }
+          else {
+            block.percent_completed = '';
+          }
 
           if (block.cancel_date != null) {
             block.cancel_date = '<br/>canceled: ' + block.cancel_date.replace('T', ' ');
@@ -89,17 +91,17 @@ export default {
           else {
             block.cancel_date = '';
           }
-          if (block.start != previousBlock.start || block.site != previousBlock.site || block.state != previousBlock.state
+          if (block.start != previousBlock.start || block.site != previousBlock.site || block.status != previousBlock.status
             || block.observatory != previousBlock.observatory || block.telescope != previousBlock.telescope) {
 
-            var className = 'timeline_block ' + previousBlock.state;
+            var className = 'timeline_block ' + previousBlock.status;
 
             visGroups.add({id: index, content: previousBlockIndex});
 
             visData.add({
               id: index,
               group: index,
-              title: 'telescope: ' + previousBlock.site + '.' + previousBlock.observatory + '.' + previousBlock.telescope + previousBlock.fail_reason + previousBlock.cancel_date + '<br/>start: ' + previousBlock.start.replace('T', ' ') + '<br/>end: ' + previousBlock.end.replace('T', ' '),
+              title: 'telescope: ' + previousBlock.site + '.' + previousBlock.observatory + '.' + previousBlock.telescope + previousBlock.percent_completed + previousBlock.fail_reason + previousBlock.cancel_date + '<br/>start: ' + previousBlock.start.replace('T', ' ') + '<br/>end: ' + previousBlock.end.replace('T', ' '),
               className: className,
               start: previousBlock.start,
               end: previousBlock.end,
@@ -118,8 +120,8 @@ export default {
         visData.add({
           id: index,
           group: index,
-          title: 'telescope: ' + previousBlock.site + '.' + previousBlock.observatory + '.' + previousBlock.telescope + previousBlock.fail_reason + previousBlock.cancel_date + '<br/>start: ' + previousBlock.start.replace('T', ' ') + '<br/>end: ' + previousBlock.end.replace('T', ' '),
-          className: 'timeline_block ' + previousBlock.state,
+          title: 'telescope: ' + previousBlock.site + '.' + previousBlock.observatory + '.' + previousBlock.telescope + previousBlock.percent_completed + previousBlock.fail_reason + previousBlock.cancel_date + '<br/>start: ' + previousBlock.start.replace('T', ' ') + '<br/>end: ' + previousBlock.end.replace('T', ' '),
+          className: 'timeline_block ' + previousBlock.status,
           start: previousBlock.start,
           end: previousBlock.end,
           toggle: 'tooltip',
