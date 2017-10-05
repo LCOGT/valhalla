@@ -1,3 +1,8 @@
+## 1.3.8
+2017-10-04
+
+* Compact typography for proposal submissions
+
 ## 1.3.7
 2017-09-29
 
