@@ -1,3 +1,8 @@
+## 1.3.9
+2017-10-05
+
+* Unify pond block statuses and colors with the scheduler visualization
+
 ## 1.3.8
 2017-10-04
 
