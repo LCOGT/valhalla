@@ -1,3 +1,8 @@
+## 1.3.10
+2017-10-06
+
+* Fix vis.js Timeline tooltips
+
 ## 1.3.9
 2017-10-05
 
