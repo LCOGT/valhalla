@@ -43,6 +43,7 @@ export default {
     var options = {
       groupOrder: 'content',
       maxHeight: '450px',
+      minHeight: '120px',
       align: 'right',
       dataAttributes: ['toggle', 'html'],
       selectable: false,
@@ -50,6 +51,9 @@ export default {
       zoomKey: 'ctrlKey',
       moment: function (date) {
         return vis.moment(date).utc();
+      },
+      tooltip: {
+        overflowMethod: 'cap',
       }
     };
 
@@ -174,7 +178,7 @@ export default {
       plot.on('changed', function () {
         //HAX
         $(that.$el).find('.vis-group').mouseover(function () {
-          $(that.$el).find('.vis-item').tooltip({container: 'body'});
+          $(that.$el).find('.vis-item').tooltip({container: 'body', 'placement': 'top'});
         });
       });
       return plot;
