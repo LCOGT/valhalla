@@ -1,3 +1,8 @@
+## 1.3.11
+2017-10-09
+
+* Added completion_threshold to compose UI and set default value to 90.0%
+
 ## 1.3.10
 2017-10-06
 
