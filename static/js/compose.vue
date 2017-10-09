@@ -139,6 +139,7 @@
           operator: 'SINGLE',
           observation_type: 'NORMAL',
           requests: [{
+            completion_threshold: 90.0,
             target: {
               name: '',
               type: 'SIDEREAL',
@@ -170,8 +171,7 @@
             constraints: {
               max_airmass: 1.6,
               min_lunar_distance: 30.0
-            },
-            completion_threshold: 90.0
+            }
           }]
         },
         errors: {},
