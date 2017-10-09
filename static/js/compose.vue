@@ -139,6 +139,7 @@
           operator: 'SINGLE',
           observation_type: 'NORMAL',
           requests: [{
+            completion_threshold: 90.0,
             target: {
               name: '',
               type: 'SIDEREAL',
