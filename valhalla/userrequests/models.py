@@ -277,7 +277,7 @@ class Target(models.Model):
     eccentricity = models.FloatField(verbose_name='Eccentricity', null=True, blank=True,
                                      validators=[MinValueValidator(0.0)])
     meanlong = models.FloatField(verbose_name='Mean longitude (deg)', null=True, blank=True)
-    meananom = models.FloatField(verbose_name='Mean anomoly (deg)', null=True, blank=True,
+    meananom = models.FloatField(verbose_name='Mean anomaly (deg)', null=True, blank=True,
                                  validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
     dailymot = models.FloatField(verbose_name='Daily motion (deg)', null=True, blank=True)
     epochofperih = models.FloatField(verbose_name='Epoch of perihelion (MJD)', null=True, blank=True,

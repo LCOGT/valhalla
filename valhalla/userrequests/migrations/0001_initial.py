@@ -118,7 +118,7 @@ class Migration(migrations.Migration):
                 ('perihdist', models.FloatField(blank=True, null=True, verbose_name='Perihelion distance (AU)')),
                 ('eccentricity', models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0.0)], verbose_name='Eccentricity')),
                 ('meanlong', models.FloatField(blank=True, null=True, verbose_name='Mean longitude (deg)')),
-                ('meananom', models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(360.0)], verbose_name='Mean anomoly (deg)')),
+                ('meananom', models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0.0), django.core.validators.MaxValueValidator(360.0)], verbose_name='Mean anomaly (deg)')),
                 ('dailymot', models.FloatField(blank=True, null=True, verbose_name='Daily motion (deg)')),
                 ('epochofperih', models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(10000), django.core.validators.MaxValueValidator(100000)], verbose_name='Epoch of perihelion (MJD)')),
                 ('acquire_mode', models.CharField(choices=[('OPTIONAL', 'OPTIONAL'), ('ON', 'ON')], default='OPTIONAL', max_length=50)),
