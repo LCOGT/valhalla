@@ -70,7 +70,7 @@
             </dl>
             <dl class="twocol dl-horizontal">
               <dt>Completion Threshold</dt>
-              <dd>{{ request.completion_threshold }}</dd>
+              <dd>{{ request.completion_threshold }}%</dd>
             </dl>
           </div>
         </div>
