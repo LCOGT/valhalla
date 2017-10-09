@@ -444,17 +444,6 @@ class TestSciAppDetail(TestCase):
         self.assertTrue(HTML.write_pdf.called)
         self.assertEqual(response.status_code, 200)
 
-    def test_bad_characters(self):
-        app = mixer.blend(
-            ScienceApplication,
-            status=ScienceApplication.DRAFT,
-            submitter=self.user,
-            call=self.call,
-            abstract='A string with bad \u0008 characters'
-        )
-        response = self.client.get(reverse('sciapplications:pdf', kwargs={'pk': app.id}), follow=True)
-        self.assertContains(response, 'There was an error generating your pdf')
-
     def test_staff_can_view_pdf(self):
         PdfFileMerger.merge = MagicMock
         HTML.write_pdf = MagicMock

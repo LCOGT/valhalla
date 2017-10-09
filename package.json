@@ -18,25 +18,27 @@
   },
   "homepage": "https://github.com/LCOGT/valhalla#readme",
   "dependencies": {
-    "babel-cli": "^6.5.2",
-    "babel-core": "^6.25.0",
-    "babel-loader": "^7.1.1",
     "bootstrap": "^3.3.5",
     "bootstrap-table": "^1.11.1",
-    "chart.js": "^2.6.0",
+    "chart.js": "^2.7.0",
     "chartjs-plugin-annotation": "^0.5.5",
-    "css-loader": "^0.28.4",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
-    "file-loader": "^0.11.2",
     "jquery": "^3.2.1",
     "jquery-file-download": "^1.4.6",
     "lodash": "^4.17.4",
     "moment": "^2.18.1",
-    "style-loader": "^0.18.2",
     "vis": "4.19.1",
-    "vue": "^2.4.1",
-    "vue-loader": "^12.2.2",
-    "vue-template-compiler": "^2.4.1",
-    "webpack": "^3.3.0"
+    "vue": "^2.4.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "css-loader": "^0.28.7",
+    "file-loader": "^0.11.2",
+    "style-loader": "^0.18.2",
+    "vue-loader": "^13.0.5",
+    "vue-template-compiler": "^2.4.4",
+    "webpack": "^3.6.0"
   }
 }

@@ -10,12 +10,12 @@
         {% bootstrap_form user_form %}
         {% bootstrap_form profile_form %}
         {% buttons submit='Save' reset='Cancel' %}
-        <a href="{% url 'auth_password_change' %}" class="btn btn-danger pull-right">Change Passwod</a>
+        <a href="{% url 'auth_password_change' %}" class="btn btn-danger pull-right">Change Password</a>
         {% endbuttons %}
         </form>
     </div>
     <div class="col-md-4">
-        <h2>Api Key</h2>
+        <h2>API Key</h2>
         <p>
         The following key may be used to authenticate when using the
         <a href="{% url 'api:api-root' %}">API</a>.
@@ -31,6 +31,12 @@
             {% csrf_token %}
             <input type="submit" class="btn btn-danger" value="Revoke Token" />
         </form>
+        <h2>API Quota</h2>
+        <p>The observations API is rate limited so that it remains available to all users in the event
+        a single user makes too many requests in too rapid a succession, causing denial of service to
+        other clients.</p>
+        <p>The rate limit is applied on a 24 hour rolling window. Your current quota is:</p>
+        <p><strong>{{ user.profile.api_quota.used }} out of {{ user.profile.api_quota.allowed }}</strong></p>
     </div>
 </div>
 {% endblock %}

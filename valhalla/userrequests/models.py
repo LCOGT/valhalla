@@ -225,7 +225,7 @@ class Target(models.Model):
         ('VFLOAT', 'VFLOAT'),
     )
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=50)
     request = models.OneToOneField(Request)
 
     type = models.CharField(max_length=255, choices=POINTING_TYPES)

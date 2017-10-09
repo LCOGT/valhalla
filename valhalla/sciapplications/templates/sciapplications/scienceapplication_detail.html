@@ -8,14 +8,19 @@
     <style>
     body {
         margin: 15px;
-        font: 12pt Georgia, "Times New Roman", Times, serif;
-        line-height: 1.3;
+        font: 11pt Georgia, "Times New Roman", Times, serif;
+        line-height: 1.1;
     }
     table {
         border-collapse:separate; border-spacing: 10px;
     }
+    h1 {
+        font-size: 18px;
+    }
     h2 {
         page-break-before: auto;
+        font-size: 16px;
+        margin: 0px;
     }
     p {
         page-break-inside: avoid;
@@ -39,7 +44,7 @@
 
     {% if object.abstract %}
         <h2>{% trans 'Abstract' %}</h2>
-        <p>{{ object.abstract }}</p>
+        <p>{{ object.abstract|linebreaks }}</p>
     {% endif %}
 
     <h2>{% trans 'Principal Investigator' %}</h2>
@@ -69,13 +74,13 @@
             </tbody>
         </table>
     <h2>{% trans 'Observing Budget Explanation' %}</h2>
-    <p>{{ object.budget_details }}</p>
+    <p>{{ object.budget_details|linebreaks }}</p>
     {% endif %}
 
 
     {% if object.science_case %}
             <h2>{% trans 'Science Case' %}</h2>
-            <p>{{ object.science_case }}</p>
+            <p>{{ object.science_case|linebreaks }}</p>
     {% endif %}
 
     {% if object.science_case_file %}
@@ -89,7 +94,7 @@
 
     {% if object.experimental_design %}
             <h2>{% trans 'Experimental Design' %}</h2>
-            <p>{{ object.experimental_design }}</p>
+            <p>{{ object.experimental_design|linebreaks }}</p>
     {% endif %}
 
     {% if object.experimental_design_file %}
@@ -117,42 +122,42 @@
 
     {% if object.related_programs %}
             <h2>{% trans 'Related Programs' %}</h2>
-            <p>{{ object.related_programs }}</p>
+            <p>{{ object.related_programs|linebreaks }}</p>
     {% endif %}
 
     {% if object.past_use %}
             <h2>{% trans 'Past Use' %}</h2>
-            <p>{{ object.past_use }}</p>
+            <p>{{ object.past_use|linebreaks }}</p>
     {% endif %}
 
     {% if object.publications %}
             <h2>{% trans 'Applicant&#39s related publications' %}</h2>
-            <p>{{ object.publications }}</p>
+            <p>{{ object.publications|linebreaks }}</p>
     {% endif %}
 
     {% if object.management %}
             <h2>{% trans 'Plan for management of entire scientific investigation' %}</h2>
-            <p>{{ object.management }}</p>
+            <p>{{ object.management|linebreaks }}</p>
     {% endif %}
 
     {% if object.relevance %}
             <h2>{% trans 'Relevance to uniqe capabilities of the LCOGT netowork' %}</h2>
-            <p>{{ object.relevance }}</p>
+            <p>{{ object.relevance|linebreaks }}</p>
     {% endif %}
 
     {% if object.contribution %}
             <h2>{% trans 'Contribution brought by non-LCOGT pariticipants' %}</h2>
-            <p>{{ object.contribution }}</p>
+            <p>{{ object.contribution|linebreaks }}</p>
     {% endif %}
 
     {% if object.science_justification %}
             <h2>{% trans 'Science Justification' %}</h2>
-            <p>{{ object.science_justification }}</p>
+            <p>{{ object.science_justification|linebreaks }}</p>
     {% endif %}
 
     {% if object.ddt_justification %}
             <h2>{% trans 'DDT Justification' %}</h2>
-            <p>{{ object.ddt_justification }}</p>
+            <p>{{ object.ddt_justification|linebreaks }}</p>
     {% endif %}
 </body>
 </html>

@@ -122,8 +122,7 @@ export default {
         }
       }
       for(var ai in data.available_instrument_types){
-        // TODO remove this hardocded exclusion of NRES
-        if(!data.available_instrument_types[ai].includes('NRES')){
+        if(!data.available_instrument_types[ai].includes('COMMISSIONING')){
           allowed_instruments[data.available_instrument_types[ai]] = {};
         }
       }

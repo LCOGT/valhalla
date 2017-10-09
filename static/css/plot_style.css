@@ -47,13 +47,13 @@
 }
 
 .SCHEDULED {
-    background-color: yellow;
-    border-color: goldenrod;
+    background-color: #c8dac2;
+    border-color: #658e57;
 }
 
-.SCHEDULED-PAST {
-    background-color: darkgoldenrod;
-    border-color: darkgoldenrod;
+.NOT_ATTEMPTED {
+    background-color: olive;
+    border-color: darkolivegreen;
 }
 
 .CANCELED {
@@ -61,7 +61,7 @@
     border-color: darkgrey;
 }
 
-.ATTEMPTED {
+.IN_PROGRESS {
     background-color: lightgreen;
     border-color: green;
 }
@@ -72,9 +72,24 @@
     border-color: darkgreen;
 }
 
+.PARTIALLY-COMPLETED {
+    background-color: yellow;
+    border-color: goldenrod;
+}
+
 .FAILED {
     background-color: red;
     border-color: maroon;
+}
+
+.ABORTED {
+    background-color: orange;
+    border-color: darkorange;
+}
+
+.NO_CONNECTION {
+    background-color: black;
+    border-color: darkgrey;
 }
 
 

@@ -754,6 +754,13 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data, follow=True)
         self.assertEqual(response.json()['requests'][0]['target']['rot_mode'], 'VFLOAT')
 
+    def test_target_name_max_length(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['name'] = 'x' * 51
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data, follow=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('50 characters', str(response.content))
+
 
 class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -948,6 +955,13 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['location']['telescope'] = '1m0b'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_post_userrequest_location_no_blanks(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['site'] = 'tst'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response.json()['requests'][0]['location'].get('observatory'))
 
 
 class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
