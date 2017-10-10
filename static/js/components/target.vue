@@ -68,7 +68,7 @@
             <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
-            <customfield v-model="target.meananom" label="Mean Anomoly" field="meananom"
+            <customfield v-model="target.meananom" label="Mean Anomaly" field="meananom"
                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
             </customfield>
           </div>
