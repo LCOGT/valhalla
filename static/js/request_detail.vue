@@ -45,7 +45,7 @@
                 <tr v-for="molecule in request.molecules">
                   <td>{{ molecule.instrument_name }}</td>
                   <td>{{ molecule.filter }}</td>
-                  <td>{{ molecule.exposure_time }} x {{ molecule.exposure_count }}</td>
+                  <td>{{ molecule.exposure_time }}s x {{ molecule.exposure_count }}</td>
                   <td>{{ molecule.bin_x }}</td>
                   <td>{{ molecule.defocus }}</td>
                 </tr>
