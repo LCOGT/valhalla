@@ -1,3 +1,8 @@
+## 1.3.13
+2017-10-10
+
+* Adjust some minimum completable block help text
+
 ## 1.3.12
 2017-10-10
 
