@@ -1,3 +1,8 @@
+## 1.3.12
+2017-10-10
+
+* Show extra user information when possible on science applications
+
 ## 1.3.11
 2017-10-09
 
