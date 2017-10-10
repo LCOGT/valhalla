@@ -5,13 +5,15 @@ from django.db.utils import IntegrityError
 from django.conf import settings
 from django.utils import timezone
 from mixer.backend.django import mixer
+from unittest.mock import patch
+from requests import HTTPError
 import responses
 import datetime
 
-from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification
-from valhalla.proposals.models import TimeAllocation, Semester
-from valhalla.userrequests.models import UserRequest, Request, Molecule, Location, Window
+from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification, TimeAllocation, Semester
+from valhalla.userrequests.models import UserRequest
 from valhalla.accounts.models import Profile
+from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
 from valhalla.proposals.tasks import run_accounting
 
 
@@ -126,34 +128,51 @@ class TestProposalNotifications(TestCase):
 
 
 class TestAccounting(TestCase):
+    def test_split_time(self):
+        start = datetime.datetime(2017, 1, 1)
+        end = datetime.datetime(2017, 1, 5)
+        chunks = split_time(start, end, chunks=4)
+        self.assertEqual(len(chunks), 4)
+        self.assertEqual(chunks[0][0], start)
+        self.assertEqual(chunks[3][1], end)
+
+    @patch('valhalla.proposals.accounting.query_pond', return_value=1)
+    def test_time_totals_from_pond(self, qp_mock):
+        ta = mixer.blend(TimeAllocation)
+        result = get_time_totals_from_pond(ta, ta.semester.start, ta.semester.end, False)
+        self.assertEqual(result, 1)
+        self.assertEqual(qp_mock.call_count, 1)
+
+    @patch('valhalla.proposals.accounting.query_pond', side_effect=HTTPError)
+    def test_time_totals_from_pond_timeout(self, qa_mock):
+        ta = mixer.blend(TimeAllocation)
+        with self.assertRaises(RecursionError):
+            get_time_totals_from_pond(ta, ta.semester.start, ta.semester.end, False)
+
+        self.assertEqual(qa_mock.call_count, 4)
+
     @responses.activate
-    def test_run_accounting(self):
-        semester = mixer.blend(
-            Semester,
-            start=datetime.datetime(2017, 1, 1, tzinfo=timezone.utc),
-            end=datetime.datetime(2017, 4, 30, tzinfo=timezone.utc)
-        )
-        proposal = mixer.blend(Proposal, semester=semester, active=True)
-        talloc = mixer.blend(
-            TimeAllocation, semester=semester, proposal=proposal,
-            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
-        )
-        ur = mixer.blend(UserRequest, proposal=proposal, observation_type='NORMAL')
-        request = mixer.blend(Request, user_request=ur, state='COMPLETED')
-        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
-        mixer.blend(Location, request=request, telescope_class='1m0')
-        mixer.blend(Window, request=request, start=datetime.datetime(2017, 2, 1, tzinfo=timezone.utc), end=datetime.datetime(2017, 3, 1, tzinfo=timezone.utc))
+    def test_query_pond(self):
         responses.add(
-            responses.GET, '{0}/pond/pond/accounting/{1}/'.format(settings.POND_URL, request.id),
-            json={'attempted_hours': 1, 'block_bounded_attempted_hours': 1}, status=200
+            responses.GET,
+            '{}/pond/pond/accounting/summary'.format(settings.POND_URL),
+            body='{ "block_bounded_attempted_hours": 1, "attempted_hours": 2 }',
+            content_type='application/json'
         )
-        run_accounting()
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, False), 2)
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, True), 1)
+
+    @patch('valhalla.proposals.accounting.query_pond', return_value=1)
+    def test_run_accounting(self, qa_mock):
+        semester = mixer.blend(
+            Semester, start=datetime.datetime(2017, 1, 1, tzinfo=timezone.utc), end=datetime.datetime(2017, 4, 30, tzinfo=timezone.utc))
+        talloc = mixer.blend(
+            TimeAllocation, semester=semester, std_allocation=10, too_allocation=10, std_time_used=0, too_time_used=0
+        )
+        run_accounting([semester])
         talloc.refresh_from_db()
         self.assertEqual(talloc.std_time_used, 1)
-        self.assertEqual(talloc.too_time_used, 0)
-        request.refresh_from_db()
-        self.assertTrue(request.accounted)
+        self.assertEqual(talloc.too_time_used, 1)
 
 
 class TestDefaultIPP(TestCase):
