@@ -112,7 +112,7 @@ class Request(models.Model):
     completed = models.DateTimeField(null=True, blank=True)
 
     # Minimum completable block threshold (percentage, 0-100)
-    completion_threshold = models.FloatField(default=100.0, validators=[MinValueValidator(1.0), MaxValueValidator(100.0)])
+    completion_threshold = models.FloatField(default=90.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
 
     class Meta:
         ordering = ('id',)
@@ -278,7 +278,7 @@ class Target(models.Model):
     eccentricity = models.FloatField(verbose_name='Eccentricity', null=True, blank=True,
                                      validators=[MinValueValidator(0.0)])
     meanlong = models.FloatField(verbose_name='Mean longitude (deg)', null=True, blank=True)
-    meananom = models.FloatField(verbose_name='Mean anomoly (deg)', null=True, blank=True,
+    meananom = models.FloatField(verbose_name='Mean anomaly (deg)', null=True, blank=True,
                                  validators=[MinValueValidator(0.0), MaxValueValidator(360.0)])
     dailymot = models.FloatField(verbose_name='Daily motion (deg)', null=True, blank=True)
     epochofperih = models.FloatField(verbose_name='Epoch of perihelion (MJD)', null=True, blank=True,

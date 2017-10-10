@@ -1,3 +1,33 @@
+## 1.3.13
+2017-10-10
+
+* Adjust some minimum completable block help text
+
+## 1.3.12
+2017-10-10
+
+* Show extra user information when possible on science applications
+
+## 1.3.11
+2017-10-09
+
+* Added completion_threshold to compose UI and set default value to 90.0%
+
+## 1.3.10
+2017-10-06
+
+* Fix vis.js Timeline tooltips
+
+## 1.3.9
+2017-10-05
+
+* Unify pond block statuses and colors with the scheduler visualization
+
+## 1.3.8
+2017-10-04
+
+* Compact typography for proposal submissions
+
 ## 1.3.7
 2017-09-29
 

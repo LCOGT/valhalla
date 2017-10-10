@@ -33,12 +33,16 @@ export default {
       groupOrder: 'id',
       stack: false,
       maxHeight: '450px',
+      minHeight: '120px',
       align: 'left',
       dataAttributes: ['toggle', 'html'],
       selectable: false,
       zoomKey: 'ctrlKey',
       moment: function (date) {
         return vis.moment(date).utc();
+      },
+      tooltip: {
+        overflowMethod: 'cap',
       }
     };
 

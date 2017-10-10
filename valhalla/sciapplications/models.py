@@ -144,13 +144,16 @@ class ScienceApplication(models.Model):
         else:
             Membership.objects.create(proposal=proposal, user=self.submitter, role=Membership.PI)
 
-        cis = [c for c in self.coi.replace(' ', '').split(',') if c]
-        proposal.add_users(cis, Membership.CI)
+        proposal.add_users(self.cis, Membership.CI)
 
         self.proposal = proposal
         self.status = ScienceApplication.PORTED
         self.save()
         return proposal
+
+    @property
+    def cis(self):
+        return [c for c in self.coi.replace(' ', '').split(',') if c]
 
 
 class TimeRequest(models.Model):
