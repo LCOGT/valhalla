@@ -112,7 +112,7 @@ class Request(models.Model):
     completed = models.DateTimeField(null=True, blank=True)
 
     # Minimum completable block threshold (percentage, 0-100)
-    completion_threshold = models.FloatField(default=90.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
+    acceptability_threshold = models.FloatField(default=90.0, validators=[MinValueValidator(0.0), MaxValueValidator(100.0)])
 
     class Meta:
         ordering = ('id',)

@@ -1,3 +1,8 @@
+## 1.3.15
+2017-10-11
+
+* Rename completion_threshold to acceptability_threshold in the Request model
+
 ## 1.3.14
 2017-10-10
 
