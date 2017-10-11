@@ -64,7 +64,7 @@
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
                 <table class="table table-striped">
-                    <thead><tr><td>Telescope Class</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
+                    <thead><tr><td>Instrument</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
@@ -72,7 +72,7 @@
                     <tr class="timerequest-row">
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
-                        {{ form.telescope_class }}
+                        {{ form.instrument }}
                         </td>
                         <td>{{ form.std_time }}</td>
                         <td>{{ form.too_time }}</td>
@@ -129,18 +129,6 @@
                 </div>
                 {% bootstrap_field form.experimental_design show_label=False %}
                 {% bootstrap_field form.experimental_design_file show_label=False %}
-            {% endif %}
-
-            {% if form.instruments %}
-                {% bootstrap_label 'Instruments' label_for=id_instruments %}
-                <div class="help-block">
-                {% blocktrans %}
-                The 2m telescopes have Spectral imagers and FLOYDS spectrographs.
-                The 1m telescopes have Sinistro imagers; some have NRES spectrographs.
-                The 0m4 telescopes have SBIG STX-6303 imagers. Ctrl+click to select multiple instruments.
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.instruments show_label=False %}
             {% endif %}
 
             {% if form.moon %}

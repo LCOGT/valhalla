@@ -10,9 +10,11 @@ from valhalla.proposals.models import (
 
 class Instrument(models.Model):
     code = models.CharField(max_length=50)
+    telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
+    display = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.code
+        return self.display
 
 
 class Call(models.Model):
@@ -73,7 +75,6 @@ class ScienceApplication(models.Model):
     pi = models.EmailField(blank=True, default='')
     coi = models.TextField(blank=True, default='')
     budget_details = models.TextField(blank=True, default='', help_text='')
-    instruments = models.ManyToManyField(Instrument, blank=True)
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     science_case = models.TextField(blank=True, default='')
@@ -133,7 +134,8 @@ class ScienceApplication(models.Model):
             TimeAllocation.objects.create(
                 std_allocation=tr.std_time,
                 too_allocation=tr.too_time,
-                telescope_class=tr.telescope_class,
+                telescope_class=tr.instrument.telescope_class,
+                instrument_name=tr.instrument.code,
                 semester=self.call.semester,
                 proposal=proposal
             )
@@ -158,10 +160,10 @@ class ScienceApplication(models.Model):
 
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication)
-    telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
+    instrument = models.ForeignKey(Instrument)
     std_time = models.PositiveIntegerField(default=0, blank=True)
     too_time = models.PositiveIntegerField(default=0, blank=True)
     approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{} {} TimeRequest'.format(self.science_application, self.telescope_class)
+        return '{} {} TimeRequest'.format(self.science_application, self.instrument)
