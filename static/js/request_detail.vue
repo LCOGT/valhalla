@@ -69,8 +69,8 @@
               </span>
             </dl>
             <dl class="twocol dl-horizontal">
-              <dt>Completion Threshold</dt>
-              <dd>{{ request.completion_threshold }}%</dd>
+              <dt>Acceptability Threshold</dt>
+              <dd>{{ request.acceptability_threshold }}%</dd>
             </dl>
           </div>
         </div>

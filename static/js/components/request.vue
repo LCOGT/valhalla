@@ -21,8 +21,8 @@
                          :errors="errors.instrument_name" :options="availableInstrumentOptions"
                          desc="Select the instrument with which this observation will be made.">
           </customselect>
-          <customfield v-model="request.completion_threshold" label="Minimum Acceptance Percentage" field="completion_threshold" v-on:input="update"
-                        :errors="errors.completion_threshold" desc="The percentage of the observation that must be completed to mark the request as complete and avert rescheduling.
+          <customfield v-model="request.acceptability_threshold" label="Acceptability Threshold" field="acceptability_threshold" v-on:input="update"
+                        :errors="errors.acceptability_threshold" desc="The percentage of the observation that must be completed to mark the request as complete and avert rescheduling.
                         The percentage should be set to the lowest value for which the amount of data is acceptable to meet the science goal of the request."
                         v-if="!simple_interface">
           </customfield>
