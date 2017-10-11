@@ -1,3 +1,8 @@
+## 1.3.14
+2017-10-10
+
+* Add 's' to the seconds display in the request detail page
+
 ## 1.3.13
 2017-10-10
 
