@@ -26,8 +26,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     serializer_class = UserRequestSerializer
     filter_class = UserRequestFilter
     filter_backends = (
-        filters.DjangoFilterBackend,
-        filters.OrderingFilter
+        filters.OrderingFilter,
     )
     ordering = ('-id',)
 
@@ -165,8 +164,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RequestSerializer
     filter_class = RequestFilter
     filter_backends = (
-        filters.DjangoFilterBackend,
-        filters.OrderingFilter
+        filters.OrderingFilter,
     )
     ordering = ('-id',)
     ordering_fields = ('id', 'state', 'fail_count')
