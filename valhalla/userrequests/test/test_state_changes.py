@@ -264,7 +264,7 @@ class TestRequestState(TestCase):
         self.assertEqual(fail_count + 1, request.fail_count)
 
     def test_request_state_pond_state_failed_but_threshold_complete(self):
-        request = dmixer.blend(Request, state='PENDING', completion_threshold=90.0)
+        request = dmixer.blend(Request, state='PENDING', acceptability_threshold=90.0)
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, event=[{'completedExposures': 9},],
@@ -279,7 +279,7 @@ class TestRequestState(TestCase):
         self.assertEqual(request.state, 'COMPLETED')
 
     def test_request_state_pond_state_failed_but_threshold_complete_2(self):
-        request = dmixer.blend(Request, state='PENDING', completion_threshold=70.0)
+        request = dmixer.blend(Request, state='PENDING', acceptability_threshold=70.0)
 
         now = timezone.now()
         molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, event=[{'completedExposures': 0},],
@@ -296,7 +296,7 @@ class TestRequestState(TestCase):
         self.assertEqual(request.state, 'COMPLETED')
 
     def test_request_state_pond_state_failed_and_threshold_failed(self):
-        request = dmixer.blend(Request, state='PENDING', completion_threshold=95.0)
+        request = dmixer.blend(Request, state='PENDING', acceptability_threshold=95.0)
         fail_count = request.fail_count
 
         now = timezone.now()
