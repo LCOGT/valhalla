@@ -12,9 +12,8 @@ RUN apt-get install -y gfortran nodejs
 COPY requirements.txt .
 RUN pip install numpy && pip install uwsgi -r requirements.txt
 
-COPY package.json .
-RUN npm install
-RUN npm install --only=dev
+COPY package.json package-lock.json ./
+RUN npm install && npm install --only=dev
 
 COPY docker/uwsgi.ini /etc/
 
