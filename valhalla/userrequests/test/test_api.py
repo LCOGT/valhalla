@@ -13,7 +13,6 @@ from django.conf import settings
 from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
 from mixer.main import mixer as basic_mixer
-from unittest.mock import patch
 from django.utils import timezone
 from datetime import datetime, timedelta
 import responses
@@ -22,6 +21,8 @@ import os
 import copy
 import json
 import random
+from urllib import parse
+from unittest.mock import patch
 
 generic_payload = {
     'proposal': 'temp',
@@ -1534,8 +1535,8 @@ class TestUpdateRequestStatesAPI(APITestCase):
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.client.force_login(self.user)
-        self.ur = mixer.blend(UserRequest, operator='MANY', state='PENDING', proposal=self.proposal)
-        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING')
+        self.ur = mixer.blend(UserRequest, operator='MANY', state='PENDING', proposal=self.proposal, modified=timezone.now() - timedelta(weeks=2))
+        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING', modified=timezone.now() - timedelta(weeks=2))
 
     @responses.activate
     def test_no_pond_blocks_no_state_changed(self, modify_mock):
@@ -1543,10 +1544,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         now = timezone.now()
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
+
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
-
-        response = self.client.get(reverse('api:isDirty'))
+        one_week_ahead = timezone.now() + timedelta(weeks=1)
+        response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
 
         self.assertFalse(response_json['isDirty'])
@@ -1568,7 +1570,8 @@ class TestUpdateRequestStatesAPI(APITestCase):
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
-        response = self.client.get(reverse('api:isDirty'))
+        one_week_ahead = timezone.now() + timedelta(weeks=1)
+        response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
 
         self.assertFalse(response_json['isDirty'])
