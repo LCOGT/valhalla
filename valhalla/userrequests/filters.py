@@ -1,9 +1,8 @@
 import django_filters
-from rest_framework import filters
 from valhalla.userrequests.models import UserRequest, Request, Location
 
 
-class UserRequestFilter(filters.FilterSet):
+class UserRequestFilter(django_filters.FilterSet):
     created_after = django_filters.DateTimeFilter(name='created', lookup_expr='gte', label='Submitted after')
     created_before = django_filters.DateTimeFilter(name='created', lookup_expr='lte', label='Submitted before')
     state = django_filters.ChoiceFilter(choices=UserRequest.STATE_CHOICES)
@@ -39,7 +38,7 @@ class UserRequestFilter(filters.FilterSet):
         )
 
 
-class RequestFilter(filters.FilterSet):
+class RequestFilter(django_filters.FilterSet):
     class Meta:
         model = Request
         fields = ('state', 'fail_count')

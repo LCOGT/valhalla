@@ -11,8 +11,8 @@ from weasyprint import HTML
 from unittest.mock import MagicMock
 
 
-
 from valhalla.proposals.models import Semester
+from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
 
@@ -387,6 +387,7 @@ class TestSciAppDetail(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,

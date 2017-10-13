@@ -2,6 +2,7 @@
 <div class="contention">
   <select v-model="instrument">
     <option value="1M0-SCICAM-SINISTRO">1m Sinistro</option>
+    <option value="1M0-NRES-SCICAM"> 1m NRES</option>
     <option value="2M0-SCICAM-SPECTRAL">2m Spectral</option>
     <option value="2M0-FLOYDS-SCICAM">2m FLOYDS</option>
     <option value="0M4-SCICAM-SBIG">.4m SBIG</option>

@@ -1,3 +1,67 @@
+## 1.3.15
+2017-10-11
+
+* Rename completion_threshold to acceptability_threshold in the Request model
+
+## 1.3.14
+2017-10-10
+
+* Add 's' to the seconds display in the request detail page
+
+## 1.3.13
+2017-10-10
+
+* Adjust some minimum completable block help text
+
+## 1.3.12
+2017-10-10
+
+* Show extra user information when possible on science applications
+
+## 1.3.11
+2017-10-09
+
+* Added completion_threshold to compose UI and set default value to 90.0%
+
+## 1.3.10
+2017-10-06
+
+* Fix vis.js Timeline tooltips
+
+## 1.3.9
+2017-10-05
+
+* Unify pond block statuses and colors with the scheduler visualization
+
+## 1.3.8
+2017-10-04
+
+* Compact typography for proposal submissions
+
+## 1.3.7
+2017-09-29
+
+* Auto redirect to first request detail if userrequest only contains a single request
+* Preserve linebreaks from textfields in proposal submission
+* Link to correct getting started guide
+* Add legend to visibility plot history on request detail page
+
+## 1.3.6
+2017-09-26
+
+* Add NRES to pressure and contention plots
+
+## 1.3.5
+2017-09-26
+
+* Add media/ to dockerignore
+
+## 1.3.4
+2017-09-22
+
+* Restrict username length on profile update page to 50 characters
+* Filter comissionig instruments from available instruments on compose page
+
 ## 1.3.3
 2017-09-21
 

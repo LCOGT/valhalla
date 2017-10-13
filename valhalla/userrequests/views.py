@@ -5,9 +5,10 @@ from django.views.generic.detail import DetailView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser
-from django.http import HttpResponseBadRequest, HttpResponseServerError
+from django.http import HttpResponseBadRequest, HttpResponseServerError, HttpResponseRedirect
 from django.utils import timezone
 from django.conf import settings
+from django.urls import reverse
 from django.core.cache import cache
 from dateutil.parser import parse
 from datetime import timedelta
@@ -82,6 +83,13 @@ class UserRequestDetailView(DetailView):
         context['requests'] = requests
 
         return context
+
+    def render_to_response(self, context, **kwargs):
+        if self.get_object().requests.count() == 1:
+            request = self.get_object().requests.first()
+            return HttpResponseRedirect(reverse('userrequests:request-detail', args=(request.id, )))
+        else:
+            return super().render_to_response(context, **kwargs)
 
 
 class RequestDetailView(DetailView):

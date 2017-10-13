@@ -122,7 +122,9 @@ export default {
         }
       }
       for(var ai in data.available_instrument_types){
-        allowed_instruments[data.available_instrument_types[ai]] = {};
+        if(!data.available_instrument_types[ai].includes('COMMISSIONING')){
+          allowed_instruments[data.available_instrument_types[ai]] = {};
+        }
       }
     }).done(function(){
       $.getJSON('/api/instruments/', function(data){
