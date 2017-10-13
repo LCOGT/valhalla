@@ -200,9 +200,10 @@ class UserRequestStatusIsDirty(APIView):
         pond_blocks = response.json()
         is_dirty = update_request_states_from_pond_blocks(pond_blocks)
         cache.set('isDirty_query_time', now, None)
-        
+
         # also factor in if a change in requests (added, updated, cancelled) has occurred since we last checked
-        is_dirty |= cache.get('last_update_time', timezone.now()) > last_query_time
+        last_update_time = max(Request.objects.latest('modified'), UserRequest.objects.latest('modified'))
+        is_dirty |= last_update_time >= last_query_time
 
         return Response({'isDirty': is_dirty})
 

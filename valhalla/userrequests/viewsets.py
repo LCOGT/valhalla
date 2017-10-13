@@ -3,7 +3,6 @@ from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django.utils import timezone
-from django.core.cache import cache
 from dateutil.parser import parse
 import logging
 
@@ -110,7 +109,6 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         try:
             ur.state = 'CANCELED'
             ur.save()
-            cache.set('last_update_time', timezone.now(), None)
         except InvalidStateChange as exc:
             return Response({'errors': [str(exc)]}, status=400)
         return Response(UserRequestSerializer(ur).data)
