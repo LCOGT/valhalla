@@ -1,5 +1,8 @@
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save
+from django.core.cache import cache
+from django.utils import timezone
+
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.state_changes import on_request_state_change, on_userrequest_state_change
 from valhalla.proposals.notifications import userrequest_notifications
@@ -8,6 +11,7 @@ from valhalla.proposals.notifications import userrequest_notifications
 @receiver(pre_save, sender=UserRequest)
 def cb_userrequest_pre_save(sender, instance, *args, **kwargs):
     # instance has the new data, query the model for the current data
+    cache.set('last_update_time', timezone.now(), None)
     # TODO refactor and make clear what is actually happening here
     if instance.id:
         # This is an update to the model
@@ -18,6 +22,7 @@ def cb_userrequest_pre_save(sender, instance, *args, **kwargs):
 @receiver(pre_save, sender=Request)
 def cb_request_pre_save(sender, instance, *args, **kwargs):
     # instance has the new data, query the model for the current data
+    cache.set('last_update_time', timezone.now(), None)
     # TODO refactor and make clear what is actually happening here
     if instance.id:
         # This is an update to the model
