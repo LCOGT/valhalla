@@ -202,7 +202,8 @@ class UserRequestStatusIsDirty(APIView):
         cache.set('isDirty_query_time', now, None)
 
         # also factor in if a change in requests (added, updated, cancelled) has occurred since we last checked
-        last_update_time = max(Request.objects.latest('modified'), UserRequest.objects.latest('modified'))
+        last_update_time = max(Request.objects.latest('modified').modified,
+                               UserRequest.objects.latest('modified').modified)
         is_dirty |= last_update_time >= last_query_time
 
         return Response({'isDirty': is_dirty})
