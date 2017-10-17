@@ -1,3 +1,8 @@
+## 1.3.17
+2017-10-17
+
+* Changed configdb to use a local memory cache so it can check the cache more frequently
+
 ## 1.3.16
 2017-10-13
 
