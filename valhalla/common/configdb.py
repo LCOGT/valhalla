@@ -1,5 +1,5 @@
 import requests
-from django.core.cache import cache
+from django.core.cache import caches
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from collections import namedtuple
@@ -23,16 +23,12 @@ class TelescopeKey(namedtuple('TelescopeKey', ['site', 'observatory', 'telescope
 
 
 class ConfigDB(object):
-
-    def __init__(self):
-        self.site_data = None
-
     def _get_configdb_data(self, resource):
         ''' Gets all the data from configdb (the sites structure with everything in it)
         :return: list of dictionaries of site data
         '''
 
-        data = cache.get(resource)
+        data = caches['configdb'].get(resource)
         if not data:
             try:
                 r = requests.get(settings.CONFIGDB_URL + '/{}/'.format(resource))
@@ -45,20 +41,16 @@ class ConfigDB(object):
             except KeyError:
                 raise ConfigDBException(CONFIGDB_ERROR_MSG)
             # cache the results for 15 minutes
-            cache.set(resource, data, 900)
+            caches['configdb'].set(resource, data, 900)
 
         return data
 
     def get_site_data(self):
-        if not self.site_data:
-            self.site_data = self._get_configdb_data('sites')
-        return self.site_data
+        return self._get_configdb_data('sites')
 
     def get_sites_with_instrument_type_and_location(self, instrument_type='', site_code='',
                                                     observatory_code='', telescope_code=''):
-        if not self.site_data:
-            self.site_data = self._get_configdb_data('sites')
-        site_data = self.site_data
+        site_data = self.get_site_data()
         site_details = {}
         for site in site_data:
             if not site_code or site_code == site['code']:
@@ -83,10 +75,9 @@ class ConfigDB(object):
         return site_details
 
     def get_instruments(self, only_schedulable=False):
-        if not self.site_data:
-            self.site_data = self._get_configdb_data('sites')
+        site_data = self.get_site_data()
         instruments = []
-        for site in self.site_data:
+        for site in site_data:
             for enclosure in site['enclosure_set']:
                 for telescope in enclosure['telescope_set']:
                     for instrument in telescope['instrument_set']:
