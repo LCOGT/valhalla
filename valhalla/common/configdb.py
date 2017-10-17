@@ -28,7 +28,7 @@ class ConfigDB(object):
         :return: list of dictionaries of site data
         '''
 
-        data = caches['configdb'].get(resource)
+        data = caches['locmem'].get(resource)
         if not data:
             try:
                 r = requests.get(settings.CONFIGDB_URL + '/{}/'.format(resource))
@@ -41,7 +41,7 @@ class ConfigDB(object):
             except KeyError:
                 raise ConfigDBException(CONFIGDB_ERROR_MSG)
             # cache the results for 15 minutes
-            caches['configdb'].set(resource, data, 900)
+            caches['locmem'].set(resource, data, 900)
 
         return data
 

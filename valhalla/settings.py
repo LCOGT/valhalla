@@ -109,9 +109,9 @@ CACHES = {
         'BACKEND': os.getenv('CACHE_BACKEND', 'django.core.cache.backends.dummy.DummyCache'),
         'LOCATION': os.getenv('CACHE_LOCATION', 'unique-snowflake')
     },
-    'configdb': {
+    'locmem': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'configdb-cache'
+        'LOCATION': 'locmem-cache'
     }
 }
 
