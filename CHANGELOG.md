@@ -1,3 +1,13 @@
+## 1.3.17
+2017-10-17
+
+* Changed configdb to use a local memory cache so it can check the cache more frequently
+
+## 1.3.16
+2017-10-13
+
+* Modify is_dirty check to include recently modified requests
+
 ## 1.3.15
 2017-10-11
 

@@ -139,6 +139,7 @@ var telescopeCodeToName = {
   '1m0a': '1m',
   '0m4a': '0.4m A',
   '0m4b': '0.4m B',
+  '0m4c': '0.4m C',
   '2m0a': '2m',
   '0m8a': '0.8m'
 };
