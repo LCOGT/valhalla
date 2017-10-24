@@ -1,3 +1,8 @@
+## 1.3.19
+2017-10-24
+
+* Put in fallback for legacy binning modes to get the default binnings readout overhead
+
 ## 1.3.18
 2017-10-20
 
