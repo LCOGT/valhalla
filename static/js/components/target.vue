@@ -45,7 +45,9 @@
           </div>
           <div class="non-sidereal" v-show="target.type === 'NON_SIDEREAL'">
             <customselect v-model="target.scheme" label="Scheme" field="scheme" v-on:input="update" :errors="errors.scheme"
-                          :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'}, {value: 'MPC_COMET', text: 'MPC Comet'}]"
+                          :options="[{value: 'MPC_MINOR_PLANET', text: 'MPC Minor Planet'},
+                                     {value: 'MPC_COMET', text: 'MPC Comet'},
+                                     {value: 'JPL_MAJOR_PLANET', text: 'JPL Major Planet'}]"
                           desc="The orbital elements scheme to use with this target.">
             </customselect>
             <customfield v-model="target.epochofel" label="Epoch of Elements" field="epochofel"
@@ -57,22 +59,37 @@
             <customfield v-model="target.longascnode" label="Longitude of Ascending Node" field="longascnode"
                           v-on:input="update" :errors="errors.longascnode" desc="Angle in Degrees">
             </customfield>
-            <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
-                          v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
-            </customfield>
             <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
                           v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
             </customfield>
           </div>
-          <div class="minor-planet" v-show="target.scheme === 'MPC_MINOR_PLANET'">
+          <div v-show="target.scheme === 'MPC_MINOR_PLANET' || target.scheme == 'MPC_COMET'">
+            <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
+                          v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
+            </customfield>
+          </div>
+          <div v-show="target.scheme === 'MPC_MINOR_PLANET' || target.scheme == 'JPL_MAJOR_PLANET'">
             <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
+          </div>
+          <div v-show="target.scheme === 'MPC_MINOR_PLANET'">
             <customfield v-model="target.meananom" label="Mean Anomaly" field="meananom"
                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
             </customfield>
           </div>
-          <div class="mpc-comet" v-show="target.scheme === 'MPC_COMET'">
+          <div v-show="target.scheme === 'JPL_MAJOR_PLANET'">
+            <customfield v-model="target.longofperih" label="Longitude of Perihelion" field="longofperih"
+                         v-on:input="update" :errors="errors.longofperih" desc="Angle in Degrees">
+            </customfield>
+            <customfield v-model="target.dailymot" label="Daily Motion" field="dailymot"
+                         v-on:input="update" :errors="errors.dailymot" desc="Degrees">
+            </customfield>
+            <customfield v-model="target.meanlong" label="Mean Longitude" field="meanlong"
+                         v-on:input="update" :errors="errors.dailymot" desc="Degrees">
+            </customfield>
+          </div>
+          <div v-show="target.scheme === 'MPC_COMET'">
             <customfield v-model="target.perihdist" label="Perihelion Distance" field="perihdist"
                          v-on:input="update" :errors="errors.perihdist" desc="in AU">
             </customfield>
@@ -80,7 +97,7 @@
                          v-on:input="update" :errors="errors.epochofperih" desc="Modified Juian Days">
             </customfield>
           </div>
-          <div class="spectra" v-if="showSlitPosition">
+          <div v-if="showSlitPosition">
             <customselect v-model="target.rot_mode" label="Slit Position" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                            :options="[{value: 'VFLOAT', text: 'Parallactic'}, {value: 'SKY', text: 'User Specified'}]"
                            desc="With the slit at the parallactic angle, atmospheric dispersion is along the slit.">
