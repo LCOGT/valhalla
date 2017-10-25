@@ -62,8 +62,6 @@
             <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
                           v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
             </customfield>
-          </div>
-          <div v-show="target.scheme === 'MPC_MINOR_PLANET' || target.scheme == 'MPC_COMET'">
             <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
                           v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
             </customfield>
@@ -72,20 +70,12 @@
             <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
-          </div>
-          <div v-show="target.scheme === 'MPC_MINOR_PLANET'">
             <customfield v-model="target.meananom" label="Mean Anomaly" field="meananom"
                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
             </customfield>
           </div>
           <div v-show="target.scheme === 'JPL_MAJOR_PLANET'">
-            <customfield v-model="target.longofperih" label="Longitude of Perihelion" field="longofperih"
-                         v-on:input="update" :errors="errors.longofperih" desc="Angle in Degrees">
-            </customfield>
             <customfield v-model="target.dailymot" label="Daily Motion" field="dailymot"
-                         v-on:input="update" :errors="errors.dailymot" desc="Degrees">
-            </customfield>
-            <customfield v-model="target.meanlong" label="Mean Longitude" field="meanlong"
                          v-on:input="update" :errors="errors.dailymot" desc="Degrees">
             </customfield>
           </div>

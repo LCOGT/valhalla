@@ -74,7 +74,7 @@ class NonSiderealTargetHelper(BaseTargetHelper):
         elif target.get('scheme') == 'ASA_COMET':
             self.required_fields += ('argofperih', 'perihdist', 'epochofperih')
         elif target.get('scheme') == 'JPL_MAJOR_PLANET':
-            self.required_fields += ('longofperih', 'meandist', 'meanlong', 'dailymot')
+            self.required_fields += ('argofperih', 'meandist', 'meananom', 'dailymot')
         elif target.get('scheme') == 'JPL_MINOR_PLANET':
             self.required_fields += ('argofperih', 'perihdist', 'epochofperih')
         elif target.get('scheme') == 'MPC_MINOR_PLANET':
