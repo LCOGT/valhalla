@@ -59,11 +59,11 @@
             <customfield v-model="target.longascnode" label="Longitude of Ascending Node" field="longascnode"
                           v-on:input="update" :errors="errors.longascnode" desc="Angle in Degrees">
             </customfield>
-            <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
-                          v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
-            </customfield>
             <customfield v-model="target.argofperih" label="Argument of Perihelion" field="argofperih"
                           v-on:input="update" :errors="errors.argofperih" desc="Angle in Degrees">
+            </customfield>
+            <customfield v-model="target.eccentricity" label="Eccentricity" field="eccentricity"
+                          v-on:input="update" :errors="errors.eccentricity" desc="0 to 0.99">
             </customfield>
           </div>
           <div v-show="target.scheme === 'MPC_MINOR_PLANET' || target.scheme == 'JPL_MAJOR_PLANET'">
