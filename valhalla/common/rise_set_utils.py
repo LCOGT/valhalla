@@ -1,6 +1,7 @@
 from math import cos, radians
 from datetime import timedelta
-from rise_set.astrometry import make_ra_dec_target, make_satellite_target, make_minor_planet_target, make_comet_target
+from rise_set.astrometry import make_ra_dec_target, make_satellite_target, make_minor_planet_target
+from rise_set.astrometry import make_comet_target, make_major_planet_target
 from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
 from rise_set.utils import coalesce_adjacent_intervals
@@ -88,7 +89,7 @@ def get_rise_set_target(target_dict):
                                             eccentricity=target_dict['eccentricity'],
                                             mean_anomaly=target_dict['meananom']
                                             )
-        else:
+        elif target_dict['scheme'] == 'MPC_COMET':
             return make_comet_target(target_type=target_dict['scheme'],
                                      epoch=target_dict['epochofel'],
                                      epochofperih=target_dict['epochofperih'],
@@ -98,6 +99,21 @@ def get_rise_set_target(target_dict):
                                      perihdist=target_dict['perihdist'],
                                      eccentricity=target_dict['eccentricity'],
                                      )
+        elif target_dict['scheme'] == 'JPL_MAJOR_PLANET':
+            return make_major_planet_target(target_type=target_dict['scheme'],
+                                            epochofel=target_dict['epochofel'],
+                                            inclination=target_dict['orbinc'],
+                                            long_node=target_dict['longascnode'],
+                                            arg_perihelion=target_dict['argofperih'],
+                                            semi_axis=target_dict['meandist'],
+                                            eccentricity=target_dict['eccentricity'],
+                                            mean_anomaly=target_dict['meananom'],
+                                            dailymot=target_dict['dailymot']
+                                            )
+        else:
+            raise TypeError('Invalid scheme ' + target_dict['scheme'])
+    else:
+        raise TypeError('Invalid target type' + target_dict['type'])
 
 
 def get_rise_set_site(site_detail):
