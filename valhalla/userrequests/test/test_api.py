@@ -843,6 +843,24 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn('eccentricity', str(response.content))
         self.assertIn('meandist', str(response.content))
 
+    def test_post_userrequest_jpl_major_planet(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['target'] = {
+            "name": "Saturn",
+            "type": "NON_SIDEREAL",
+            "scheme": "JPL_MAJOR_PLANET",
+            "orbinc": "2.490066187978994",
+            "longascnode": "113.5557964913403",
+            "argofperih": "340.0784134626224",
+            "eccentricity": "0.05143457699730554",
+            "meandist": "9.573276502591009",
+            "meananom": "174.0162055524961",
+            "epochofel": "58052",
+            "dailymot": "0.03327937986031185"
+        }
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
 
 class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
