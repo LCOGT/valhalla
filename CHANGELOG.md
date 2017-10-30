@@ -1,3 +1,8 @@
+## 1.4
+2017-10-30
+
+* Add support for JPL Major Planet targets
+
 ## 1.3.19
 2017-10-24
 
