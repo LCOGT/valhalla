@@ -1,3 +1,8 @@
+## 1.4.1
+2017-10-30
+
+* Catch MovingViolation errors caused by bad ephemeris
+
 ## 1.4
 2017-10-30
 
