@@ -4,8 +4,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.utils import timezone
 import logging
-from datetime_intervals.intervals import Intervals
-from datetime_intervals.timepoint import Timepoint
+from time_intervals.intervals import Intervals
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -45,10 +44,10 @@ class DowntimeDB(object):
             resource = '.'.join([interval['telescope'], interval['observatory'], interval['site']])
             if resource not in downtime_intervals:
                 downtime_intervals[resource] = []
-            start = Timepoint(datetime.strptime(interval['start'], DOWNTIME_DATE_FORMAT).replace(tzinfo=timezone.utc), 'start')
-            end = Timepoint(datetime.strptime(interval['end'], DOWNTIME_DATE_FORMAT).replace(tzinfo=timezone.utc), 'end')
-            downtime_intervals[resource].append(start)
-            downtime_intervals[resource].append(end)
+            start = datetime.strptime(interval['start'], DOWNTIME_DATE_FORMAT).replace(tzinfo=timezone.utc)
+            end = datetime.strptime(interval['end'], DOWNTIME_DATE_FORMAT).replace(tzinfo=timezone.utc)
+            downtime_intervals[resource].append({'type': 'start', 'time': start})
+            downtime_intervals[resource].append({'type': 'end', 'time': end})
 
         for resource in downtime_intervals:
             downtime_intervals[resource] = Intervals(downtime_intervals[resource])

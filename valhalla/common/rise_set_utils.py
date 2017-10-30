@@ -1,8 +1,6 @@
 from math import cos, radians
-from itertools import groupby
 from datetime import timedelta
-from datetime_intervals.intervals import Intervals
-from datetime_intervals.timepoint import Timepoint
+from time_intervals.intervals import Intervals
 from rise_set.astrometry import make_ra_dec_target, make_satellite_target, make_minor_planet_target, make_comet_target
 from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
@@ -71,12 +69,11 @@ def get_rise_set_intervals(request_dict, site=''):
 
     intervalsets_by_telescope = intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescope_details.keys())
     filtered_intervalsets_by_telescope = filter_out_downtime_from_intervalsets(intervalsets_by_telescope)
-    filtered_intervalsets_by_site = merge_intervalsets_by_telescope(filtered_intervalsets_by_telescope)
-    filterted_intervalset = merge_intervalsets_by_site(filtered_intervalsets_by_site)
-    filtered_intervals = timepoints_to_intervals(filterted_intervalset.timepoints)
-    sorted_intervals = sorted(filtered_intervals, key=lambda x: x[0])
+    filtered_intervalset = Intervals()
+    filtered_intervalset.union(filtered_intervalsets_by_telescope.values())
+    filtered_intervals = filtered_intervalset.toTupleList()
 
-    return sorted_intervals
+    return filtered_intervals
 
 
 def intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescopes):
@@ -87,11 +84,11 @@ def intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescopes
     for telescope in telescopes:
         if telescope not in intervalsets_by_telescope:
             site = telescope.split('.')[2]
-            timepoints = []
+            datetime_intervals = []
             for start, end in intervals_by_site[site]:
-                timepoints.append(Timepoint(start, 'start'))
-                timepoints.append(Timepoint(end, 'end'))
-            intervalsets_by_telescope[telescope] = Intervals(timepoints)
+                datetime_intervals.append({'type': 'start', 'time': start})
+                datetime_intervals.append({'type': 'end', 'time': end})
+            intervalsets_by_telescope[telescope] = Intervals(datetime_intervals)
 
     return intervalsets_by_telescope
 
@@ -108,45 +105,6 @@ def filter_out_downtime_from_intervalsets(intervalsets_by_telescope):
             filtered_intervalsets_by_telescope[telescope] = intervalsets_by_telescope[telescope].subtract(downtime_intervals[telescope])
 
     return filtered_intervalsets_by_telescope
-
-
-def merge_intervalsets_by_telescope(intervalsets_by_telescope):
-    ''' Takes a dictionary of intervalsets by telescope and combines them (union) into into a dictionary of intervalsets
-        by site.
-    '''
-    # first group telescopes by site
-    ordered_telescopes = sorted(intervalsets_by_telescope.keys(), key=lambda x: x.split('.')[2])
-    telescope_list_by_site = dict((k, list(g)) for k, g in groupby(ordered_telescopes, lambda x: x.split('.')[2]))
-
-    # then merge the site groups into a single intervalset
-    intervalsets_by_site = {}
-    for site, telescopes in telescope_list_by_site.items():
-        intervalset = Intervals([])
-        for telescope in telescopes:
-            intervalset.add(intervalsets_by_telescope[telescope].timepoints)
-
-        intervalsets_by_site[site] = intervalset
-
-    return intervalsets_by_site
-
-
-def merge_intervalsets_by_site(intervalsets_by_site):
-    ''' Takes a dictionary of intervalsets by site and combines them (union) into a single intervalset.
-    '''
-    intervalset = Intervals([])
-    for intset in intervalsets_by_site.values():
-        intervalset.add(intset.timepoints)
-
-    return intervalset
-
-
-def timepoints_to_intervals(timepoints):
-    intervals = []
-    it = iter(timepoints)
-    for timepoint in it:
-        intervals.append((timepoint.time, next(it).time))
-
-    return intervals
 
 
 def get_rise_set_target(target_dict):
