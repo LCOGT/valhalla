@@ -861,6 +861,12 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
+    def test_post_userrequest_invalid_ephemeris(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['meandist'] = 0.00000000000001
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
 
 class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):

@@ -6,6 +6,7 @@ from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
 from rise_set.utils import coalesce_adjacent_intervals
 from rise_set.visibility import Visibility
+from rise_set.moving_objects import MovingViolation
 from django.core.cache import cache
 
 from valhalla.common.configdb import configdb
@@ -45,14 +46,16 @@ def get_rise_set_intervals(request_dict, site=''):
             rise_set_target = get_rise_set_target(request_dict['target'])
             for window in request_dict['windows']:
                 visibility = get_rise_set_visibility(rise_set_site, window['start'], window['end'], site_details[site])
-
-                intervals_by_site[site].extend(
-                    visibility.get_observable_intervals(
-                        rise_set_target,
-                        airmass=request_dict['constraints']['max_airmass'],
-                        moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
+                try:
+                    intervals_by_site[site].extend(
+                        visibility.get_observable_intervals(
+                            rise_set_target,
+                            airmass=request_dict['constraints']['max_airmass'],
+                            moon_distance=Angle(degrees=request_dict['constraints']['min_lunar_distance'])
+                        )
                     )
-                )
+                except MovingViolation:
+                    pass
             intervals.extend(intervals_by_site[site])
     if request_dict.get('id'):
         cache.set(cache_key, intervals_by_site, 86400 * 30)  # cache for 30 days
