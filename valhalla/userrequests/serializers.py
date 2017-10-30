@@ -321,7 +321,8 @@ class RequestSerializer(serializers.ModelSerializer):
                     _(
                         'According to the constraints of the request, the target is never visible within the time '
                         'window. Check that the target is in the nighttime sky. Consider modifying the time '
-                        'window or loosening the airmass or lunar separation constraints. '
+                        'window or loosening the airmass or lunar separation constraints. If the target is '
+                        'non sidereal, double check that the provided elements are correct.'
                     )
                 )
             if largest_interval.total_seconds() <= duration:
