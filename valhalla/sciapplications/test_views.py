@@ -11,8 +11,8 @@ from weasyprint import HTML
 from unittest.mock import MagicMock
 
 
-
 from valhalla.proposals.models import Semester
+from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
 
@@ -387,6 +387,7 @@ class TestSciAppDetail(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -443,17 +444,6 @@ class TestSciAppDetail(TestCase):
         self.assertTrue(PdfFileMerger.merge.called)
         self.assertTrue(HTML.write_pdf.called)
         self.assertEqual(response.status_code, 200)
-
-    def test_bad_characters(self):
-        app = mixer.blend(
-            ScienceApplication,
-            status=ScienceApplication.DRAFT,
-            submitter=self.user,
-            call=self.call,
-            abstract='A string with bad \u0008 characters'
-        )
-        response = self.client.get(reverse('sciapplications:pdf', kwargs={'pk': app.id}), follow=True)
-        self.assertContains(response, 'There was an error generating your pdf')
 
     def test_staff_can_view_pdf(self):
         PdfFileMerger.merge = MagicMock

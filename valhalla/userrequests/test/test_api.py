@@ -13,7 +13,6 @@ from django.conf import settings
 from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
 from mixer.main import mixer as basic_mixer
-from unittest.mock import patch
 from django.utils import timezone
 from datetime import datetime, timedelta
 import responses
@@ -22,6 +21,8 @@ import os
 import copy
 import json
 import random
+from urllib import parse
+from unittest.mock import patch
 
 generic_payload = {
     'proposal': 'temp',
@@ -754,6 +755,13 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data, follow=True)
         self.assertEqual(response.json()['requests'][0]['target']['rot_mode'], 'VFLOAT')
 
+    def test_target_name_max_length(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['name'] = 'x' * 51
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data, follow=True)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('50 characters', str(response.content))
+
 
 class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -948,6 +956,13 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['location']['telescope'] = '1m0b'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_post_userrequest_location_no_blanks(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['site'] = 'tst'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNone(response.json()['requests'][0]['location'].get('observatory'))
 
 
 class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
@@ -1520,8 +1535,8 @@ class TestUpdateRequestStatesAPI(APITestCase):
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.client.force_login(self.user)
-        self.ur = mixer.blend(UserRequest, operator='MANY', state='PENDING', proposal=self.proposal)
-        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING')
+        self.ur = mixer.blend(UserRequest, operator='MANY', state='PENDING', proposal=self.proposal, modified=timezone.now() - timedelta(weeks=2))
+        self.requests = mixer.cycle(3).blend(Request, user_request=self.ur, state='PENDING', modified=timezone.now() - timedelta(weeks=2))
 
     @responses.activate
     def test_no_pond_blocks_no_state_changed(self, modify_mock):
@@ -1529,10 +1544,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         now = timezone.now()
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
+
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
-
-        response = self.client.get(reverse('api:isDirty'))
+        one_week_ahead = timezone.now() + timedelta(weeks=1)
+        response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
 
         self.assertFalse(response_json['isDirty'])
@@ -1554,7 +1570,8 @@ class TestUpdateRequestStatesAPI(APITestCase):
         responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
-        response = self.client.get(reverse('api:isDirty'))
+        one_week_ahead = timezone.now() + timedelta(weeks=1)
+        response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
 
         self.assertFalse(response_json['isDirty'])
@@ -2004,3 +2021,13 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn(self.semester.id, ipp_dict)
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
         self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['max_allowable_ipp_value'])
+
+
+class TestFiltering(APITestCase):
+    def test_filtering_works(self):
+        proposal = mixer.blend(Proposal, public=True)
+        mixer.blend(UserRequest, group_id='filter on me', proposal=proposal)
+        response = self.client.get(reverse('api:user_requests-list') + '?title=filter')
+        self.assertEqual(response.json()['count'], 1)
+        response = self.client.get(reverse('api:user_requests-list') + '?title=philbobaggins')
+        self.assertEqual(response.json()['count'], 0)

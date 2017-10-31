@@ -68,7 +68,7 @@
             <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
-            <customfield v-model="target.meananom" label="Mean Anomoly" field="meananom"
+            <customfield v-model="target.meananom" label="Mean Anomaly" field="meananom"
                          v-on:input="update" :errors="errors.meananom" desc="Angle in Degrees">
             </customfield>
           </div>
@@ -80,7 +80,7 @@
                          v-on:input="update" :errors="errors.epochofperih" desc="Modified Juian Days">
             </customfield>
           </div>
-          <div class="spectra" v-if="datatype === 'SPECTRA'">
+          <div class="spectra" v-if="showSlitPosition">
             <customselect v-model="target.rot_mode" label="Slit Position" field="rot_mode" v-on:input="update" :errors="errors.rot_mode"
                            :options="[{value: 'VFLOAT', text: 'Parallactic'}, {value: 'SKY', text: 'User Specified'}]"
                            desc="With the slit at the parallactic angle, atmospheric dispersion is along the slit.">
@@ -105,7 +105,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 export default {
-  props: ['target', 'errors', 'datatype', 'parentshow', 'simple_interface'],
+  props: ['target', 'errors', 'datatype', 'selectedinstrument', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, archive},
   mixins: [collapseMixin],
   data: function(){
@@ -126,6 +126,7 @@ export default {
     delete sid_target_params['type'];
     return {
       show: true,
+      showSlitPosition: false,
       lookingUP: false,
       lookupFail: false,
       lookupText: '',
@@ -186,6 +187,14 @@ export default {
           this.rot_target_params[y] = this.target[y];
           this.target[y] = undefined;
         }
+      }
+    },
+    selectedinstrument: function(value){
+      if(value.includes('NRES')){
+        this.showSlitPosition = false;
+      }
+      else if(this.datatype === 'SPECTRA'){
+        this.showSlitPosition = true;
       }
     },
     'target.type': function(value){

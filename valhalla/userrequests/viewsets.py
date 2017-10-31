@@ -3,6 +3,7 @@ from rest_framework.decorators import list_route, detail_route
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from dateutil.parser import parse
 import logging
 
@@ -26,8 +27,8 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     serializer_class = UserRequestSerializer
     filter_class = UserRequestFilter
     filter_backends = (
-        filters.DjangoFilterBackend,
-        filters.OrderingFilter
+        filters.OrderingFilter,
+        DjangoFilterBackend
     )
     ordering = ('-id',)
 
@@ -165,8 +166,8 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = RequestSerializer
     filter_class = RequestFilter
     filter_backends = (
-        filters.DjangoFilterBackend,
-        filters.OrderingFilter
+        filters.OrderingFilter,
+        DjangoFilterBackend
     )
     ordering = ('-id',)
     ordering_fields = ('id', 'state', 'fail_count')

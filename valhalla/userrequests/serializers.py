@@ -180,7 +180,7 @@ class LocationSerializer(serializers.ModelSerializer):
         :param instance:
         :return:
         '''
-        rep = super(serializers.ModelSerializer, self).to_representation(instance)
+        rep = super().to_representation(instance)
         return {key: val for key, val in rep.items() if val}
 
 

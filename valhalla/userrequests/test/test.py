@@ -152,6 +152,19 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
 
         self.assertEqual(duration, math.ceil(exp_count*(exp_time + self.sbig_readout_time2 + self.sbig_fixed_overhead_per_exposure) + self.sbig_front_padding + self.sbig_filter_change_time + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME))
 
+    def test_ccd_single_molecule_unsupported_binning_duration(self):
+        default_binning = mixer.blend(
+            Molecule, bin_x=2, bin_y=2, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah'
+        )
+
+        bad_binning = mixer.blend(
+            Molecule, bin_x=300, bin_y=300, instrument_name='1M0-SCICAM-SBIG',
+            exposure_time=600, exposure_count=2, type='EXPOSE', filter='blah'
+        )
+
+        self.assertEqual(default_binning.duration, bad_binning.duration)
+
     def test_ccd_single_molecule_duration(self):
         duration = self.molecule_expose.duration
 

@@ -6,11 +6,21 @@ from django.contrib.admin.models import LogEntry
 
 
 class LogEntryAdmin(admin.ModelAdmin):
-    readonly_fields = [f.name for f in LogEntry._meta.get_fields()]
-    list_display = [f.name for f in LogEntry._meta.get_fields()]
     actions = None
 
-    def has_add_permission(self, request, obj=None):
+    def get_list_display(self, request):
+        return list(set(
+            [field.name for field in self.opts.local_many_to_many] +
+            [field.name for field in self.opts.local_fields]
+        ))
+
+    def get_readonly_fields(self, request, obj=None):
+        return list(set(
+            [field.name for field in self.opts.local_fields] +
+            [field.name for field in self.opts.local_many_to_many]
+        ))
+
+    def has_add_permission(self, request):
         return False
 
     def has_delete_permission(self, request, obj=None):

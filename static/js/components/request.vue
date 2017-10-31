@@ -21,10 +21,17 @@
                          :errors="errors.instrument_name" :options="availableInstrumentOptions"
                          desc="Select the instrument with which this observation will be made.">
           </customselect>
+          <customfield v-model="request.acceptability_threshold" label="Acceptability Threshold" field="acceptability_threshold" v-on:input="update"
+                        :errors="errors.acceptability_threshold" desc="The percentage of the observation that must be completed to mark the request as complete and avert rescheduling.
+                        The percentage should be set to the lowest value for which the amount of data is acceptable to meet the science goal of the request."
+                        v-if="!simple_interface">
+          </customfield>
         </form>
       </div>
     </div>
-    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show" :errors="_.get(errors, 'target', {})" :simple_interface="simple_interface">
+    <target :target="request.target" v-on:targetupdate="targetUpdated" :datatype="data_type" :parentshow="show"
+            :errors="_.get(errors, 'target', {})" :simple_interface="simple_interface"
+            :selectedinstrument="instrument_name">
     </target>
     <div v-for="(molecule, idx) in request.molecules">
       <molecule :index="idx" :molecule="molecule" :selectedinstrument="instrument_name" :datatype="data_type" :parentshow="show"

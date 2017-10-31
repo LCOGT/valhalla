@@ -8,7 +8,11 @@ from valhalla.common.configdb import ConfigDB
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        exclude = ('id', 'user')
+        fields = (
+            'education_user', 'notifications_enabled', 'notifications_on_authored_only',
+            'simple_interface', 'view_authored_requests_only', 'staff_view', 'title',
+            'institution', 'api_quota'
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):

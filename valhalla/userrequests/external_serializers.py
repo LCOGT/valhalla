@@ -2,12 +2,15 @@ from rest_framework import serializers
 from django.utils import timezone
 from dateutil.parser import parse
 
+from valhalla.userrequests.request_utils import exposure_completion_percentage_from_pond_block
+
 
 class EventSerializer(serializers.Serializer):
     start = serializers.CharField()
     end = serializers.CharField()
     state = serializers.CharField()
     reason = serializers.CharField()
+    completedExposures = serializers.IntegerField(required=False)
 
 
 class BlockMoleculeSerializer(serializers.Serializer):
@@ -66,6 +69,7 @@ class BlockSerializer(serializers.Serializer):
     priority = serializers.IntegerField()
     is_too = serializers.BooleanField()
     completed = serializers.SerializerMethodField()
+    percent_completed = serializers.SerializerMethodField()
     failed = serializers.SerializerMethodField()
     attempted = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
@@ -80,12 +84,21 @@ class BlockSerializer(serializers.Serializer):
     def get_attempted(self, obj):
         return any(m['attempted'] for m in obj['molecules'])
 
+    def get_percent_completed(self, obj):
+        return exposure_completion_percentage_from_pond_block(obj)
+
     def get_status(self, obj):
-        status = 'SCHEDULED-PAST'
+        status = 'NOT_ATTEMPTED'
         if self.get_completed(obj):
             return 'COMPLETED'
+        if self.get_percent_completed(obj) > 0:
+            return 'PARTIALLY-COMPLETED'
+        if obj['aborted']:
+            return 'ABORTED'
         if self.get_failed(obj):
             return 'FAILED'
+        if obj['canceled']:
+            return 'CANCELED'
         if not obj['canceled'] and not self.get_failed(obj):
             if timezone.make_aware(parse(obj['end'])) > timezone.now():
                 status = 'SCHEDULED'
@@ -97,5 +110,5 @@ class BlockSerializer(serializers.Serializer):
         for molecule in obj['molecules']:
             if molecule['failed']:
                 for event in molecule['event']:
-                    return event['state'] + ': ' + event['reason']
+                    return '{0}: {1}'.format(event['state'], event['reason'])
         return ''

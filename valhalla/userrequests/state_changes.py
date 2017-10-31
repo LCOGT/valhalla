@@ -1,8 +1,9 @@
 from django.utils import timezone
 from django.db import transaction
 from django.utils.translation import ugettext as _
-from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
 
+from valhalla.proposals.models import TimeAllocation, TimeAllocationKey
+from valhalla.userrequests.request_utils import exposure_completion_percentage_from_pond_block
 from valhalla.userrequests.models import UserRequest, Request
 
 import itertools
@@ -146,26 +147,7 @@ def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
         logger.warn(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
 
 
-def exposure_completion_percentage_from_pond_block(pond_block):
-    total_exposure_time = 0
-    completed_exposure_time = 0
-    for molecule in pond_block['molecules']:
-        event = molecule['event'][0] if molecule['event'] else {}
-        exp_time = float(molecule['exp_time'])
-        exp_cnt = molecule['exp_cnt']
-        if molecule['completed']:
-            completed_exp_cnt = exp_cnt
-        elif 'completedExposures' in event:
-            completed_exp_cnt = event['completedExposures']
-        else:
-            completed_exp_cnt = 0
-        total_exposure_time += exp_time * exp_cnt
-        completed_exposure_time += exp_time * completed_exp_cnt
-
-    return (completed_exposure_time / total_exposure_time) * 100.0
-
-
-def get_request_state_from_pond_blocks(request_state, completion_threshold, request_blocks):
+def get_request_state_from_pond_blocks(request_state, acceptability_threshold, request_blocks):
     active_blocks = False
     future_blocks = False
     now = timezone.now()
@@ -174,7 +156,7 @@ def get_request_state_from_pond_blocks(request_state, completion_threshold, requ
         end_time = dateutil.parser.parse(block['end']).replace(tzinfo=timezone.utc)
         # mark a block as complete if a % of the total exposures of all its molecules are complete
         completion_percent = exposure_completion_percentage_from_pond_block(block)
-        if isclose(completion_threshold, completion_percent) or completion_percent >= completion_threshold:
+        if isclose(acceptability_threshold, completion_percent) or completion_percent >= acceptability_threshold:
             return 'COMPLETED'
         if (not block['canceled'] and not any(molecule['failed'] for molecule in block['molecules'])
                 and start_time < now < end_time):
@@ -197,7 +179,7 @@ def update_request_state(request, request_blocks, ur_expired):
     fail_count = 0
 
     # Get the state from the pond blocks
-    new_r_state = get_request_state_from_pond_blocks(request.state, request.completion_threshold, request_blocks)
+    new_r_state = get_request_state_from_pond_blocks(request.state, request.acceptability_threshold, request_blocks)
     # update the fail_count if the pond state was failed, before overwriting pond state
     if new_r_state == 'FAILED':
         fail_count = 1

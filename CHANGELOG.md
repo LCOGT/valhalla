@@ -1,7 +1,119 @@
+## 1.3.19
+2017-10-24
+
+* Put in fallback for legacy binning modes to get the default binnings readout overhead
+
+## 1.3.18
+2017-10-20
+
+* Upgrade django-filter to 1.1
+
+## 1.3.17
+2017-10-17
+
+* Changed configdb to use a local memory cache so it can check the cache more frequently
+
+## 1.3.16
+2017-10-13
+
+* Modify is_dirty check to include recently modified requests
+
+## 1.3.15
+2017-10-11
+
+* Rename completion_threshold to acceptability_threshold in the Request model
+
+## 1.3.14
+2017-10-10
+
+* Add 's' to the seconds display in the request detail page
+
+## 1.3.13
+2017-10-10
+
+* Adjust some minimum completable block help text
+
+## 1.3.12
+2017-10-10
+
+* Show extra user information when possible on science applications
+
+## 1.3.11
+2017-10-09
+
+* Added completion_threshold to compose UI and set default value to 90.0%
+
+## 1.3.10
+2017-10-06
+
+* Fix vis.js Timeline tooltips
+
+## 1.3.9
+2017-10-05
+
+* Unify pond block statuses and colors with the scheduler visualization
+
+## 1.3.8
+2017-10-04
+
+* Compact typography for proposal submissions
+
+## 1.3.7
+2017-09-29
+
+* Auto redirect to first request detail if userrequest only contains a single request
+* Preserve linebreaks from textfields in proposal submission
+* Link to correct getting started guide
+* Add legend to visibility plot history on request detail page
+
+## 1.3.6
+2017-09-26
+
+* Add NRES to pressure and contention plots
+
+## 1.3.5
+2017-09-26
+
+* Add media/ to dockerignore
+
+## 1.3.4
+2017-09-22
+
+* Restrict username length on profile update page to 50 characters
+* Filter comissionig instruments from available instruments on compose page
+
+## 1.3.3
+2017-09-21
+
+* Add softies to ADMINS
+* Add support for NRES to user interface
+
+## 1.3.2
+2017-09-19
+
+* Fix NRES overheads
+
+## 1.3.1
+2017-09-18
+
+* Add API quota to profile API
+* Restrict lengths of username, target name to 50 characters
+
+## 1.3
+2017-09-12
+
+* Various typo fixes
+* Prevent large cadences from overflowing the screen and forcing user to refresh the page
+* Uprev python & JS deps
+* Properly format fail reason in external BlockSerialize
+* Update docker base image to stretch
+* Show api quota on profile page
+* Use cdn.lco.global for all assets
+
 ## 1.2.3
 2017-08-25
 
-* Add completion_threshold model field to request. 
+* Add completion_threshold model field to request.
 * Modify update request state with pond blocks code to calculate completion_percent and compare to threshold.
 
 ## 1.2.2

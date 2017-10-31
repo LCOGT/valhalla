@@ -1,5 +1,6 @@
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save
+
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.state_changes import on_request_state_change, on_userrequest_state_change
 from valhalla.proposals.notifications import userrequest_notifications
