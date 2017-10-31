@@ -1,3 +1,8 @@
+## 1.4.2
+2017-10-31
+
+* Change ES Query for ES upgrade
+
 ## 1.4.1
 2017-10-30
 
