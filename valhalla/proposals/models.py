@@ -94,6 +94,18 @@ class TimeAllocation(models.Model):
         ('0m4', '0m4'),
     )
 
+    INSTRUMENT_NAMES = (
+        ('0M4-SCICAM-SBIG', '0M4-SCICAM-SBIG'),
+        ('0M8-NRES-SCICAM', '0M8-NRES-SCICAM'),
+        ('0M8-SCICAM-SBIG', '0M8-SCICAM-SBIG'),
+        ('1M0-NRES-SCICAM', '1M0-NRES-SCICAM'),
+        ('1M0-SCICAM-SINISTRO', '1M0-SCICAM-SINISTRO'),
+        ('1M0-SCICAM-SBIG', '1M0-SCICAM-SBIG'),
+        ('1M0-NRES-COMMISSIONING', '1M0-NRES-COMMISSIONING'),
+        ('2M0-FLOYDS-SCICAM', '2M0-FLOYDS-SCICAM'),
+        ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL')
+    )
+
     std_allocation = models.FloatField(default=0)
     std_time_used = models.FloatField(default=0)
     ipp_limit = models.FloatField(default=0)
@@ -103,6 +115,7 @@ class TimeAllocation(models.Model):
     semester = models.ForeignKey(Semester)
     proposal = models.ForeignKey(Proposal)
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)
+    instrument_name = models.CharField(max_length=200, choices=INSTRUMENT_NAMES)
 
     def __str__(self):
         return 'Timeallocation for {0}-{1}'.format(self.proposal, self.semester)
