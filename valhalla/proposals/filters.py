@@ -17,11 +17,11 @@ class ProposalFilter(django_filters.FilterSet):
 
 class SemesterFilter(django_filters.FilterSet):
     semester_contains = django_filters.CharFilter(method='semester_contains_filter', label='Contains Date')
-    start = django_filters.DateTimeFilter(name='start', lookup_expr='gte')
-    start_lte = django_filters.DateTimeFilter(name='start', lookup_expr='lte')
-    end = django_filters.DateTimeFilter(name='end', lookup_expr='lt')
-    end_gt = django_filters.DateTimeFilter(name='end', lookup_expr='gt')
-    id = django_filters.CharFilter(name='id', lookup_expr='icontains')
+    start = django_filters.DateTimeFilter(field_name='start', lookup_expr='gte')
+    start_lte = django_filters.DateTimeFilter(field_name='start', lookup_expr='lte')
+    end = django_filters.DateTimeFilter(field_name='end', lookup_expr='lt')
+    end_gt = django_filters.DateTimeFilter(field_name='end', lookup_expr='gt')
+    id = django_filters.CharFilter(field_name='id', lookup_expr='icontains')
 
     def semester_contains_filter(self, queryset, name, value):
         try:

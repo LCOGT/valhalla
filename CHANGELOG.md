@@ -1,3 +1,34 @@
+## 1.4.3
+2017-11-14
+
+* Add instrument_name to timeallocation ahead of time for dec 1 accounting change
+* Upgrade some JS deps
+
+## 1.4.2
+2017-10-31
+
+* Change ES Query for ES upgrade
+
+## 1.4.1
+2017-10-30
+
+* Catch MovingViolation errors caused by bad ephemeris
+
+## 1.4
+2017-10-30
+
+* Add support for JPL Major Planet targets
+
+## 1.3.19
+2017-10-24
+
+* Put in fallback for legacy binning modes to get the default binnings readout overhead
+
+## 1.3.18
+2017-10-20
+
+* Upgrade django-filter to 1.1
+
 ## 1.3.17
 2017-10-17
 

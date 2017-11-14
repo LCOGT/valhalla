@@ -862,6 +862,30 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn('eccentricity', str(response.content))
         self.assertIn('meandist', str(response.content))
 
+    def test_post_userrequest_jpl_major_planet(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['target'] = {
+            "name": "Saturn",
+            "type": "NON_SIDEREAL",
+            "scheme": "JPL_MAJOR_PLANET",
+            "orbinc": "2.490066187978994",
+            "longascnode": "113.5557964913403",
+            "argofperih": "340.0784134626224",
+            "eccentricity": "0.05143457699730554",
+            "meandist": "9.573276502591009",
+            "meananom": "174.0162055524961",
+            "epochofel": "58052",
+            "dailymot": "0.03327937986031185"
+        }
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_post_userrequest_invalid_ephemeris(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['meandist'] = 0.00000000000001
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
 
 class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
@@ -2039,6 +2063,7 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
         self.assertEqual(response.status_code, 200)
+
         ipp_dict = response.json()
         self.assertIn(self.semester.id, ipp_dict)
         self.assertEqual(
@@ -2049,6 +2074,7 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         )
 
     def test_get_max_ipp_reduced_max_ipp(self):
+
         good_data = self.generic_payload.copy()
         good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0  # 90 minute exposure (1.0 ipp available)
         response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
@@ -2068,3 +2094,12 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn(self.semester.id, ipp_dict)
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
         self.assertEqual(1.0, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value'])
+
+class TestFiltering(APITestCase):
+    def test_filtering_works(self):
+        proposal = mixer.blend(Proposal, public=True)
+        mixer.blend(UserRequest, group_id='filter on me', proposal=proposal)
+        response = self.client.get(reverse('api:user_requests-list') + '?title=filter')
+        self.assertEqual(response.json()['count'], 1)
+        response = self.client.get(reverse('api:user_requests-list') + '?title=philbobaggins')
+        self.assertEqual(response.json()['count'], 0)

@@ -201,6 +201,8 @@ class ConfigDB(object):
                 for mode in camera_type['mode_set']:
                     if mode['binning'] == binning:
                         return mode['readout'] + camera_type['fixed_overhead_per_exposure']
+                # if the binning is not found, return the default binning (Added to support legacy 2x2 Sinistro obs)
+                return camera_type['default_mode']['readout'] + camera_type['fixed_overhead_per_exposure']
 
         raise ConfigDBException("Instrument type {} not found in configdb.".format(instrument_type))
 
