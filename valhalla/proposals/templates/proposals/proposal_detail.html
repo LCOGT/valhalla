@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n bootstrap3 %}
+{% load i18n bootstrap3 proposal_extras %}
 {% block title %}{{ object.id }}{% endblock %}
 
 {% block content %}
@@ -88,12 +88,22 @@
             <div id="cilist">
                 {% for mem in object.membership_set.all %}
                 {% if mem.role != 'PI' %}
-                <dd>{{ mem.user.first_name }} {{ mem.user.last_name }}</dd>
-                <dd><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></dd>
+                <dd>
+                  {{ mem.user.first_name }} {{ mem.user.last_name }}
+                  <a href="mailto:{{ mem.user.first_name }} {{ mem.user.last_name }} <{{ mem.user.email }}>">{{ mem.user.email }}</a>
+                </dd>
+                <dd></dd>
+                {% time_used_by_user mem.user proposal as time_used%}
+                <dd class="text-muted" >
+                  <em data-toggle="tooltip" title="Total amount of time requested by this user for this proposal in the current semester, minus failed requests.">
+                    {{ time_used | floatformat }} Hours Used
+                  </em>
+                </dd>
                     {% if user == object.pi %}
                         <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
                     {% endif %}
                 {% endif %}
+                <br/>
                 {% endfor %}
             </div>
         </dl>
@@ -137,5 +147,6 @@
         $(this).toggleClass('fa-eye-slash')
         $('#cilist').toggle();
     });
+    $('[data-toggle="tooltip"]').tooltip()
 </script>
 {% endblock %}

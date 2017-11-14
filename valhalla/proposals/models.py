@@ -55,6 +55,10 @@ class Proposal(models.Model):
     def cis(self):
         return self.users.filter(membership__role=Membership.CI)
 
+    @property
+    def current_semester(self):
+        return self.semester_set.intersection(Semester.current_semesters()).first()
+
     @classmethod
     def current_proposals(cls):
         return cls.objects.filter(semester__in=Semester.current_semesters())
