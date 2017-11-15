@@ -24,7 +24,7 @@ router.register(r'drafts', DraftUserRequestViewSet, 'drafts')
 router.register(r'proposals', ProposalViewSet, 'proposals')
 router.register(r'semesters', SemesterViewSet, 'semesters')
 
-api_urlpatterns = [
+api_urlpatterns = ([
     url(r'^', include(router.urls)),
     url(r'^api-token-auth/', obtain_auth_token, name='api-token-auth'),
     url(r'^telescope_states/', TelescopeStatesView.as_view(), name='telescope_states'),
@@ -35,14 +35,14 @@ api_urlpatterns = [
     url(r'isDirty/', UserRequestStatusIsDirty.as_view(), name='isDirty'),
     url(r'contention/(?P<instrument_name>.+)/', ContentionView.as_view(), name='contention'),
     url(r'pressure/', PressureView.as_view(), name='pressure'),
-]
+], 'api')
 
 urlpatterns = [
-    url(r'^', include(userrequest_urls, namespace='userrequests')),
+    url(r'^', include(userrequest_urls)),
     url(r'^accounts/', include(accounts_urls)),
-    url(r'^api/', include(api_urlpatterns, namespace='api')),
-    url(r'^proposals/', include(proposals_urls, namespace='proposals')),
-    url(r'^apply/', include(sciapplications_urls, namespace='sciapplications')),
+    url(r'^api/', include(api_urlpatterns)),
+    url(r'^proposals/', include(proposals_urls)),
+    url(r'^apply/', include(sciapplications_urls)),
     url(r'^admin/', admin.site.urls),
     url(r'^help/', TemplateView.as_view(template_name='help.html'), name='help'),
     url(r'^tools/', TemplateView.as_view(template_name='tools.html'), name='tools'),
