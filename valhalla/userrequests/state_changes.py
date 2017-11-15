@@ -52,8 +52,8 @@ def on_request_state_change(old_request, new_request):
                 try:
                     modify_ipp_time_from_requests(ipp_value, [new_request], 'debit')
                 except TimeAllocationError as tae:
-                    logger.warn(_('Request {} switched from WINDOW_EXPIRED to COMPLETED but did not have enough '
-                                  'ipp_time to debit: {}').format(new_request, repr(tae)))
+                    logger.warning(_('Request {} switched from WINDOW_EXPIRED to COMPLETED but did not have enough '
+                                     'ipp_time to debit: {}').format(new_request, repr(tae)))
 
     if new_request.state == 'CANCELED' or new_request.state == 'WINDOW_EXPIRED':
         ipp_value = new_request.user_request.ipp_value
@@ -118,8 +118,8 @@ def debit_ipp_time(ur):
             time_allocations_dict[tak].ipp_time_available -= (ipp_value * duration_hours)
             time_allocations_dict[tak].save()
     except Exception as e:
-        logger.warn(_("Problem debitting ipp on creation for ur {} on proposal {}: {}")
-                    .format(ur.id, ur.proposal.id, repr(e)))
+        logger.warning(_("Problem debitting ipp on creation for ur {} on proposal {}: {}")
+                       .format(ur.id, ur.proposal.id, repr(e)))
 
 
 def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
@@ -136,17 +136,17 @@ def modify_ipp_time_from_requests(ipp_val, requests_list, modification='debit'):
             elif modification == 'credit':
                 modified_time += abs(ipp_value) * duration_hours
             if modified_time < 0:
-                logger.warn(_("ipp debiting for request {} would set ipp_time_available < 0. "
-                            "Time available after debiting will be capped at 0").format(request.id))
+                logger.warning(_("ipp debiting for request {} would set ipp_time_available < 0. "
+                                 "Time available after debiting will be capped at 0").format(request.id))
                 modified_time = 0
             elif modified_time > time_allocation.ipp_limit:
-                logger.warn(_("ipp crediting for request {} would set ipp_time_available > ipp_limit. "
-                              "Time available after crediting will be capped at ipp_limit"))
+                logger.warning(_("ipp crediting for request {} would set ipp_time_available > ipp_limit. "
+                                 "Time available after crediting will be capped at ipp_limit"))
                 modified_time = time_allocation.ipp_limit
             time_allocation.ipp_time_available = modified_time
             time_allocation.save()
     except Exception as e:
-        logger.warn(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
+        logger.warning(_("Problem {}ing ipp time for request {}: {}").format(modification, request.id, repr(e)))
 
 
 def get_request_state_from_pond_blocks(request_state, acceptability_threshold, request_blocks):

@@ -40,8 +40,8 @@ class UserRequest(models.Model):
         ('TARGET_OF_OPPORTUNITY', TOO),
     )
 
-    submitter = models.ForeignKey(User)
-    proposal = models.ForeignKey(Proposal)
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     group_id = models.CharField(max_length=50)
     observation_type = models.CharField(max_length=40, choices=OBSERVATION_TYPES)
     operator = models.CharField(max_length=20, choices=OPERATOR_CHOICES)
@@ -97,7 +97,7 @@ class Request(models.Model):
         ('CANCELED', 'CANCELED'),
     )
 
-    user_request = models.ForeignKey(UserRequest, related_name='requests')
+    user_request = models.ForeignKey(UserRequest, related_name='requests', on_delete=models.CASCADE)
     observation_note = models.CharField(max_length=255, default='', blank=True)
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
     modified = models.DateTimeField(auto_now=True, db_index=True)
@@ -184,7 +184,7 @@ class Location(models.Model):
         ('0m8', '0m8'),
         ('0m4', '0m4'),
     )
-    request = models.OneToOneField(Request)
+    request = models.OneToOneField(Request, on_delete=models.CASCADE)
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)
     site = models.CharField(max_length=20, default='', blank=True)
     observatory = models.CharField(max_length=20, default='', blank=True)
@@ -227,7 +227,7 @@ class Target(models.Model):
     )
 
     name = models.CharField(max_length=50)
-    request = models.OneToOneField(Request)
+    request = models.OneToOneField(Request, on_delete=models.CASCADE)
 
     type = models.CharField(max_length=255, choices=POINTING_TYPES)
 
@@ -306,7 +306,7 @@ class Target(models.Model):
 
 
 class Window(models.Model):
-    request = models.ForeignKey(Request, related_name='windows')
+    request = models.ForeignKey(Request, related_name='windows', on_delete=models.CASCADE)
     start = models.DateTimeField(db_index=True)
     end = models.DateTimeField(db_index=True)
 
@@ -351,7 +351,7 @@ class Molecule(models.Model):
         ('BRIGHTEST', 'BRIGHTEST'),
     )
 
-    request = models.ForeignKey(Request, related_name='molecules')
+    request = models.ForeignKey(Request, related_name='molecules', on_delete=models.CASCADE)
 
     # The type of molecule being requested.
     # Valid types are in MOLECULE_TYPES
@@ -419,7 +419,7 @@ class Molecule(models.Model):
 
 
 class Constraints(models.Model):
-    request = models.OneToOneField(Request)
+    request = models.OneToOneField(Request, on_delete=models.CASCADE)
     max_airmass = models.FloatField(default=1.6, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)])
     min_lunar_distance = models.FloatField(default=30.0, validators=[MinValueValidator(0.0), MaxValueValidator(180.0)])
     max_lunar_phase = models.FloatField(null=True, blank=True)
@@ -440,8 +440,8 @@ class Constraints(models.Model):
 
 
 class DraftUserRequest(models.Model):
-    author = models.ForeignKey(User)
-    proposal = models.ForeignKey(Proposal)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
     created = models.DateTimeField(auto_now_add=True)

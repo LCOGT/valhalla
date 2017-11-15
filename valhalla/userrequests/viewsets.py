@@ -41,7 +41,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             qs = UserRequest.objects.all()
-        elif self.request.user.is_authenticated():
+        elif self.request.user.is_authenticated:
             qs = UserRequest.objects.filter(
                 proposal__in=self.request.user.proposal_set.all()
             )
@@ -175,7 +175,7 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Request.objects.all()
-        elif self.request.user.is_authenticated():
+        elif self.request.user.is_authenticated:
             return Request.objects.filter(
                 user_request__proposal__in=self.request.user.proposal_set.all()
             )
@@ -206,7 +206,7 @@ class DraftUserRequestViewSet(viewsets.ModelViewSet):
     ordering = ('-modified',)
 
     def get_queryset(self):
-        if self.request.user.is_authenticated():
+        if self.request.user.is_authenticated:
             return DraftUserRequest.objects.filter(proposal__in=self.request.user.proposal_set.all())
         else:
             return DraftUserRequest.objects.none()
