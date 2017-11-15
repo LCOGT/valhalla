@@ -40,7 +40,7 @@ class Proposal(models.Model):
     abstract = models.TextField(default='', blank=True)
     tac_priority = models.PositiveIntegerField(default=0)
     tac_rank = models.PositiveIntegerField(default=0)
-    tag = models.ForeignKey(TimeAllocationGroup)
+    tag = models.ForeignKey(TimeAllocationGroup, on_delete=models.CASCADE)
     public = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
@@ -112,8 +112,8 @@ class TimeAllocation(models.Model):
     ipp_time_available = models.FloatField(default=0)
     too_allocation = models.FloatField(default=0)
     too_time_used = models.FloatField(default=0)
-    semester = models.ForeignKey(Semester)
-    proposal = models.ForeignKey(Proposal)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)
     instrument_name = models.CharField(max_length=200, choices=INSTRUMENT_NAMES)
 
@@ -152,7 +152,7 @@ class Membership(models.Model):
 
 
 class ProposalInvite(models.Model):
-    proposal = models.ForeignKey(Proposal)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     role = models.CharField(max_length=5, choices=Membership.ROLE_CHOICES)
     email = models.EmailField()
     sent = models.DateTimeField(null=True)
@@ -186,8 +186,8 @@ class ProposalInvite(models.Model):
 
 
 class ProposalNotification(models.Model):
-    proposal = models.ForeignKey(Proposal)
-    user = models.ForeignKey(User)
+    proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return '{} - {}'.format(self.proposal, self.user)

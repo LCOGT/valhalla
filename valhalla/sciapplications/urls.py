@@ -5,6 +5,7 @@ from valhalla.sciapplications.views import (
     SciApplicationDetailView, SciApplicationDeleteView, SciApplicationPDFView
 )
 
+app_name = 'sciapplications'
 urlpatterns = [
     url(r'^$', SciApplicationIndexView.as_view(), name='index'),
     url(r'^(?P<pk>\d+)/$', SciApplicationDetailView.as_view(), name='detail'),

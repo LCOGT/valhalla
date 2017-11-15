@@ -2,6 +2,7 @@ from django.conf.urls import url
 
 from valhalla.userrequests.views import UserRequestListView, RequestDetailView, RequestCreateView, UserRequestDetailView
 
+app_name = 'userrequests'
 urlpatterns = [
     url(r'^$', UserRequestListView.as_view(), name='list'),
     url(r'^userrequests/(?P<pk>\d+)/$', UserRequestDetailView.as_view(), name='detail'),

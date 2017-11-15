@@ -25,7 +25,7 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
     try:
         total += query_pond(timeallocation.proposal.id, start, end, timeallocation.telescope_class, too)
     except requests.HTTPError:
-        logger.warn('We got a pond inception. Splitting further.')
+        logger.warning('We got a pond inception. Splitting further.')
         for start, end in split_time(start, end, 4):
             total += get_time_totals_from_pond(timeallocation, start, end, too, recur=recur + 1)
 
