@@ -1,3 +1,9 @@
+## 1.4.3
+2017-11-14
+
+* Add instrument_name to timeallocation ahead of time for dec 1 accounting change
+* Upgrade some JS deps
+
 ## 1.4.2
 2017-10-31
 

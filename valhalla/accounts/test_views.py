@@ -28,7 +28,7 @@ class TestIndex(TestCase):
             {'username': 'imnotreal', 'password': 'wrongpass'},
         )
         user = auth.get_user(self.client)
-        self.assertFalse(user.is_authenticated())
+        self.assertFalse(user.is_authenticated)
 
     def test_login_fails(self):
         self.client.post(
@@ -36,7 +36,7 @@ class TestIndex(TestCase):
             {'username': 'doge', 'password': 'wrongpass'},
         )
         user = auth.get_user(self.client)
-        self.assertFalse(user.is_authenticated())
+        self.assertFalse(user.is_authenticated)
 
     def test_login(self):
         self.client.post(
@@ -44,7 +44,7 @@ class TestIndex(TestCase):
             {'username': 'doge', 'password': 'sopassword'},
         )
         user = auth.get_user(self.client)
-        self.assertTrue(user.is_authenticated())
+        self.assertTrue(user.is_authenticated)
 
     def test_login_with_email(self):
         self.client.post(
@@ -52,7 +52,7 @@ class TestIndex(TestCase):
             {'username': 'doge@dog.com', 'password': 'sopassword'},
         )
         user = auth.get_user(self.client)
-        self.assertTrue(user.is_authenticated())
+        self.assertTrue(user.is_authenticated)
 
     def test_login_with_email_fails(self):
         self.client.post(
@@ -60,7 +60,7 @@ class TestIndex(TestCase):
             {'username': 'doge@dog.com', 'password': 'wrongpass'},
         )
         user = auth.get_user(self.client)
-        self.assertFalse(user.is_authenticated())
+        self.assertFalse(user.is_authenticated)
 
 
 class TestRegistration(TestCase):
@@ -83,7 +83,7 @@ class TestRegistration(TestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.post(reverse('registration_register'), self.reg_data, follow=True)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'check your email')
 
         user = User.objects.get(username=self.reg_data['username'])
@@ -94,7 +94,7 @@ class TestRegistration(TestCase):
     def test_registration_with_invite(self):
         invitation = mixer.blend(ProposalInvite, email=self.reg_data['email'], membership=None, used=None)
         response = self.client.post(reverse('registration_register'), self.reg_data, follow=True)
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'check your email')
         invitation = ProposalInvite.objects.get(pk=invitation.id)
         self.assertTrue(invitation.used)
