@@ -5,6 +5,7 @@ from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
 from valhalla.proposals.models import Semester, TimeAllocation
+from valhalla.accounts.models import Profile
 
 
 class TestProposalDetail(TestCase):
@@ -12,6 +13,8 @@ class TestProposalDetail(TestCase):
         self.proposal = mixer.blend(Proposal)
         self.pi_user = mixer.blend(User)
         self.ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 
@@ -48,6 +51,8 @@ class TestProposalInvite(TestCase):
         self.proposal = mixer.blend(Proposal)
         self.pi_user = mixer.blend(User)
         self.ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 

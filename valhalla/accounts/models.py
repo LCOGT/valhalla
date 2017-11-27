@@ -27,6 +27,8 @@ class Profile(models.Model):
     staff_view = models.BooleanField(default=False)
 
     def time_used_in_proposal(self, proposal):
+        if not proposal.current_semester:
+            return 0
         user_requests = self.user.userrequest_set.filter(
             proposal=proposal, created__gte=proposal.current_semester.start
         )

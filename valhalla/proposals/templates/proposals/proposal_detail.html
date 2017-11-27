@@ -95,9 +95,9 @@
                 <dd></dd>
                 {% time_used_by_user mem.user proposal as time_used%}
                 <dd class="text-muted" >
-                  <em data-toggle="tooltip" title="Total amount of time requested by this user for this proposal in the current semester, minus failed requests.">
+                  <span data-toggle="tooltip" title="Total amount of time requested by this user for this proposal in the current semester, minus failed requests.">
                     {{ time_used | floatformat }} Hours Used
-                  </em>
+                  </span>
                 </dd>
                     {% if user == object.pi %}
                         <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
