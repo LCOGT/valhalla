@@ -89,8 +89,9 @@
                 {% for mem in object.membership_set.all %}
                 {% if mem.role != 'PI' %}
                 <dd>
-                  {{ mem.user.first_name }} {{ mem.user.last_name }}
-                  <a href="mailto:{{ mem.user.first_name }} {{ mem.user.last_name }} <{{ mem.user.email }}>">{{ mem.user.email }}</a>
+                  <a title="{{ mem.user.email }}" href="mailto:{{ mem.user.first_name }} {{ mem.user.last_name }} <{{ mem.user.email }}>">
+                      {{ mem.user.first_name }} {{ mem.user.last_name }}
+                  </a>
                 </dd>
                 <dd></dd>
                 {% time_used_by_user mem.user proposal as time_used%}
