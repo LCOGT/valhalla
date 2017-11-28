@@ -50,31 +50,29 @@ class TelescopeStates(object):
     def _get_es_data(self, sites, telescopes):
         date_range_query = {
             "query": {
-                "filtered": {
-                    "filter": {
-                        "and": [
-                            {
-                                "range": {
-                                    "timestamp": {
-                                        # Retrieve documents 1 hour back to capture the telescope state at the start.
-                                        "gte": (self.start - timedelta(hours=1)).strftime(ES_STRING_FORMATTER),
-                                        "lte": self.end.strftime(ES_STRING_FORMATTER),
-                                        "format": "yyyy-MM-dd HH:mm:ss"
-                                    }
-                                }
-                            },
-                            {
-                                "terms": {
-                                    "telescope": telescopes
-                                }
-                            },
-                            {
-                                "terms": {
-                                    "site": sites
+                "bool": {
+                    "filter": [
+                        {
+                            "range": {
+                                "timestamp": {
+                                    # Retrieve documents 1 hour back to capture the telescope state at the start.
+                                    "gte": (self.start - timedelta(hours=1)).strftime(ES_STRING_FORMATTER),
+                                    "lte": self.end.strftime(ES_STRING_FORMATTER),
+                                    "format": "yyyy-MM-dd HH:mm:ss"
                                 }
                             }
-                        ]
-                    }
+                        },
+                        {
+                            "terms": {
+                                "telescope": telescopes
+                            }
+                        },
+                        {
+                            "terms": {
+                                "site": sites
+                            }
+                        }
+                    ]
                 }
             }
         }

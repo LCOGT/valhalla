@@ -86,8 +86,8 @@ class TestUserGetRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.client.force_login(self.other_user)
         mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
         result = self.client.get(reverse('api:user_requests-list'))
-        self.assertEquals(result.status_code, 200)
-        self.assertEquals(result.json()['results'], [])
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json()['results'], [])
 
     def test_get_user_request_list_authenticated(self):
         user_request = mixer.blend(UserRequest, submitter=self.user, proposal=self.proposal, group_id="testgroup")
@@ -502,7 +502,7 @@ class TestRequestIPP(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(time_allocation.ipp_time_available, 0)
         # test that the log message was generated
         self.assertIn('Time available after debiting will be capped at 0',
-                      mock_logger.warn.call_args[0][0])
+                      mock_logger.warning.call_args[0][0])
 
     def test_request_credit_back_on_cancelation(self):
         user_request = self._build_user_request(self.generic_payload.copy())
@@ -842,6 +842,30 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('eccentricity', str(response.content))
         self.assertIn('meandist', str(response.content))
+
+    def test_post_userrequest_jpl_major_planet(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['target'] = {
+            "name": "Saturn",
+            "type": "NON_SIDEREAL",
+            "scheme": "JPL_MAJOR_PLANET",
+            "orbinc": "2.490066187978994",
+            "longascnode": "113.5557964913403",
+            "argofperih": "340.0784134626224",
+            "eccentricity": "0.05143457699730554",
+            "meandist": "9.573276502591009",
+            "meananom": "174.0162055524961",
+            "epochofel": "58052",
+            "dailymot": "0.03327937986031185"
+        }
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_post_userrequest_invalid_ephemeris(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['target']['meandist'] = 0.00000000000001
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
 
 
 class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
@@ -1241,19 +1265,19 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-list'))
-        self.assertEquals(result.json()['results'][0]['observation_note'], request.observation_note)
+        self.assertEqual(result.json()['results'][0]['observation_note'], request.observation_note)
 
     def test_get_request_list_unauthenticated(self):
         mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         result = self.client.get(reverse('api:requests-list'))
         self.assertNotContains(result, 'testobsnote')
-        self.assertEquals(result.status_code, 200)
+        self.assertEqual(result.status_code, 200)
 
     def test_get_request_detail_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
-        self.assertEquals(result.json()['observation_note'], request.observation_note)
+        self.assertEqual(result.json()['observation_note'], request.observation_note)
 
     def test_get_request_detail_unauthenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
@@ -1264,7 +1288,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
-        self.assertEquals(result.json()['observation_note'], request.observation_note)
+        self.assertEqual(result.json()['observation_note'], request.observation_note)
 
     def test_get_request_detail_public(self):
         proposal = mixer.blend(Proposal, public=True)
@@ -1273,7 +1297,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
         self.client.logout()
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
-        self.assertEquals(result.json()['observation_note'], request.observation_note)
+        self.assertEqual(result.json()['observation_note'], request.observation_note)
 
 
 class TestBlocksApi(APITestCase):

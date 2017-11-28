@@ -1,3 +1,33 @@
+## 1.5.0
+2017-11-27
+
+* Django2 Compatibility
+* Bump rise-set version
+* Always display target name as a string
+* Uprev JS deps
+* Rename LCOGT to LCO for sciapplication porting
+
+## 1.4.3
+2017-11-14
+
+* Add instrument_name to timeallocation ahead of time for dec 1 accounting change
+* Upgrade some JS deps
+
+## 1.4.2
+2017-10-31
+
+* Change ES Query for ES upgrade
+
+## 1.4.1
+2017-10-30
+
+* Catch MovingViolation errors caused by bad ephemeris
+
+## 1.4
+2017-10-30
+
+* Add support for JPL Major Planet targets
+
 ## 1.3.19
 2017-10-24
 

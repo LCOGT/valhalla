@@ -28,7 +28,7 @@ class Call(models.Model):
         (NAOC_PROPOSAL, 'NAOC proposal')
     )
 
-    semester = models.ForeignKey(Semester)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     opens = models.DateTimeField()
     deadline = models.DateTimeField()
     call_url = models.URLField(blank=True, default='')
@@ -67,8 +67,8 @@ class ScienceApplication(models.Model):
     )
 
     title = models.CharField(max_length=200)
-    call = models.ForeignKey(Call)
-    submitter = models.ForeignKey(User)
+    call = models.ForeignKey(Call, on_delete=models.CASCADE)
+    submitter = models.ForeignKey(User, on_delete=models.CASCADE)
     abstract = models.TextField(blank=True, default='')
     pi = models.EmailField(blank=True, default='')
     coi = models.TextField(blank=True, default='')
@@ -83,7 +83,7 @@ class ScienceApplication(models.Model):
     related_programs = models.TextField(blank=True, default='')
     past_use = models.TextField(blank=True, default='')
     publications = models.TextField(blank=True, default='')
-    proposal = models.ForeignKey(Proposal, null=True, blank=True)
+    proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
     tac_rank = models.PositiveIntegerField(default=0)
     tac_priority = models.PositiveIntegerField(default=0)
 
@@ -105,7 +105,7 @@ class ScienceApplication(models.Model):
     @property
     def proposal_code(self):
         proposal_type_to_name = {
-            'SCI': 'LCOGT',
+            'SCI': 'LCO',
             'KEY': 'KEY',
             'DDT': 'DDT',
             'NAOC': 'NAOC'
@@ -157,7 +157,7 @@ class ScienceApplication(models.Model):
 
 
 class TimeRequest(models.Model):
-    science_application = models.ForeignKey(ScienceApplication)
+    science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
     telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
     std_time = models.PositiveIntegerField(default=0, blank=True)
     too_time = models.PositiveIntegerField(default=0, blank=True)
