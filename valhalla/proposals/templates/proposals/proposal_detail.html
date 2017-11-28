@@ -10,6 +10,41 @@
         <h4>Total Observation Requests:
             <a title="View requests" href="{% url 'userrequests:list' %}?proposal={{ object.id }}">{{ object.userrequest_set.all.count }}</a>
         </h4>
+        <h4>
+          Principal Investigator
+        </h4>
+          <p>{{ object.pi.first_name }} {{ object.pi.last_name }}
+             <a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a>
+          </p>
+          <h4>Co Investigators <small><i id="toggleci" class="fa fa-eye"></i></h4>
+        {% if not user.profile.simple_interface or user == object.pi %}
+        <table class="table" id="cilist">
+          <thead>
+            <tr><td>Name</td><td>Email</td><td>Hour Limit</td><td>Hours Requested</td>
+              {% if user == object.pi %}
+              <td>Remove</td>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+          {% for mem in object.membership_set.all %}
+          {% if mem.role != 'PI' %}
+            <tr>
+              <td>{{ mem.user.first_name }} {{ mem.user.last_name }}</td>
+              <td><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></td>
+              <td>{% if mem.time_limit < 0 %}No Limit{% else %}{{ mem.time_limit }}{% endif %}</td>
+              {% time_used_by_user mem.user proposal as time_used %}
+              <td>{{ time_used | floatformat }}</td>
+              {% if user == object.pi %}
+              <td><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i></a></td>
+              {% endif %}
+            </tr>
+          {% endif %}
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+        <h4>Time Allocation</h4>
         <table class="table">
             <thead>
                 <tr>
@@ -66,6 +101,7 @@
         </table>
     </div>
     <div class="col-md-4">
+        <strong>Email Notifications</strong>
         <form method="POST" action="" class="form">
             {% csrf_token %}
             {% bootstrap_form form=notification_form %}
@@ -77,39 +113,8 @@
           <dt>Links</dt>
           <dd><a href="https://archive.lco.global/?PROPID={{ object.id }}" target="_blank">View Data on the LCO Science Archive</a></dd>
         </dl>
-        {% if not user.profile.simple_interface or user == object.pi %}
-        <dl>
-            <dt>{% trans 'Principal Investigator' %}</dt>
-            <dd>{{ object.pi.first_name }} {{ object.pi.last_name }}</dd>
-            <dd><a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a></dd>
-        </dl>
-        <dl>
-            <dt>{% trans 'Co-Investigators' %} <a id="toggleci" title="Show/hide CI list" class="fa fa-eye fa-eye-slash"></a></dt>
-            <div id="cilist">
-                {% for mem in object.membership_set.all %}
-                {% if mem.role != 'PI' %}
-                <dd>
-                  <a title="{{ mem.user.email }}" href="mailto:{{ mem.user.first_name }} {{ mem.user.last_name }} <{{ mem.user.email }}>">
-                      {{ mem.user.first_name }} {{ mem.user.last_name }}
-                  </a>
-                </dd>
-                <dd></dd>
-                {% time_used_by_user mem.user proposal as time_used%}
-                <dd class="text-muted" >
-                  <span data-toggle="tooltip" title="Total amount of time requested by this user for this proposal in the current semester, minus failed requests.">
-                    {{ time_used | floatformat }} Hours Used
-                  </span>
-                </dd>
-                    {% if user == object.pi %}
-                        <dd><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i> delete</a></dd>
-                    {% endif %}
-                {% endif %}
-                <br/>
-                {% endfor %}
-            </div>
-        </dl>
-        {% endif %}
         {% if user == object.pi %}
+        <strong>Invite Co-Investigators</strong>
         <div class="help-block">
             {% blocktrans %}
             Invite co-investigators by entering their email address below and
@@ -122,7 +127,7 @@
             {% csrf_token %}
             <div class="form-group">
                 <label class="sr-only" for="email">Invite a Co-Investigator</label>
-                <input name="email" class="form-control" placeholder="Invite Co-Investigators"/>
+                <input name="email" class="form-control" placeholder="Email Address(s)"/>
             </div>
             <button type="submit" class="btn btn-default">Add</button>
         </form>
