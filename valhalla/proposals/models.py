@@ -136,6 +136,7 @@ class Membership(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES)
+    time_limit = models.IntegerField(default=-1)  # seconds, -1 is unlimited
 
     class Meta:
         unique_together = ('user', 'proposal')

@@ -57,6 +57,19 @@ class ProposalListView(LoginRequiredMixin, FilterView):
         return context
 
 
+class MembershipLimitView(LoginRequiredMixin, View):
+    def post(self, request, **kwargs):
+        membership = Membership.objects.get(pk=kwargs.get('pk'))
+        if membership.proposal not in [m.proposal for m in request.user.membership_set.filter(role=Membership.PI)]:
+            raise Http404
+        membership.time_limit = request.POST['time_limit']
+        membership.save()
+        messages.success(request, 'Time limit for {0} {1} set to {2} seconds'.format(
+            membership.user.first_name, membership.user.last_name, request.POST['time_limit']
+        ))
+        return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': membership.proposal.id}))
+
+
 class InviteCreateView(LoginRequiredMixin, View):
     def post(self, request, **kwargs):
         try:
