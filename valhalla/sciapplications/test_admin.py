@@ -66,4 +66,4 @@ class TestSciAppAdmin(TestCase):
             data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
             follow=True
         )
-        self.assertContains(response, 'A proposal named LCOGT{}-000 already exists.'.format(self.semester))
+        self.assertContains(response, 'A proposal named LCO{}-000 already exists.'.format(self.semester))

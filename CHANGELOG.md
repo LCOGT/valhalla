@@ -1,3 +1,12 @@
+## 1.5.0
+2017-11-27
+
+* Django2 Compatibility
+* Bump rise-set version
+* Always display target name as a string
+* Uprev JS deps
+* Rename LCOGT to LCO for sciapplication porting
+
 ## 1.4.3
 2017-11-14
 
