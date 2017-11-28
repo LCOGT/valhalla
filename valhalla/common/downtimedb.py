@@ -1,5 +1,5 @@
 import requests
-from django.core.cache import cache
+from django.core.cache import caches
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.utils import timezone
@@ -58,13 +58,13 @@ class DowntimeDB(object):
         ''' Returns dictionary of IntervalSets of downtime intervals per telescope resource. Caches the data and will
             attempt to update the cache every 15 minutes, but fallback on using previous downtime list otherwise.
         '''
-        cached_downtime_intervals = cache.get('downtime_intervals')
+        cached_downtime_intervals = caches['locmem'].get('downtime_intervals')
         if not cached_downtime_intervals:
             # If the cache has expired, attempt to update the downtime intervals
             try:
                 data = self._get_downtime_data()
                 self.downtime_intervals = self._order_downtime_by_resource(data)
-                cache.set('downtime_intervals', self.downtime_intervals, 900)
+                caches['locmem'].set('downtime_intervals', self.downtime_intervals, 900)
             except DowntimeDBException as e:
                 logger.warning(repr(e))
 
