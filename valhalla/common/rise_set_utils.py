@@ -70,11 +70,9 @@ def get_rise_set_intervals(request_dict, site=''):
         return intervals
 
     intervals_by_site = get_rise_set_intervals_by_site(request_dict)
-
     intervalsets_by_telescope = intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescope_details.keys())
     filtered_intervalsets_by_telescope = filter_out_downtime_from_intervalsets(intervalsets_by_telescope)
-    filtered_intervalset = Intervals()
-    filtered_intervalset.union(filtered_intervalsets_by_telescope.values())
+    filtered_intervalset = Intervals().union(filtered_intervalsets_by_telescope.values())
     filtered_intervals = filtered_intervalset.toTupleList()
 
     return filtered_intervals
