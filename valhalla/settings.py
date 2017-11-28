@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import sys
 from lcogt_logging import LCOGTFormatter
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -110,7 +111,7 @@ CACHES = {
         'LOCATION': os.getenv('CACHE_LOCATION', 'unique-snowflake')
     },
     'locmem': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND': os.getenv('LOCAL_CACHE_BACKEND', 'django.core.cache.backends.dummy.DummyCache'),
         'LOCATION': 'locmem-cache'
     }
 }
