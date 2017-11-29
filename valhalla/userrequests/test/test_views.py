@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from mixer.backend.django import mixer
+from unittest.mock import patch
 
 from valhalla.accounts.models import Profile
 from valhalla.proposals.models import Proposal, Membership
@@ -78,8 +79,9 @@ class TestUserRequestList(TestCase):
         self.assertNotContains(response, self.userrequests[2].group_id)
 
 
-class TestUserrequestDetail(TestCase):
+class TestUserrequestDetail(ConfigDBTestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.user = mixer.blend(User)
         mixer.blend(Profile, user=self.user)
         self.proposal = mixer.blend(Proposal)
