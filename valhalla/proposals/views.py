@@ -70,6 +70,18 @@ class MembershipLimitView(LoginRequiredMixin, View):
         return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': membership.proposal.id}))
 
 
+class GlobalMembershipLimitView(LoginRequiredMixin, View):
+    def post(self, request, **kwargs):
+        try:
+            proposal = request.user.membership_set.get(proposal=kwargs.get('pk'), role=Membership.PI).proposal
+        except Membership.DoesNotExist:
+            raise Http404
+        time_limit = float(request.POST['time_limit']) * 3600
+        proposal.membership_set.filter(role=Membership.CI).update(time_limit=time_limit)
+        messages.success(request, 'All CI time limits set to {0} hours'.format(time_limit / 3600))
+        return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': proposal.id}))
+
+
 class InviteCreateView(LoginRequiredMixin, View):
     def post(self, request, **kwargs):
         try:

@@ -80,6 +80,34 @@ class TestMembershipLimit(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(membership.time_limit, -1)
 
+    def test_set_global_limit(self):
+        self.client.force_login(self.pi_user)
+        ci_users = mixer.cycle(5).blend(User)
+        mixer.cycle(5).blend(Profile, user=(ci_user for ci_user in ci_users))
+        memberships = mixer.cycle(5).blend(
+            Membership, user=(c for c in ci_users), proposal=self.proposal, role=Membership.CI
+        )
+        response = self.client.post(
+            reverse('proposals:membership-global', kwargs={'pk': self.proposal.id}),
+            data={'time_limit': 2},
+        )
+        self.assertEqual(response.status_code, 302)
+        for membership in memberships:
+            membership.refresh_from_db()
+            self.assertEqual(membership.time_limit, 7200)
+
+    def test_cannot_set_global_limit_other_proposal(self):
+        self.client.force_login(self.pi_user)
+        other_user = mixer.blend(User)
+        other_proposal = mixer.blend(Proposal)
+        membership = mixer.blend(Membership, user=other_user, proposal=other_proposal)
+        response = self.client.post(
+            reverse('proposals:membership-global', kwargs={'pk': other_proposal.id}),
+            data={'time_limit': 2},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(membership.time_limit, -1)
+
 
 class TestProposalInvite(TestCase):
     def setUp(self):
