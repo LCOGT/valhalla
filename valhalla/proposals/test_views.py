@@ -61,11 +61,11 @@ class TestMembershipLimit(TestCase):
         membership = self.ci_user.membership_set.first()
         response = self.client.post(
             reverse('proposals:membership-limit', kwargs={'pk': membership.id}),
-            data={'time_limit': 300},
+            data={'time_limit': 1},
         )
         membership.refresh_from_db()
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(membership.time_limit, 300)
+        self.assertEqual(membership.time_limit, 3600)
 
     def test_cannot_set_others_limit(self):
         self.client.force_login(self.pi_user)

@@ -155,6 +155,10 @@ class Membership(models.Model):
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
 
+    @property
+    def time_limit_hours(self):
+        return self.time_limit / 3600
+
 
 class ProposalInvite(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
