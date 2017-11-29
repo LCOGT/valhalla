@@ -10,7 +10,7 @@ from rise_set.moving_objects import MovingViolation
 from django.core.cache import cache
 
 from valhalla.common.configdb import configdb
-from valhalla.common.downtimedb import downtimedb
+from valhalla.common.downtimedb import DowntimeDB
 
 HOURS_PER_DEGREES = 15.0
 
@@ -98,7 +98,7 @@ def intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescopes
 def filter_out_downtime_from_intervalsets(intervalsets_by_telescope):
     ''' Takes a dictionary of rise_set intervalsets by telescopes and returns the same with downtime intervals removed
     '''
-    downtime_intervals = downtimedb.get_downtime_intervals()
+    downtime_intervals = DowntimeDB.get_downtime_intervals()
     filtered_intervalsets_by_telescope = {}
     for telescope in intervalsets_by_telescope.keys():
         if telescope not in downtime_intervals:

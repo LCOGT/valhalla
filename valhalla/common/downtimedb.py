@@ -19,11 +19,8 @@ class DowntimeDBException(Exception):
 
 
 class DowntimeDB(object):
-
-    def __init__(self):
-        self.downtime_intervals = {}
-
-    def _get_downtime_data(self):
+    @staticmethod
+    def _get_downtime_data():
         ''' Gets all the data from downtimedb
         :return: list of dictionaries of downtime periods in time order (default)
         '''
@@ -36,7 +33,8 @@ class DowntimeDB(object):
 
         return r.json()
 
-    def _order_downtime_by_resource(self, raw_downtime_intervals):
+    @staticmethod
+    def _order_downtime_by_resource(raw_downtime_intervals):
         ''' Puts the raw downtime interval sets into a dictionary by resource
         '''
         downtime_intervals = {}
@@ -54,21 +52,21 @@ class DowntimeDB(object):
 
         return downtime_intervals
 
-    def get_downtime_intervals(self):
+    @staticmethod
+    def get_downtime_intervals():
         ''' Returns dictionary of IntervalSets of downtime intervals per telescope resource. Caches the data and will
             attempt to update the cache every 15 minutes, but fallback on using previous downtime list otherwise.
         '''
-        cached_downtime_intervals = caches['locmem'].get('downtime_intervals')
-        if not cached_downtime_intervals:
+        downtime_intervals = caches['locmem'].get('downtime_intervals', [])
+        if not downtime_intervals:
             # If the cache has expired, attempt to update the downtime intervals
             try:
-                data = self._get_downtime_data()
-                self.downtime_intervals = self._order_downtime_by_resource(data)
-                caches['locmem'].set('downtime_intervals', self.downtime_intervals, 900)
+                data = DowntimeDB._get_downtime_data()
+                downtime_intervals = DowntimeDB._order_downtime_by_resource(data)
+                caches['locmem'].set('downtime_intervals', downtime_intervals, 900)
+                caches['locmem'].set('downtime_intervals.no_expire', downtime_intervals)
             except DowntimeDBException as e:
+                downtime_intervals = caches['locmem'].get('downtime_intervals.no_expire', [])
                 logger.warning(repr(e))
 
-        return self.downtime_intervals
-
-
-downtimedb = DowntimeDB()
+        return downtime_intervals
