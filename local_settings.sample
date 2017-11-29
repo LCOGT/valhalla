@@ -1,6 +1,6 @@
 DEBUG = True
 LOCAL_INSTALLED_APPS = []
 LOCAL_ALLOWED_HOSTS = ['127.0.0.1:8000']
-ELASTICSEARCH_URL = ''
-POND_URL = ''
-CONFIGDB_URL = ''
+# ELASTICSEARCH_URL = 'http://localhost'
+# POND_URL = 'http://localhost'
+# CONFIGDB_URL = 'http://localhost'
