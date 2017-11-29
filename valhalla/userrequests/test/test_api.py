@@ -209,7 +209,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.membership.save()
         response = self.client.post(reverse('api:user_requests-list'), data=self.generic_payload)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('You have exceeded the time limit set for your account on this proposal.', str(response.content))
+        self.assertIn('duration will exceed the time limit set for your account ', str(response.content))
 
     def test_post_userrequest_time_limit_not_reached(self):
         self.membership.time_limit = 1000
