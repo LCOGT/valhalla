@@ -421,7 +421,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
         membership = Membership.objects.get(user=data['submitter'], proposal=data['proposal'])
         if membership.time_limit >= 0:
             duration = sum(d for _, d in get_request_duration_sum(data).items())
-            time_to_be_used = data['submitter'].profile.time_used_in_proposal(data['proposal']) + duration / 3600.0
+            time_to_be_used = data['submitter'].profile.time_used_in_proposal(data['proposal']) + duration
             if membership.time_limit < time_to_be_used:
                 raise serializers.ValidationError(
                     _('This request\'s duration will exceed the time limit set for your account on this proposal.')

@@ -31,14 +31,14 @@
               <td>{{ mem.user.first_name }} {{ mem.user.last_name }}</td>
               <td><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></td>
               <td>
-                {% if mem.time_limit < 0 %}No Limit{% else %}{{ mem.time_limit_hours | floatformat }}{% endif %}
+                {% if mem.time_limit < 0 %}No Limit{% else %}{{ mem.time_limit_hours | floatformat:3 }}{% endif %}
                 {% if user == object.pi %}
                 &nbsp;<i class="fa fa-pencil memlimit" data-membership="{{ mem.id }}"></i>
                 <form method="POST" action="{% url 'proposals:membership-limit' pk=mem.id %}" class="form-inline limitform" style="display: none">
                     {% csrf_token %}
                     <div class="form-group">
                         <input name="time_limit" type="number" class="form-control" style="width: 100px" step="0.001"
-                         {% if mem.time_limit > 0 %} value="{{ mem.time_limit_hours | floatformat }}" {% endif %} />
+                         {% if mem.time_limit > 0 %} value="{{ mem.time_limit_hours | floatformat:3 }}" {% endif %} />
                     </div>
                     <button type="submit" class="btn btn-default remove-limit">Remove Limit</button>
                     <button type="submit" class="btn btn-default">Set Limit</button>
@@ -46,7 +46,7 @@
                 {% endif %}
               </td>
               {% time_used_by_user mem.user proposal as time_used %}
-              <td>{{ time_used | floatformat }}</td>
+              <td>{{ time_used | floatformat:3 }}</td>
               {% if user == object.pi %}
               <td><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i></a></td>
               {% endif %}
