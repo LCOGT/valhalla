@@ -11,12 +11,10 @@
             <a title="View requests" href="{% url 'userrequests:list' %}?proposal={{ object.id }}">{{ object.userrequest_set.all.count }}</a>
         </h4>
         <h4>
-          Principal Investigator
+          Principal Investigator: {{ object.pi.first_name }} {{ object.pi.last_name }}
+          <a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a>
         </h4>
-          <p>{{ object.pi.first_name }} {{ object.pi.last_name }}
-             <a href="mailto:{{ object.pi.email }}">{{ object.pi.email }}</a>
-          </p>
-          <h4>Co Investigators <small><i id="toggleci" class="fa fa-eye"></i></h4>
+        <h4>Co Investigators <small><i id="toggleci" class="fa fa-eye"></i></h4>
         {% if not user.profile.simple_interface or user == object.pi %}
         <table class="table" id="cilist">
           <thead>
@@ -116,10 +114,12 @@
     </div>
     <div class="col-md-4">
         <strong>Email Notifications</strong>
+        <div class="help-block">
+          You will recieve notifications whenever a requested observation on this proposal is completed.
+        </div>
         <form method="POST" action="" class="form">
             {% csrf_token %}
             {% bootstrap_form form=notification_form %}
-            <p>You will recieve notifications whenever a requested observation on this proposal is completed.</p>
             <button type="submit" class="btn btn-default">Save</button>
         </form>
         <br/>
@@ -128,6 +128,21 @@
           <dd><a href="https://archive.lco.global/?PROPID={{ object.id }}" target="_blank">View Data on the LCO Science Archive</a></dd>
         </dl>
         {% if user == object.pi %}
+        <strong>Global Hour Limit</strong>
+        <div class="help-block">
+          {% blocktrans %}
+          Use this form to set an hour limit for every CI on the proposal.
+          {% endblocktrans %}
+        </div>
+        <form method="POST" action="{% url 'proposals:membership-global' pk=object.id %}" class="form-inline">
+          {% csrf_token %}
+          <div class="form-group">
+            <input name="time_limit" type="number" class="form-control" style="width: 100px" step="0.001" placeholder="Hours"/>
+          </div>
+          <button type="submit" class="btn btn-default remove-limit">Remove Limit</button>
+          <button type="submit" class="btn btn-default">Set Global Limit</button>
+        </form>
+        <br/>
         <strong>Invite Co-Investigators</strong>
         <div class="help-block">
             {% blocktrans %}
