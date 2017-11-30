@@ -86,7 +86,7 @@ class Proposal(models.Model):
         return self.id
 
 
-TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class'])
+TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class', 'instrument_name'])
 
 
 class TimeAllocation(models.Model):

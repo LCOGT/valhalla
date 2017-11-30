@@ -23,6 +23,7 @@ class TestSciAppToProposal(TestCase):
         self.assertEqual(app.proposal, proposal)
         self.assertEqual(self.user, proposal.membership_set.get(role=Membership.PI).user)
         self.assertEqual(proposal.timeallocation_set.first().std_allocation, tr.std_time)
+        self.assertEqual(proposal.timeallocation_set.first().instrument_name, tr.instrument.code)
         self.assertFalse(ProposalInvite.objects.filter(proposal=proposal).exists())
 
     def test_create_proposal_with_supplied_noexistant_pi(self):

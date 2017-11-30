@@ -75,24 +75,24 @@ class TestPostCreateSciApp(TestCase):
         self.semester = mixer.blend(Semester)
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
-        instrument = mixer.blend(Instrument)
+        self.instrument = mixer.blend(Instrument)
         self.call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
             proposal_type=Call.SCI_PROPOSAL,
-            instruments=(instrument,)
+            instruments=(self.instrument,)
         )
         self.key_call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
             proposal_type=Call.KEY_PROPOSAL,
-            instruments=(instrument,)
+            instruments=(self.instrument,)
         )
         self.ddt_call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
             proposal_type=Call.DDT_PROPOSAL,
-            instruments=(instrument,)
+            instruments=(self.instrument,)
         )
         data = {
             'call': self.call.id,
@@ -101,7 +101,6 @@ class TestPostCreateSciApp(TestCase):
             'pi': 'test@example.com',
             'coi': 'test2@example.com, test3@example.com',
             'budget_details': 'test budget value',
-            'instruments': instrument.id,
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'science_case': 'science case',
@@ -121,7 +120,7 @@ class TestPostCreateSciApp(TestCase):
 
         timerequest_data = {
             'timerequest_set-0-id': '',
-            'timerequest_set-0-telescope_class': '1m0',
+            'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': 30,
             'timerequest_set-0-too_time': 1,
 
@@ -203,7 +202,7 @@ class TestPostCreateSciApp(TestCase):
         data = self.sci_data.copy()
         data.update({
             'timerequest_set-1-id': '',
-            'timerequest_set-1-telescope_class': '2m0',
+            'timerequest_set-1-instrument': self.instrument.id,
             'timerequest_set-1-std_time': 20,
             'timerequest_set-1-too_time': 10,
             'timerequest_set-TOTAL_FORMS': 2,
@@ -316,7 +315,7 @@ class TestPostUpdateSciApp(TestCase):
             deadline=timezone.now() + timedelta(days=7),
             proposal_type=Call.SCI_PROPOSAL
         )
-        mixer.blend(Instrument, call=self.call)
+        self.instrument = mixer.blend(Instrument, call=self.call)
 
     def test_can_update_draft(self):
         app = mixer.blend(
@@ -336,7 +335,7 @@ class TestPostUpdateSciApp(TestCase):
             'timerequest_set-MIN_NUM_FORMS': 1,
             'timerequest_set-MAX_NUM_FORMS': 1000,
             'timerequest_set-0-id': tr.id,
-            'timerequest_set-0-telescope_class': tr.telescope_class,
+            'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': tr.std_time,
             'timerequest_set-0-too_time': tr.too_time,
 

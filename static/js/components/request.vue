@@ -87,12 +87,16 @@ export default {
       return _.sortBy(options, 'text').reverse();
     },
     firstAvailableInstrument: function(){
-      return this.availableInstrumentOptions[0].value;
+      if(this.availableInstrumentOptions.length){
+        return this.availableInstrumentOptions[0].value;
+      }else{
+        return '';
+      }
     }
   },
   watch: {
     data_type: function(){
-      if(this.available_instruments[this.instrument_name].type != this.data_type){
+      if(this.available_instruments.length && this.available_instruments[this.instrument_name].type != this.data_type){
         this.instrument_name = this.firstAvailableInstrument;
         this.update();
       }
