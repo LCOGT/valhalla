@@ -1,3 +1,8 @@
+## 1.6.0
+2017-11-30
+
+* Instrument specific time allocations
+
 ## 1.5.1
 2017-11-30
 
