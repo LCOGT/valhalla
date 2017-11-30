@@ -57,7 +57,10 @@
             <dl class="twocol dl-horizontal">
               <span v-for="x, idx in request.target">
               <dt v-if="request.target[idx]">{{ idx | formatField }}</dt>
-              <dd v-if="x">{{ x | formatValue }}</dd>
+              <dd v-if="x">
+                <span v-if="idx === 'name'">{{ x }}</span>
+                <span v-else>{{ x | formatValue }}</span>
+              </dd>
               </span>
             </dl>
             <hr/>
@@ -257,6 +260,10 @@ dl.twocol {
 
 dl.twocol dt {
   width: inherit;
+}
+
+dl.twocol dd {
+  margin-left: 160px;
 }
 
 .request-details {

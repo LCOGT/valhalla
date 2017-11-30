@@ -106,7 +106,7 @@ class ScienceApplication(models.Model):
     @property
     def proposal_code(self):
         proposal_type_to_name = {
-            'SCI': 'LCOGT',
+            'SCI': 'LCO',
             'KEY': 'KEY',
             'DDT': 'DDT',
             'NAOC': 'NAOC'
