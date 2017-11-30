@@ -1,3 +1,8 @@
+## 1.5.1
+2017-11-30
+
+* Hotfix for allowing submission of requests in future proposals
+
 ## 1.5.0
 2017-11-27
 

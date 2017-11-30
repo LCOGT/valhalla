@@ -149,7 +149,7 @@ export default {
       for(var p in this.proposals){
         var proposal = this.proposals[p];
         if(proposal.current){
-          options.push({'value': proposal.id, 'text': proposal.title});
+          options.push({'value': proposal.id, 'text': proposal.title + ' (' + proposal.id + ')'});
         }
       }
       return _.sortBy(options, 'text');
