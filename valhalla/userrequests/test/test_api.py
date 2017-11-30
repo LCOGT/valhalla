@@ -613,7 +613,7 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             TimeAllocation, proposal=self.proposal, semester=semester,
             telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
             too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-            ipp_time_available=5.0
+            ipp_time_available=5.0, instrument_name='1M0-SCICAM-SBIG'
         )
 
         self.client.force_login(self.user)
@@ -705,7 +705,7 @@ class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
                                )
         self.time_allocation_1m0_sbig = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
-            telescope_class='1m0', instruemnt_name='1M0-SCICAM-SBIG', std_allocation=100.0,
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0,
             std_time_used=0.0, too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
             ipp_time_available=5.0
         )
@@ -793,6 +793,7 @@ class TestNonSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
                                end=datetime(2016, 12, 31, tzinfo=timezone.utc))
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               instrument_name='1M0-SCICAM-SBIG',
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
                                                ipp_time_available=5.0)
 
@@ -899,6 +900,7 @@ class TestSatelliteTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+                                               instrument_name='1M0-SCICAM-SBIG',
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
                                                ipp_time_available=5.0)
 
@@ -948,11 +950,11 @@ class TestLocationApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.time_allocation_1m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0)
+                                               ipp_time_available=5.0, instrument_name='1M0-SCICAM-SBIG')
         self.time_allocation_2m0 = mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester,
                                                telescope_class='2m0', std_allocation=100.0, std_time_used=0.0,
                                                too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
-                                               ipp_time_available=5.0)
+                                               ipp_time_available=5.0, instrument_name='2M0-FLOYDS-SCICAM')
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
