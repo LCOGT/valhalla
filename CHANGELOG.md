@@ -1,3 +1,8 @@
+## 1.6.1
+2017-11-30
+
+* Fix bug that did not allow submission of spectrums through the UI
+
 ## 1.6.0
 2017-11-30
 
