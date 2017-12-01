@@ -83,6 +83,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                 else:
                     time_allocation = TimeAllocation.objects.get(
                         semester=tak.semester,
+                        instrument_name=tak.instrument_name,
                         telescope_class=tak.telescope_class,
                         proposal=ur.proposal.id,
                     )
