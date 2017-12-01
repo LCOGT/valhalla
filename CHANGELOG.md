@@ -1,3 +1,8 @@
+## 1.6.2
+2017-11-30
+
+* Fix bug in new per instrument time allocations and get schedulable requests
+
 ## 1.6.1
 2017-11-30
 

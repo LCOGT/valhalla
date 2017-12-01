@@ -1703,7 +1703,7 @@ class TestSchedulableRequestsApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         )
         self.time_allocation_1m0 = mixer.blend(
             TimeAllocation, proposal=self.proposal, semester=semester,
-            telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
+            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
             too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
             ipp_time_available=5.0
         )
