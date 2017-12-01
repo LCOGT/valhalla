@@ -19,8 +19,11 @@ class Semester(models.Model):
     proposals = models.ManyToManyField("Proposal", through="TimeAllocation")
 
     @classmethod
-    def current_semesters(cls):
-        return cls.objects.filter(start__lte=timezone.now(), end__gte=timezone.now())
+    def current_semesters(cls, future=False):
+        semesters = cls.objects.filter(end__gte=timezone.now())
+        if not future:
+            semesters = semesters.filter(start__lte=timezone.now())
+        return semesters
 
     def __str__(self):
         return self.id
@@ -61,7 +64,7 @@ class Proposal(models.Model):
 
     @classmethod
     def current_proposals(cls):
-        return cls.objects.filter(semester__in=Semester.current_semesters())
+        return cls.objects.filter(semester__in=Semester.current_semesters(future=True))
 
     def add_users(self, emails, role):
         for email in emails:
@@ -87,7 +90,7 @@ class Proposal(models.Model):
         return self.id
 
 
-TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class'])
+TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class', 'instrument_name'])
 
 
 class TimeAllocation(models.Model):

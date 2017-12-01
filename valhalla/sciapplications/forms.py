@@ -49,7 +49,7 @@ class ScienceProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
+            'call', 'status', 'title', 'pi', 'coi', 'budget_details',
             'abstract', 'moon', 'science_case', 'science_case_file', 'experimental_design',
             'experimental_design_file', 'related_programs', 'past_use',
             'publications'
@@ -73,7 +73,7 @@ class KeyProjectAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'coi', 'budget_details', 'instruments',
+            'call', 'status', 'title', 'pi', 'coi', 'budget_details',
             'abstract', 'moon', 'science_case', 'science_case_file', 'related_programs',
             'past_use', 'publications', 'experimental_design', 'experimental_design_file',
             'management', 'relevance', 'contribution'

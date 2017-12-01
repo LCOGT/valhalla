@@ -177,8 +177,8 @@ class TestAccounting(TestCase):
             body='{ "block_bounded_attempted_hours": 1, "attempted_hours": 2 }',
             content_type='application/json'
         )
-        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, False), 2)
-        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, True), 1)
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, False), 2)
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, True), 1)
 
     @patch('valhalla.proposals.accounting.query_pond', return_value=1)
     def test_run_accounting(self, qa_mock):

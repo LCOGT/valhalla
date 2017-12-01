@@ -98,7 +98,7 @@
               </p>
               <p>
                 For more information see the
-                <a target="_blank" href="https://developers.lco.global/pages/request-service.html">API Documentation</a>
+                <a target="_blank" href="https://developers.lco.global/#observations">API Documentation</a>
               </p>
               <h2>Loading and saving drafts</h2>
               <p>

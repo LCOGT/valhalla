@@ -1,3 +1,18 @@
+## 1.6.1
+2017-11-30
+
+* Fix bug that did not allow submission of spectrums through the UI
+
+## 1.6.0
+2017-11-30
+
+* Instrument specific time allocations
+
+## 1.5.1
+2017-11-30
+
+* Hotfix for allowing submission of requests in future proposals
+
 ## 1.5.0
 2017-11-27
 

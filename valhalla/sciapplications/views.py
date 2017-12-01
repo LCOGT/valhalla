@@ -37,12 +37,6 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         except KeyError:
             raise Http404
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        if form.fields.get('instruments'):
-            form.fields['instruments'].queryset = self.call.instruments.all()
-        return form
-
     def get_success_url(self):
         if self.object.status == ScienceApplication.DRAFT:
             messages.add_message(self.request, messages.SUCCESS, _('Application created'))
@@ -62,7 +56,7 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         timerequest_form = timerequest_formset()
         for ta_form in timerequest_form:
-            ta_form.initial = {'telescope_class': '1m0'}
+            ta_form.fields['instrument'].queryset = self.call.instruments.all()
         return self.render_to_response(
             self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call)
         )
@@ -110,18 +104,14 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_class(self):
         return FORM_CLASSES[self.object.call.proposal_type]
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        if form.fields.get('instruments'):
-            form.fields['instruments'].queryset = self.object.call.instruments.all()
-        return form
-
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
         if not self.object.status == ScienceApplication.DRAFT:
             raise Http404
         form = self.get_form()
         timerequest_form = timerequest_formset(instance=self.object)
+        for ta_form in timerequest_form:
+            ta_form.fields['instrument'].queryset = self.object.call.instruments.all()
         return self.render_to_response(
             self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.object.call)
         )

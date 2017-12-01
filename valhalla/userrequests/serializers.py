@@ -433,6 +433,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                 time_allocation = TimeAllocation.objects.get(
                     semester=tak.semester,
                     telescope_class=tak.telescope_class,
+                    instrument_name=tak.instrument_name,
                     proposal=data['proposal'],
                 )
                 time_available = 0

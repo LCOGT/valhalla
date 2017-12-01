@@ -9,7 +9,7 @@ from valhalla.proposals.models import Proposal
 
 
 class InstrumentAdmin(admin.ModelAdmin):
-    list_display = ('code',)
+    list_display = ('code', 'display', 'telescope_class')
 admin.site.register(Instrument, InstrumentAdmin)
 
 

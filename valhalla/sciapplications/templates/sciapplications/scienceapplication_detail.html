@@ -63,11 +63,11 @@
     {% if object.budget_details %}
        <h2>{% trans 'Observing Budget' %}</h2>
         <table>
-            <thead><tr><td>{% trans 'Telescope Class' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
+            <thead><tr><td>{% trans 'Instrument' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
             <tbody>
             {% for timerequest in object.timerequest_set.all %}
             <tr>
-                <td>{{ timerequest.telescope_class }}</td>
+                <td>{{ timerequest.instrument }}</td>
                 <td>{{ timerequest.std_time }}</td>
                 <td>{{ timerequest.too_time }}</td>
             </tr>
@@ -105,15 +105,6 @@
             {% else %}
                 <p><a href="{{ object.experimental_design_file.url }}">Download</a></p>
             {% endif %}
-    {% endif %}
-
-    {% if object.instruments.count > 0 %}
-        <h2>{% trans 'Instruments' %}</h2>
-        <ul>
-            {% for instrument in object.instruments.all %}
-            <li>{{ instrument }}</li>
-            {% endfor %}
-        </ul>
     {% endif %}
 
     {% if object.call.proposal_type != 'DDT' %}
