@@ -61,7 +61,7 @@ export default{
         that.$emit('rowClicked', row);
       },
       formatNoMatches: function(){
-        return 'This request is complete but data is still in transit. Please check back in a few minutes.';
+        return 'No data available.';
       },
       queryParamsType: '',
       idField: 'id',
