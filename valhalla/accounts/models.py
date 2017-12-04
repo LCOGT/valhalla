@@ -10,7 +10,6 @@ from oauth2_provider.models import AccessToken, Application
 from rest_framework.authtoken.models import Token
 
 from valhalla.proposals.models import Proposal
-from valhalla.userrequests.models import Request
 
 logger = logging.getLogger()
 
@@ -31,9 +30,8 @@ class Profile(models.Model):
             return 0
         user_requests = self.user.userrequest_set.filter(
             proposal=proposal, created__gte=proposal.current_semester.start
-        )
-        duration = sum(r.duration for r in Request.objects.filter(user_request__in=user_requests))
-        return duration
+        ).prefetch_related('requests')
+        return sum(request.duration for user_request in user_requests for request in user_request.requests.all())
 
     @property
     def archive_bearer_token(self):
