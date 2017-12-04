@@ -8,15 +8,15 @@ from json import JSONDecodeError
 import logging
 import json
 
-from valhalla.proposals.models import TimeAllocation
+from valhalla.proposals.models import TimeAllocation, Membership
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
 from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
 from valhalla.common.configdb import configdb
 from valhalla.userrequests.request_utils import MOLECULE_TYPE_DISPLAY
-from valhalla.userrequests.duration_utils import (get_request_duration, get_total_duration_dict, OVERHEAD_ALLOWANCE,
-                                                  get_molecule_duration, get_num_exposures, get_semester_in)
+from valhalla.userrequests.duration_utils import (get_request_duration, get_request_duration_sum, get_total_duration_dict,
+                                                  OVERHEAD_ALLOWANCE, get_molecule_duration, get_num_exposures, get_semester_in)
 from datetime import timedelta
 from valhalla.common.rise_set_utils import get_rise_set_intervals
 
@@ -416,6 +416,16 @@ class UserRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 _("'{}' type user requests must have more than one child request.".format(data['operator'].title()))
             )
+
+        # Check that the user has not exceeded the time limit on this membership
+        membership = Membership.objects.get(user=data['submitter'], proposal=data['proposal'])
+        if membership.time_limit >= 0:
+            duration = sum(d for _, d in get_request_duration_sum(data).items())
+            time_to_be_used = data['submitter'].profile.time_used_in_proposal(data['proposal']) + duration
+            if membership.time_limit < time_to_be_used:
+                raise serializers.ValidationError(
+                    _('This request\'s duration will exceed the time limit set for your account on this proposal.')
+                )
 
         try:
             total_duration_dict = get_total_duration_dict(data)

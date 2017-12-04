@@ -25,6 +25,14 @@ class Profile(models.Model):
     view_authored_requests_only = models.BooleanField(default=False)
     staff_view = models.BooleanField(default=False)
 
+    def time_used_in_proposal(self, proposal):
+        if not proposal.current_semester:
+            return 0
+        user_requests = self.user.userrequest_set.filter(
+            proposal=proposal, created__gte=proposal.current_semester.start
+        ).prefetch_related('requests')
+        return sum(request.duration for user_request in user_requests for request in user_request.requests.all())
+
     @property
     def archive_bearer_token(self):
         # During testing, you will probably have to copy access tokens from prod for this to work

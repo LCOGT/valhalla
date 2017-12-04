@@ -58,6 +58,10 @@ class Proposal(models.Model):
     def cis(self):
         return self.users.filter(membership__role=Membership.CI)
 
+    @property
+    def current_semester(self):
+        return self.semester_set.intersection(Semester.current_semesters()).first()
+
     @classmethod
     def current_proposals(cls):
         return cls.objects.filter(semester__in=Semester.current_semesters(future=True))
@@ -135,6 +139,7 @@ class Membership(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES)
+    time_limit = models.IntegerField(default=-1)  # seconds, -1 is unlimited
 
     class Meta:
         unique_together = ('user', 'proposal')
@@ -152,6 +157,10 @@ class Membership(models.Model):
 
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
+
+    @property
+    def time_limit_hours(self):
+        return self.time_limit / 3600
 
 
 class ProposalInvite(models.Model):
