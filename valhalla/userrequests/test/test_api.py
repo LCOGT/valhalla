@@ -5,6 +5,7 @@ from valhalla.common.test_helpers import ConfigDBTestMixin, SetTimeMixin
 import valhalla.userrequests.signals.handlers  # noqa
 from valhalla.userrequests.test.test_state_changes import PondMolecule, PondBlock
 from valhalla.userrequests.contention import Pressure
+from valhalla.accounts.models import Profile
 
 from django.core.urlresolvers import reverse
 from django.core.serializers.json import DjangoJSONEncoder
@@ -113,6 +114,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         super().setUp()
         self.proposal = mixer.blend(Proposal)
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
         self.semester = mixer.blend(
             Semester, id='2016B', start=datetime(2016, 9, 1, tzinfo=timezone.utc),
@@ -130,7 +132,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
             too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
         )
 
-        mixer.blend(Membership, user=self.user, proposal=self.proposal)
+        self.membership = mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.generic_payload = copy.deepcopy(generic_payload)
         self.generic_payload['proposal'] = self.proposal.id
 
@@ -212,6 +214,19 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have any time left allocated', str(response.content))
+
+    def test_post_userrequest_time_limit_reached(self):
+        self.membership.time_limit = 0
+        self.membership.save()
+        response = self.client.post(reverse('api:user_requests-list'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('duration will exceed the time limit set for your account ', str(response.content))
+
+    def test_post_userrequest_time_limit_not_reached(self):
+        self.membership.time_limit = 1000
+        self.membership.save()
+        response = self.client.post(reverse('api:user_requests-list'), data=self.generic_payload)
+        self.assertEqual(response.status_code, 201)
 
     def test_post_userrequest_bad_ipp(self):
         bad_data = self.generic_payload.copy()

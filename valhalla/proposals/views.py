@@ -24,7 +24,7 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         if self.request.user.is_staff:
             return Proposal.objects.all()
-        return self.request.user.proposal_set.all()
+        return self.request.user.proposal_set.all().prefetch_related('membership_set')
 
     def post(self, request, **kwargs):
         form = ProposalNotificationForm(request.POST)
@@ -55,6 +55,31 @@ class ProposalListView(LoginRequiredMixin, FilterView):
         context = super().get_context_data(**kwargs)
         context['calls'] = Call.open_calls()
         return context
+
+
+class MembershipLimitView(LoginRequiredMixin, View):
+    def post(self, request, **kwargs):
+        membership = Membership.objects.get(pk=kwargs.get('pk'))
+        if membership.proposal not in [m.proposal for m in request.user.membership_set.filter(role=Membership.PI)]:
+            raise Http404
+        membership.time_limit = float(request.POST['time_limit']) * 3600
+        membership.save()
+        messages.success(request, 'Time limit for {0} {1} set to {2} hours'.format(
+            membership.user.first_name, membership.user.last_name, membership.time_limit / 3600
+        ))
+        return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': membership.proposal.id}))
+
+
+class GlobalMembershipLimitView(LoginRequiredMixin, View):
+    def post(self, request, **kwargs):
+        try:
+            proposal = request.user.membership_set.get(proposal=kwargs.get('pk'), role=Membership.PI).proposal
+        except Membership.DoesNotExist:
+            raise Http404
+        time_limit = float(request.POST['time_limit']) * 3600
+        proposal.membership_set.filter(role=Membership.CI).update(time_limit=time_limit)
+        messages.success(request, 'All CI time limits set to {0} hours'.format(time_limit / 3600))
+        return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': proposal.id}))
 
 
 class InviteCreateView(LoginRequiredMixin, View):

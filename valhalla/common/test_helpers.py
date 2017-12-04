@@ -2,9 +2,12 @@ from django.conf import settings
 from unittest.mock import patch
 from datetime import datetime
 from django.utils import timezone
+from mixer.backend.django import mixer
 import responses
 import json
 import os
+
+from valhalla.userrequests.models import UserRequest, Request, Window, Molecule, Constraints, Target, Location
 
 CONFIGDB_TEST_FILE = os.path.join(settings.BASE_DIR, 'valhalla/common/test_data/configdb.json')
 FILTERWHEELS_FILE = os.path.join(settings.BASE_DIR, 'valhalla/common/test_data/filterwheels.json')
@@ -39,3 +42,46 @@ class SetTimeMixin(object):
     def tearDown(self):
         super().tearDown()
         self.time_patcher.stop()
+
+
+def create_simple_userrequest(user, proposal, request=None, window=None, molecule=None,
+                              constraints=None, target=None, location=None):
+    ur = mixer.blend(UserRequest, submitter=user, proposal=proposal)
+
+    if not request:
+        request = mixer.blend(Request, user_request=ur)
+    else:
+        request.user_request = ur
+        request.save()
+
+    if not window:
+        mixer.blend(Window, request=request)
+    else:
+        window.request = request
+        window.save()
+
+    if not molecule:
+        mixer.blend(Molecule, request=request)
+    else:
+        molecule.request = request
+        molecule.save()
+
+    if not constraints:
+        mixer.blend(Constraints, request=request)
+    else:
+        constraints.request = request
+        constraints.save()
+
+    if not target:
+        mixer.blend(Target, request=request)
+    else:
+        target.request = request
+        target.save()
+
+    if not location:
+        mixer.blend(Location, request=request)
+    else:
+        location.request = request
+        location.save()
+
+    return ur
