@@ -148,7 +148,7 @@ class Membership(models.Model):
                 'user': self.user,
             }
         )
-        send_mail.delay(subject, message, 'portal@lco.glboal', [self.user.email])
+        send_mail.delay(subject, message, 'portal@lco.global', [self.user.email])
 
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
@@ -183,7 +183,7 @@ class ProposalInvite(models.Model):
             }
         )
 
-        send_mail.delay(subject, message, 'portal@lco.glboal', [self.email])
+        send_mail.delay(subject, message, 'portal@lco.global', [self.email])
         self.sent = timezone.now()
         self.save()
 

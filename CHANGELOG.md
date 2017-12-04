@@ -1,3 +1,8 @@
+## 1.6.3
+2017-12-4
+
+* Fix typo in From field for some emails
+
 ## 1.6.2
 2017-11-30
 
