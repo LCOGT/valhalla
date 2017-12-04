@@ -1,3 +1,8 @@
+## 1.7.0
+2017-12-4
+
+* Merge per user time limits for proposals
+
 ## 1.6.3
 2017-12-4
 
