@@ -6,12 +6,14 @@ from datetime import datetime
 from django.utils import timezone
 
 from valhalla.proposals.models import Proposal, Membership, Semester
+from valhalla.accounts.models import Profile
 
 
 class TestProposalApiList(APITestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         self.proposals = mixer.cycle(3).blend(Proposal)
+        mixer.blend(Profile, user=self.user)
         mixer.cycle(3).blend(Membership, user=self.user, proposal=(p for p in self.proposals))
 
     def test_no_auth(self):
@@ -41,6 +43,7 @@ class TestProposalApiList(APITestCase):
 class TestProposalApiDetail(APITestCase):
     def setUp(self):
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
 
