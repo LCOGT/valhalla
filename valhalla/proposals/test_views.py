@@ -5,6 +5,7 @@ from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
 from valhalla.proposals.models import Semester, TimeAllocation
+from valhalla.accounts.models import Profile
 
 
 class TestProposalDetail(TestCase):
@@ -12,6 +13,8 @@ class TestProposalDetail(TestCase):
         self.proposal = mixer.blend(Proposal)
         self.pi_user = mixer.blend(User)
         self.ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 
@@ -43,11 +46,76 @@ class TestProposalDetail(TestCase):
         self.assertContains(response, invite.email)
 
 
+class TestMembershipLimit(TestCase):
+    def setUp(self):
+        self.proposal = mixer.blend(Proposal)
+        self.pi_user = mixer.blend(User)
+        self.ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
+        Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
+        Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
+
+    def test_set_limit(self):
+        self.client.force_login(self.pi_user)
+        membership = self.ci_user.membership_set.first()
+        response = self.client.post(
+            reverse('proposals:membership-limit', kwargs={'pk': membership.id}),
+            data={'time_limit': 1},
+        )
+        membership.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(membership.time_limit, 3600)
+
+    def test_cannot_set_others_limit(self):
+        self.client.force_login(self.pi_user)
+        other_user = mixer.blend(User)
+        other_proposal = mixer.blend(Proposal)
+        membership = Membership.objects.create(user=other_user, proposal=other_proposal)
+        response = self.client.post(
+            reverse('proposals:membership-limit', kwargs={'pk': membership.id}),
+            data={'time_limit': 300},
+        )
+        membership.refresh_from_db()
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(membership.time_limit, -1)
+
+    def test_set_global_limit(self):
+        self.client.force_login(self.pi_user)
+        ci_users = mixer.cycle(5).blend(User)
+        mixer.cycle(5).blend(Profile, user=(ci_user for ci_user in ci_users))
+        memberships = mixer.cycle(5).blend(
+            Membership, user=(c for c in ci_users), proposal=self.proposal, role=Membership.CI
+        )
+        response = self.client.post(
+            reverse('proposals:membership-global', kwargs={'pk': self.proposal.id}),
+            data={'time_limit': 2},
+        )
+        self.assertEqual(response.status_code, 302)
+        for membership in memberships:
+            membership.refresh_from_db()
+            self.assertEqual(membership.time_limit, 7200)
+
+    def test_cannot_set_global_limit_other_proposal(self):
+        self.client.force_login(self.pi_user)
+        other_user = mixer.blend(User)
+        other_proposal = mixer.blend(Proposal)
+        membership = mixer.blend(Membership, user=other_user, proposal=other_proposal)
+        response = self.client.post(
+            reverse('proposals:membership-global', kwargs={'pk': other_proposal.id}),
+            data={'time_limit': 2},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(membership.time_limit, -1)
+
+
 class TestProposalInvite(TestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
         self.pi_user = mixer.blend(User)
         self.ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 

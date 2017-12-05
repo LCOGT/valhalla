@@ -46,6 +46,7 @@
           <th>RR Used</th>
           <th>IPP Limit</th>
           <th>IPP Avail</th>
+          <th># Users</th>
           <th>completed</th>
         </tr>
       </thead>
@@ -66,6 +67,7 @@
         </td>
         <td>{{ ta.ipp_limit|floatformat }}</td>
         <td>{{ ta.ipp_time_available|floatformat }}</td>
+        <td>{{ ta.proposal.users.count }}</td>
         <td>
           {% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %}
             isComplete
@@ -148,6 +150,11 @@ $('#semester-table').bootstrapTable({
       title: 'IPP Available',
       sortable: true,
       footerFormatter: sumFormatter
+    },
+    {
+      field: 'num_users',
+      title: '# Users',
+      sortable: true,
     },
     {
       field: 'completed',

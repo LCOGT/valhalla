@@ -11,8 +11,18 @@ class TimeAllocationSerializer(serializers.ModelSerializer):
 
 class ProposalSerializer(serializers.ModelSerializer):
     timeallocation_set = TimeAllocationSerializer(many=True)
-    users = serializers.StringRelatedField(many=True)
+    users = serializers.SerializerMethodField()
     pi = serializers.StringRelatedField()
+
+    def get_users(self, obj):
+        return {
+            mem.user.username: {
+                'first_name': mem.user.first_name,
+                'last_name': mem.user.last_name,
+                'time_limit': mem.time_limit,
+                'time_requested': mem.user.profile.time_used_in_proposal(obj)
+            } for mem in obj.membership_set.all()
+        }
 
     class Meta:
         model = Proposal

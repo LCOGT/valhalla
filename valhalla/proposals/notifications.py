@@ -22,6 +22,6 @@ def userrequest_notifications(userrequest):
         send_mail.delay(
             'Request {} has completed'.format(userrequest.group_id),
             message,
-            'portal@lco.glboal',
+            'portal@lco.global',
             [u.email for u in users_to_notify(userrequest)]
         )

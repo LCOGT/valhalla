@@ -19,8 +19,11 @@ class Semester(models.Model):
     proposals = models.ManyToManyField("Proposal", through="TimeAllocation")
 
     @classmethod
-    def current_semesters(cls):
-        return cls.objects.filter(start__lte=timezone.now(), end__gte=timezone.now())
+    def current_semesters(cls, future=False):
+        semesters = cls.objects.filter(end__gte=timezone.now())
+        if not future:
+            semesters = semesters.filter(start__lte=timezone.now())
+        return semesters
 
     def __str__(self):
         return self.id
@@ -55,9 +58,13 @@ class Proposal(models.Model):
     def cis(self):
         return self.users.filter(membership__role=Membership.CI)
 
+    @property
+    def current_semester(self):
+        return self.semester_set.intersection(Semester.current_semesters()).first()
+
     @classmethod
     def current_proposals(cls):
-        return cls.objects.filter(semester__in=Semester.current_semesters())
+        return cls.objects.filter(semester__in=Semester.current_semesters(future=True))
 
     def add_users(self, emails, role):
         for email in emails:
@@ -83,7 +90,7 @@ class Proposal(models.Model):
         return self.id
 
 
-TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class'])
+TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_class', 'instrument_name'])
 
 
 class TimeAllocation(models.Model):
@@ -132,6 +139,7 @@ class Membership(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=5, choices=ROLE_CHOICES)
+    time_limit = models.IntegerField(default=-1)  # seconds, -1 is unlimited
 
     class Meta:
         unique_together = ('user', 'proposal')
@@ -145,10 +153,14 @@ class Membership(models.Model):
                 'user': self.user,
             }
         )
-        send_mail.delay(subject, message, 'portal@lco.glboal', [self.user.email])
+        send_mail.delay(subject, message, 'portal@lco.global', [self.user.email])
 
     def __str__(self):
         return '{0} {1} of {2}'.format(self.user, self.role, self.proposal)
+
+    @property
+    def time_limit_hours(self):
+        return self.time_limit / 3600
 
 
 class ProposalInvite(models.Model):
@@ -180,7 +192,7 @@ class ProposalInvite(models.Model):
             }
         )
 
-        send_mail.delay(subject, message, 'portal@lco.glboal', [self.email])
+        send_mail.delay(subject, message, 'portal@lco.global', [self.email])
         self.sent = timezone.now()
         self.save()
 

@@ -1,3 +1,33 @@
+## 1.7.0
+2017-12-4
+
+* Merge per user time limits for proposals
+
+## 1.6.3
+2017-12-4
+
+* Fix typo in From field for some emails
+
+## 1.6.2
+2017-11-30
+
+* Fix bug in new per instrument time allocations and get schedulable requests
+
+## 1.6.1
+2017-11-30
+
+* Fix bug that did not allow submission of spectrums through the UI
+
+## 1.6.0
+2017-11-30
+
+* Instrument specific time allocations
+
+## 1.5.1
+2017-11-30
+
+* Hotfix for allowing submission of requests in future proposals
+
 ## 1.5.0
 2017-11-27
 

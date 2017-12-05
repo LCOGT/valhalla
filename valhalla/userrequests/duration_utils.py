@@ -75,14 +75,18 @@ def get_max_ipp_for_userrequest(userrequest_dict):
     request_durations = get_request_duration_sum(userrequest_dict)
     ipp_dict = {}
     for tak, duration in request_durations.items():
-        time_allocation = proposal.timeallocation_set.get(semester=tak.semester, telescope_class=tak.telescope_class)
+        time_allocation = proposal.timeallocation_set.get(
+            semester=tak.semester, telescope_class=tak.telescope_class, instrument_name=tak.instrument_name
+        )
         duration_hours = duration / 3600.0
         ipp_available = time_allocation.ipp_time_available
         max_ipp_allowable = min((ipp_available / duration_hours) + 1.0, MAX_IPP_LIMIT)
         max_ipp_allowable = float("{:.3f}".format(max_ipp_allowable))
         if tak.semester not in ipp_dict:
             ipp_dict[tak.semester] = {}
-        ipp_dict[tak.semester][tak.telescope_class] = {
+        if tak.telescope_class not in ipp_dict[tak.semester]:
+            ipp_dict[tak.semester][tak.telescope_class] = {}
+        ipp_dict[tak.semester][tak.telescope_class][tak.instrument_name] = {
             'ipp_time_available': ipp_available,
             'ipp_limit': time_allocation.ipp_limit,
             'request_duration': duration_hours,
@@ -98,6 +102,7 @@ def get_request_duration_sum(userrequest_dict):
         duration = get_request_duration(req)
         tak = get_time_allocation_key(
             telescope_class=req['location']['telescope_class'],
+            instrument_name=req['molecules'][0]['instrument_name'],
             min_window_time=min([w['start'] for w in req['windows']]),
             max_window_time=max([w['end'] for w in req['windows']])
         )
@@ -134,21 +139,24 @@ def get_request_duration(request_dict):
     return duration
 
 
-def get_time_allocation(telescope_class, proposal_id, min_window_time, max_window_time):
+def get_time_allocation(telescope_class, instrument_name, proposal_id, min_window_time, max_window_time):
     timeall = None
     try:
         timeall = Proposal.objects.get(pk=proposal_id).timeallocation_set.get(
             semester__start__lte=min_window_time,
             semester__end__gte=max_window_time,
-            telescope_class=telescope_class)
+            telescope_class=telescope_class,
+            instrument_name=instrument_name)
     except Exception:
-        logger.warn(_("proposal {0} has overlapping time allocations for {1}").format(proposal_id, telescope_class))
+        logger.warn(_("proposal {0} has overlapping time allocations for {1} {2}").format(
+            proposal_id, telescope_class, instrument_name
+        ))
     return timeall
 
 
-def get_time_allocation_key(telescope_class, min_window_time, max_window_time):
+def get_time_allocation_key(telescope_class, instrument_name, min_window_time, max_window_time):
     semester = get_semester_in(min_window_time, max_window_time)
-    return TimeAllocationKey(semester.id, telescope_class)
+    return TimeAllocationKey(semester.id, telescope_class, instrument_name)
 
 
 def get_total_duration_dict(userrequest_dict):
@@ -157,6 +165,7 @@ def get_total_duration_dict(userrequest_dict):
         min_window_time = min([window['start'] for window in request['windows']])
         max_window_time = max([window['end'] for window in request['windows']])
         tak = get_time_allocation_key(request['location']['telescope_class'],
+                                      request['molecules'][0]['instrument_name'],
                                       min_window_time,
                                       max_window_time
                                       )

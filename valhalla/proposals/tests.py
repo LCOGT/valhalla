@@ -11,10 +11,11 @@ import responses
 import datetime
 
 from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification, TimeAllocation, Semester
-from valhalla.userrequests.models import UserRequest
+from valhalla.userrequests.models import UserRequest, Molecule
 from valhalla.accounts.models import Profile
 from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
 from valhalla.proposals.tasks import run_accounting
+from valhalla.common.test_helpers import create_simple_userrequest, ConfigDBTestMixin
 
 
 class TestProposal(TestCase):
@@ -127,6 +128,23 @@ class TestProposalNotifications(TestCase):
         self.assertEqual(len(mail.outbox), 0)
 
 
+class TestProposalUserLimits(ConfigDBTestMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.proposal = mixer.blend(Proposal)
+        semester = mixer.blend(Semester, start=timezone.now(), end=timezone.now() + datetime.timedelta(days=180))
+        mixer.blend(TimeAllocation, proposal=self.proposal, semester=semester)
+        self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
+        mixer.blend(Membership, user=self.user, proposal=self.proposal, role=Membership.CI)
+
+    def test_time_used_for_user(self):
+        self.assertEqual(self.user.profile.time_used_in_proposal(self.proposal), 0)
+        molecule = mixer.blend(Molecule, instrument_name='1M0-SCICAM-SBIG', exposure_time=30)
+        create_simple_userrequest(self.user, self.proposal, molecule=molecule)
+        self.assertGreater(self.user.profile.time_used_in_proposal(self.proposal), 0)
+
+
 class TestAccounting(TestCase):
     def test_split_time(self):
         start = datetime.datetime(2017, 1, 1)
@@ -159,8 +177,8 @@ class TestAccounting(TestCase):
             body='{ "block_bounded_attempted_hours": 1, "attempted_hours": 2 }',
             content_type='application/json'
         )
-        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, False), 2)
-        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, True), 1)
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, False), 2)
+        self.assertEqual(query_pond(None, datetime.datetime(2017, 1, 1), datetime.datetime(2017, 2, 1), None, None, True), 1)
 
     @patch('valhalla.proposals.accounting.query_pond', return_value=1)
     def test_run_accounting(self, qa_mock):

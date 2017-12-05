@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.functional import cached_property
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.cache import cache
 from django.urls import reverse
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -135,7 +136,13 @@ class Request(models.Model):
 
     @cached_property
     def duration(self):
-        return get_request_duration(self.as_dict)
+        cached_duration = cache.get('request_duration_{}'.format(self.id))
+        if not cached_duration:
+            duration = get_request_duration(self.as_dict)
+            cache.set('request_duration_{}'.format(self.id), duration, 86400 * 30 * 6)
+            return duration
+        else:
+            return cached_duration
 
     @property
     def min_window_time(self):
@@ -151,14 +158,15 @@ class Request(models.Model):
 
     @property
     def time_allocation_key(self):
-        return TimeAllocationKey(self.semester.id, self.location.telescope_class)
+        return TimeAllocationKey(self.semester.id, self.location.telescope_class, self.molecules.first().instrument_name)
 
     @property
     def timeallocation(self):
         return self.user_request.proposal.timeallocation_set.get(
             semester__start__lte=self.min_window_time,
             semester__end__gte=self.max_window_time,
-            telescope_class=self.location.telescope_class
+            telescope_class=self.location.telescope_class,
+            instrument_name=self.molecules.first().instrument_name
         )
 
     @cached_property
