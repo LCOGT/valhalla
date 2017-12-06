@@ -1,3 +1,10 @@
+## 1.7.1.
+2017-12-06
+
+* Add # users to semester detail pages
+* Add min requirements to help page
+* Use session storage to store archive bearer token so that it expires.
+
 ## 1.7.0
 2017-12-4
 
