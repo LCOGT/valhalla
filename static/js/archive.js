@@ -8,15 +8,15 @@ function archiveAjaxSetup(){
   login(function(){
     $.ajaxPrefilter(function(options, originalOptions, jqXHR){
       if((options.url.indexOf(archiveRoot)>= 0 || options.url.indexOf('thumbnails.lco.global/')>= 0) &&
-         localStorage.getItem('archiveAuthToken')){
-        jqXHR.setRequestHeader('Authorization', 'Token ' + localStorage.getItem('archiveAuthToken'));
+         sessionStorage.getItem('archiveAuthToken')){
+        jqXHR.setRequestHeader('Authorization', 'Token ' + sessionStorage.getItem('archiveAuthToken'));
       }
     });
   });
 }
 
 function login(callback){
-  if(localStorage.getItem('archiveAuthToken')){
+  if(sessionStorage.getItem('archiveAuthToken')){
     callback();
   }else{
     var bearer = '';
@@ -30,7 +30,7 @@ function login(callback){
         headers: {'Authorization': 'Bearer ' + bearer},
         dataType: 'json',
         success: function(data){
-          localStorage.setItem('archiveAuthToken', data.token);
+          sessionStorage.setItem('archiveAuthToken', data.token);
           callback();
         }
       });
@@ -45,7 +45,7 @@ function downloadZip(frameIds){
   for(var i = 0; i < frameIds.length; i++){
     postData['frame_ids[' + i + ']'] = frameIds[i];
   }
-  postData['auth_token'] = localStorage.getItem('archiveAuthToken');
+  postData['auth_token'] = sessionStorage.getItem('archiveAuthToken');
   $.fileDownload(archiveRoot + 'frames/zip/', {
     httpMethod: 'POST',
     data: postData
