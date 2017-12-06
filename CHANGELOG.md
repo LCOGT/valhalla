@@ -1,4 +1,9 @@
-## 1.7.1.
+## 1.7.2
+2017-12-06
+
+* Add downtimedb support to airmass plots and rise-set windows in general.
+
+## 1.7.1
 2017-12-06
 
 * Add # users to semester detail pages
