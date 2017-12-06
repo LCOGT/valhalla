@@ -1,15 +1,16 @@
 from math import cos, radians
 from datetime import timedelta
+from time_intervals.intervals import Intervals
 from rise_set.astrometry import make_ra_dec_target, make_satellite_target, make_minor_planet_target
 from rise_set.astrometry import make_comet_target, make_major_planet_target
 from rise_set.angle import Angle
 from rise_set.rates import ProperMotion
-from rise_set.utils import coalesce_adjacent_intervals
 from rise_set.visibility import Visibility
 from rise_set.moving_objects import MovingViolation
 from django.core.cache import cache
 
 from valhalla.common.configdb import configdb
+from valhalla.common.downtimedb import DowntimeDB
 
 HOURS_PER_DEGREES = 15.0
 
@@ -22,25 +23,19 @@ def get_largest_interval(intervals):
     return largest_interval
 
 
-def get_rise_set_intervals(request_dict, site=''):
-    intervals = []
-    site = site if site else request_dict['location'].get('site', '')
-    site_details = configdb.get_sites_with_instrument_type_and_location(
-            request_dict['molecules'][0]['instrument_name'],
-            site,
-            request_dict['location'].get('observatory', ''),
-            request_dict['location'].get('telescope', '')
-    )
-    if not site_details:
-        return intervals
+def get_rise_set_intervals_by_site(request_dict):
+    ''' Computes or Retrieves from cache a dictionary of rise_set intervals by site for the request
+    '''
+    site_details = configdb.get_sites_with_instrument_type_and_location()
     intervals_by_site = {}
-    if request_dict.get('id'):
-        cache_key = '{0}.rsi'.format(request_dict['id'])
-        intervals_by_site = cache.get(cache_key, {})
     for site in site_details:
-        if intervals_by_site.get(site):
-            intervals.extend(intervals_by_site[site])
-        else:
+        intervals_by_site[site] = None
+        if request_dict.get('id'):
+            cache_key = '{}.{}.rsi'.format(request_dict['id'], site)
+            intervals_by_site[site] = cache.get(cache_key, None)
+
+        if intervals_by_site[site] is None:
+            # There is no cached rise_set intervals for this request and site, so recalculate it now
             intervals_by_site[site] = []
             rise_set_site = get_rise_set_site(site_details[site])
             rise_set_target = get_rise_set_target(request_dict['target'])
@@ -56,11 +51,62 @@ def get_rise_set_intervals(request_dict, site=''):
                     )
                 except MovingViolation:
                     pass
-            intervals.extend(intervals_by_site[site])
-    if request_dict.get('id'):
-        cache.set(cache_key, intervals_by_site, 86400 * 30)  # cache for 30 days
+            if request_dict.get('id'):
+                cache.set(cache_key, intervals_by_site[site], 86400 * 30) # cache for 30 days
 
-    return coalesce_adjacent_intervals(intervals)
+    return intervals_by_site
+
+
+def get_rise_set_intervals(request_dict, site=''):
+    intervals = []
+    site = site if site else request_dict['location'].get('site', '')
+    telescope_details = configdb.get_telescopes_with_instrument_type_and_location(
+            request_dict['molecules'][0]['instrument_name'],
+            site,
+            request_dict['location'].get('observatory', ''),
+            request_dict['location'].get('telescope', '')
+    )
+    if not telescope_details:
+        return intervals
+
+    intervals_by_site = get_rise_set_intervals_by_site(request_dict)
+    intervalsets_by_telescope = intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescope_details.keys())
+    filtered_intervalsets_by_telescope = filter_out_downtime_from_intervalsets(intervalsets_by_telescope)
+    filtered_intervalset = Intervals().union(filtered_intervalsets_by_telescope.values())
+    filtered_intervals = filtered_intervalset.toTupleList()
+
+    return filtered_intervals
+
+
+def intervals_by_site_to_intervalsets_by_telescope(intervals_by_site, telescopes):
+    ''' Takes in a dictionary of rise_set intervals by sites and a dictionary of telescope details for the request.
+        Returns a dictionary by telescopes of rise_set intervals for the request
+    '''
+    intervalsets_by_telescope = {}
+    for telescope in telescopes:
+        if telescope not in intervalsets_by_telescope:
+            site = telescope.split('.')[2]
+            datetime_intervals = []
+            for start, end in intervals_by_site[site]:
+                datetime_intervals.append({'type': 'start', 'time': start})
+                datetime_intervals.append({'type': 'end', 'time': end})
+            intervalsets_by_telescope[telescope] = Intervals(datetime_intervals)
+
+    return intervalsets_by_telescope
+
+
+def filter_out_downtime_from_intervalsets(intervalsets_by_telescope):
+    ''' Takes a dictionary of rise_set intervalsets by telescopes and returns the same with downtime intervals removed
+    '''
+    downtime_intervals = DowntimeDB.get_downtime_intervals()
+    filtered_intervalsets_by_telescope = {}
+    for telescope in intervalsets_by_telescope.keys():
+        if telescope not in downtime_intervals:
+            filtered_intervalsets_by_telescope[telescope] = intervalsets_by_telescope[telescope]
+        else:
+            filtered_intervalsets_by_telescope[telescope] = intervalsets_by_telescope[telescope].subtract(downtime_intervals[telescope])
+
+    return filtered_intervalsets_by_telescope
 
 
 def get_rise_set_target(target_dict):

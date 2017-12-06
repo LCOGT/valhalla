@@ -78,8 +78,9 @@ class TestUserRequestList(TestCase):
         self.assertNotContains(response, self.userrequests[2].group_id)
 
 
-class TestUserrequestDetail(TestCase):
+class TestUserrequestDetail(ConfigDBTestMixin, TestCase):
     def setUp(self):
+        super().setUp()
         self.user = mixer.blend(User)
         mixer.blend(Profile, user=self.user)
         self.proposal = mixer.blend(Proposal)
