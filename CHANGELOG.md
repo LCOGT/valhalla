@@ -1,3 +1,8 @@
+## 1.7.3
+2017-12-12
+
+* Cache UserRequest durations
+
 ## 1.7.2
 2017-12-06
 
