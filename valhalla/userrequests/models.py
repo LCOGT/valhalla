@@ -86,7 +86,13 @@ class UserRequest(models.Model):
 
     @property
     def total_duration(self):
-        return get_total_duration_dict(self.as_dict)
+        cached_duration = cache.get('userrequest_duration_{}'.format(self.id))
+        if not cached_duration:
+            duration = get_total_duration_dict(self.as_dict)
+            cache.set('userrequest_duration_{}'.format(self.id), duration, 86400 * 30 * 6)
+            return duration
+        else:
+            return cached_duration
 
 
 class Request(models.Model):
