@@ -3,10 +3,12 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from mixer.backend.django import mixer
+from unittest.mock import patch
 
 from valhalla.accounts.models import Profile
 from valhalla.proposals.models import Proposal, Membership
 from valhalla.userrequests.models import UserRequest, Request, Molecule
+from valhalla.common.telescope_states import ElasticSearchException
 from valhalla.common.test_telescope_states import TelescopeStatesFromFile
 from valhalla.common.test_helpers import ConfigDBTestMixin
 
@@ -219,6 +221,12 @@ class TestTelescopeStates(TelescopeStatesFromFile):
     def test_no_date_specified(self):
         response = self.client.get(reverse('api:telescope_states'))
         self.assertContains(response, str(timezone.now().date()))
+
+    @patch('valhalla.common.telescope_states.TelescopeStates._get_es_data', side_effect=ElasticSearchException)
+    def test_elasticsearch_down(self, es_patch):
+        response = self.client.get(reverse('api:telescope_availability') +
+                                   '?start=2016-10-1T1:23:44&end=2016-10-10T22:22:2')
+        self.assertContains(response, 'ConnectionError')
 
 
 class TestInstrumentInformation(ConfigDBTestMixin, TestCase):
