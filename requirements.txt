@@ -1,5 +1,5 @@
-django>=1.11,<2.0
-django-registration-redux>=1.8,<1.9
+django>=2.0,<2.1
+django-registration-redux>=2.0,<2.1
 djangorestframework>=3.7,<3.8
 django-oauth-toolkit>=1.0,<1.1
 django-cors-headers>=2.1,<2.2
@@ -19,5 +19,5 @@ rise-set==0.4.9
 lcogt-logging
 
 ipython
-mixer
 responses
+https://github.com/Fingel/mixer/archive/develop.zip

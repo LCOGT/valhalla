@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 from django.utils.html import format_html
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 
 from .models import Instrument, Call, ScienceApplication, TimeRequest

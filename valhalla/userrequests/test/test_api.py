@@ -7,7 +7,7 @@ from valhalla.userrequests.test.test_state_changes import PondMolecule, PondBloc
 from valhalla.userrequests.contention import Pressure
 from valhalla.accounts.models import Profile
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.models import User
 from django.conf import settings
