@@ -14,16 +14,20 @@ from dateutil.parser import parse
 from datetime import timedelta
 import requests
 from rest_framework.views import APIView
+import logging
 
 from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import (TelescopeStates, get_telescope_availability_per_day,
-                                              combine_telescope_availabilities_by_site_and_class)
+                                              combine_telescope_availabilities_by_site_and_class,
+                                              ElasticSearchException)
 from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
 from valhalla.userrequests.state_changes import update_request_states_from_pond_blocks
 from valhalla.userrequests.contention import Contention, Pressure
+
+logger = logging.getLogger(__name__)
 
 
 def get_start_end_paramters(request, default_days_back):
@@ -144,9 +148,13 @@ class TelescopeAvailabilityView(APIView):
         combine = request.query_params.get('combine')
         sites = request.query_params.getlist('site')
         telescopes = request.query_params.getlist('telescope')
-        telescope_availability = get_telescope_availability_per_day(
-            start, end, sites=sites, telescopes=telescopes
-        )
+        try:
+            telescope_availability = get_telescope_availability_per_day(
+                start, end, sites=sites, telescopes=telescopes
+            )
+        except ElasticSearchException:
+            logger.warning('Error connecting to ElasticSearch. Is SBA reachable?')
+            return Response('ConnectionError')
         if combine:
             telescope_availability = combine_telescope_availabilities_by_site_and_class(telescope_availability)
         str_telescope_availability = {str(k): v for k, v in telescope_availability.items()}

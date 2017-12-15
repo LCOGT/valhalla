@@ -1,6 +1,7 @@
 <template>
   <div class="telescopeAvailability">
-    <table class="availability_chart table table-bordered table-condensed">
+    {{ error }}
+    <table class="availability_chart table table-bordered table-condensed" v-show="sortedTelescopes.length">
         <thead class="thead-default">
             <th>Telescope</th>
             <th v-for="dateLabel in dateLabels">{{ dateLabel }}</th>
@@ -14,6 +15,7 @@
             </tr>
         </tbody>
     </table>
+    <p v-show="!sortedTelescopes.length && !error" class="text-center"><i class="fa fa-spin fa-spinner"></i></p>
   </div>
 </template>
 <script>
@@ -28,7 +30,8 @@ export default {
       minDate:null,
       maxDate:null,
       dateLabels:[],
-      sortedTelescopes:[]
+      sortedTelescopes:[],
+      error: ''
     };
   },
   created: function(){
@@ -42,6 +45,10 @@ export default {
     startDate.setMilliseconds(0);
     $.getJSON('/api/telescope_availability/?start=' + startDate.toISOString() + '&end=' + endDate.toISOString(),
       function(data){
+        if(data === 'ConnectionError'){
+          that.error = 'Unable to retrieve history';
+          return;
+        }
         that.availabilityData = data;
       }
     );
