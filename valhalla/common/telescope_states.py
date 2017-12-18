@@ -1,5 +1,7 @@
 from django.conf import settings
+from django.core.cache import cache
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import ConnectionError
 from datetime import datetime, timedelta
 from django.utils import timezone
 from copy import deepcopy
@@ -14,6 +16,9 @@ logger = logging.getLogger(__name__)
 
 ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
 
+
+class ElasticSearchException(Exception):
+    pass
 
 def string_to_datetime(timestamp, time_format=ES_STRING_FORMATTER):
     return datetime.strptime(timestamp, time_format).replace(tzinfo=timezone.utc)
@@ -36,7 +41,12 @@ class TelescopeStates(object):
 
         self.start = start.replace(tzinfo=timezone.utc).replace(microsecond=0)
         self.end = end.replace(tzinfo=timezone.utc).replace(microsecond=0)
-        self.event_data = self._get_es_data(sites, telescopes)
+        cached_event_data = cache.get('tel_event_data')
+        if cached_event_data:
+            self.event_data = cached_event_data
+        else:
+            self.event_data = self._get_es_data(sites, telescopes)
+            cache.set('tel_event_data', self.event_data, 1800)
 
     def _get_available_telescopes(self):
         telescope_to_instruments = configdb.get_instrument_types_per_telescope(only_schedulable=True)
@@ -78,9 +88,16 @@ class TelescopeStates(object):
         }
         event_data = []
         query_size = 10000
-        data = self.es.search(index="telescope_events", body=date_range_query, size=query_size, scroll='1m',
-                              _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'],
-                              sort=['site', 'enclosure', 'telescope', 'timestamp'])  # noqa
+
+        try:
+            data = self.es.search(
+                index="telescope_events", body=date_range_query, size=query_size, scroll='1m',  # noqa
+                _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'],
+                sort=['site', 'enclosure', 'telescope', 'timestamp']
+            )
+        except ConnectionError:
+            raise ElasticSearchException
+
         event_data.extend(data['hits']['hits'])
         total_events = data['hits']['total']
         events_read = min(query_size, total_events)
