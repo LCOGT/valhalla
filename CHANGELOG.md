@@ -1,3 +1,9 @@
+## 1.7.5
+2017-12-18
+
+* Correct ordering of TimeAllocations in proposal detail
+* Catch ES connection errors in Telescope Availability
+
 ## 1.7.4
 2017-12-13
 
