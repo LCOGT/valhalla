@@ -23,13 +23,13 @@ export default {
   },
   computed: {
     guiLink: function(){
-      return archiveUIRoot + '?start=2014-05-01&covers=POINT(' + this.ra + ' ' + this.dec +')';
+      return archiveUIRoot + '?OBSTYPE=EXPOSE&start=2014-05-01&covers=POINT(' + this.ra + ' ' + this.dec +')';
     }
   },
   methods:{
     setResultCount: _.debounce(function(){
       var that = this;
-      $.getJSON(archiveRoot + 'frames/?covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
+      $.getJSON(archiveRoot + 'frames/?OBSTYPE=EXPOSE&covers=POINT(' + that.ra + ' ' + that.dec +')', function(data){
         that.resultCount = data.count;
       });
     }, 500)
