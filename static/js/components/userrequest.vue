@@ -156,7 +156,11 @@ export default {
     },
     durationDisplay: function(){
       var duration = moment.duration(this.duration_data.duration, 'seconds');
-      return duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
+      var durationStr = duration.hours() + ' hrs ' + duration.minutes() + ' min ' + duration.seconds() + ' sec';
+      if(duration.days() > 0){
+        durationStr = duration.days() + ' days ' + durationStr;
+      }
+      return durationStr;
     },
     showEdPopup: function(){
       return localStorage.getItem('hasVisited') != 'true' && this.simple_interface;
