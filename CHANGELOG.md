@@ -1,3 +1,11 @@
+## 1.7.6
+2017-12-19
+
+* Filter on expose obstype for existing archive frames search
+* Upgrade js deps
+* Change insufficient time allocation error message
+* Show duration of request in days if necessary
+
 ## 1.7.5
 2017-12-18
 
