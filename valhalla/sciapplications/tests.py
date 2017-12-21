@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
-from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest
+from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
 from valhalla.proposals.models import Semester, Membership, ProposalInvite
 
 
@@ -17,7 +17,7 @@ class TestSciAppToProposal(TestCase):
         )
 
     def test_create_proposal_from_single_pi(self):
-        app = mixer.blend(ScienceApplication, submitter=self.user, pi='', coi='')
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi='')
         tr = mixer.blend(TimeRequest, approved=True, science_application=app)
         proposal = app.convert_to_proposal()
         self.assertEqual(app.proposal, proposal)
@@ -27,7 +27,7 @@ class TestSciAppToProposal(TestCase):
         self.assertFalse(ProposalInvite.objects.filter(proposal=proposal).exists())
 
     def test_create_proposal_with_supplied_noexistant_pi(self):
-        app = mixer.blend(ScienceApplication, submitter=self.user, pi='frodo@example.com', coi='')
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi='frodo@example.com')
         tr = mixer.blend(TimeRequest, approved=True, science_application=app)
         proposal = app.convert_to_proposal()
         self.assertEqual(app.proposal, proposal)
@@ -37,7 +37,7 @@ class TestSciAppToProposal(TestCase):
 
     def test_create_proposal_with_supplied_existant_pi(self):
         user = mixer.blend(User)
-        app = mixer.blend(ScienceApplication, submitter=self.user, pi=user.email, coi='')
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi=user.email)
         tr = mixer.blend(TimeRequest, approved=True, science_application=app)
         proposal = app.convert_to_proposal()
         self.assertEqual(app.proposal, proposal)
@@ -46,8 +46,8 @@ class TestSciAppToProposal(TestCase):
         self.assertFalse(ProposalInvite.objects.filter(proposal=proposal).exists())
 
     def test_create_proposal_with_nonexistant_cois(self):
-        cois = '1@lcogt.net, 2@lcogt.net,3@lcogt.net'
-        app = mixer.blend(ScienceApplication, submitter=self.user, pi='', coi=cois)
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi='')
+        mixer.cycle(3).blend(CoInvestigator, science_application=app)
         tr = mixer.blend(TimeRequest, approved=True, science_application=app)
         proposal = app.convert_to_proposal()
         self.assertEqual(app.proposal, proposal)
@@ -56,10 +56,12 @@ class TestSciAppToProposal(TestCase):
         self.assertEqual(ProposalInvite.objects.filter(proposal=proposal).count(), 3)
 
     def test_create_proposal_with_existant_cois(self):
-        cois = '1@lcogt.net, 2@lcogt.net,3@lcogt.net'
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi='')
         coi1 = mixer.blend(User, email='1@lcogt.net')
         coi2 = mixer.blend(User, email='2@lcogt.net')
-        app = mixer.blend(ScienceApplication, submitter=self.user, pi='', coi=cois)
+        mixer.blend(CoInvestigator, email='1@lcogt.net', science_application=app)
+        mixer.blend(CoInvestigator, email='2@lcogt.net', science_application=app)
+        mixer.blend(CoInvestigator, email='3@lcogt.net', science_application=app)
         tr = mixer.blend(TimeRequest, approved=True, science_application=app)
         proposal = app.convert_to_proposal()
         self.assertEqual(app.proposal, proposal)

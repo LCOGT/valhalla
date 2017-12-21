@@ -1,5 +1,4 @@
 {% load i18n %}
-{% load sciapplication_extras %}
 <!doctype html>
 <html class="no-js" lang="en">
 <head>
@@ -50,14 +49,16 @@
 
     <h2>{% trans 'Principal Investigator' %}</h2>
     {% if object.pi %}
-        <p>{{ object.pi|detailed_user_information }}</p>
+      <p>{{ object.pi.first_name }} {{ object.pi.last_name }} <{{ object.pi.email }}> {{ object.pi.profile.institution }}</p>
     {% else %}
-        <p>{{ object.submitter.email|detailed_user_information }}</p>
+      <p>{{ object.submitter.first_name }} {{ object.submitter.last_name }} <{{ object.submitter.email }}> {{ object.submitter.profile.institution }}</p>
     {% endif %}
 
-    {% if object.coi %}
-            <h2>{% trans 'Co Investigators' %}</h2>
-            <p>{% for ci in object.cis %}{{ ci|detailed_user_information }}<br/>{% endfor %}</p>
+    {% if object.coinvestigator_set.exists %}
+      <h2>{% trans 'Co Investigators' %}</h2>
+      {% for coi in object.coinvestigator_set.all %}
+        <p>{{ coi }}</p>
+      {% endfor %}
     {% endif %}
 
     {% if object.budget_details %}

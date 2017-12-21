@@ -146,16 +146,12 @@ class ScienceApplication(models.Model):
         else:
             Membership.objects.create(proposal=proposal, user=self.submitter, role=Membership.PI)
 
-        proposal.add_users(self.cis, Membership.CI)
+        proposal.add_users([coi.email for coi in self.coinvestigator_set.all()], Membership.CI)
 
         self.proposal = proposal
         self.status = ScienceApplication.PORTED
         self.save()
         return proposal
-
-    @property
-    def cis(self):
-        return [c for c in self.coi.replace(' ', '').split(',') if c]
 
 
 class TimeRequest(models.Model):
@@ -167,3 +163,15 @@ class TimeRequest(models.Model):
 
     def __str__(self):
         return '{} {} TimeRequest'.format(self.science_application, self.instrument)
+
+
+class CoInvestigator(models.Model):
+    science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
+    email = models.EmailField()
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255)
+
+    def __str__(self):
+        return '{0} {1} <{2}> ({3})'.format(self.first_name, self.last_name, self.email, self.institution)
+
