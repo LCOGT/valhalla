@@ -16,7 +16,7 @@ import io
 from valhalla.celery import send_mail
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.sciapplications.forms import (
-    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, timerequest_formset
+    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, timerequest_formset, ci_formset
 )
 
 FORM_CLASSES = {
@@ -55,10 +55,11 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         self.call = get_object_or_404(Call, pk=kwargs['call'])
         form = self.get_form()
         timerequest_form = timerequest_formset()
+        ci_form = ci_formset()
         for ta_form in timerequest_form:
             ta_form.fields['instrument'].queryset = self.call.instruments.all()
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call)
+            self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.call, ci_form=ci_form)
         )
 
     def post(self, request, *args, **kwargs):
@@ -67,20 +68,23 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
         form = self.get_form()
         form.instance.submitter = request.user
         timerequest_form = timerequest_formset(self.request.POST)
-        if form.is_valid() and timerequest_form.is_valid():
-            return self.forms_valid({'main': form, 'tr': timerequest_form})
+        ci_form = ci_formset(self.request.POST)
+        if form.is_valid() and timerequest_form.is_valid() and ci_form.is_valid():
+            return self.forms_valid({'main': form, 'tr': timerequest_form, 'ci': ci_form})
         else:
-            return self.forms_invalid({'main': form, 'tr': timerequest_form})
+            return self.forms_invalid({'main': form, 'tr': timerequest_form, 'ci': ci_form})
 
     def forms_valid(self, forms):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
+        forms['ci'].instance = self.object
+        forms['ci'].save()
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
         return self.render_to_response(
-            self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.call)
+            self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], ci_form=forms['ci'], call=self.call)
         )
 
 
@@ -110,30 +114,36 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
             raise Http404
         form = self.get_form()
         timerequest_form = timerequest_formset(instance=self.object)
+        ci_form = ci_formset(instance=self.object)
         for ta_form in timerequest_form:
             ta_form.fields['instrument'].queryset = self.object.call.instruments.all()
         return self.render_to_response(
-            self.get_context_data(form=form, timerequest_form=timerequest_form, call=self.object.call)
+            self.get_context_data(form=form, timerequest_form=timerequest_form, ci_form=ci_form, call=self.object.call)
         )
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         form = self.get_form()
         timerequest_form = timerequest_formset(self.request.POST, instance=self.object)
-        if form.is_valid() and timerequest_form.is_valid():
-            return self.forms_valid({'main': form, 'tr': timerequest_form})
+        ci_form = ci_formset(self.request.POST, instance=self.object)
+        if form.is_valid() and timerequest_form.is_valid() and ci_form.is_valid():
+            return self.forms_valid({'main': form, 'tr': timerequest_form, 'ci': ci_form})
         else:
-            return self.forms_invalid({'main': form, 'tr': timerequest_form})
+            return self.forms_invalid({'main': form, 'tr': timerequest_form, 'ci': ci_form})
 
     def forms_valid(self, forms):
         self.object = forms['main'].save()
         forms['tr'].instance = self.object
         forms['tr'].save()
+        forms['ci'].instance = self.object
+        forms['ci'].save()
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
         return self.render_to_response(
-            self.get_context_data(form=forms['main'], timerequest_form=forms['tr'], call=self.object.call)
+            self.get_context_data(
+                form=forms['main'], timerequest_form=forms['tr'], ci_form=forms['ci'], call=self.object.call
+            )
         )
 
 

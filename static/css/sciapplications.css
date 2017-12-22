@@ -1,5 +1,5 @@
-.delete-timeallocation {
-    margin-left: 10px;
+.delete-row {
+    float:right;
 }
 
 #id_instruments {

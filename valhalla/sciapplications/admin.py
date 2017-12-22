@@ -4,12 +4,14 @@ from django.utils.html import format_html
 from django.core.urlresolvers import reverse
 
 
-from .models import Instrument, Call, ScienceApplication, TimeRequest
+from .models import Instrument, Call, ScienceApplication, TimeRequest, CoInvestigator
 from valhalla.proposals.models import Proposal
 
 
 class InstrumentAdmin(admin.ModelAdmin):
     list_display = ('code', 'display', 'telescope_class')
+
+
 admin.site.register(Instrument, InstrumentAdmin)
 
 
@@ -21,6 +23,8 @@ class CallAdmin(admin.ModelAdmin):
         'proposal_type',
     )
     list_filter = ('opens', 'deadline', 'proposal_type')
+
+
 admin.site.register(Call, CallAdmin)
 
 
@@ -28,8 +32,12 @@ class TimeRequestAdminInline(admin.TabularInline):
     model = TimeRequest
 
 
+class CoInvestigatorInline(admin.TabularInline):
+    model = CoInvestigator
+
+
 class ScienceApplicationAdmin(admin.ModelAdmin):
-    inlines = [TimeRequestAdminInline]
+    inlines = [CoInvestigatorInline, TimeRequestAdminInline]
     list_display = (
         'title',
         'call',
@@ -68,5 +76,6 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
             else:
                 app.convert_to_proposal()
                 self.message_user(request, 'Proposal {} successfully created.'.format(app.proposal))
+
 
 admin.site.register(ScienceApplication, ScienceApplicationAdmin)
