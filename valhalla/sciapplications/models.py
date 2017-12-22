@@ -97,6 +97,9 @@ class ScienceApplication(models.Model):
     relevance = models.TextField(blank=True, default='')
     contribution = models.TextField(blank=True, default='')
 
+    # Admin only Notes
+    notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
+
     class Meta:
         ordering = ('-id',)
 
