@@ -456,7 +456,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
             validate_ipp(data, total_duration_dict)
         except ObjectDoesNotExist:
             raise serializers.ValidationError(
-                _("You do not have sufficient time allocated on the resource you're requesting for this proposal.")
+                _("You do not have sufficient time allocated on the instrument you're requesting for this proposal.")
             )
         except TimeAllocationError as e:
             raise serializers.ValidationError(repr(e))

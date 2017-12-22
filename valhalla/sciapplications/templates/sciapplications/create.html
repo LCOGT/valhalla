@@ -45,15 +45,31 @@
                 {% bootstrap_field form.pi show_label=false %}
             {% endif %}
 
-            {% if form.coi %}
-                {% bootstrap_label 'Co-investigators' label_for=id_coi %}
-                <div class="help-block">
-                {% blocktrans %}
-                Add the email addresses (comma separated) of co-investigators on this proposal.
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.coi show_label=false %}
-            {% endif %}
+            {% bootstrap_label 'Co-investigators' %}
+            <div class="help-block">
+              {% blocktrans %}
+              Add the details of co-investigators on this proposal.
+              {% endblocktrans %}
+            </div>
+            <table class="table table-striped">
+              <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+              <tbody>
+                {% for form in ci_form.forms %}
+                  {% bootstrap_form_errors form %}
+                  {{ form.id }}
+                  <tr class="ci-row">
+                    <td>
+                    {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                    {% bootstrap_field form.email show_label=false %}
+                    </td>
+                    <td>{% bootstrap_field form.first_name show_label=false %}</td>
+                    <td>{% bootstrap_field form.last_name show_label=false %}</td>
+                    <td>{% bootstrap_field form.institution show_label=false %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+              {{ ci_form.management_form }}
+            </table>
 
             {% if form.budget_details %}
                 {% bootstrap_label 'Observing Budget' %}
@@ -72,10 +88,10 @@
                     <tr class="timerequest-row">
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
-                        {{ form.instrument }}
+                        {% bootstrap_field form.instrument show_label=false %}
                         </td>
-                        <td>{{ form.std_time }}</td>
-                        <td>{{ form.too_time }}</td>
+                        <td>{% bootstrap_field form.std_time show_label=false %}</td>
+                        <td>{% bootstrap_field form.too_time show_label=false %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
@@ -202,7 +218,7 @@
         {% endbuttons %}
         {% if form.instance.id %}
         <p>Previewing your submission will <strong>discard</strong> any pending edits.</p>
-        <a href="{% url 'sciapplications:detail' form.instance.id %}" class="btn btn-default" id="preview">{% trans 'Preview' %}</a>
+        <p><a href="{% url 'sciapplications:detail' form.instance.id %}" class="btn btn-default" id="preview">{% trans 'Preview' %}</a></p>
         <p>{% trans 'Deleting a draft is an irreversible action' %}.</p>
         <p><a href="{% url 'sciapplications:delete' pk=form.instance.id %}" class="btn btn-danger">{% trans 'Delete' %}</a></p>
         {% endif %}
@@ -212,28 +228,37 @@
 {% block extra_javascript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.formset/1.2.2/jquery.formset.min.js"></script>
 <script type="text/javascript">
-    function check_time_requests(){
-         if($('.timerequest-row').length < 2){
-            $('.fa-trash').hide();
+    function check_delete(row){
+         if(row.siblings('tr').length < 1){
+           row.find('.fa-trash').hide();
         }else{
-            $('.fa-trash').show();
+           row.find('.fa-trash').show();
         }
     }
-    $(document).ready(function(){
-        $('#app_form tbody tr').formset({
-            prefix: '{{ timerequest_form.prefix }}',
-            deleteCssClass: 'delete-timeallocation',
+    function instantiateFormset(elem, prefix){
+        elem.formset({
+            prefix: prefix,
             deleteText: '<i class="fa fa-trash"></i>',
+            addText: '<i class="fa fa-plus"></i> add another ',
+            deleteCssClass: 'delete-' + prefix,
+            formCssClass: 'form-' + prefix,
             added: function(row){
-               row.find('input[type=number]').val(0);
-               check_time_requests();
+              check_delete(row);
+              row.find('input[type=number]').val(0);
             },
             removed: function(row){
-                check_time_requests();
+              check_delete(row);
             }
         });
-        check_time_requests();
+      }
+
+    $(document).ready(function(){
+        instantiateFormset($('.ci-row'), '{{ ci_form.prefix }}');
+        instantiateFormset($('.timerequest-row'), '{{ timerequest_form.prefix }}');
+        check_delete($('.ci-row').first());
+        check_delete($('.timerequest-row').first());
     });
+
     $('#submit').click(function(){
         if(window.confirm('Submit this application? You will no longer be able to edit it')){
             $('#id_status').val('SUBMITTED')

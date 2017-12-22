@@ -1,3 +1,27 @@
+## 1.8.1
+2017-12-122
+
+* Remove old coi field
+
+## 1.8.0
+2017-12-22
+
+* Change SciApps to require more specific coinvestigator information
+
+## 1.7.6
+2017-12-19
+
+* Filter on expose obstype for existing archive frames search
+* Upgrade js deps
+* Change insufficient time allocation error message
+* Show duration of request in days if necessary
+
+## 1.7.5
+2017-12-18
+
+* Correct ordering of TimeAllocations in proposal detail
+* Catch ES connection errors in Telescope Availability
+
 ## 1.7.4
 2017-12-13
 

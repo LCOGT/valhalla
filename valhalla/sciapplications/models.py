@@ -73,7 +73,6 @@ class ScienceApplication(models.Model):
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
     abstract = models.TextField(blank=True, default='')
     pi = models.EmailField(blank=True, default='')
-    coi = models.TextField(blank=True, default='')
     budget_details = models.TextField(blank=True, default='', help_text='')
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
@@ -96,6 +95,9 @@ class ScienceApplication(models.Model):
     management = models.TextField(blank=True, default='')
     relevance = models.TextField(blank=True, default='')
     contribution = models.TextField(blank=True, default='')
+
+    # Admin only Notes
+    notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
 
     class Meta:
         ordering = ('-id',)
@@ -146,16 +148,12 @@ class ScienceApplication(models.Model):
         else:
             Membership.objects.create(proposal=proposal, user=self.submitter, role=Membership.PI)
 
-        proposal.add_users(self.cis, Membership.CI)
+        proposal.add_users([coi.email for coi in self.coinvestigator_set.all()], Membership.CI)
 
         self.proposal = proposal
         self.status = ScienceApplication.PORTED
         self.save()
         return proposal
-
-    @property
-    def cis(self):
-        return [c for c in self.coi.replace(' ', '').split(',') if c]
 
 
 class TimeRequest(models.Model):
@@ -167,3 +165,15 @@ class TimeRequest(models.Model):
 
     def __str__(self):
         return '{} {} TimeRequest'.format(self.science_application, self.instrument)
+
+
+class CoInvestigator(models.Model):
+    science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
+    email = models.EmailField()
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    institution = models.CharField(max_length=255)
+
+    def __str__(self):
+        return '{0} {1} <{2}> ({3})'.format(self.first_name, self.last_name, self.email, self.institution)
+

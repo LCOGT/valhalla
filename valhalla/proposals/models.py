@@ -124,6 +124,9 @@ class TimeAllocation(models.Model):
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)
     instrument_name = models.CharField(max_length=200, choices=INSTRUMENT_NAMES)
 
+    class Meta:
+        ordering = ('-semester__id',)
+
     def __str__(self):
         return 'Timeallocation for {0}-{1}'.format(self.proposal, self.semester)
 

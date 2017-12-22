@@ -13,7 +13,7 @@ from unittest.mock import MagicMock
 
 from valhalla.proposals.models import Semester
 from valhalla.accounts.models import Profile
-from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest
+from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
 
 
@@ -99,7 +99,6 @@ class TestPostCreateSciApp(TestCase):
             'status': 'SUBMITTED',
             'title': 'Test Title',
             'pi': 'test@example.com',
-            'coi': 'test2@example.com, test3@example.com',
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
@@ -126,24 +125,46 @@ class TestPostCreateSciApp(TestCase):
 
         }
 
-        management_data = {
+        tr_management_data = {
             'timerequest_set-TOTAL_FORMS': 1,
             'timerequest_set-INITIAL_FORMS': 0,
             'timerequest_set-MIN_NUM_FORMS': 0,
             'timerequest_set-MAX_NUM_FORMS': 1000,
         }
 
+        ci_data = {
+            'coinvestigator_set-0-id': '',
+            'coinvestigator_set-0-email': 'bilbo@baggins.com',
+            'coinvestigator_set-0-first_name': 'Bilbo',
+            'coinvestigator_set-0-last_name': 'Baggins',
+            'coinvestigator_set-0-institution': 'lco',
+
+        }
+
+        ci_management_data = {
+            'coinvestigator_set-TOTAL_FORMS': 1,
+            'coinvestigator_set-INITIAL_FORMS': 0,
+            'coinvestigator_set-MIN_NUM_FORMS': 0,
+            'coinvestigator_set-MAX_NUM_FORMS': 1000,
+        }
+
         self.sci_data = {k: data[k] for k in data if k in ScienceProposalAppForm.Meta.fields}
         self.sci_data.update(timerequest_data)
-        self.sci_data.update(management_data)
+        self.sci_data.update(tr_management_data)
+        self.sci_data.update(ci_data)
+        self.sci_data.update(ci_management_data)
         self.key_data = {k: data[k] for k in data if k in KeyProjectAppForm.Meta.fields}
         self.key_data['call'] = self.key_call.id
         self.key_data.update(timerequest_data)
-        self.key_data.update(management_data)
+        self.key_data.update(tr_management_data)
+        self.key_data.update(ci_data)
+        self.key_data.update(ci_management_data)
         self.ddt_data = {k: data[k] for k in data if k in DDTProposalAppForm.Meta.fields}
         self.ddt_data['call'] = self.ddt_call.id
         self.ddt_data.update(timerequest_data)
-        self.ddt_data.update(management_data)
+        self.ddt_data.update(tr_management_data)
+        self.ddt_data.update(ci_data)
+        self.ddt_data.update(ci_management_data)
 
     def test_post_sci_form(self):
         num_apps = ScienceApplication.objects.count()
@@ -214,6 +235,23 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(self.user.scienceapplication_set.last().timerequest_set.count(), 2)
 
+    def test_multiple_coi(self):
+        data = self.sci_data.copy()
+        data.update({
+            'coinvestigator_set-1-id': '',
+            'coinvestigator_set-1-email': 'frodo@baggins.com',
+            'coinvestigator_set-1-first_name': 'Frodo',
+            'coinvestigator_set-1-last_name': 'Baggins',
+            'coinvestigator_set-1-institution': 'lco',
+            'coinvestigator_set-TOTAL_FORMS': 2,
+        })
+        self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(self.user.scienceapplication_set.last().coinvestigator_set.count(), 2)
+
     def test_cannot_post_own_email(self):
         data = self.sci_data.copy()
         data['pi'] = self.user.email
@@ -228,7 +266,6 @@ class TestPostCreateSciApp(TestCase):
     def test_can_leave_out_email(self):
         data = self.sci_data.copy()
         del data['pi']
-        del data['coi']
         response = self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
@@ -236,7 +273,6 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.user.scienceapplication_set.last().pi, '')
-        self.assertEqual(self.user.scienceapplication_set.last().coi, '')
 
     def test_cannot_upload_silly_files(self):
         data = self.sci_data.copy()
@@ -325,6 +361,7 @@ class TestPostUpdateSciApp(TestCase):
             call=self.call
         )
         tr = mixer.blend(TimeRequest, science_application=app)
+        coi = mixer.blend(CoInvestigator, science_application=app)
 
         data = {
             'call': self.call.id,
@@ -338,7 +375,15 @@ class TestPostUpdateSciApp(TestCase):
             'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': tr.std_time,
             'timerequest_set-0-too_time': tr.too_time,
-
+            'coinvestigator_set-TOTAL_FORMS': 1,
+            'coinvestigator_set-INITIAL_FORMS': 1,
+            'coinvestigator_set-MIN_NUM_FORMS': 1,
+            'coinvestigator_set-MAX_NUM_FORMS': 1000,
+            'coinvestigator_set-0-id': coi.id,
+            'coinvestigator_set-0-email': coi.email,
+            'coinvestigator_set-0-first_name': coi.first_name,
+            'coinvestigator_set-0-last_name': coi.last_name,
+            'coinvestigator_set-0-institution': coi.institution
         }
         self.client.post(
             reverse('sciapplications:update', kwargs={'pk': app.id}),

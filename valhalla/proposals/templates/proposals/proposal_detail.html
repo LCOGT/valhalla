@@ -68,7 +68,7 @@
             </thead>
             <tbody>
                 {% regroup object.timeallocation_set.all by semester as timeallocations %}
-                {% for ta in timeallocations reversed %}
+                {% for ta in timeallocations %}
                     <tr class="bg-info">
                         <td colspan="4">{{ ta.grouper }}</td>
                     </tr>
