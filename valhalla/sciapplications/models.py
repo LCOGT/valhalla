@@ -73,7 +73,6 @@ class ScienceApplication(models.Model):
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
     abstract = models.TextField(blank=True, default='')
     pi = models.EmailField(blank=True, default='')
-    coi = models.TextField(blank=True, default='')
     budget_details = models.TextField(blank=True, default='', help_text='')
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
