@@ -1,3 +1,8 @@
+## 1.8.0
+2017-12-22
+
+* Change SciApps to require more specific coinvestigator information
+
 ## 1.7.6
 2017-12-19
 
