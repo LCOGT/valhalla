@@ -20,4 +20,4 @@ lcogt-logging
 
 ipython
 responses
-https://github.com/Fingel/mixer/archive/develop.zip
+mixer
