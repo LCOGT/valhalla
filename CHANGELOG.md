@@ -1,3 +1,10 @@
+## 1.9.2
+2018-01-02
+
+* Add additional fields to sciapplications for PIs
+* Upgrade WeasyPrint and elasticsearch
+* Test on travis with node 9
+
 ## 1.9.1
 2018-01-02
 
