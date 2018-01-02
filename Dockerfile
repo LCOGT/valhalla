@@ -6,7 +6,7 @@ ENV NODE_ENV production
 WORKDIR /valhalla
 CMD uwsgi --ini /etc/uwsgi.ini
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
 RUN apt-get install -y gfortran nodejs
 
 COPY requirements.txt .
