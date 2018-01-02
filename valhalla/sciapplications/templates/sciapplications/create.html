@@ -40,9 +40,17 @@
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
-                {% blocktrans %}<strong>If this is not you</strong>, please add the email address of the PI.{% endblocktrans %}
+                {% blocktrans %}<strong>If this is not you</strong>, please add the details for the PI.{% endblocktrans %}
                 </div>
-                {% bootstrap_field form.pi show_label=false %}
+                <table class="table table-striped">
+                  <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+                  <tr>
+                    <td>{% bootstrap_field form.pi show_label=false placeholder='Email' %}</td>
+                    <td>{% bootstrap_field form.pi_first_name show_label=false placeholder='First Name' %}</td>
+                    <td>{% bootstrap_field form.pi_last_name show_label=false placeholder='Last Name' %}</td>
+                    <td>{% bootstrap_field form.pi_institution show_label=false placeholder='Institution' %}</td>
+                  </tr>
+                </table>
             {% endif %}
 
             {% bootstrap_label 'Co-investigators' %}

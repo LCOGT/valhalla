@@ -49,9 +49,9 @@
 
     <h2>{% trans 'Principal Investigator' %}</h2>
     {% if object.pi %}
-      <p>{{ object.pi }}</p>
+      <p>{{ object.pi_first_name }}{{ object.pi_last_name }} &lt;{{ object.pi }}&gt; ({{ object.pi_institution }})</p>
     {% else %}
-      <p>{{ object.submitter.first_name }} {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; {{ object.submitter.profile.institution }}</p>
+      <p>{{ object.submitter.first_name }} {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
     {% endif %}
 
     {% if object.coinvestigator_set.exists %}

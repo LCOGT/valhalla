@@ -99,6 +99,9 @@ class TestPostCreateSciApp(TestCase):
             'status': 'SUBMITTED',
             'title': 'Test Title',
             'pi': 'test@example.com',
+            'pi_first_name': 'Joe',
+            'pi_last_name': 'Schmoe',
+            'pi_institution': 'Walmart',
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
@@ -263,9 +266,24 @@ class TestPostCreateSciApp(TestCase):
         self.assertContains(response, 'There was an error with your submission')
         self.assertContains(response, 'if you are the PI')
 
-    def test_can_leave_out_email(self):
+    def test_extra_pi_data_required(self):
+        bad_data = self.sci_data.copy()
+        del bad_data['pi_first_name']
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=bad_data,
+            follow=True
+        )
+        self.assertFalse(self.user.scienceapplication_set.all())
+        self.assertContains(response, 'There was an error with your submission')
+        self.assertContains(response, 'Pi first name: This field is required')
+
+    def test_can_leave_out_pi(self):
         data = self.sci_data.copy()
         del data['pi']
+        del data['pi_first_name']
+        del data['pi_last_name']
+        del data['pi_institution']
         response = self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
