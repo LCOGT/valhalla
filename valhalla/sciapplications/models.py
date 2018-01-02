@@ -158,7 +158,7 @@ class ScienceApplication(models.Model):
 
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
-    instrument = models.ForeignKey(Instrument)
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     std_time = models.PositiveIntegerField(default=0, blank=True)
     too_time = models.PositiveIntegerField(default=0, blank=True)
     approved = models.BooleanField(default=False)

@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from mixer.backend.django import mixer
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone

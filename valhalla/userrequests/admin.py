@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .models import UserRequest, Request, Location, Target, Window, Molecule, Constraints
 

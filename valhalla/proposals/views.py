@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.validators import validate_email
 from django.http import Http404, HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django_filters.views import FilterView
