@@ -19,6 +19,9 @@
         <table class="table" id="cilist">
           <thead>
             <tr><td>Name</td><td>Email</td><td>Hour Limit</td><td>Hours Requested</td>
+              {% if object.public %}
+              <td>Simple Interface</td>
+              {% endif %}
               {% if user == object.pi %}
               <td>Remove</td>
               {% endif %}
@@ -47,6 +50,9 @@
               </td>
               {% time_used_by_user mem.user proposal as time_used %}
               <td>{{ time_used | floatformat:3 }}</td>
+              {% if object.public %}
+              <td>{% if mem.user.profile.simple_interface %}<i class="fa fa-check"></i>{% endif %}</td>
+              {% endif %}
               {% if user == object.pi %}
               <td><a href="{% url 'proposals:membership-delete' mem.id %}"><i class="fa fa-trash"></i></a></td>
               {% endif %}

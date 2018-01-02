@@ -17,3 +17,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
     }
 }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'unique-snowflake'
+    },
+    'locmem': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'locmem-cache'
+    }
+}

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.utils.functional import cached_property
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext as _
@@ -50,15 +51,15 @@ class Proposal(models.Model):
     class Meta:
         ordering = ('title',)
 
-    @property
+    @cached_property
     def pi(self):
         return self.users.filter(membership__role=Membership.PI).first()
 
-    @property
+    @cached_property
     def cis(self):
         return self.users.filter(membership__role=Membership.CI)
 
-    @property
+    @cached_property
     def current_semester(self):
         return self.semester_set.intersection(Semester.current_semesters()).first()
 

@@ -23,8 +23,10 @@ class ProposalDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         if self.request.user.is_staff:
-            return Proposal.objects.all()
-        return self.request.user.proposal_set.all().prefetch_related('membership_set')
+            qs = Proposal.objects.all()
+        else:
+            qs = self.request.user.proposal_set.all()
+        return qs.prefetch_related('membership_set', 'membership_set__user__profile')
 
     def post(self, request, **kwargs):
         form = ProposalNotificationForm(request.POST)
