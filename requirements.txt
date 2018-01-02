@@ -7,9 +7,9 @@ requests>=2.18,<2.19
 django-filter>=1.1,<1.2
 django-bootstrap3>=8.0<9.0
 time_intervals<2.0
-WeasyPrint>=0.41,<0.42
+WeasyPrint>=0.42<0.43
 PyPDF2>=1.26,<1.27
-elasticsearch>=5.4,<5.5
+elasticsearch>=6.0,<6.1
 numpy>=1.13,<1.14
 celery[redis]>=4.0.<4.1
 django-redis-cache>=1.7,<1.8
