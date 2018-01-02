@@ -48,6 +48,7 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
     )
     list_filter = ('call', 'status', 'call__proposal_type')
     actions = ['accept', 'reject', 'port']
+    search_fields = ['title', 'abstract', 'submitter__first_name', 'submitter__last_name', 'submitter__username']
 
     def preview_link(self, obj):
         return format_html(
