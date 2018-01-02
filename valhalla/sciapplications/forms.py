@@ -24,6 +24,8 @@ class BaseProposalAppForm(ModelForm):
 
     def clean(self):
         super().clean()
+        if self.cleaned_data.get('pi'):
+            self.Meta.required_fields.update(['pi_first_name', 'pi_last_name', 'pi_institution'])
         for field in self.Meta.required_fields:
             if not self.cleaned_data.get(field) and self.cleaned_data.get('status') == 'SUBMITTED':
                 self.add_error(field, _('{}: This field is required'.format(self.fields[field].label)))
@@ -33,7 +35,7 @@ class BaseProposalAppForm(ModelForm):
     def clean_pi(self):
         email = self.cleaned_data.get('pi')
         if email and email.strip() == self.instance.submitter.email:
-            raise forms.ValidationError(_('Leave this field blank if you are the PI'))
+            raise forms.ValidationError(_('Leave these fields blank if you are the PI'))
         return email
 
 
@@ -44,11 +46,12 @@ class ScienceProposalAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'budget_details',
             'abstract', 'moon', 'science_case', 'science_case_file', 'experimental_design',
             'experimental_design_file', 'related_programs', 'past_use',
-            'publications'
+            'publications', 'pi_first_name', 'pi_last_name', 'pi_institution'
         )
-        required_fields = set(fields) - set(
-            ('pi', 'experimental_design_file', 'science_case_file')
-        )
+        required_fields = set(fields) - set((
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'experimental_design_file', 'science_case_file'
+        ))
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
@@ -56,9 +59,12 @@ class DDTProposalAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'budget_details',
-            'science_justification', 'ddt_justification'
+            'science_justification', 'ddt_justification',
+            'pi_first_name', 'pi_last_name', 'pi_institution'
         )
-        required_fields = set(fields) - set(('pi',))
+        required_fields = set(fields) - set((
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+        ))
 
 
 class KeyProjectAppForm(BaseProposalAppForm):
@@ -68,11 +74,13 @@ class KeyProjectAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'budget_details',
             'abstract', 'moon', 'science_case', 'science_case_file', 'related_programs',
             'past_use', 'publications', 'experimental_design', 'experimental_design_file',
-            'management', 'relevance', 'contribution'
+            'management', 'relevance', 'contribution',
+            'pi_first_name', 'pi_last_name', 'pi_institution'
         )
-        required_fields = set(fields) - set(
-            ('pi', 'experimental_design_file', 'science_case_file')
-        )
+        required_fields = set(fields) - set((
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'experimental_design_file', 'science_case_file'
+        ))
 
 
 class TimeRequestForm(ModelForm):
