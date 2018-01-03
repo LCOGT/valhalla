@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.functional import cached_property
 import uuid
 import logging
 from datetime import timedelta
@@ -52,7 +53,7 @@ class Profile(models.Model):
             access_token.save()
         return access_token.token
 
-    @property
+    @cached_property
     def current_proposals(self):
         return Proposal.current_proposals().filter(active=True, membership__user=self.user).distinct()
 

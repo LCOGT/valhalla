@@ -130,11 +130,12 @@
               </div>
             </div>
           </div>
-          {% if ur.requests.all %}
+          {% with ur_count=ur.requests.count %}
+          {% if ur_count %}
           <div class="col-sm-1 hidden-xs request-block">
             <div class="row">
               <div class="col-xs-12 request-count">
-                <p><center>{{ ur.requests.count }}</center></p>
+                <p><center>{{ ur_count }}</center></p>
               </div>
             </div>
           </div>
@@ -164,6 +165,7 @@
             <p>No requests attempted.</p>
           </div>
           {% endif %}
+          {% endwith %}
         </div>
       {% endfor %}
       </section>
