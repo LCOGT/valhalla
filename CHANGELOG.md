@@ -1,3 +1,10 @@
+## 1.9.3
+2018-01-02
+
+* Add search fields for sciapplications
+* Display simple interface status for public proposals
+* Optimizations for front page
+
 ## 1.9.2
 2018-01-02
 
