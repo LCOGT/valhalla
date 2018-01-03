@@ -61,10 +61,12 @@ def userrequest_queryset(request):
 class UserRequestListView(FilterView):
     filterset_class = UserRequestFilter
     template_name = 'userrequests/userrequest_list.html'
-    paginate_by = 20
 
     def get_queryset(self):
         return userrequest_queryset(self.request)
+
+    def get_paginate_by(self, qs):
+        return self.request.GET.get('paginate_by', 20)
 
 
 class UserRequestDetailView(DetailView):

@@ -170,9 +170,23 @@
       {% endfor %}
       </section>
     </div>
-    {% if paginator.num_pages > 1 %}
-    {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
-    {% endif %}
+    <div class="row">
+      <div class="col-md-9">
+        {% if paginator.num_pages > 1 %}
+        {% bootstrap_pagination page_obj extra=request.GET.urlencode %}
+        {% endif %}
+      </div>
+      <div class="col-md-3">
+        <br/>
+        <select name="paginate_by" class="form-control" id="per_page">
+          <option value="5">Show: 5</option>
+          <option value="10">Show: 10</option>
+          <option value="20" selected>Show: 20</option>
+          <option value="50">Show: 50</option>
+          <option value="100">Show: 100</option>
+        </select>
+      </div>
+    </div>
   </div>
 {% endif %}
 {% endblock %}
@@ -186,10 +200,19 @@
       $('#id_created_before').data("DateTimePicker").hide();
     });
     $(function() {
-       $(".tool-tip").tooltip();
+      $(".tool-tip").tooltip();
+      var url = new URL(window.location.href);
+      if(url.searchParams.get('paginate_by')){
+        $('#per_page').val(url.searchParams.get('paginate_by'));
+      }
     });
     $('.clearinput').click(function(){
       $(this).parent().parent().find('input').val('');
     })
+    $('#per_page').change(function(){
+      var url = new URL(window.location.href);
+      url.searchParams.set('paginate_by', this.value);
+      window.location = url;
+    });
   </script>
 {% endblock %}
