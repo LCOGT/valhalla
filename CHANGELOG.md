@@ -1,3 +1,8 @@
+## 1.9.4
+2018-01-05
+
+* Update is_spectrograph check to consider nres-commissioning a spectrograph.
+
 ## 1.9.3
 2018-01-02
 
