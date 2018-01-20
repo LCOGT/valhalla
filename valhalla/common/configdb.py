@@ -236,5 +236,9 @@ class ConfigDB(object):
         return instrument_type.upper() in ['2M0-FLOYDS-SCICAM', '0M8-NRES-SCICAM', '1M0-NRES-SCICAM',
                                            '1M0-NRES-COMMISSIONING']
 
+    @staticmethod
+    def is_nres(instrument_type):
+        return 'NRES' in instrument_type.upper()
+
 
 configdb = ConfigDB()

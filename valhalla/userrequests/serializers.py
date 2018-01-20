@@ -83,6 +83,11 @@ class MoleculeSerializer(serializers.ModelSerializer):
             if data['acquire_mode'] == 'BRIGHTEST' and not data.get('acquire_radius_arcsec'):
                 raise serializers.ValidationError({'acquire_radius_arcsec': 'Acquire radius must be positive.'})
 
+        # NRES must not have ag_mode 'OFF'
+        if configdb.is_nres(data['instrument_name']):
+            if data['ag_mode'] == 'OFF':
+                raise serializers.ValidationError({'ag_mode': _('Autoguiding must not be off for NRES observations.')})
+
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
         types_that_require_slit = ['spectrum', 'arc', 'lamp_flat']
 

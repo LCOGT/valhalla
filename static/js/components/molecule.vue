@@ -55,7 +55,7 @@
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset (in mm) of the secondary mirror from its default (focused) position. The limits are ± 3mm.">
           </customfield>
-          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface"
+          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface && showAgMode"
                         :errors="errors.ag_mode" desc="Guiding keeps the field stable during long exposures. If OPTIONAL is selected, then guiding is attempted, but the observations will be carried out even if guiding fails. If ON is selected, then if guiding fails, the observations will be aborted."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
@@ -97,6 +97,7 @@ export default {
   data: function(){
     return {
       show: true,
+      showAgMode: true,
       acquire_params: {
         acquire_mode: 'WCS',
         acquire_radius_arcsec: null
@@ -150,6 +151,7 @@ export default {
     setupImager: function(){
       this.molecule.type = 'EXPOSE';
       this.molecule.spectra_slit = undefined;
+      this.showAgMode = true;
       this.acquire_params.acquire_mode = this.molecule.acquire_mode;
       this.molecule.acquire_mode = undefined;
       this.molecule.acquire_radius_arcsec = undefined;
@@ -161,12 +163,14 @@ export default {
     setupNRES: function(){
       this.molecule.type = 'NRES_SPECTRUM';
       this.setupSpectrograph();
+      this.showAgMode = false;
       this.molecule.acquire_mode = 'BRIGHTEST';
       this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
     },
     setupFLOYDS: function(){
        this.molecule.type = 'SPECTRUM';
        this.setupSpectrograph();
+       this.showAgMode = true;
        this.molecule.acquire_mode = this.acquire_params.acquire_mode;
        if (this.molecule.acquire_mode === 'BRIGHTEST'){
          this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
