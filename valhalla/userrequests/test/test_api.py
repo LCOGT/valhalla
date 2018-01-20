@@ -1085,6 +1085,16 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(molecule['ag_mode'], 'ON')
         self.assertEqual(molecule['spectra_slit'], 'slit_6.0as')
 
+    def test_ag_mode_off_not_allowed_for_nres(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['instrument_name'] = '1M0-NRES-SCICAM'
+        bad_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
+        bad_data['requests'][0]['molecules'][0]['ag_mode'] = 'OFF'
+
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Autoguiding must not be off', str(response.content))
+
     def test_invalid_filter_for_instrument(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['filter'] = 'magic'
