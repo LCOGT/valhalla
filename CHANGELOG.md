@@ -1,3 +1,8 @@
+## 1.9.5
+2018-01-19
+
+* Prevent NRES observations specifying ag_mode OFF
+
 ## 1.9.4
 2018-01-05
 
