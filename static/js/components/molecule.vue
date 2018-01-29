@@ -159,18 +159,17 @@ export default {
     setupSpectrograph: function(){
       this.molecule.ag_mode = 'ON';
       this.molecule.filter = undefined;
+      this.showAgMode = false;
     },
     setupNRES: function(){
       this.molecule.type = 'NRES_SPECTRUM';
       this.setupSpectrograph();
-      this.showAgMode = false;
       this.molecule.acquire_mode = 'BRIGHTEST';
       this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
     },
     setupFLOYDS: function(){
        this.molecule.type = 'SPECTRUM';
        this.setupSpectrograph();
-       this.showAgMode = true;
        this.molecule.acquire_mode = this.acquire_params.acquire_mode;
        if (this.molecule.acquire_mode === 'BRIGHTEST'){
          this.molecule.acquire_radius_arcsec = this.acquire_params.acquire_radius_arcsec;
