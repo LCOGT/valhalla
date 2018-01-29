@@ -1,3 +1,9 @@
+## 1.9.6
+2018-01-29
+
+* Prevent Spectrograph observations from specifying anything other than ag_mode ON
+* This consumes the previous commit
+
 ## 1.9.5
 2018-01-19
 
