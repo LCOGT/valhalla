@@ -1085,7 +1085,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(molecule['ag_mode'], 'ON')
         self.assertEqual(molecule['spectra_slit'], 'slit_6.0as')
 
-    def test_ag_mode_off_not_allowed_for_spectrograph(self):
+    def test_ag_mode_off_not_allowed_for_nres_spectrum(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '1M0-NRES-SCICAM'
         bad_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
@@ -1095,7 +1095,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('Autoguiding must be on', str(response.content))
 
-    def test_ag_mode_optional_not_allowed_for_spectrograph(self):
+    def test_ag_mode_optional_not_allowed_for_spectrum(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['location']['telescope_class'] = '2m0'
         bad_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
@@ -1105,6 +1105,17 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('Autoguiding must be on', str(response.content))
+
+    def test_ag_mode_optional_allowed_for_arc(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['location']['telescope_class'] = '2m0'
+        good_data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        good_data['requests'][0]['molecules'][0]['type'] = 'ARC'
+        good_data['requests'][0]['molecules'][0]['ag_mode'] = 'OPTIONAL'
+        good_data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_1.6as'
+
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
 
     def test_invalid_filter_for_instrument(self):
         bad_data = self.generic_payload.copy()
@@ -1128,6 +1139,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         del good_data['requests'][0]['molecules'][0]['filter']
         good_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
+        good_data['requests'][0]['molecules'][0]['ag_mode'] = 'ON'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
@@ -1143,6 +1155,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         good_data = self.generic_payload.copy()
         del good_data['requests'][0]['molecules'][0]['filter']
         good_data['requests'][0]['molecules'][0]['type'] = 'NRES_SPECTRUM'
+        good_data['requests'][0]['molecules'][0]['ag_mode'] = 'ON'
         good_data['requests'][0]['molecules'][0]['acquire_strategy'] = 'window'
         good_data['requests'][0]['molecules'][0]['ag_strategy'] = 'super'
         good_data['requests'][0]['molecules'][0]['expmeter_snr'] = 10.0
@@ -1322,6 +1335,7 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_molecule_type_matches_instrument(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        bad_data['requests'][0]['molecules'][0]['ag_mode'] = 'ON'
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertIn('Invalid type SPECTRUM for an imager', str(response.content))
         self.assertEqual(response.status_code, 400)

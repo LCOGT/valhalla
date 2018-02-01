@@ -152,8 +152,10 @@ export default {
         calibs[x].exposure_time = 60;
       }
       calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
+      calibs[0].ag_mode = 'OPTIONAL'; calibs[1].ag_mode = 'OPTIONAL';
       request.molecules.unshift(calibs[0], calibs[1]);
       calibs[2].type = 'ARC'; calibs[3].type = 'LAMP_FLAT';
+      calibs[2].ag_mode = 'OPTIONAL'; calibs[3].ag_mode = 'OPTIONAL';
       request.molecules.push(calibs[2], calibs[3]);
       this.update();
     },

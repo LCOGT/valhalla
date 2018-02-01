@@ -83,13 +83,14 @@ class MoleculeSerializer(serializers.ModelSerializer):
             if data['acquire_mode'] == 'BRIGHTEST' and not data.get('acquire_radius_arcsec'):
                 raise serializers.ValidationError({'acquire_radius_arcsec': 'Acquire radius must be positive.'})
 
-        # Spectrographs must have ag_mode 'ON'
-        if configdb.is_spectrograph(data['instrument_name']):
-            if data['ag_mode'] is not 'ON':
-                raise serializers.ValidationError({'ag_mode': _('Autoguiding must be on for spectrograph observations.')})
-
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
         types_that_require_slit = ['spectrum', 'arc', 'lamp_flat']
+        types_that_require_ag_mode_on = ['spectrum', 'nres_spectrum']
+
+        # Spectrum and NRES_SPECTRUM obs must have ag_mode 'ON'
+        if data['type'].lower() in types_that_require_ag_mode_on:
+            if data['ag_mode'] is not 'ON':
+                raise serializers.ValidationError({'ag_mode': _('Autoguiding must be on for {} observations.'.format(data['type']))})
 
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
