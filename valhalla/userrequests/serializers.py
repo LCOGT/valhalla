@@ -85,7 +85,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
         types_that_require_filter = ['expose', 'auto_focus', 'zero_pointing', 'standard', 'sky_flat']
         types_that_require_slit = ['spectrum', 'arc', 'lamp_flat']
-        types_that_require_ag_mode_on = ['spectrum', 'nres_spectrum']
+        types_that_require_ag_mode_on = ['spectrum', 'nres_spectrum', 'nres_test', 'nres_expose']
 
         # Spectrum and NRES_SPECTRUM obs must have ag_mode 'ON'
         if data['type'].lower() in types_that_require_ag_mode_on:

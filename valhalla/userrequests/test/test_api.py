@@ -1144,10 +1144,12 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 201)
 
         good_data['requests'][0]['molecules'][0]['type'] = 'NRES_EXPOSE'
+        good_data['requests'][0]['molecules'][0]['ag_mode'] = 'ON'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
         good_data['requests'][0]['molecules'][0]['type'] = 'NRES_TEST'
+        good_data['requests'][0]['molecules'][0]['ag_mode'] = 'ON'
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
