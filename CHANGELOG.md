@@ -1,3 +1,8 @@
+## 1.9.7
+2018-02-01
+
+* Fix problem in previous commit wherein ARCs and LAMP_FLATs couldn't be submitted with OPTIONAL guiding
+
 ## 1.9.6
 2018-01-29
 
