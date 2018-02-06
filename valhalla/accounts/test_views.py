@@ -100,6 +100,15 @@ class TestRegistration(TestCase):
         self.assertTrue(invitation.used)
         self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
 
+    def test_registration_with_invite_case_insensitive(self):
+        invitation = mixer.blend(ProposalInvite, email=self.reg_data['email'].upper(), membership=None, used=None)
+        response = self.client.post(reverse('registration_register'), self.reg_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'check your email')
+        invitation = ProposalInvite.objects.get(pk=invitation.id)
+        self.assertTrue(invitation.used)
+        self.assertTrue(Membership.objects.filter(user__username=self.reg_data['username']).exists())
+
     def test_registration_with_multiple_invites(self):
         invitations = mixer.cycle(2).blend(ProposalInvite, email=self.reg_data['email'], membership=None, used=None)
         self.client.post(reverse('registration_register'), self.reg_data, follow=True)

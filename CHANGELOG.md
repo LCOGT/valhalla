@@ -1,3 +1,8 @@
+## 1.9.8
+2018-02-06
+
+* Make proposal invitation emails case insensitive
+
 ## 1.9.7
 2018-02-01
 

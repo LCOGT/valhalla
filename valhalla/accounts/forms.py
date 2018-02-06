@@ -38,7 +38,7 @@ class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUni
             view_authored_requests_only=self.cleaned_data['education_user'],
             simple_interface=self.cleaned_data['education_user']
         )
-        for invite in ProposalInvite.objects.filter(email=new_user_instance.email):
+        for invite in ProposalInvite.objects.filter(email__iexact=new_user_instance.email):
             invite.accept(new_user_instance)
 
         return new_user_instance
