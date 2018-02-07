@@ -53,7 +53,11 @@
         <h1>{{ object.title }}</h1>
     {% endif %}
 
-    <h2>Semester: {{ object.call.semester }}</h2>
+    <h2>Semester: <small>{{ object.call.semester }}</small></h2>
+
+    {% if object.status == 'SUBMITTED' and object.submitted %}
+    <h2>Submitted: <small>{{ object.submitted|date:"j M Y P" }}</small></h2>
+    {% endif %}
 
 
     <h2>{% trans 'Principal Investigator' %}</h2>

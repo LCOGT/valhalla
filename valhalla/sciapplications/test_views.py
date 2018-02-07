@@ -314,6 +314,15 @@ class TestPostCreateSciApp(TestCase):
         self.assertIn(data['title'], str(mail.outbox[0].message()))
         self.assertIn(self.user.email, mail.outbox[0].to)
 
+    def test_submitting_sets_submitted_date(self):
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=self.sci_data,
+            follow=True
+        )
+        self.assertTrue(self.user.scienceapplication_set.first().submitted)
+        self.assertContains(response, self.sci_data['title'])
+
 
 class TestGetUpdateSciApp(TestCase):
     def setUp(self):
@@ -409,6 +418,7 @@ class TestPostUpdateSciApp(TestCase):
             follow=True
         )
         self.assertEqual(ScienceApplication.objects.get(pk=app.id).title, data['title'])
+        self.assertIsNone(ScienceApplication.objects.get(pk=app.id).submitted)
 
 
 class TestSciAppIndex(TestCase):
