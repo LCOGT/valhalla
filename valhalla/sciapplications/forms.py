@@ -58,7 +58,7 @@ class DDTProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details',
+            'call', 'status', 'title', 'pi', 'budget_details', 'moon',
             'science_justification', 'ddt_justification',
             'pi_first_name', 'pi_last_name', 'pi_institution'
         )
