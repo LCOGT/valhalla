@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.template.loader import render_to_string
+from django.utils import timezone
 
 from weasyprint import HTML
 from PyPDF2 import PdfFileMerger
@@ -76,6 +77,9 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def forms_valid(self, forms):
         self.object = forms['main'].save()
+        if self.object.status == ScienceApplication.SUBMITTED:
+            self.object.submitted = timezone.now()
+            self.object.save()
         forms['tr'].instance = self.object
         forms['tr'].save()
         forms['ci'].instance = self.object
@@ -133,6 +137,9 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
 
     def forms_valid(self, forms):
         self.object = forms['main'].save()
+        if self.object.status == ScienceApplication.SUBMITTED:
+            self.object.submitted = timezone.now()
+            self.object.save()
         forms['tr'].instance = self.object
         forms['tr'].save()
         forms['ci'].instance = self.object

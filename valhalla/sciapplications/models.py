@@ -102,6 +102,11 @@ class ScienceApplication(models.Model):
     # Admin only Notes
     notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
 
+    # Misc
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+    submitted = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         ordering = ('-id',)
 

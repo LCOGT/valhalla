@@ -6,24 +6,38 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>{{ object.title}}</title>
     <style>
+    @page {
+      size: A3;
+      margin: 2.5cm
+    }
     body {
         margin: 15px;
-        font: 11pt Georgia, "Times New Roman", Times, serif;
+        font: 11pt sans-serif;
         line-height: 1.1;
     }
     table {
-        border-collapse:separate; border-spacing: 10px;
+        border-collapse:collapse;
+        border-spacing: 10px;
+    }
+    th, td {
+      border: 1px solid black;
+    }
+    td {
+      padding: 5px;
     }
     h1 {
-        font-size: 18px;
+        font-size: 24px;
     }
     h2 {
         page-break-before: auto;
         font-size: 16px;
-        margin: 0px;
     }
     p {
         page-break-inside: avoid;
+        text-align: justify;
+    }
+    .page-break {
+      page-break-after: always;
     }
     </style>
 </head>
@@ -35,17 +49,16 @@
     <li><a href="{% url 'sciapplications:pdf' pk=object.id %}">View Pdf</a></li>
     </ul>
     {% endif %}
-    <p>{% trans 'This applications was created for' %}: {{ object.call }}</p>
-    <p>{% trans 'The application status is' %}: {{ object.status }}</p>
-
     {% if object.title %}
         <h1>{{ object.title }}</h1>
     {% endif %}
 
-    {% if object.abstract %}
-        <h2>{% trans 'Abstract' %}</h2>
-        <p>{{ object.abstract|linebreaks }}</p>
+    <h2>Semester: <small>{{ object.call.semester }}</small></h2>
+
+    {% if object.status == 'SUBMITTED' and object.submitted %}
+    <h2>Submitted: <small>{{ object.submitted|date:"j M Y P" }}</small></h2>
     {% endif %}
+
 
     <h2>{% trans 'Principal Investigator' %}</h2>
     {% if object.pi %}
@@ -54,27 +67,46 @@
       <p>{{ object.submitter.first_name }} {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
     {% endif %}
 
-    {% if object.coinvestigator_set.exists %}
-      <h2>{% trans 'Co Investigators' %}</h2>
-      {% for coi in object.coinvestigator_set.all %}
-        <p>{{ coi }}</p>
-      {% endfor %}
+    {% if object.abstract %}
+        <br/>
+        <br/>
+        <h2>{% trans 'Abstract' %}</h2>
+        <p>{{ object.abstract|linebreaks }}</p>
     {% endif %}
 
+    {% if object.coinvestigator_set.exists %}
+      <h2>{% trans 'Co Investigators' %}</h2>
+      <table>
+        <thead><tr><td>{% trans 'First Name' %}</td><td>{% trans 'Last Name' %}</td><td>{% trans 'Email' %}</td><td>{% trans 'Institution' %}</td></tr></thead>
+        <tbody>
+        {% for coi in object.coinvestigator_set.all %}
+          <tr><td>{{ coi.first_name }}</td><td>{{ coi.last_name }}</td><td>{{ coi.email }}</td><td>{{ coi.institution }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if object.timerequest_set.count %}
+    <h2>{% trans 'Observing Budget' %}</h2>
+    <table>
+      <thead><tr><td>{% trans 'Instrument' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
+      <tbody>
+      {% for timerequest in object.timerequest_set.all %}
+      <tr>
+          <td>{{ timerequest.instrument }}</td>
+          <td>{{ timerequest.std_time }}</td>
+          <td>{{ timerequest.too_time }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <h2>{% trans 'Moon Phase' %}: <small>{{ object.moon }}</small></h2>
+
+    <div class="page-break"></div>
+
     {% if object.budget_details %}
-       <h2>{% trans 'Observing Budget' %}</h2>
-        <table>
-            <thead><tr><td>{% trans 'Instrument' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
-            <tbody>
-            {% for timerequest in object.timerequest_set.all %}
-            <tr>
-                <td>{{ timerequest.instrument }}</td>
-                <td>{{ timerequest.std_time }}</td>
-                <td>{{ timerequest.too_time }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
     <h2>{% trans 'Observing Budget Explanation' %}</h2>
     <p>{{ object.budget_details|linebreaks }}</p>
     {% endif %}
@@ -108,10 +140,6 @@
             {% endif %}
     {% endif %}
 
-    {% if object.call.proposal_type != 'DDT' %}
-            <h2>{% trans 'Moon Phase' %}</h2>
-            <p>{{ object.moon }}</p>
-    {% endif %}
 
     {% if object.related_programs %}
             <h2>{% trans 'Related Programs' %}</h2>
