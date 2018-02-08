@@ -379,18 +379,15 @@ class TestPostUpdateSciApp(TestCase):
             proposal_type=Call.SCI_PROPOSAL
         )
         self.instrument = mixer.blend(Instrument, call=self.call)
-
-    def test_can_update_draft(self):
-        app = mixer.blend(
+        self.app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,
             submitter=self.user,
             call=self.call
         )
-        tr = mixer.blend(TimeRequest, science_application=app)
-        coi = mixer.blend(CoInvestigator, science_application=app)
-
-        data = {
+        tr = mixer.blend(TimeRequest, science_application=self.app)
+        coi = mixer.blend(CoInvestigator, science_application=self.app)
+        self.data = {
             'call': self.call.id,
             'title': 'updates',
             'status': 'DRAFT',
@@ -412,13 +409,49 @@ class TestPostUpdateSciApp(TestCase):
             'coinvestigator_set-0-last_name': coi.last_name,
             'coinvestigator_set-0-institution': coi.institution
         }
+
+    def test_can_update_draft(self):
         self.client.post(
-            reverse('sciapplications:update', kwargs={'pk': app.id}),
+            reverse('sciapplications:update', kwargs={'pk': self.app.id}),
+            data=self.data,
+            follow=True
+        )
+        self.assertEqual(ScienceApplication.objects.get(pk=self.app.id).title, self.data['title'])
+        self.assertIsNone(ScienceApplication.objects.get(pk=self.app.id).submitted)
+
+    def test_can_submit_draft(self):
+        data = self.data.copy()
+        data_complete = {
+            'status': 'SUBMITTED',
+            'pi': 'test@example.com',
+            'pi_first_name': 'Joe',
+            'pi_last_name': 'Schmoe',
+            'pi_institution': 'Walmart',
+            'budget_details': 'test budget value',
+            'abstract': 'test abstract value',
+            'moon': 'EITHER',
+            'science_case': 'science case',
+            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
+            'experimental_design': 'exp desgin value',
+            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
+            'related_programs': 'related progams value',
+            'past_use': 'past use value',
+            'publications': 'publications value',
+            'save': 'SAVE',
+            'science_justification': 'Test science justification',
+            'ddt_justification': 'Test ddt justification',
+            'management': 'test management',
+            'relevance': 'test relevance',
+            'contribution': 'test contribution',
+        }
+        data = {**data, **data_complete}
+        self.client.post(
+            reverse('sciapplications:update', kwargs={'pk': self.app.id}),
             data=data,
             follow=True
         )
-        self.assertEqual(ScienceApplication.objects.get(pk=app.id).title, data['title'])
-        self.assertIsNone(ScienceApplication.objects.get(pk=app.id).submitted)
+        self.assertEqual(ScienceApplication.objects.get(pk=self.app.id).title, data['title'])
+        self.assertTrue(ScienceApplication.objects.get(pk=self.app.id).submitted)
 
 
 class TestSciAppIndex(TestCase):
