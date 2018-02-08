@@ -1,3 +1,8 @@
+## 1.9.9
+2018-02-08
+
+* Improvements to proposal application printed forms
+
 ## 1.9.8
 2018-02-06
 
