@@ -1,3 +1,8 @@
+## 1.9.10
+2018-02-12
+
+* Change minimum exposure time to 10ms (from 0)
+
 ## 1.9.9
 2018-02-08
 
