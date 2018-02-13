@@ -9,9 +9,11 @@ from django.contrib import messages
 from django.urls import reverse, reverse_lazy
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.contrib.staticfiles import finders
 
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 from PyPDF2 import PdfFileMerger
+from PyPDF2.pdf import PageObject
 import io
 
 from valhalla.celery import send_mail
@@ -203,20 +205,52 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
         response = super().render_to_response(context, **kwargs)
         response.render()
         try:
-            html = HTML(string=response.content)
-            fileobj = io.BytesIO()
-            html.write_pdf(fileobj)
-            merger = PdfFileMerger()
-            merger.append(fileobj)
+            pages = [response.content]
+
             if self.object.science_case_file:
-                merger.append(self.object.science_case_file.file)
+                new_pages = []
+                for page in pages:
+                    if b'<!-- SCI_CASE_FILE -->' in page:
+                        page_split = page.split(b'<!-- SCI_CASE_FILE -->')
+                        new_pages.append(page_split[0])
+                        new_pages.append(b'<!-- SCI_CASE_FILE -->')
+                        new_pages.append(page_split[1])
+                    else:
+                        new_pages.append(page)
+                pages = new_pages
+
             if self.object.experimental_design_file:
-                merger.append(self.object.experimental_design_file.file)
+                new_pages = []
+                for page in pages:
+                    if b'<!-- EXP_DESIGN_FILE -->' in page:
+                        page_split = page.split(b'<!-- EXP_DESIGN_FILE -->')
+                        new_pages.append(page_split[0])
+                        new_pages.append(b'<!-- EXP_DESIGN_FILE -->')
+                        new_pages.append(page_split[1])
+                    else:
+                        new_pages.append(page)
+                pages = new_pages
+
+            merger = PdfFileMerger()
+            with open(finders.find('css/print.css')) as f:
+                css = CSS(string=f.read())
+            for page in [p for p in pages if not p.isspace()]:
+                if page == b'<!-- SCI_CASE_FILE -->':
+                    merger.append(self.object.science_case_file.file)
+                elif page == b'<!-- EXP_DESIGN_FILE -->':
+                    merger.append(self.object.experimental_design_file.file)
+                else:
+                    html = HTML(string=page)
+                    fileobj = io.BytesIO()
+                    html.write_pdf(fileobj, stylesheets=[css])
+                    merger.append(fileobj)
             merger.write(pdf_response)
+
         except Exception as exc:
             error = 'There was an error generating your pdf. {}'
             messages.error(self.request, error.format(str(exc)))
             return HttpResponseRedirect(reverse('sciapplications:index'))
+
         return pdf_response
 
 
