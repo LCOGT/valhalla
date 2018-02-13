@@ -398,7 +398,7 @@ class Molecule(models.Model):
     expmeter_snr = models.FloatField(null=True, blank=True)
 
     # Exposure
-    exposure_time = models.FloatField(validators=[MinValueValidator(0)])
+    exposure_time = models.FloatField(validators=[MinValueValidator(0.01)])
     exposure_count = models.PositiveIntegerField(validators=[MinValueValidator(1)])
 
     # Binning

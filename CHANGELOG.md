@@ -1,3 +1,18 @@
+## 1.9.11
+2018-02-13
+
+* Do not allow std_time and too_time fields to be left blank
+
+## 1.9.10
+2018-02-12
+
+* Change minimum exposure time to 10ms (from 0)
+
+## 1.9.9
+2018-02-08
+
+* Improvements to proposal application printed forms
+
 ## 1.9.8
 2018-02-06
 

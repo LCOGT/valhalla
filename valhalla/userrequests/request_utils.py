@@ -117,4 +117,7 @@ def exposure_completion_percentage_from_pond_block(pond_block):
         total_exposure_time += exp_time * exp_cnt
         completed_exposure_time += exp_time * completed_exp_cnt
 
+    if float(total_exposure_time) == 0:
+        return 100.0
+
     return (completed_exposure_time / total_exposure_time) * 100.0
