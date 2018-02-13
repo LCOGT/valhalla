@@ -167,8 +167,8 @@ class ScienceApplication(models.Model):
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
-    std_time = models.PositiveIntegerField(default=0, blank=True)
-    too_time = models.PositiveIntegerField(default=0, blank=True)
+    std_time = models.PositiveIntegerField(default=0)
+    too_time = models.PositiveIntegerField(default=0)
     approved = models.BooleanField(default=False)
 
     def __str__(self):
@@ -184,4 +184,3 @@ class CoInvestigator(models.Model):
 
     def __str__(self):
         return '{0} {1} <{2}> ({3})'.format(self.first_name, self.last_name, self.email, self.institution)
-
