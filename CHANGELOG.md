@@ -1,3 +1,8 @@
+## 1.9.11
+2018-02-13
+
+* Do not allow std_time and too_time fields to be left blank
+
 ## 1.9.10
 2018-02-12
 
