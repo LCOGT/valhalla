@@ -1,3 +1,8 @@
+## 1.9.12
+2018-02-14
+
+* Encode lookup target name to fix issues with special characters
+
 ## 1.9.11
 2018-02-13
 

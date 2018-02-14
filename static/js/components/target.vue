@@ -166,7 +166,7 @@ export default {
         if(this.lookupReq){
           this.lookupReq.abort();
         }
-        this.lookupReq = $.getJSON('https://lco.global/lookUP/json/?name=' + name).done(function(data){
+        this.lookupReq = $.getJSON('https://lco.global/lookUP/json/?name=' + encodeURIComponent(name)).done(function(data){
           that.target.ra = _.get(data, ['ra', 'decimal'], null);
           that.target.dec = _.get(data, ['dec', 'decimal'], null);
           that.target.proper_motion_ra = data.pmra;
