@@ -17,7 +17,7 @@
         <label for="semester" class="control-label">Semester</label>
         <select class="form-control" onchange="location = this.value">
           {% for semester in semesters %}
-          <option value="{% url 'proposals:semester-detail' semester %}"
+          <option value="{% url 'proposals:semester-admin' semester %}"
                   {% if object == semester %} selected {% endif %}>
             {{ semester }}
           </option>

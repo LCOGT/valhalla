@@ -115,8 +115,9 @@ class MembershipDeleteView(LoginRequiredMixin, DeleteView):
         return Membership.objects.filter(proposal__in=proposals)
 
 
-class SemesterDetailView(UserPassesTestMixin, DetailView):
+class SemesterAdminView(UserPassesTestMixin, DetailView):
     model = Semester
+    template_name = 'proposals/semester_admin.html'
 
     def test_func(self):
         return self.request.user.is_staff
