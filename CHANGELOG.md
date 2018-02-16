@@ -1,3 +1,8 @@
+## 1.9.15
+2018-02-16
+
+* Revert cache availability data
+
 ## 1.9.14
 2018-02-16
 
