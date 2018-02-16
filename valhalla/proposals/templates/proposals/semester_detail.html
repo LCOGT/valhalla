@@ -41,7 +41,7 @@
         <tbody>
           {% for proposal in tag.list %}
           <tr>
-            <td>{{ proposal.pi.last_name}} {{ proposal.pi.last_name|slice:'1'}}</td>
+            <td>{{ proposal.pi.last_name}} {{ proposal.pi.first_name|slice:'1'}}</td>
             <td>{{ proposal.pi.profile.institution }}</td>
             <td>
               <a class="showAbstract">
