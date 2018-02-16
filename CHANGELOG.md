@@ -1,3 +1,9 @@
+## 1.9.14
+2018-02-16
+
+* First name first initial fix for semester detail
+* Add title to semester detail page
+
 ## 1.9.13
 2018-02-16
 
