@@ -13,7 +13,7 @@
         {% if user.is_staff %}
             Admin only:
             {% if filter.form.semester.field.queryset.count > 0 %}
-            <a href="{% url 'proposals:semester-detail' filter.form.semester.field.queryset.0 %}">
+            <a href="{% url 'proposals:semester-admin' filter.form.semester.field.queryset.0 %}">
                 View All Proposals
             </a>
             {% endif %}

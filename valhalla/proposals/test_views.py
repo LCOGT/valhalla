@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
-from valhalla.proposals.models import Semester, TimeAllocation
+from valhalla.proposals.models import Semester, TimeAllocation, TimeAllocationGroup
 from valhalla.accounts.models import Profile
 
 
@@ -289,7 +289,7 @@ class TestNotificationsEnabled(TestCase):
         self.assertEqual(self.user.proposalnotification_set.count(), 0)
 
 
-class TestSemesterDetail(TestCase):
+class TestSemesterAdmin(TestCase):
     def setUp(self):
         self.user = mixer.blend(User, is_staff=True)
         self.proposal = mixer.blend(Proposal)
@@ -299,7 +299,7 @@ class TestSemesterDetail(TestCase):
     def test_proposal_table(self):
         self.client.force_login(self.user)
         response = self.client.get(
-            reverse('proposals:semester-detail', kwargs={'pk': self.semester.id})
+            reverse('proposals:semester-admin', kwargs={'pk': self.semester.id})
         )
         self.assertContains(response, self.proposal.id)
 
@@ -307,6 +307,18 @@ class TestSemesterDetail(TestCase):
         user = mixer.blend(User)
         self.client.force_login(user)
         response = self.client.get(
-            reverse('proposals:semester-detail', kwargs={'pk': self.semester.id})
+            reverse('proposals:semester-admin', kwargs={'pk': self.semester.id})
         )
         self.assertEqual(response.status_code, 302)
+
+
+class TestSemesterDetail(TestCase):
+    def setUp(self):
+        tag = mixer.blend(TimeAllocationGroup)
+        self.proposal = mixer.blend(Proposal, tag=tag)
+        self.semester = mixer.blend(Semester)
+        self.ta = mixer.blend(TimeAllocation, semester=self.semester, proposal=self.proposal)
+
+    def test_view_summary(self):
+        response = self.client.get(reverse('proposals:semester-detail', kwargs={'pk': self.semester.id}))
+        self.assertContains(response, self.proposal.title)

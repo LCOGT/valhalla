@@ -32,6 +32,7 @@ class Semester(models.Model):
 
 class TimeAllocationGroup(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
+    name = models.CharField(max_length=255, blank=True, default='')
 
     def __str__(self):
         return self.id
@@ -62,6 +63,18 @@ class Proposal(models.Model):
     @cached_property
     def current_semester(self):
         return self.semester_set.intersection(Semester.current_semesters()).first()
+
+    @cached_property
+    def current_allocation(self):
+        allocs = {}
+        for ta in self.timeallocation_set.filter(semester=self.current_semester):
+            allocs[ta.instrument_name.replace('-', '')] = {
+                'std': ta.std_allocation,
+                'std_used': ta.std_time_used,
+                'too': ta.too_allocation,
+                'too_used': ta.too_time_used
+            }
+        return allocs
 
     @classmethod
     def current_proposals(cls):

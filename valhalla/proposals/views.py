@@ -115,8 +115,19 @@ class MembershipDeleteView(LoginRequiredMixin, DeleteView):
         return Membership.objects.filter(proposal__in=proposals)
 
 
-class SemesterDetailView(UserPassesTestMixin, DetailView):
+class SemesterDetailView(DetailView):
     model = Semester
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['proposals'] = self.get_object().proposals.filter(active=True) \
+            .distinct().order_by('tag__name')
+        return context
+
+
+class SemesterAdminView(UserPassesTestMixin, DetailView):
+    model = Semester
+    template_name = 'proposals/semester_admin.html'
 
     def test_func(self):
         return self.request.user.is_staff
