@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.cache import cache
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from datetime import datetime, timedelta
@@ -41,12 +40,7 @@ class TelescopeStates(object):
 
         self.start = start.replace(tzinfo=timezone.utc).replace(microsecond=0)
         self.end = end.replace(tzinfo=timezone.utc).replace(microsecond=0)
-        cached_event_data = cache.get('tel_event_data')
-        if cached_event_data:
-            self.event_data = cached_event_data
-        else:
-            self.event_data = self._get_es_data(sites, telescopes)
-            cache.set('tel_event_data', self.event_data, 1800)
+        self.event_data = self._get_es_data(sites, telescopes)
 
     def _get_available_telescopes(self):
         telescope_to_instruments = configdb.get_instrument_types_per_telescope(only_schedulable=True)
