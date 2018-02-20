@@ -2,6 +2,10 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from PyPDF2 import PdfFileMerger
+import io
 
 from valhalla.proposals.models import (
     Semester, TimeAllocation, Proposal, TimeAllocationGroup, Membership
@@ -47,6 +51,11 @@ class Call(models.Model):
         return '{0} call for {1}'.format(self.get_proposal_type_display(), self.semester)
 
 
+def pdf_upload_path(instance, filename):
+    # PDFs will be uploaded to MEDIA_ROOT/sciapps/<semester>/
+    return 'sciapps/{0}/{1}'.format(instance.call.semester.id, filename)
+
+
 class ScienceApplication(models.Model):
     DRAFT = 'DRAFT'
     SUBMITTED = 'SUBMITTED'
@@ -76,9 +85,14 @@ class ScienceApplication(models.Model):
     pi_first_name = models.CharField(max_length=255, blank=True, default='', help_text='')
     pi_last_name = models.CharField(max_length=255, blank=True, default='', help_text='')
     pi_institution = models.CharField(max_length=255, blank=True, default='', help_text='')
-    budget_details = models.TextField(blank=True, default='', help_text='')
     moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
+    proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
+    tac_rank = models.PositiveIntegerField(default=0)
+    tac_priority = models.PositiveIntegerField(default=0)
+    pdf = models.FileField(upload_to=pdf_upload_path, blank=True, null=True)
+
+    budget_details = models.TextField(blank=True, default='', help_text='')
     science_case = models.TextField(blank=True, default='')
     science_case_file = models.FileField(upload_to='sciapp/sci_case/', blank=True, null=True)
     experimental_design = models.TextField(blank=True, default='')
@@ -86,9 +100,6 @@ class ScienceApplication(models.Model):
     related_programs = models.TextField(blank=True, default='')
     past_use = models.TextField(blank=True, default='')
     publications = models.TextField(blank=True, default='')
-    proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
-    tac_rank = models.PositiveIntegerField(default=0)
-    tac_priority = models.PositiveIntegerField(default=0)
 
     # DDT Only fields
     science_justification = models.TextField(blank=True, default='')
@@ -162,6 +173,26 @@ class ScienceApplication(models.Model):
         self.status = ScienceApplication.PORTED
         self.save()
         return proposal
+
+    def generate_pdf(self):
+        context = {
+            'object': self,
+            'pdf': True
+        }
+        html_string = render_to_string('sciapplications/scienceapplication_detail.html', context)
+        html = HTML(string=html_string)
+        fileobj = io.BytesIO()
+        html.write_pdf(fileobj)
+        merger = PdfFileMerger()
+        merger.append(fileobj)
+        if self.science_case_file:
+            merger.append(self.science_case_file.file)
+        if self.experimental_design_file:
+            merger.append(self.experimental_design_file.file)
+        merger.write(fileobj)
+        pdf = fileobj.getvalue()
+        fileobj.close()
+        return pdf
 
 
 class TimeRequest(models.Model):

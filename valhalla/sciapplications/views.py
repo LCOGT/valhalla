@@ -10,10 +10,6 @@ from django.urls import reverse, reverse_lazy
 from django.template.loader import render_to_string
 from django.utils import timezone
 
-from weasyprint import HTML
-from PyPDF2 import PdfFileMerger
-import io
-
 from valhalla.celery import send_mail
 from valhalla.sciapplications.models import Call, ScienceApplication
 from valhalla.sciapplications.forms import (
@@ -203,16 +199,8 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
         response = super().render_to_response(context, **kwargs)
         response.render()
         try:
-            html = HTML(string=response.content)
-            fileobj = io.BytesIO()
-            html.write_pdf(fileobj)
-            merger = PdfFileMerger()
-            merger.append(fileobj)
-            if self.object.science_case_file:
-                merger.append(self.object.science_case_file.file)
-            if self.object.experimental_design_file:
-                merger.append(self.object.experimental_design_file.file)
-            merger.write(pdf_response)
+            pdf = self.object.generate_pdf()
+            pdf_response.write(pdf)
         except Exception as exc:
             error = 'There was an error generating your pdf. {}'
             messages.error(self.request, error.format(str(exc)))
