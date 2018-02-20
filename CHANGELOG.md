@@ -1,3 +1,8 @@
+## 1.10.0
+2018-02-20
+
+* Initial sciapplication rewrite - first stage
+
 ## 1.9.15
 2018-02-16
 
