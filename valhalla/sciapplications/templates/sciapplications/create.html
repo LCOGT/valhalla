@@ -79,7 +79,8 @@
               {{ ci_form.management_form }}
             </table>
 
-            {% if form.budget_details %}
+
+            {% if timerequest_form %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
                 {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a>
@@ -106,77 +107,22 @@
                     {{ timerequest_form.management_form }}
                 </table>
 
-                {% bootstrap_label 'Observing Budget Explanation' label_for=id_budget_details %}
-                <div class="help-block">
-                Describe your observing strategy and justify the number of hours you are requesting. Requests for Rapid Response observations must be justified separately. If your targets are known, list them and their expected brightnesses.
-                </div>
-                {% bootstrap_field form.budget_details show_label=false %}
-            {% endif %}
-
-            {% if form.science_case %}
-                {% bootstrap_label 'Science Justification' label_for=id_science_case %}
-                <div class="help-block">
-                {% blocktrans %}
-                <p>
-                Please provide scientific justification for the observations requested, including
-                appropriate background information and the goals of the project. The results of any
-                previous time allocated for this project should be discussed. Pertinent references
-                should be listed in full.
-                </p>
-
-                <p>
-                You may use the text field below, or you may upload a single file with a maximum of
-                1 page of justification and 2 pages containing figures. We can only accept PDF files.
-                </p>
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.science_case show_label=False %}
-                {% bootstrap_field form.science_case_file show_label=False %}
-            {% endif %}
-
-            {% if form.experimental_design %}
-                {% bootstrap_label 'Experimental Design' label_for=id_experimental_design %}
-                <div class="help-block">
-                {% blocktrans %}
-                <p>Describe the strategy of your observing program. Describe the characteristics of your
-                targets, and justify the instruments and exposure times. Are there any unusual aspects of
-                scheduling that might impact your success?</p>
-
-                <p>If you are requesting Rapid Response observations, you must justify the need for the amount of time.
-                (Because Rapid Response mode interrupts scheduled observations, its use is restricted to targets
-                that can ONLY be observed in this way.)</p>
-
-                <p>What measurements will you make from the data, and what additional work will you do to address your science goals?</p>
-
-                <p>You may also upload a pdf if your experimental design is complex.</p>
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.experimental_design show_label=False %}
-                {% bootstrap_field form.experimental_design_file show_label=False %}
             {% endif %}
 
             {% if form.moon %}
                 {% bootstrap_field form.moon %}
             {% endif %}
 
-            {% if form.related_programs %}
-                {% bootstrap_label 'Related programs on other telescopes' label_for=id_related_programs %}
-                {% bootstrap_field form.related_programs show_label=False %}
+            {% if form.science_justification %}
+                {% bootstrap_field form.science_justification %}
             {% endif %}
 
-            {% if form.past_use %}
-                {% bootstrap_label 'Report on past use of LCO in the last 3 years' label_for=id_past_use %}
-                {% bootstrap_field form.past_use show_label=False %}
-            {% endif %}
-
-            {% if form.publications %}
-                {% bootstrap_label 'Applicant&#39s related publications'  %}
+            {% if form.ddt_justification %}
+                {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
                 <div class="help-block">
-                {% blocktrans %}
-                Up to 10 relevant publications from the past 3 years.
-                {% endblocktrans %}
+                Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester. Additionally, please describe through what affiliation you are entitled to request DD time.
                 </div>
-                {% bootstrap_field form.publications show_label=False %}
+                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
             {% endif %}
 
             {% if form.management %}
@@ -194,16 +140,12 @@
                 {% bootstrap_field form.contribution show_label=False %}
             {% endif %}
 
-            {% if form.science_justification %}
-                {% bootstrap_field form.science_justification %}
-            {% endif %}
-
-            {% if form.ddt_justification %}
-                {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
+            {% if form.pdf %}
+                {% bootstrap_label 'Upload PDF' %}
                 <div class="help-block">
-                Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester. Additionally, please describe through what affiliation you are entitled to request DD time.
+                    The text for the PDF upload help here
                 </div>
-                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
+                {% bootstrap_field form.pdf show_label=False %}
             {% endif %}
         </form>
         <a href="#">Back to top</a>

@@ -102,16 +102,10 @@ class TestPostCreateSciApp(TestCase):
             'pi_first_name': 'Joe',
             'pi_last_name': 'Schmoe',
             'pi_institution': 'Walmart',
+            'pdf': SimpleUploadedFile('sci.pdf', b'science_case'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
-            'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
-            'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
-            'related_programs': 'related progams value',
-            'past_use': 'past use value',
-            'publications': 'publications value',
             'save': 'SAVE',
             'science_justification': 'Test science justification',
             'ddt_justification': 'Test ddt justification',
@@ -294,7 +288,7 @@ class TestPostCreateSciApp(TestCase):
 
     def test_cannot_upload_silly_files(self):
         data = self.sci_data.copy()
-        data['science_case_file'] = SimpleUploadedFile('notpdf.png', b'apngfile')
+        data['pdf'] = SimpleUploadedFile('notpdf.png', b'apngfile')
         response = self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
@@ -430,16 +424,11 @@ class TestPostUpdateSciApp(TestCase):
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
-            'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
-            'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
-            'related_programs': 'related progams value',
-            'past_use': 'past use value',
-            'publications': 'publications value',
+            'pdf': SimpleUploadedFile('sci.pdf', b'science_case'),
             'save': 'SAVE',
             'science_justification': 'Test science justification',
             'ddt_justification': 'Test ddt justification',
+            'science_justification': 'Test science justification',
             'management': 'test management',
             'relevance': 'test relevance',
             'contribution': 'test contribution',

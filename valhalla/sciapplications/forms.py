@@ -19,8 +19,7 @@ class BaseProposalAppForm(ModelForm):
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
-    science_case_file = forms.FileField(validators=[validate_pdf_file], required=False)
-    experimental_design_file = forms.FileField(validators=[validate_pdf_file], required=False)
+    pdf = forms.FileField(validators=[validate_pdf_file], required=False)
 
     def clean(self):
         super().clean()
@@ -43,14 +42,11 @@ class ScienceProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details',
-            'abstract', 'moon', 'science_case', 'science_case_file', 'experimental_design',
-            'experimental_design_file', 'related_programs', 'past_use',
-            'publications', 'pi_first_name', 'pi_last_name', 'pi_institution'
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'abstract', 'moon', 'pdf'
         )
         required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'experimental_design_file', 'science_case_file'
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
         ))
 
 
@@ -58,12 +54,12 @@ class DDTProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details', 'moon',
-            'science_justification', 'ddt_justification',
+            'call', 'status', 'title', 'pi', 'moon',
+            'science_justification', 'ddt_justification', 'pdf',
             'pi_first_name', 'pi_last_name', 'pi_institution'
         )
         required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution', 'pdf'
         ))
 
 
@@ -71,15 +67,12 @@ class KeyProjectAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details',
-            'abstract', 'moon', 'science_case', 'science_case_file', 'related_programs',
-            'past_use', 'publications', 'experimental_design', 'experimental_design_file',
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
             'management', 'relevance', 'contribution',
-            'pi_first_name', 'pi_last_name', 'pi_institution'
+            'abstract', 'moon', 'pdf'
         )
         required_fields = set(fields) - set((
             'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'experimental_design_file', 'science_case_file'
         ))
 
 

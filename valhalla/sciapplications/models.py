@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.template.loader import render_to_string
-from weasyprint import HTML
+from django.contrib.staticfiles import finders
+from weasyprint import HTML, CSS
 from PyPDF2 import PdfFileMerger
 import io
 
@@ -179,16 +180,16 @@ class ScienceApplication(models.Model):
             'object': self,
             'pdf': True
         }
+        with open(finders.find('css/print.css')) as f:
+            css = CSS(string=f.read())
         html_string = render_to_string('sciapplications/scienceapplication_detail.html', context)
         html = HTML(string=html_string)
         fileobj = io.BytesIO()
-        html.write_pdf(fileobj)
+        html.write_pdf(fileobj, stylesheets=[css])
         merger = PdfFileMerger()
         merger.append(fileobj)
-        if self.science_case_file:
-            merger.append(self.science_case_file.file)
-        if self.experimental_design_file:
-            merger.append(self.experimental_design_file.file)
+        if self.pdf:
+            merger.append(self.pdf.file)
         merger.write(fileobj)
         pdf = fileobj.getvalue()
         fileobj.close()

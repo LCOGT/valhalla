@@ -1,0 +1,32 @@
+@page {
+  size: 8.5in 11in;
+  margin: 2.5cm;
+}
+body {
+    margin: 15px;
+    font: 11pt sans-serif;
+    line-height: 1.1;
+}
+table {
+    border-collapse:collapse;
+    border-spacing: 10px;
+}
+th, td {
+  border: 1px solid black;
+}
+td {
+  padding: 5px;
+}
+h1 {
+    font-size: 24px;
+}
+h2 {
+    font-size: 16px;
+}
+p {
+    page-break-inside: avoid;
+    text-align: justify;
+}
+.page-break {
+  page-break-after: always;
+}
