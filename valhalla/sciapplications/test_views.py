@@ -107,11 +107,6 @@ class TestPostCreateSciApp(TestCase):
             'abstract': 'test abstract value',
             'moon': 'EITHER',
             'save': 'SAVE',
-            'science_justification': 'Test science justification',
-            'ddt_justification': 'Test ddt justification',
-            'management': 'test management',
-            'relevance': 'test relevance',
-            'contribution': 'test contribution',
         }
 
         timerequest_data = {
@@ -429,12 +424,6 @@ class TestPostUpdateSciApp(TestCase):
             'moon': 'EITHER',
             'pdf': SimpleUploadedFile('sci.pdf', b'science_case'),
             'save': 'SAVE',
-            'science_justification': 'Test science justification',
-            'ddt_justification': 'Test ddt justification',
-            'science_justification': 'Test science justification',
-            'management': 'test management',
-            'relevance': 'test relevance',
-            'contribution': 'test contribution',
         }
         data = {**data, **data_complete}
         self.client.post(

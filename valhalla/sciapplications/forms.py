@@ -54,12 +54,11 @@ class DDTProposalAppForm(BaseProposalAppForm):
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'moon',
-            'science_justification', 'ddt_justification', 'pdf',
-            'pi_first_name', 'pi_last_name', 'pi_institution'
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'moon', 'pdf',
         )
         required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution', 'pdf'
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
         ))
 
 
@@ -68,7 +67,6 @@ class KeyProjectAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'management', 'relevance', 'contribution',
             'abstract', 'moon', 'pdf'
         )
         required_fields = set(fields) - set((

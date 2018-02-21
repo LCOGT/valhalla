@@ -79,31 +79,6 @@
       </table>
     {% endif %}
 
-    {% if object.science_justification %}
-        <h2>{% trans 'Science Justification' %}</h2>
-        <p>{{ object.science_justification|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.ddt_justification %}
-        <h2>{% trans 'DDT Justification' %}</h2>
-        <p>{{ object.ddt_justification|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.management %}
-        <h2>{% trans 'Plan for management of entire scientific investigation' %}</h2>
-        <p>{{ object.management|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.relevance %}
-        <h2>{% trans 'Relevance to uniqe capabilities of the LCOGT netowork' %}</h2>
-        <p>{{ object.relevance|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.contribution %}
-        <h2>{% trans 'Contribution brought by non-LCOGT pariticipants' %}</h2>
-        <p>{{ object.contribution|linebreaks }}</p>
-    {% endif %}
-
     {% if object.pdf and not pdf %}
         <h2>Uploaded PDF</h2>
         <p><a href="{{ object.pdf.url }}">Download</a></p>

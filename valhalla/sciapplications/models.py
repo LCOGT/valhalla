@@ -93,24 +93,6 @@ class ScienceApplication(models.Model):
     tac_priority = models.PositiveIntegerField(default=0)
     pdf = models.FileField(upload_to=pdf_upload_path, blank=True, null=True)
 
-    budget_details = models.TextField(blank=True, default='', help_text='')
-    science_case = models.TextField(blank=True, default='')
-    science_case_file = models.FileField(upload_to='sciapp/sci_case/', blank=True, null=True)
-    experimental_design = models.TextField(blank=True, default='')
-    experimental_design_file = models.FileField(upload_to='sciapp/tech/', blank=True, null=True)
-    related_programs = models.TextField(blank=True, default='')
-    past_use = models.TextField(blank=True, default='')
-    publications = models.TextField(blank=True, default='')
-
-    # DDT Only fields
-    science_justification = models.TextField(blank=True, default='')
-    ddt_justification = models.TextField(blank=True, default='')
-
-    # Key project only fields
-    management = models.TextField(blank=True, default='')
-    relevance = models.TextField(blank=True, default='')
-    contribution = models.TextField(blank=True, default='')
-
     # Admin only Notes
     notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
 
