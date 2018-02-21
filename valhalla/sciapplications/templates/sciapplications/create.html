@@ -125,13 +125,21 @@
                     For the remainder of your proposal, please upload a single pdf file that includes the following sections:
                 </p>
                 <ul>
-                    <li><strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the project. The results of any previous time allocated for this project should be discussed. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of a single page.
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the project. The results of any previous time allocated for this project should be discussed. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of a single page.
                     </li>
-                    <li><strong>Experimental Design.</strong> This section should describe the strategy of your observing program, including the characteristics of your targets, what measurements you will make from the data, and what additional work you will do to address your science goals. If your targets are known, list them and their expected brightnesses. This section must include an explanation of your observing budget, in which you justify the instruments, the exposure times, and the total number of hours you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If unusual scheduling constraints might impact your success, identify them.
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the strategy of your observing program, including the characteristics of your targets, what measurements you will make from the data, and what additional work you will do to address your science goals. If your targets are known, list them and their expected brightnesses. This section must include an explanation of your observing budget, in which you justify the instruments, the exposure times, and the total number of hours you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If unusual scheduling constraints might impact your success, identify them.
                     </li>
-                    <li><strong>Report of related programs on other telescopes.</strong></li>
-                    <li><strong>Report on use of LCO in the past 3 years.</strong></li>
-                    <li><strong>List of the authors’ related publications.</strong>You may include up to 10 publications.</li>
+                    <li>
+                        <strong>Report of related programs on other telescopes.</strong>
+                    </li>
+                    <li>
+                        <strong>Report on use of LCO in the past 3 years.</strong>
+                    </li>
+                    <li>
+                        <strong>List of the authors’ related publications.</strong>You may include up to 10 publications
+                    </li>
                 </ul>
                 <p>The format of the pdf file is subject to the following constraints.</p>
                 <ul>
@@ -142,12 +150,69 @@
                 </ul>
                 {% endif %}
 
-                <!-- DDT proposal PDF description -->
-                {% if call.proposal_type == 'DDT' %}
-                {% endif %}
-
                 <!-- KEY proposal PDF description -->
                 {% if call.proposal_type == 'KEY' %}
+                <p>
+                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
+                </p>
+                <ul>
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the project. The results of any previous time allocated for this project should be discussed. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of two pages.
+                    </li>
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the strategy of your observing program, including the characteristics of your targets, what measurements you will make from the data, and what additional work you will do to address your science goals. If your targets are known, list them and their expected brightnesses. This section must include an explanation of your observing budget, in which you justify the instruments, the exposure times, and the total number of hours you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If unusual scheduling constraints might impact your success, identify them.
+                    </li>
+                    <li>
+                        <strong>Suitability for LCO's capabilities.</strong> This section should describe how the proposed study takes advantage of the unique aspects of the LCO network and will yield a result that could not be obtained without LCO.
+                    </li>
+                    <li>
+                        <strong>Plan for management of the entire scientific investigation.</strong>
+                    </li>
+                    <li>
+                        <strong>Contributions brought by non-LCO participants.</strong> This section should describe what resources collaborators on the key project team will commit to making the key project successful. Such resources could be access to other facilities, additional time on the LCO network from their own institutions, computing resources, or scientist time.
+                    </li>
+                    <li>
+                        <strong>Report of related programs on other telescopes.</strong>
+                    </li>
+                    <li>
+                        <strong>Report on use of LCO in the past 3 years.</strong>
+                    </li>
+                    <li>
+                        <strong>List of the authors’ related publications.</strong>
+                    </li>
+                </ul>
+                <p>The format of the pdf file is subject to the following constraints.</p>
+                <ul>
+                    <li>The font size must be 11 points or larger.</li>
+                    <li>Margins on all edges must be at least 1 inch.</li>
+                    <li>Line spacing must be no denser than 6 lines per inch.</li>
+                    <li>The maximum length is 14 pages.</li>
+                </ul>
+                {% endif %}
+
+                <!-- DDT proposal PDF description -->
+                {% if call.proposal_type == 'DDT' %}
+                <p>
+                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
+                </p>
+                <ul>
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the observations. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of a single page.
+                    </li>
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the characteristics of your targets and what measurements you will make from the data. If your targets are known, list them and their expected brightnesses. This section must also justify the instruments, the exposure times, and the total time you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If unusual scheduling constraints might impact your success, identify them.
+                    </li>
+                    <li>
+                        <strong>Discretionary Time Justification.</strong> Discretionary time is reserved for observations of unforeseen targets-of-opportunity. This section should describe why the proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester. Additionally, describe through what affiliation you are entitled to request DD time.
+                    </li>
+                </ul>
+                <p>The format of the pdf file is subject to the following constraints.</p>
+                <ul>
+                    <li>The font size must be 11 points or larger.</li>
+                    <li>Margins on all edges must be at least 1 inch.</li>
+                    <li>Line spacing must be no denser than 6 lines per inch.</li>
+                    <li>The maximum length is 2 pages</li>
+                </ul>
                 {% endif %}
 
                 </div>
