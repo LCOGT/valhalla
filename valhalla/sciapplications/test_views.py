@@ -119,6 +119,7 @@ class TestPostCreateSciApp(TestCase):
             'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': 30,
             'timerequest_set-0-too_time': 1,
+            'timerequest_set-0-crt_time': 5,
 
         }
 
@@ -223,6 +224,7 @@ class TestPostCreateSciApp(TestCase):
             'timerequest_set-1-instrument': self.instrument.id,
             'timerequest_set-1-std_time': 20,
             'timerequest_set-1-too_time': 10,
+            'timerequest_set-1-crt_time': 5,
             'timerequest_set-TOTAL_FORMS': 2,
         })
         self.client.post(
@@ -393,6 +395,7 @@ class TestPostUpdateSciApp(TestCase):
             'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': tr.std_time,
             'timerequest_set-0-too_time': tr.too_time,
+            'timerequest_set-0-crt_time': tr.crt_time,
             'coinvestigator_set-TOTAL_FORMS': 1,
             'coinvestigator_set-INITIAL_FORMS': 1,
             'coinvestigator_set-MIN_NUM_FORMS': 1,

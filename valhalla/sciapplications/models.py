@@ -201,6 +201,7 @@ class TimeRequest(models.Model):
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     std_time = models.PositiveIntegerField(default=0)
     too_time = models.PositiveIntegerField(default=0)
+    crt_time = models.PositiveIntegerField(default=0)
     approved = models.BooleanField(default=False)
 
     def __str__(self):

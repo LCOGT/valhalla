@@ -43,7 +43,7 @@
                 {% blocktrans %}<strong>If this is not you</strong>, please add the details for the PI.{% endblocktrans %}
                 </div>
                 <table class="table table-striped">
-                  <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
                   <tr>
                     <td>{% bootstrap_field form.pi show_label=false placeholder='Email' %}</td>
                     <td>{% bootstrap_field form.pi_first_name show_label=false placeholder='First Name' %}</td>
@@ -60,7 +60,7 @@
               {% endblocktrans %}
             </div>
             <table class="table table-striped">
-              <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+              <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
               <tbody>
                 {% for form in ci_form.forms %}
                   {% bootstrap_form_errors form %}
@@ -89,7 +89,7 @@
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
                 <table class="table table-striped">
-                    <thead><tr><td>Instrument</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
+                    <thead><tr><th>Instrument</th><th>Standard Time</th><th>Rapid Response</th><th>Time-Critical</th></tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
@@ -101,6 +101,7 @@
                         </td>
                         <td>{% bootstrap_field form.std_time show_label=false %}</td>
                         <td>{% bootstrap_field form.too_time show_label=false %}</td>
+                        <td>{% bootstrap_field form.crt_time show_label=false %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
