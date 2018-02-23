@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
+from PyPDF2 import PdfFileReader
 import os
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
@@ -19,7 +20,7 @@ class BaseProposalAppForm(ModelForm):
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
-    pdf = forms.FileField(validators=[validate_pdf_file], required=False)
+    pdf = forms.FileField(validators=[validate_pdf_file], required=False, label='pdf')
 
     def clean(self):
         super().clean()
@@ -37,8 +38,18 @@ class BaseProposalAppForm(ModelForm):
             raise forms.ValidationError(_('Leave these fields blank if you are the PI'))
         return email
 
+    def clean_pdf(self):
+        pdf = self.cleaned_data.get('pdf')
+        if pdf:
+            pdf_file = PdfFileReader(pdf.file)
+            if pdf_file.getNumPages() > self.max_pages:
+                raise forms.ValidationError(_('PDF file cannot exceed {} pages'.format(self.max_pages)))
+        return pdf
+
 
 class ScienceProposalAppForm(BaseProposalAppForm):
+    max_pages = 6
+
     class Meta:
         model = ScienceApplication
         fields = (
@@ -51,6 +62,8 @@ class ScienceProposalAppForm(BaseProposalAppForm):
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
+    max_pages = 2
+
     class Meta:
         model = ScienceApplication
         fields = (
@@ -63,6 +76,8 @@ class DDTProposalAppForm(BaseProposalAppForm):
 
 
 class KeyProjectAppForm(BaseProposalAppForm):
+    max_pages = 14
+
     class Meta:
         model = ScienceApplication
         fields = (

@@ -8,13 +8,21 @@ from datetime import timedelta
 from mixer.backend.django import mixer
 from PyPDF2 import PdfFileMerger
 from weasyprint import HTML
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 from valhalla.proposals.models import Semester
 from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
+
+
+class MockPDFFileReader:
+    def __init__(self, bytesio):
+        self.content = bytesio.getvalue()
+
+    def getNumPages(self):
+        return len(self.content)
 
 
 class TestGetCreateSciApp(TestCase):
@@ -70,6 +78,7 @@ class TestGetCreateSciApp(TestCase):
         self.assertIn('DDTProposalAppForm', str(response.context['form'].__class__))
 
 
+@patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostCreateSciApp(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
@@ -102,7 +111,7 @@ class TestPostCreateSciApp(TestCase):
             'pi_first_name': 'Joe',
             'pi_last_name': 'Schmoe',
             'pi_institution': 'Walmart',
-            'pdf': SimpleUploadedFile('sci.pdf', b'science_case'),
+            'pdf': SimpleUploadedFile('s.pdf', b'ab'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
@@ -314,6 +323,17 @@ class TestPostCreateSciApp(TestCase):
         self.assertTrue(self.user.scienceapplication_set.first().submitted)
         self.assertContains(response, self.sci_data['title'])
 
+    def test_pdf_has_too_many_pages(self):
+        data = self.sci_data.copy()
+        data['pdf'] = SimpleUploadedFile('s.pdf', b'this is way way way too long')
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'PDF file cannot exceed')
+
 
 class TestGetUpdateSciApp(TestCase):
     def setUp(self):
@@ -359,6 +379,7 @@ class TestGetUpdateSciApp(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+@patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostUpdateSciApp(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
@@ -422,7 +443,7 @@ class TestPostUpdateSciApp(TestCase):
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
             'moon': 'EITHER',
-            'pdf': SimpleUploadedFile('sci.pdf', b'science_case'),
+            'pdf': SimpleUploadedFile('sci.pdf', b'ab'),
             'save': 'SAVE',
         }
         data = {**data, **data_complete}
