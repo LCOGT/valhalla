@@ -19,6 +19,7 @@
     {% endif %}
     {% if object.title %}
         <h1>{{ object.title }}</h1>
+        <br/>
     {% endif %}
 
     <h2>Semester: <small>{{ object.call.semester }}</small></h2>
@@ -38,18 +39,18 @@
       <thead>
         <tr>
           <th>{% trans 'Instrument' %}</th>
-          <th>{% trans 'Standard Time' %}</th>
-          <th>{% trans 'Rapid Response' %}</th>
-          <th>{% trans 'Time-Critical' %}</th>
+          <th class="center">{% trans 'Standard Time' %}</th>
+          <th class="center">{% trans 'Rapid Response' %}</th>
+          <th class="center">{% trans 'Time-Critical' %}</th>
         </tr>
       </thead>
       <tbody>
       {% for timerequest in object.timerequest_set.all %}
       <tr>
           <td>{{ timerequest.instrument }}</td>
-          <td>{{ timerequest.std_time }}</td>
-          <td>{{ timerequest.too_time }}</td>
-          <td>{{ timerequest.crt_time }}</td>
+          <td class="center">{{ timerequest.std_time }}</td>
+          <td class="center">{{ timerequest.too_time }}</td>
+          <td class="center">{{ timerequest.crt_time }}</td>
       </tr>
       {% endfor %}
       </tbody>
@@ -64,16 +65,16 @@
     {% if object.pi %}
       <p>{{ object.pi_first_name|slice:':1' }}{{ object.pi_last_name }} &lt;{{ object.pi }}&gt; ({{ object.pi_institution }})</p>
     {% else %}
-      <p>{{ object.submitter.first_name|slice:':1' }} {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
+      <p>{{ object.submitter.first_name|slice:':1' }}. {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
     {% endif %}
 
     {% if object.coinvestigator_set.exists %}
       <h2>{% trans 'Co Investigators' %}</h2>
       <table>
-        <thead><tr><th>{% trans 'First Initial' %}</th><th>{% trans 'Last Name' %}</th><th>{% trans 'Email' %}</th><th>{% trans 'Institution' %}</th></tr></thead>
+        <thead><tr><th>{% trans 'Name' %}</th><th>{% trans 'Email' %}</th><th>{% trans 'Institution' %}</th></tr></thead>
         <tbody>
         {% for coi in object.coinvestigator_set.all %}
-          <tr><td>{{ coi.first_name|slice:':1' }}</td><td>{{ coi.last_name }}</td><td>{{ coi.email }}</td><td>{{ coi.institution }}</td></tr>
+          <tr><td>{{ coi.first_name|slice:':1' }}. {{ coi.last_name }}</td><td>{{ coi.email }}</td><td>{{ coi.institution }}</td></tr>
         {% endfor %}
         </tbody>
       </table>

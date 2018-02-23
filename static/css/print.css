@@ -30,3 +30,6 @@ p {
 .page-break {
   page-break-after: always;
 }
+.center {
+  text-align: center;
+}
