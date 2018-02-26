@@ -130,6 +130,8 @@ class UserRequestViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'])
     def max_allowable_ipp(self, request):
+        # change requested ipp to 1 because we want it to always pass the serializers ipp check
+        request.data['ipp_value'] = 1.0
         serializer = UserRequestSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             ipp_dict = get_max_ipp_for_userrequest(serializer.validated_data)
