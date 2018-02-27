@@ -72,12 +72,6 @@ class ScienceApplication(models.Model):
         (PORTED, 'Ported')
     )
 
-    MOON_CHOICES = (
-        ('EITHER', 'Any'),
-        ('BRIGHT', 'Bright'),
-        ('DARK', 'Dark'),
-    )
-
     title = models.CharField(max_length=200)
     call = models.ForeignKey(Call, on_delete=models.CASCADE)
     submitter = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -86,7 +80,6 @@ class ScienceApplication(models.Model):
     pi_first_name = models.CharField(max_length=255, blank=True, default='', help_text='')
     pi_last_name = models.CharField(max_length=255, blank=True, default='', help_text='')
     pi_institution = models.CharField(max_length=255, blank=True, default='', help_text='')
-    moon = models.CharField(max_length=50, choices=MOON_CHOICES, default=MOON_CHOICES[0][0], blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=STATUS_CHOICES[0][0])
     proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
     tac_rank = models.PositiveIntegerField(default=0)

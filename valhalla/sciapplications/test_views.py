@@ -114,7 +114,6 @@ class TestPostCreateSciApp(TestCase):
             'pdf': SimpleUploadedFile('s.pdf', b'ab'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
-            'moon': 'EITHER',
             'save': 'SAVE',
         }
 
@@ -442,7 +441,6 @@ class TestPostUpdateSciApp(TestCase):
             'pi_institution': 'Walmart',
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
-            'moon': 'EITHER',
             'pdf': SimpleUploadedFile('sci.pdf', b'ab'),
             'save': 'SAVE',
         }

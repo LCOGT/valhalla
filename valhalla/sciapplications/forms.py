@@ -61,7 +61,7 @@ class ScienceProposalAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'abstract', 'moon', 'pdf'
+            'abstract', 'pdf'
         )
         required_fields = set(fields) - set((
             'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
@@ -75,7 +75,7 @@ class DDTProposalAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'moon', 'pdf',
+            'pdf',
         )
         required_fields = set(fields) - set((
             'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
@@ -89,7 +89,7 @@ class KeyProjectAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'abstract', 'moon', 'pdf'
+            'abstract', 'pdf'
         )
         required_fields = set(fields) - set((
             'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
