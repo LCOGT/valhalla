@@ -46,6 +46,13 @@ class BaseProposalAppForm(ModelForm):
                 raise forms.ValidationError(_('PDF file cannot exceed {} pages'.format(self.max_pages)))
         return pdf
 
+    def clean_abstract(self):
+        ABSTRACT_WORD_LIMIT = 1500
+        abstract = self.cleaned_data.get('abstract', '')
+        if len(abstract.split(' ')) > ABSTRACT_WORD_LIMIT:
+            raise forms.ValidationError(_('Abstract is limited to 1500 words.'))
+        return abstract
+
 
 class ScienceProposalAppForm(BaseProposalAppForm):
     max_pages = 6
