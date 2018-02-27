@@ -44,7 +44,10 @@
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
-                {% blocktrans %}<strong>If this is not you</strong>, please add the details for the PI.{% endblocktrans %}
+                    {% blocktrans %}
+                    <strong>If this is not you</strong>, please add the details for the PI. The first name will be presented to
+                    reviewers as an initial.
+                    {% endblocktrans %}
                 </div>
                 <table class="table table-striped">
                   <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
@@ -60,7 +63,7 @@
             {% bootstrap_label 'Co-investigators' %}
             <div class="help-block">
               {% blocktrans %}
-              Add the details of co-investigators on this proposal.
+              Add the details of co-investigators on this proposal. First names will be presented as initials.
               {% endblocktrans %}
             </div>
             <table class="table table-striped">
