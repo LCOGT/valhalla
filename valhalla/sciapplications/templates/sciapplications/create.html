@@ -44,13 +44,26 @@
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
+                    Please ensure the following information is correct and up to date. You can update these
+                    details on you <a href="{% url 'profile' %}">profile</a> page.
+                </div>
+                 <table id="mepi" class="table table-striped">
+                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
+                  <tr>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.profile.institution }}</td>
+                  </tr>
+                </table>
+                <div class="help-block">
                     {% blocktrans %}
-                    <strong>If this is not you</strong>, please add the details for the PI. The first name will be presented to
-                    reviewers as an initial.
+                    <strong>If you'd like to add someone else as the PI</strong>, please enter their information here.
+                    The first name will be presented to reviewers as an initial. {{ form.pi.value }}
                     {% endblocktrans %}
                 </div>
                 <table class="table table-striped">
-                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
+                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
                   <tr>
                     <td>{% bootstrap_field form.pi show_label=false placeholder='Email' %}</td>
                     <td>{% bootstrap_field form.pi_first_name show_label=false placeholder='First Name' %}</td>
