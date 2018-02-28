@@ -34,11 +34,7 @@
             {% endif %}
 
             {% if form.abstract %}
-                {% bootstrap_label 'Abstract' %}
-                <div class="help-block">
-                    Limit 1500 words
-                </div>
-                {% bootstrap_field form.abstract show_label=False %}
+                {% bootstrap_field form.abstract placeholder='Limit 1500 words' %}
             {% endif %}
 
             {% if form.pi %}
