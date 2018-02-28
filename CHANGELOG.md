@@ -1,3 +1,8 @@
+## 1.10.1
+2018-02-28
+
+* Sciapplication rewrite. Removes many fields to be replaced by a single pdf upload.
+
 ## 1.10.0
 2018-02-20
 
