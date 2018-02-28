@@ -5,41 +5,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>{{ object.title}}</title>
-    <style>
-    @page {
-      size: A3;
-      margin: 2.5cm
-    }
-    body {
-        margin: 15px;
-        font: 11pt sans-serif;
-        line-height: 1.1;
-    }
-    table {
-        border-collapse:collapse;
-        border-spacing: 10px;
-    }
-    th, td {
-      border: 1px solid black;
-    }
-    td {
-      padding: 5px;
-    }
-    h1 {
-        font-size: 24px;
-    }
-    h2 {
-        page-break-before: auto;
-        font-size: 16px;
-    }
-    p {
-        page-break-inside: avoid;
-        text-align: justify;
-    }
-    .page-break {
-      page-break-after: always;
-    }
-    </style>
+    {% if not pdf %}
+    <link rel="stylesheet" type="text/css" href="/static/css/print.css">
+    {% endif %}
 </head>
 <body>
     {% if not pdf %}
@@ -51,6 +19,7 @@
     {% endif %}
     {% if object.title %}
         <h1>{{ object.title }}</h1>
+        <br/>
     {% endif %}
 
     <h2>Semester: <small>{{ object.call.semester }}</small></h2>
@@ -59,126 +28,61 @@
     <h2>Submitted: <small>{{ object.submitted|date:"j M Y P" }}</small></h2>
     {% endif %}
 
-
-    <h2>{% trans 'Principal Investigator' %}</h2>
-    {% if object.pi %}
-      <p>{{ object.pi_first_name }}{{ object.pi_last_name }} &lt;{{ object.pi }}&gt; ({{ object.pi_institution }})</p>
-    {% else %}
-      <p>{{ object.submitter.first_name }} {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
-    {% endif %}
-
     {% if object.abstract %}
-        <br/>
-        <br/>
         <h2>{% trans 'Abstract' %}</h2>
         <p>{{ object.abstract|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.coinvestigator_set.exists %}
-      <h2>{% trans 'Co Investigators' %}</h2>
-      <table>
-        <thead><tr><td>{% trans 'First Name' %}</td><td>{% trans 'Last Name' %}</td><td>{% trans 'Email' %}</td><td>{% trans 'Institution' %}</td></tr></thead>
-        <tbody>
-        {% for coi in object.coinvestigator_set.all %}
-          <tr><td>{{ coi.first_name }}</td><td>{{ coi.last_name }}</td><td>{{ coi.email }}</td><td>{{ coi.institution }}</td></tr>
-        {% endfor %}
-        </tbody>
-      </table>
     {% endif %}
 
     {% if object.timerequest_set.count %}
     <h2>{% trans 'Observing Budget' %}</h2>
     <table>
-      <thead><tr><td>{% trans 'Instrument' %}</td><td>{% trans 'Standard Time' %}</td><td>{% trans 'Rapid Response' %}</td></tr></thead>
+      <thead>
+        <tr>
+          <th>{% trans 'Instrument' %}</th>
+          <th class="center">{% trans 'Standard Time' %}</th>
+          <th class="center">{% trans 'Rapid Response' %}</th>
+          <th class="center">{% trans 'Time-Critical' %}</th>
+        </tr>
+      </thead>
       <tbody>
       {% for timerequest in object.timerequest_set.all %}
       <tr>
           <td>{{ timerequest.instrument }}</td>
-          <td>{{ timerequest.std_time }}</td>
-          <td>{{ timerequest.too_time }}</td>
+          <td class="center">{{ timerequest.std_time }}</td>
+          <td class="center">{{ timerequest.too_time }}</td>
+          <td class="center">{{ timerequest.crt_time }}</td>
       </tr>
       {% endfor %}
       </tbody>
     </table>
     {% endif %}
 
-    <h2>{% trans 'Moon Phase' %}: <small>{{ object.moon }}</small></h2>
-
+    {% if object.call.proposal_type != 'DDT' %}
     <div class="page-break"></div>
-
-    {% if object.budget_details %}
-    <h2>{% trans 'Observing Budget Explanation' %}</h2>
-    <p>{{ object.budget_details|linebreaks }}</p>
     {% endif %}
 
-
-    {% if object.science_case %}
-            <h2>{% trans 'Science Case' %}</h2>
-            <p>{{ object.science_case|linebreaks }}</p>
+    <h2>{% trans 'Principal Investigator' %}</h2>
+    {% if object.pi %}
+      <p>{{ object.pi_first_name|slice:':1' }}. {{ object.pi_last_name }} &lt;{{ object.pi }}&gt; ({{ object.pi_institution }})</p>
+    {% else %}
+      <p>{{ object.submitter.first_name|slice:':1' }}. {{ object.submitter.last_name }} &lt;{{ object.submitter.email }}&gt; ({{ object.submitter.profile.institution }})</p>
     {% endif %}
 
-    {% if object.science_case_file %}
-            <h2>{% trans 'Science Case File' %}</h2>
-            {% if pdf %}
-                <p>{% trans 'See Attached' %}</p>
-            {% else %}
-                <p><a href="{{ object.science_case_file.url }}">Download</a></p>
-            {% endif %}
+    {% if object.coinvestigator_set.exists %}
+      <h2>{% trans 'Co Investigators' %}</h2>
+      <table class="coi">
+        <thead><tr><th>{% trans 'Name' %}</th><th>{% trans 'Email' %}</th><th>{% trans 'Institution' %}</th></tr></thead>
+        <tbody>
+        {% for coi in object.coinvestigator_set.all %}
+          <tr><td>{{ coi.first_name|slice:':1' }}. {{ coi.last_name }}</td><td>{{ coi.email }}</td><td>{{ coi.institution }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
     {% endif %}
 
-    {% if object.experimental_design %}
-            <h2>{% trans 'Experimental Design' %}</h2>
-            <p>{{ object.experimental_design|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.experimental_design_file %}
-            <h2>{% trans 'Experimental Design File' %}</h2>
-            {% if pdf %}
-                <p>{% trans 'See attached' %}</p>
-            {% else %}
-                <p><a href="{{ object.experimental_design_file.url }}">Download</a></p>
-            {% endif %}
-    {% endif %}
-
-
-    {% if object.related_programs %}
-            <h2>{% trans 'Related Programs' %}</h2>
-            <p>{{ object.related_programs|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.past_use %}
-            <h2>{% trans 'Past Use' %}</h2>
-            <p>{{ object.past_use|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.publications %}
-            <h2>{% trans 'Applicant&#39s related publications' %}</h2>
-            <p>{{ object.publications|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.management %}
-            <h2>{% trans 'Plan for management of entire scientific investigation' %}</h2>
-            <p>{{ object.management|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.relevance %}
-            <h2>{% trans 'Relevance to uniqe capabilities of the LCOGT netowork' %}</h2>
-            <p>{{ object.relevance|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.contribution %}
-            <h2>{% trans 'Contribution brought by non-LCOGT pariticipants' %}</h2>
-            <p>{{ object.contribution|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.science_justification %}
-            <h2>{% trans 'Science Justification' %}</h2>
-            <p>{{ object.science_justification|linebreaks }}</p>
-    {% endif %}
-
-    {% if object.ddt_justification %}
-            <h2>{% trans 'DDT Justification' %}</h2>
-            <p>{{ object.ddt_justification|linebreaks }}</p>
+    {% if object.pdf and not pdf %}
+        <h2>Uploaded PDF</h2>
+        <p><a href="{{ object.pdf.url }}">Download</a></p>
     {% endif %}
 </body>
 </html>

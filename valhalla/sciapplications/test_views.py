@@ -8,13 +8,21 @@ from datetime import timedelta
 from mixer.backend.django import mixer
 from PyPDF2 import PdfFileMerger
 from weasyprint import HTML
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 
 from valhalla.proposals.models import Semester
 from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
+
+
+class MockPDFFileReader:
+    def __init__(self, bytesio):
+        self.content = bytesio.getvalue()
+
+    def getNumPages(self):
+        return len(self.content)
 
 
 class TestGetCreateSciApp(TestCase):
@@ -70,6 +78,7 @@ class TestGetCreateSciApp(TestCase):
         self.assertIn('DDTProposalAppForm', str(response.context['form'].__class__))
 
 
+@patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostCreateSciApp(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
@@ -102,22 +111,10 @@ class TestPostCreateSciApp(TestCase):
             'pi_first_name': 'Joe',
             'pi_last_name': 'Schmoe',
             'pi_institution': 'Walmart',
+            'pdf': SimpleUploadedFile('s.pdf', b'ab'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
-            'moon': 'EITHER',
-            'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
-            'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
-            'related_programs': 'related progams value',
-            'past_use': 'past use value',
-            'publications': 'publications value',
             'save': 'SAVE',
-            'science_justification': 'Test science justification',
-            'ddt_justification': 'Test ddt justification',
-            'management': 'test management',
-            'relevance': 'test relevance',
-            'contribution': 'test contribution',
         }
 
         timerequest_data = {
@@ -125,6 +122,7 @@ class TestPostCreateSciApp(TestCase):
             'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': 30,
             'timerequest_set-0-too_time': 1,
+            'timerequest_set-0-crt_time': 5,
 
         }
 
@@ -229,6 +227,7 @@ class TestPostCreateSciApp(TestCase):
             'timerequest_set-1-instrument': self.instrument.id,
             'timerequest_set-1-std_time': 20,
             'timerequest_set-1-too_time': 10,
+            'timerequest_set-1-crt_time': 5,
             'timerequest_set-TOTAL_FORMS': 2,
         })
         self.client.post(
@@ -294,7 +293,7 @@ class TestPostCreateSciApp(TestCase):
 
     def test_cannot_upload_silly_files(self):
         data = self.sci_data.copy()
-        data['science_case_file'] = SimpleUploadedFile('notpdf.png', b'apngfile')
+        data['pdf'] = SimpleUploadedFile('notpdf.png', b'apngfile')
         response = self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
@@ -322,6 +321,17 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertTrue(self.user.scienceapplication_set.first().submitted)
         self.assertContains(response, self.sci_data['title'])
+
+    def test_pdf_has_too_many_pages(self):
+        data = self.sci_data.copy()
+        data['pdf'] = SimpleUploadedFile('s.pdf', b'this is way way way too long')
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'PDF file cannot exceed')
 
 
 class TestGetUpdateSciApp(TestCase):
@@ -368,6 +378,7 @@ class TestGetUpdateSciApp(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+@patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostUpdateSciApp(TestCase):
     def setUp(self):
         self.semester = mixer.blend(Semester)
@@ -399,6 +410,7 @@ class TestPostUpdateSciApp(TestCase):
             'timerequest_set-0-instrument': self.instrument.id,
             'timerequest_set-0-std_time': tr.std_time,
             'timerequest_set-0-too_time': tr.too_time,
+            'timerequest_set-0-crt_time': tr.crt_time,
             'coinvestigator_set-TOTAL_FORMS': 1,
             'coinvestigator_set-INITIAL_FORMS': 1,
             'coinvestigator_set-MIN_NUM_FORMS': 1,
@@ -429,20 +441,8 @@ class TestPostUpdateSciApp(TestCase):
             'pi_institution': 'Walmart',
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
-            'moon': 'EITHER',
-            'science_case': 'science case',
-            'science_case_file': SimpleUploadedFile('sci.pdf', b'science_case'),
-            'experimental_design': 'exp desgin value',
-            'experimental_design_file': SimpleUploadedFile('exp.PDF', b'exp_file'),
-            'related_programs': 'related progams value',
-            'past_use': 'past use value',
-            'publications': 'publications value',
+            'pdf': SimpleUploadedFile('sci.pdf', b'ab'),
             'save': 'SAVE',
-            'science_justification': 'Test science justification',
-            'ddt_justification': 'Test ddt justification',
-            'management': 'test management',
-            'relevance': 'test relevance',
-            'contribution': 'test contribution',
         }
         data = {**data, **data_complete}
         self.client.post(

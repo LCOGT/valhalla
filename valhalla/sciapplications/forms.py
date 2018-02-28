@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.forms.models import inlineformset_factory
 from django.utils.translation import ugettext as _
+from PyPDF2 import PdfFileReader
 import os
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
@@ -19,13 +20,16 @@ class BaseProposalAppForm(ModelForm):
         widget=forms.HiddenInput
     )
     status = forms.CharField(widget=forms.HiddenInput, initial='DRAFT')
-    science_case_file = forms.FileField(validators=[validate_pdf_file], required=False)
-    experimental_design_file = forms.FileField(validators=[validate_pdf_file], required=False)
+    pdf = forms.FileField(validators=[validate_pdf_file], required=False, label='pdf')
 
     def clean(self):
         super().clean()
         if self.cleaned_data.get('pi'):
             self.Meta.required_fields.update(['pi_first_name', 'pi_last_name', 'pi_institution'])
+        else:
+            for field in ['pi_first_name', 'pi_last_name', 'pi_institution']:
+                if field in self.Meta.required_fields:
+                    self.Meta.required_fields.remove(field)
         for field in self.Meta.required_fields:
             if not self.cleaned_data.get(field) and self.cleaned_data.get('status') == 'SUBMITTED':
                 self.add_error(field, _('{}: This field is required'.format(self.fields[field].label)))
@@ -38,48 +42,61 @@ class BaseProposalAppForm(ModelForm):
             raise forms.ValidationError(_('Leave these fields blank if you are the PI'))
         return email
 
+    def clean_pdf(self):
+        pdf = self.cleaned_data.get('pdf')
+        if pdf:
+            pdf_file = PdfFileReader(pdf.file)
+            if pdf_file.getNumPages() > self.max_pages:
+                raise forms.ValidationError(_('PDF file cannot exceed {} pages'.format(self.max_pages)))
+        return pdf
+
+    def clean_abstract(self):
+        ABSTRACT_WORD_LIMIT = 1500
+        abstract = self.cleaned_data.get('abstract', '')
+        if len(abstract.split(' ')) > ABSTRACT_WORD_LIMIT:
+            raise forms.ValidationError(_('Abstract is limited to 1500 words.'))
+        return abstract
+
 
 class ScienceProposalAppForm(BaseProposalAppForm):
+    max_pages = 6
+
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details',
-            'abstract', 'moon', 'science_case', 'science_case_file', 'experimental_design',
-            'experimental_design_file', 'related_programs', 'past_use',
-            'publications', 'pi_first_name', 'pi_last_name', 'pi_institution'
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'abstract', 'pdf'
         )
         required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'experimental_design_file', 'science_case_file'
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
         ))
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
+    max_pages = 2
+
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details', 'moon',
-            'science_justification', 'ddt_justification',
-            'pi_first_name', 'pi_last_name', 'pi_institution'
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'pdf',
         )
         required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
         ))
 
 
 class KeyProjectAppForm(BaseProposalAppForm):
+    max_pages = 14
+
     class Meta:
         model = ScienceApplication
         fields = (
-            'call', 'status', 'title', 'pi', 'budget_details',
-            'abstract', 'moon', 'science_case', 'science_case_file', 'related_programs',
-            'past_use', 'publications', 'experimental_design', 'experimental_design_file',
-            'management', 'relevance', 'contribution',
-            'pi_first_name', 'pi_last_name', 'pi_institution'
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'abstract', 'pdf'
         )
         required_fields = set(fields) - set((
             'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'experimental_design_file', 'science_case_file'
         ))
 
 

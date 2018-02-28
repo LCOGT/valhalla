@@ -34,16 +34,32 @@
             {% endif %}
 
             {% if form.abstract %}
-                {% bootstrap_field form.abstract %}
+                {% bootstrap_field form.abstract placeholder='Limit 1500 words' %}
             {% endif %}
 
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
                 <div class="help-block">
-                {% blocktrans %}<strong>If this is not you</strong>, please add the details for the PI.{% endblocktrans %}
+                    Please ensure the following information is correct and up to date. You can update these
+                    details on you <a href="{% url 'profile' %}">profile</a> page.
+                </div>
+                 <table id="mepi" class="table table-striped">
+                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
+                  <tr>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.last_name }}</td>
+                    <td>{{ user.profile.institution }}</td>
+                  </tr>
+                </table>
+                <div class="help-block">
+                    {% blocktrans %}
+                    <strong>If you'd like to add someone else as the PI</strong>, please enter their information here.
+                    The first name will be presented to reviewers as an initial. {{ form.pi.value }}
+                    {% endblocktrans %}
                 </div>
                 <table class="table table-striped">
-                  <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+                  <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
                   <tr>
                     <td>{% bootstrap_field form.pi show_label=false placeholder='Email' %}</td>
                     <td>{% bootstrap_field form.pi_first_name show_label=false placeholder='First Name' %}</td>
@@ -56,11 +72,11 @@
             {% bootstrap_label 'Co-investigators' %}
             <div class="help-block">
               {% blocktrans %}
-              Add the details of co-investigators on this proposal.
+              Add the details of co-investigators on this proposal. First names will be presented as initials.
               {% endblocktrans %}
             </div>
             <table class="table table-striped">
-              <thead><tr><td>Email</td><td>First Name</td><td>Last Name</td><td>Institution</td></thead>
+              <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
               <tbody>
                 {% for form in ci_form.forms %}
                   {% bootstrap_form_errors form %}
@@ -79,16 +95,18 @@
               {{ ci_form.management_form }}
             </table>
 
-            {% if form.budget_details %}
+
+            {% if timerequest_form %}
                 {% bootstrap_label 'Observing Budget' %}
                 <div class="help-block">
-                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/rapid-response-mode/" target="_blank">Rapid Response mode</a>
-                (within 15 minutes of submission) observations must be requested separately.
+                {% blocktrans %}Requested observing time in hours for the semester. Time for <a href="https://lco.global/documentation/special-scheduling-modes/" target="_blank">Rapid Response mode</a>
+                (within 15 minutes of submission) and
+                <a href="https://lco.global/documentation/special-scheduling-modes/" target="_blank">Time-Critical mode</a> observations must be requested separately.
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
                 <table class="table table-striped">
-                    <thead><tr><td>Instrument</td><td>Standard Time</td><td>Rapid Response</td></tr></thead>
+                    <thead><tr><th>Instrument</th><th>Standard Time</th><th>Rapid Response</th><th>Time-Critical</th></tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
@@ -100,110 +118,117 @@
                         </td>
                         <td>{% bootstrap_field form.std_time show_label=false %}</td>
                         <td>{% bootstrap_field form.too_time show_label=false %}</td>
+                        <td>{% bootstrap_field form.crt_time show_label=false %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
                     {{ timerequest_form.management_form }}
                 </table>
 
-                {% bootstrap_label 'Observing Budget Explanation' label_for=id_budget_details %}
-                <div class="help-block">
-                Describe your observing strategy and justify the number of hours you are requesting. Requests for Rapid Response observations must be justified separately. If your targets are known, list them and their expected brightnesses.
-                </div>
-                {% bootstrap_field form.budget_details show_label=false %}
             {% endif %}
 
-            {% if form.science_case %}
-                {% bootstrap_label 'Science Justification' label_for=id_science_case %}
+            {% if form.pdf %}
+                {% bootstrap_label 'Upload PDF' %}
                 <div class="help-block">
-                {% blocktrans %}
+
+                <!-- Sci Proposal PDF description -->
+                {% if call.proposal_type == 'SCI' %}
                 <p>
-                Please provide scientific justification for the observations requested, including
-                appropriate background information and the goals of the project. The results of any
-                previous time allocated for this project should be discussed. Pertinent references
-                should be listed in full.
+                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
                 </p>
+                <ul>
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the project. The results of any previous time allocated for this project should be discussed. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of a single page.
+                    </li>
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the strategy of your observing program, including the characteristics of your targets, what measurements you will make from the data, and what additional work you will do to address your science goals. If your targets are known, list them and their expected brightnesses. This section must include an explanation of your observing budget, in which you justify the instruments, the exposure times, and the total number of hours you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If these are not adequately justified, they will not be granted. If unusual scheduling constraints might impact your success, identify them.
+                    </li>
+                    <li>
+                        <strong>Report of related programs on other telescopes.</strong>
+                    </li>
+                    <li>
+                        <strong>Report on use of LCO in the past 3 years.</strong>
+                    </li>
+                    <li>
+                        <strong>List of the authors’ related publications.</strong>You may include up to 10 publications
+                    </li>
+                </ul>
+                <p>The format of the pdf file is subject to the following constraints.</p>
+                <ul>
+                    <li>The font size must be 11 points or larger.</li>
+                    <li>Margins on all edges must be at least 1 inch.</li>
+                    <li>Line spacing must be no denser than 6 lines per inch.</li>
+                    <li>The maximum length is 6 pages.</li>
+                </ul>
+                {% endif %}
 
+                <!-- KEY proposal PDF description -->
+                {% if call.proposal_type == 'KEY' %}
                 <p>
-                You may use the text field below, or you may upload a single file with a maximum of
-                1 page of justification and 2 pages containing figures. We can only accept PDF files.
+                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
                 </p>
-                {% endblocktrans %}
+                <ul>
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the project. The results of any previous time allocated for this project should be discussed. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of two pages.
+                    </li>
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the strategy of your observing program, including the characteristics of your targets, what measurements you will make from the data, and what additional work you will do to address your science goals. If your targets are known, list them and their expected brightnesses. This section must include an explanation of your observing budget, in which you justify the instruments, the exposure times, and the total number of hours you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If these are not adequately justified, they will not be granted. If unusual scheduling constraints might impact your success, identify them.
+                    </li>
+                    <li>
+                        <strong>Suitability for LCO's capabilities.</strong> This section should describe how the proposed study takes advantage of the unique aspects of the LCO network and will yield a result that could not be obtained without LCO.
+                    </li>
+                    <li>
+                        <strong>Plan for management of the entire scientific investigation.</strong>
+                    </li>
+                    <li>
+                        <strong>Contributions brought by non-LCO participants.</strong> This section should describe what resources collaborators on the key project team will commit to making the key project successful. Such resources could be access to other facilities, additional time on the LCO network from their own institutions, computing resources, or scientist time.
+                    </li>
+                    <li>
+                        <strong>Report of related programs on other telescopes.</strong>
+                    </li>
+                    <li>
+                        <strong>Report on use of LCO in the past 3 years.</strong>
+                    </li>
+                    <li>
+                        <strong>List of the authors’ related publications.</strong>
+                    </li>
+                </ul>
+                <p>The format of the pdf file is subject to the following constraints.</p>
+                <ul>
+                    <li>The font size must be 11 points or larger.</li>
+                    <li>Margins on all edges must be at least 1 inch.</li>
+                    <li>Line spacing must be no denser than 6 lines per inch.</li>
+                    <li>The maximum length is 14 pages.</li>
+                </ul>
+                {% endif %}
+
+                <!-- DDT proposal PDF description -->
+                {% if call.proposal_type == 'DDT' %}
+                <p>
+                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
+                </p>
+                <ul>
+                    <li>
+                        <strong>Science Justification.</strong> This section must provide appropriate background information and state the goals of the observations. Pertinent references should be included. Figures may be embedded or appended, but the text itself should be limited to approximately the equivalent of a single page.
+                    </li>
+                    <li>
+                        <strong>Experimental Design.</strong> This section should describe the characteristics of your targets and what measurements you will make from the data. If your targets are known, list them and their expected brightnesses. This section must also justify the instruments, the exposure times, and the total time you’re requesting. You must provide independent justification for requests for Rapid Response or Time Critical observations. If these are not adequately justified, they will not be granted. If unusual scheduling constraints might impact your success, identify them.
+                    </li>
+                    <li>
+                        <strong>Discretionary Time Justification.</strong> Discretionary time is reserved for observations of unforeseen targets-of-opportunity. This section should describe why the proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester. Additionally, describe through what affiliation you are entitled to request DD time.
+                    </li>
+                </ul>
+                <p>The format of the pdf file is subject to the following constraints.</p>
+                <ul>
+                    <li>The font size must be 11 points or larger.</li>
+                    <li>Margins on all edges must be at least 1 inch.</li>
+                    <li>Line spacing must be no denser than 6 lines per inch.</li>
+                    <li>The maximum length is 2 pages</li>
+                </ul>
+                {% endif %}
+
                 </div>
-                {% bootstrap_field form.science_case show_label=False %}
-                {% bootstrap_field form.science_case_file show_label=False %}
-            {% endif %}
-
-            {% if form.experimental_design %}
-                {% bootstrap_label 'Experimental Design' label_for=id_experimental_design %}
-                <div class="help-block">
-                {% blocktrans %}
-                <p>Describe the strategy of your observing program. Describe the characteristics of your
-                targets, and justify the instruments and exposure times. Are there any unusual aspects of
-                scheduling that might impact your success?</p>
-
-                <p>If you are requesting Rapid Response observations, you must justify the need for the amount of time.
-                (Because Rapid Response mode interrupts scheduled observations, its use is restricted to targets
-                that can ONLY be observed in this way.)</p>
-
-                <p>What measurements will you make from the data, and what additional work will you do to address your science goals?</p>
-
-                <p>You may also upload a pdf if your experimental design is complex.</p>
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.experimental_design show_label=False %}
-                {% bootstrap_field form.experimental_design_file show_label=False %}
-            {% endif %}
-
-            {% if form.moon %}
-                {% bootstrap_field form.moon %}
-            {% endif %}
-
-            {% if form.related_programs %}
-                {% bootstrap_label 'Related programs on other telescopes' label_for=id_related_programs %}
-                {% bootstrap_field form.related_programs show_label=False %}
-            {% endif %}
-
-            {% if form.past_use %}
-                {% bootstrap_label 'Report on past use of LCO in the last 3 years' label_for=id_past_use %}
-                {% bootstrap_field form.past_use show_label=False %}
-            {% endif %}
-
-            {% if form.publications %}
-                {% bootstrap_label 'Applicant&#39s related publications'  %}
-                <div class="help-block">
-                {% blocktrans %}
-                Up to 10 relevant publications from the past 3 years.
-                {% endblocktrans %}
-                </div>
-                {% bootstrap_field form.publications show_label=False %}
-            {% endif %}
-
-            {% if form.management %}
-                {% bootstrap_label 'Plan for management of entire scientific investigation' label_for=id_management %}
-                {% bootstrap_field form.management show_label=False %}
-            {% endif %}
-
-            {% if form.relevance %}
-                {% bootstrap_label 'Relevance to unique capabilities of the LCO network' label_for=id_relevance %}
-                {% bootstrap_field form.relevance show_label=False %}
-            {% endif %}
-
-            {% if form.contribution %}
-                {% bootstrap_label 'Contribution brought by non-LCO participants' label_for=id_contribution %}
-                {% bootstrap_field form.contribution show_label=False %}
-            {% endif %}
-
-            {% if form.science_justification %}
-                {% bootstrap_field form.science_justification %}
-            {% endif %}
-
-            {% if form.ddt_justification %}
-                {% bootstrap_label 'Justification of discretionary time' label_for=id_ddt_justification %}
-                <div class="help-block">
-                Discretionary time is reserved for observations of unforeseen targets-of-opportunity. Describe why this proposal must be reviewed now, rather than as part of the normal time allocation process for the upcoming semester. Additionally, please describe through what affiliation you are entitled to request DD time.
-                </div>
-                {% bootstrap_field form.ddt_justification show_label=False placeholder='DDT Justification' %}
+                {% bootstrap_field form.pdf show_label=False %}
             {% endif %}
         </form>
         <a href="#">Back to top</a>
