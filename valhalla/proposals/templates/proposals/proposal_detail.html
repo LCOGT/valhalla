@@ -18,12 +18,12 @@
         {% if not user.profile.simple_interface or user == object.pi %}
         <table class="table" id="cilist">
           <thead>
-            <tr><td>Name</td><td>Email</td><td>Hour Limit</td><td>Hours Requested</td>
+            <tr><th>Name</th><th>UserId</th><th>Email</th><th>Hour Limit</th><th>Hours Requested</th>
               {% if object.public %}
-              <td>Simple Interface</td>
+              <th>Simple Interface</th>
               {% endif %}
               {% if user == object.pi %}
-              <td>Remove</td>
+              <th>Remove</th>
               {% endif %}
             </tr>
           </thead>
@@ -32,6 +32,7 @@
           {% if mem.role != 'PI' %}
             <tr>
               <td>{{ mem.user.first_name }} {{ mem.user.last_name }}</td>
+              <td>{{ mem.user.username }}</td>
               <td><a href="mailto:{{ mem.user.email }}">{{ mem.user.email }}</a></td>
               <td>
                 {% if mem.time_limit < 0 %}No Limit{% else %}{{ mem.time_limit_hours | floatformat:3 }}{% endif %}
@@ -66,10 +67,10 @@
         <table class="table">
             <thead>
                 <tr>
-                    <td>Semester</td>
-                    <td>Telescope Class</td>
-                    <td>Hours</td>
-                    <td>Used/Allocated</td>
+                    <th>Semester</th>
+                    <th>Telescope Class</th>
+                    <th>Hours</th>
+                    <th>Used/Allocated</th>
                 </tr>
             </thead>
             <tbody>
