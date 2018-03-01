@@ -302,15 +302,5 @@
         $('#id_status').val('DRAFT')
         $('#app_form').submit()
     });
-    $("#id_science_case_file").change(function(){
-        if(!$("#id_science_case").val()){
-            $("#id_science_case").val('Attached')
-        }
-    });
-    $("#id_experimental_design_file").change(function(){
-        if(!$("#id_experimental_design").val()){
-            $("#id_experimental_design").val('Attached')
-        }
-    });
 </script>
 {% endblock %}
