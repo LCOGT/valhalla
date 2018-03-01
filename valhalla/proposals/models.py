@@ -47,6 +47,7 @@ class Proposal(models.Model):
     tac_rank = models.PositiveIntegerField(default=0)
     tag = models.ForeignKey(TimeAllocationGroup, on_delete=models.CASCADE)
     public = models.BooleanField(default=False)
+    non_science = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
     class Meta:

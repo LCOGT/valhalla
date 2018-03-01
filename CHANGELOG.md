@@ -1,12 +1,18 @@
+## 1.10.3
+2018-02-28
+
+* Add non science field to proposals
+
 ## 1.10.2
 2018-02-28
 
-* only show filters for schedulable instruments
+* Only show filters for schedulable instruments
 
 ## 1.10.1
 2018-02-28
 
 * Sciapplication rewrite. Removes many fields to be replaced by a single pdf upload.
+* Always return IPP dictionary for get_max_ipp endpoint
 
 ## 1.10.0
 2018-02-20
