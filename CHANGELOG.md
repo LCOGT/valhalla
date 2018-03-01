@@ -1,3 +1,8 @@
+## 1.10.2
+2018-02-28
+
+* only show filters for schedulable instruments
+
 ## 1.10.1
 2018-02-28
 

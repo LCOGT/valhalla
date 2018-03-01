@@ -140,7 +140,7 @@ class ConfigDB(object):
         :return: returns the available set of filters for an instrument_type
         '''
         available_filters = set()
-        for instrument in self.get_instruments():
+        for instrument in self.get_instruments(only_schedulable=True):
             if instrument_type.upper() == instrument['science_camera']['camera_type']['code'].upper():
                 for camera_filter in instrument['science_camera']['filters'].split(','):
                     available_filters.add(camera_filter.lower())
