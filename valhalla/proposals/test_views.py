@@ -53,8 +53,8 @@ class TestMembershipLimit(TestCase):
         self.ci_user = mixer.blend(User)
         mixer.blend(Profile, user=self.pi_user)
         mixer.blend(Profile, user=self.ci_user)
-        Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
-        Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
+        Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI, time_limit=0)
+        Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI, time_limit=0)
 
     def test_set_limit(self):
         self.client.force_login(self.pi_user)
@@ -107,6 +107,18 @@ class TestMembershipLimit(TestCase):
         )
         self.assertEqual(response.status_code, 404)
         self.assertEqual(membership.time_limit, -1)
+
+    def test_set_bad_limit(self):
+        self.client.force_login(self.pi_user)
+        membership = self.ci_user.membership_set.first()
+        response = self.client.post(
+            reverse('proposals:membership-limit', kwargs={'pk': membership.id}),
+            data={'time_limit': ''},
+            follow=True
+        )
+        membership.refresh_from_db()
+        self.assertEqual(membership.time_limit, 0)
+        self.assertContains(response, 'Please enter a valid time limit')
 
 
 class TestProposalInvite(TestCase):
