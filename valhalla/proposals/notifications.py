@@ -1,6 +1,7 @@
 from django.template.loader import render_to_string
+from django.core.mail import EmailMessage
 
-from valhalla.celery import send_mail
+from valhalla.celery import send_emailmessage
 
 
 def users_to_notify(userrequest):
@@ -19,9 +20,11 @@ def userrequest_notifications(userrequest):
             'proposals/userrequestcomplete.txt',
             {'userrequest': userrequest}
         )
-        send_mail.delay(
-            'Request {} has completed'.format(userrequest.group_id),
-            message,
-            'portal@lco.global',
-            [u.email for u in users_to_notify(userrequest)]
+        email_message = EmailMessage(
+            subject='Request {} has completed'.format(userrequest.group_id),
+            body=message,
+            from_email='portal@lco.global',
+            to=[],
+            bcc=[u.email for u in users_to_notify(userrequest)]
         )
+        send_emailmessage.delay(email_message)

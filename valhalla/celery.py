@@ -21,3 +21,8 @@ app.autodiscover_tasks()
 @app.task()
 def send_mail(*args, **kwargs):
     django_send_mail(*args, **kwargs)
+
+
+@app.task()
+def send_emailmessage(email_message):
+    email_message.send()
