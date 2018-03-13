@@ -1,5 +1,10 @@
+## 1.10.5
+2018-03-13
+
+* Fix serialization of email messages for celery
+
 ## 1.10.4
-2017-03-13
+2018-03-13
 
 * Use BCC instead of TO for sending notifications
 
