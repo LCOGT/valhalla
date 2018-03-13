@@ -1,3 +1,8 @@
+## 1.10.4
+2017-03-13
+
+* Use BCC instead of TO for sending notifications
+
 ## 1.10.3
 2018-02-28
 
