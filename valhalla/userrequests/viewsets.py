@@ -143,7 +143,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     def cadence(self, request):
         expanded_requests = []
         for req in request.data.get('requests', []):
-            if req.get('cadence'):
+            if isinstance(req, dict) and req.get('cadence'):
                 cadence_request_serializer = CadenceRequestSerializer(data=req)
                 if cadence_request_serializer.is_valid():
                     expanded_requests.extend(expand_cadence_request(cadence_request_serializer.validated_data))

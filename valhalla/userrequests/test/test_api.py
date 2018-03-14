@@ -707,6 +707,13 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(second_response.status_code, 201)
         self.assertGreater(self.user.userrequest_set.all().count(), 0)
 
+    def test_post_cadence_with_invalid_request(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'].append('invalid_request')
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Invalid data. Expected a dictionary, but got str.', str(response.content))
+
 
 class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
