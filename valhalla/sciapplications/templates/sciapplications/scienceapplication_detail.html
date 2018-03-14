@@ -38,6 +38,9 @@
     <table>
       <thead>
         <tr>
+          {% if object.call.proposal_type == 'KEY' %}
+          <th class="center">{% trans 'Semester' %}</th>
+          {% endif %}
           <th>{% trans 'Instrument' %}</th>
           <th class="center">{% trans 'Standard Time' %}</th>
           <th class="center">{% trans 'Rapid Response' %}</th>
@@ -47,6 +50,9 @@
       <tbody>
       {% for timerequest in object.timerequest_set.all %}
       <tr>
+          {% if object.call.proposal_type == 'KEY' %}
+          <td>{{ timerequest.semester }}</td>
+          {% endif %}
           <td>{{ timerequest.instrument }}</td>
           <td class="center">{{ timerequest.std_time }}</td>
           <td class="center">{{ timerequest.too_time }}</td>

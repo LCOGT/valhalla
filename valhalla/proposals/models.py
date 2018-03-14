@@ -26,6 +26,10 @@ class Semester(models.Model):
             semesters = semesters.filter(start__lte=timezone.now())
         return semesters
 
+    @classmethod
+    def future_semesters(cls):
+        return cls.objects.filter(start__gt=timezone.now())
+
     def __str__(self):
         return self.id
 

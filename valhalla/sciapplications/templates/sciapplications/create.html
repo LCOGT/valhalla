@@ -106,12 +106,25 @@
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
                 <table class="table table-striped">
-                    <thead><tr><th>Instrument</th><th>Standard Time</th><th>Rapid Response</th><th>Time-Critical</th></tr></thead>
+                    <thead><tr>
+                        {% if call.proposal_type == 'KEY' %}
+                        <th>Semester</th>
+                        {% endif %}
+                        <th>Instrument</th>
+                        <th>Standard Time</th>
+                        <th>Rapid Response</th>
+                        <th>Time-Critical</th>
+                    </tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
                     {{ form.id }}
                     <tr class="timerequest-row">
+                        {% if call.proposal_type == 'KEY' %}
+                        <td>
+                        {% bootstrap_field form.semester show_label=false %}
+                        </td>
+                        {% endif %}
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
                         {% bootstrap_field form.instrument show_label=false %}

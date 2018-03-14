@@ -6,6 +6,7 @@ from PyPDF2 import PdfFileReader
 import os
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
+from valhalla.proposals.models import Semester
 
 
 def validate_pdf_file(value):
@@ -101,9 +102,25 @@ class KeyProjectAppForm(BaseProposalAppForm):
 
 
 class TimeRequestForm(ModelForm):
+    semester = forms.ModelChoiceField(queryset=Semester.future_semesters(), required=False)
+
     class Meta:
         model = TimeRequest
         exclude = ('approved',)
+
+    def clean_semester(self):
+        semester = self.cleaned_data.get('semester')
+        if not semester:
+            return Semester.future_semesters().first()
+        return semester
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if instance.science_application.call.proposal_type != 'KEY':
+            instance.semester = instance.science_application.call.semester
+        if commit:
+            instance.save()
+        return instance
 
 
 timerequest_formset = inlineformset_factory(
