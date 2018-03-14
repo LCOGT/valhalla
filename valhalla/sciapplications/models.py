@@ -133,7 +133,7 @@ class ScienceApplication(models.Model):
                 too_allocation=tr.too_time,
                 telescope_class=tr.instrument.telescope_class,
                 instrument_name=tr.instrument.code,
-                semester=self.call.semester,
+                semester=tr.semester,
                 proposal=proposal
             )
 
