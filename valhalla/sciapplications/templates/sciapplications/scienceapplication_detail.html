@@ -48,16 +48,22 @@
         </tr>
       </thead>
       <tbody>
-      {% for timerequest in object.timerequest_set.all %}
-      <tr>
-          {% if object.call.proposal_type == 'KEY' %}
-          <td>{{ timerequest.semester }}</td>
-          {% endif %}
-          <td>{{ timerequest.instrument }}</td>
-          <td class="center">{{ timerequest.std_time }}</td>
-          <td class="center">{{ timerequest.too_time }}</td>
-          <td class="center">{{ timerequest.crt_time }}</td>
-      </tr>
+      {% regroup object.timerequest_set.all by semester as timerequests %}
+      {% for timerequest_group in timerequests %}
+        {% if object.call.proposal_type == 'KEY' %}
+        <tr><td colspan="5">{{ timerequest_group.grouper }}</td></tr>
+        {% endif %}
+        {% for timerequest in timerequest_group.list %}
+        <tr>
+            {% if object.call.proposal_type == 'KEY' %}
+            <td></td>
+            {% endif %}
+            <td>{{ timerequest.instrument }}</td>
+            <td class="center">{{ timerequest.std_time }}</td>
+            <td class="center">{{ timerequest.too_time }}</td>
+            <td class="center">{{ timerequest.crt_time }}</td>
+        </tr>
+        {% endfor %}
       {% endfor %}
       </tbody>
     </table>
