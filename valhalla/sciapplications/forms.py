@@ -52,10 +52,10 @@ class BaseProposalAppForm(ModelForm):
         return pdf
 
     def clean_abstract(self):
-        ABSTRACT_WORD_LIMIT = 1500
+        ABSTRACT_WORD_LIMIT = 500
         abstract = self.cleaned_data.get('abstract', '')
         if len(abstract.split(' ')) > ABSTRACT_WORD_LIMIT:
-            raise forms.ValidationError(_('Abstract is limited to 1500 words.'))
+            raise forms.ValidationError(_('Abstract is limited to 500 words.'))
         return abstract
 
 
