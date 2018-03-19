@@ -180,6 +180,9 @@ class TimeRequest(models.Model):
     crt_time = models.PositiveIntegerField(default=0)
     approved = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('semester',)
+
     def __str__(self):
         return '{} {} TimeRequest'.format(self.science_application, self.instrument)
 
