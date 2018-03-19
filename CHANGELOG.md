@@ -1,3 +1,9 @@
+## 1.11.0
+2018-03-19
+
+* Misc validation fixes
+* Add semester to TimeRequests to enable Key Proposal submissions across semesters
+
 ## 1.10.5
 2018-03-13
 
