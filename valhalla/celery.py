@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
 from django.core.mail import send_mail as django_send_mail
-from django.core.mail import EmailMessage
+from django.core.mail import send_mass_mail as django_send_mass_mail
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'valhalla.settings')
@@ -25,6 +25,5 @@ def send_mail(*args, **kwargs):
 
 
 @app.task()
-def send_emailmessage(email_message_dict):
-    em = EmailMessage(**email_message_dict)
-    em.send()
+def send_mass_mail(emails):
+    django_send_mass_mail(emails)

@@ -86,7 +86,7 @@ class TestProposalNotifications(TestCase):
         self.userrequest.save()
         self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].bcc, [self.user.email])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
     def test_single_proposal_notification(self):
         mixer.blend(Profile, user=self.user, notifications_enabled=False)
@@ -95,7 +95,7 @@ class TestProposalNotifications(TestCase):
         self.userrequest.save()
         self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].bcc, [self.user.email])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
     def test_user_loves_notifications(self):
         mixer.blend(Profile, user=self.user, notifications_enabled=True)
@@ -104,7 +104,7 @@ class TestProposalNotifications(TestCase):
         self.userrequest.save()
         self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].bcc, [self.user.email])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
     def test_notifications_only_authored(self):
         mixer.blend(Profile, user=self.user, notifications_enabled=True, notifications_on_authored_only=True)
@@ -113,7 +113,7 @@ class TestProposalNotifications(TestCase):
         self.userrequest.save()
         self.assertIn(self.userrequest.group_id, str(mail.outbox[0].message()))
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].bcc, [self.user.email])
+        self.assertEqual(mail.outbox[0].to, [self.user.email])
 
     def test_no_notifications_only_authored(self):
         mixer.blend(Profile, user=self.user, notifications_enabled=True, notifications_on_authored_only=True)

@@ -1,3 +1,9 @@
+## 1.11.1
+2018-03-19
+
+* Use django send_mass_mail intead of bcc list for notifications to work around mail servers that dont
+accept blank To: fields
+
 ## 1.11.0
 2018-03-19
 

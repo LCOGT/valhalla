@@ -1,6 +1,6 @@
 from django.template.loader import render_to_string
 
-from valhalla.celery import send_emailmessage
+from valhalla.celery import send_mass_mail
 
 
 def users_to_notify(userrequest):
@@ -19,11 +19,14 @@ def userrequest_notifications(userrequest):
             'proposals/userrequestcomplete.txt',
             {'userrequest': userrequest}
         )
-        email_message = {
-            'subject': 'Request {} has completed'.format(userrequest.group_id),
-            'body': message,
-            'from_email': 'portal@lco.global',
-            'to': [],
-            'bcc': [u.email for u in users_to_notify(userrequest)]
-        }
-        send_emailmessage.delay(email_message)
+        email_messages = []
+        for user in users_to_notify(userrequest):
+            email_tuple = (
+                'Request {} has completed'.format(userrequest.group_id),
+                message,
+                'portal@lco.global',
+                [user.email]
+            )
+            email_messages.append(email_tuple)
+        if email_messages:
+            send_mass_mail.delay(email_messages)
