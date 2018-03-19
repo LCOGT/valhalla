@@ -27,7 +27,9 @@ class MockPDFFileReader:
 
 class TestGetCreateSciApp(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         user = mixer.blend(User)
         self.client.force_login(user)
 
@@ -81,7 +83,9 @@ class TestGetCreateSciApp(TestCase):
 @patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostCreateSciApp(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         self.instrument = mixer.blend(Instrument)
@@ -186,6 +190,29 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(num_apps + 1, self.user.scienceapplication_set.count())
         self.assertContains(response, self.sci_data['title'])
+
+    def test_post_key_form_multiple_semesters(self):
+        data = self.key_data.copy()
+        other_semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=20), end=timezone.now() + timedelta(days=60)
+        )
+        data['timerequest_set-TOTAL_FORMS'] = 2
+        data['timerequest_set-0-semester'] = self.semester.id
+
+        data['timerequest_set-1-id'] = '',
+        data['timerequest_set-1-semester'] = other_semester.id
+        data['timerequest_set-1-instrument'] = self.instrument.id,
+        data['timerequest_set-1-std_time'] = 30,
+        data['timerequest_set-1-too_time'] = 1,
+        data['timerequest_set-1-crt_time'] = 5,
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.key_call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(self.user.scienceapplication_set.first().timerequest_set.filter(semester=self.semester).exists())
+        self.assertTrue(self.user.scienceapplication_set.first().timerequest_set.filter(semester=other_semester).exists())
 
     def test_post_ddt_form(self):
         num_apps = ScienceApplication.objects.count()
@@ -333,10 +360,27 @@ class TestPostCreateSciApp(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'PDF file cannot exceed')
 
+    def test_cannot_hack_in_other_semester(self):
+        data = self.sci_data.copy()
+        semester = mixer.blend(
+            Semester, id='2000BC', start=timezone.now() + timedelta(days=20), end=timezone.now() + timedelta(days=60)
+        )
+        data['timerequest_set-0-semester'] = semester.id
+
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.user.scienceapplication_set.first().timerequest_set.first().semester, self.semester)
+
 
 class TestGetUpdateSciApp(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         self.call = mixer.blend(
@@ -381,7 +425,9 @@ class TestGetUpdateSciApp(TestCase):
 @patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
 class TestPostUpdateSciApp(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         self.call = mixer.blend(
@@ -456,7 +502,9 @@ class TestPostUpdateSciApp(TestCase):
 
 class TestSciAppIndex(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         self.call = mixer.blend(
@@ -490,7 +538,9 @@ class TestSciAppIndex(TestCase):
 
 class TestSciAppDetail(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
@@ -569,7 +619,9 @@ class TestSciAppDetail(TestCase):
 
 class TestSciAppDelete(TestCase):
     def setUp(self):
-        self.semester = mixer.blend(Semester)
+        self.semester = mixer.blend(
+            Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
+        )
         self.user = mixer.blend(User)
         self.client.force_login(self.user)
         self.call = mixer.blend(

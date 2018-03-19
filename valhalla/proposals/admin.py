@@ -34,6 +34,7 @@ class ProposalAdmin(admin.ModelAdmin):
     raw_id_fields = ('users',)
     inlines = [TimeAllocationAdminInline]
     search_fields = ['id', 'title', 'abstract']
+    readonly_fields = ['id']
 
     def semesters(self, obj):
         return [semester.id for semester in obj.semester_set.all().distinct()]

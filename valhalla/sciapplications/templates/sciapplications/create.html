@@ -34,7 +34,7 @@
             {% endif %}
 
             {% if form.abstract %}
-                {% bootstrap_field form.abstract placeholder='Limit 1500 words' %}
+                {% bootstrap_field form.abstract placeholder='Limit 500 words' %}
             {% endif %}
 
             {% if form.pi %}
@@ -43,7 +43,7 @@
                     Please ensure the following information is correct and up to date. You can update these
                     details on you <a href="{% url 'profile' %}">profile</a> page.
                 </div>
-                 <table id="mepi" class="table table-striped">
+                 <table id="mepi" class="table">
                   <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
                   <tr>
                     <td>{{ user.email }}</td>
@@ -58,7 +58,7 @@
                     The first name will be presented to reviewers as an initial. {{ form.pi.value }}
                     {% endblocktrans %}
                 </div>
-                <table class="table table-striped">
+                <table class="table">
                   <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
                   <tr>
                     <td>{% bootstrap_field form.pi show_label=false placeholder='Email' %}</td>
@@ -75,7 +75,7 @@
               Add the details of co-investigators on this proposal. First names will be presented as initials.
               {% endblocktrans %}
             </div>
-            <table class="table table-striped">
+            <table class="table">
               <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></thead>
               <tbody>
                 {% for form in ci_form.forms %}
@@ -105,13 +105,26 @@
                 {% endblocktrans %}
                 </div>
                 {% bootstrap_formset_errors timerequest_form %}
-                <table class="table table-striped">
-                    <thead><tr><th>Instrument</th><th>Standard Time</th><th>Rapid Response</th><th>Time-Critical</th></tr></thead>
+                <table class="table">
+                    <thead><tr>
+                        {% if call.proposal_type == 'KEY' %}
+                        <th>Semester</th>
+                        {% endif %}
+                        <th>Instrument</th>
+                        <th>Standard Time</th>
+                        <th>Rapid Response</th>
+                        <th>Time-Critical</th>
+                    </tr></thead>
                     <tbody>
                     {% for form in timerequest_form.forms %}
                     {% bootstrap_form_errors form %}
                     {{ form.id }}
                     <tr class="timerequest-row">
+                        {% if call.proposal_type == 'KEY' %}
+                        <td>
+                        {% bootstrap_field form.semester show_label=false %}
+                        </td>
+                        {% endif %}
                         <td>
                         {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
                         {% bootstrap_field form.instrument show_label=false %}
@@ -165,7 +178,7 @@
                 <!-- KEY proposal PDF description -->
                 {% if call.proposal_type == 'KEY' %}
                 <p>
-                    For the remainder of your proposal, please upload a single pdf file that includes the following sections:
+                    For the remainder of your proposal, please upload a single pdf file that includes the sections listed below. Consult the Call for Key Projects for information on the sections (e.g. Plan for management) that are unique to key projects.
                 </p>
                 <ul>
                     <li>

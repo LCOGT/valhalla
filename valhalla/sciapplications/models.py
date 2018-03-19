@@ -133,7 +133,7 @@ class ScienceApplication(models.Model):
                 too_allocation=tr.too_time,
                 telescope_class=tr.instrument.telescope_class,
                 instrument_name=tr.instrument.code,
-                semester=self.call.semester,
+                semester=tr.semester,
                 proposal=proposal
             )
 
@@ -173,6 +173,7 @@ class ScienceApplication(models.Model):
 
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE)
     std_time = models.PositiveIntegerField(default=0)
     too_time = models.PositiveIntegerField(default=0)

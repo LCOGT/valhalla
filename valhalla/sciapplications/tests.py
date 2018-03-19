@@ -70,3 +70,19 @@ class TestSciAppToProposal(TestCase):
         self.assertEqual(ProposalInvite.objects.filter(proposal=proposal).count(), 1)
         self.assertTrue(proposal.membership_set.filter(role=Membership.CI).filter(user__email=coi1.email).exists())
         self.assertTrue(proposal.membership_set.filter(role=Membership.CI).filter(user__email=coi2.email).exists())
+
+    def test_create_key_proposal_multiple_semesters(self):
+        other_semester = mixer.blend(Semester)
+        app = mixer.blend(ScienceApplication, submitter=self.user, pi='')
+        tr = mixer.blend(TimeRequest, approved=True, science_application=app, semester=self.semester)
+        tr2 = mixer.blend(TimeRequest, approved=True, science_application=app, semester=other_semester)
+        proposal = app.convert_to_proposal()
+        self.assertEqual(app.proposal, proposal)
+        self.assertEqual(self.user, proposal.membership_set.get(role=Membership.PI).user)
+        self.assertFalse(ProposalInvite.objects.filter(proposal=proposal).exists())
+
+        self.assertEqual(proposal.timeallocation_set.get(semester=self.semester).std_allocation, tr.std_time)
+        self.assertEqual(proposal.timeallocation_set.get(semester=self.semester).instrument_name, tr.instrument.code)
+
+        self.assertEqual(proposal.timeallocation_set.get(semester=other_semester).std_allocation, tr2.std_time)
+        self.assertEqual(proposal.timeallocation_set.get(semester=other_semester).instrument_name, tr2.instrument.code)
