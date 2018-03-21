@@ -12,6 +12,8 @@ class SemesterAdmin(admin.ModelAdmin):
 
 class TimeAllocationGroupAdmin(admin.ModelAdmin):
     list_display = ('id',)
+    readonly_fields = ['id']
+    raw_id_fields = ['admin']
 
 
 class TimeAllocationAdminInline(admin.TabularInline):

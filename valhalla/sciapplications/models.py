@@ -27,12 +27,14 @@ class Call(models.Model):
     DDT_PROPOSAL = 'DDT'
     KEY_PROPOSAL = 'KEY'
     NAOC_PROPOSAL = 'NAOC'
+    COLLAB_PROPOSAL = 'COLAB'
 
     PROPOSAL_TYPE_CHOICES = (
         (SCI_PROPOSAL, 'Science'),
         (DDT_PROPOSAL, 'Director\'s Discretionary Time'),
         (KEY_PROPOSAL, 'Key Project'),
-        (NAOC_PROPOSAL, 'NAOC proposal')
+        (NAOC_PROPOSAL, 'NAOC proposal'),
+        (COLLAB_PROPOSAL, 'Science Collaboration Proposal')
     )
 
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
@@ -84,6 +86,7 @@ class ScienceApplication(models.Model):
     proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
     tac_rank = models.PositiveIntegerField(default=0)
     tac_priority = models.PositiveIntegerField(default=0)
+    submitter_rank = models.PositiveIntegerField(default=0)
     pdf = models.FileField(upload_to=pdf_upload_path, blank=True, null=True)
 
     # Admin only Notes

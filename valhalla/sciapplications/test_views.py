@@ -11,7 +11,7 @@ from weasyprint import HTML
 from unittest.mock import MagicMock, patch
 
 
-from valhalla.proposals.models import Semester
+from valhalla.proposals.models import Semester, TimeAllocationGroup
 from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
@@ -511,7 +511,8 @@ class TestSciAppIndex(TestCase):
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
             opens=timezone.now(),
-            proposal_type=Call.SCI_PROPOSAL
+            proposal_type=Call.SCI_PROPOSAL,
+            eligibility_short='Short Eligibility'
         )
         mixer.blend(Instrument, call=self.call)
 
@@ -534,6 +535,30 @@ class TestSciAppIndex(TestCase):
         response = self.client.get(reverse('sciapplications:index'))
         self.assertContains(response, self.call.eligibility_short)
         self.assertContains(response, app.title)
+
+    def test_normal_users_no_collab_calls(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+            eligibility_short='For sci collab only'
+        )
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertNotContains(response, call.eligibility_short)
+
+    def test_collab_admin_collab_calls(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+            eligibility_short='For sci collab only'
+        )
+        tag = mixer.blend(TimeAllocationGroup, admin=self.user)
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, call.eligibility_short)
+
 
 
 class TestSciAppDetail(TestCase):

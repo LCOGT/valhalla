@@ -37,6 +37,7 @@ class Semester(models.Model):
 class TimeAllocationGroup(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=255, blank=True, default='')
+    admin = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return self.id

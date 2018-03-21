@@ -12,9 +12,9 @@
           <li><b>Standard proposals</b> are accepted each semester from astronomers affiliated with LCO and LCO's non-guaranteed-time partners:
                  UCSB, U. Colorado, IAC, and IPAC at Caltech. Standard proposals should only be submitted through this portal from PIs affiliated with
                  one of these institutions. Other Science Collaboration institutions allocate their shares of time according to their own TAC procedures
-                 and do not use this portal to collect proposals.</li> 
+                 and do not use this portal to collect proposals.</li>
           <li><b>Key Project proposals</b> are accepted annually from astronomers affiliated with LCO's Science Collaboration partners
-                 (guaranteed and non-guaranteed-time). Key project proposals <b>should</b> be submitted through this portal. 
+                 (guaranteed and non-guaranteed-time). Key project proposals <b>should</b> be submitted through this portal.
                  Key project proposals are reviewed by the <a href="https://lco.global/science/proposals/TAC/">LCO TAC</a>.</li>
           <li><b>Director's Discretionary Time (DDT) proposals</b> are accepted at any time from astronomers affiliated with LCO's Science Collaboration institutions.
                  DDT proposals <b>should</b> be submitted through this portal. DDT proposals are reviewed by LCO's director. </li>
@@ -35,6 +35,7 @@
             </thead>
             <tbody>
                 {% for call in calls %}
+                {% if call.proposal_type != 'COLAB' or user.timeallocationgroup_set.exists %}
                 <tr>
                     <td>{{ call.get_proposal_type_display }}</td>
                     <td>{{ call.semester }}</td>
@@ -42,6 +43,7 @@
                     <td>{% if call.proposal_type == 'DDT' %} N/A {% else %}{{ call.deadline }}{% endif %}</td>
                     <td><a href="{% url 'sciapplications:create' call=call.id %}" class="btn btn-primary">Apply</a></td>
                 </tr>
+                {% endif %}
                 {% empty %}
                 <tr><td colspan="5">No active calls at this time</td></tr>
                 {% endfor %}
