@@ -68,7 +68,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
         queryset = UserRequest.objects.exclude(state__in=TERMINAL_STATES).filter(
             requests__windows__start__lte=end, requests__windows__start__gte=start,
             proposal__active=True).prefetch_related('requests', 'requests__windows', 'requests__target', 'proposal',
-                                                    'proposal__timeallocation_set', 'requests__molecules',
+                                                    'proposal__timeallocation_set', 'requests__molecules', 'submitter',
                                                     'requests__location', 'requests__constraints').distinct()
 
         # queryset now contains all the schedulable URs and their associated requests and data
@@ -93,8 +93,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                 else:
                     time_left = time_allocation.too_allocation - time_allocation.too_time_used
                 if time_left * OVERHEAD_ALLOWANCE >= (duration / 3600.0):
-                    serialized_ur = UserRequestSerializer(ur)
-                    ur_data.append(serialized_ur.data)
+                    ur_data.append(ur.as_dict)
                     break
                 else:
                     logger.warning(

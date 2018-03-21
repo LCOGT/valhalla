@@ -107,3 +107,11 @@ class SatelliteTargetHelper(BaseTargetHelper):
         self.fields += ('vmag',)
         self.defaults = {}
         super().__init__(target)
+
+
+TARGET_TYPE_HELPER_MAP = {
+    'SIDEREAL': SiderealTargetHelper,
+    'NON_SIDEREAL': NonSiderealTargetHelper,
+    'SATELLITE': SatelliteTargetHelper,
+    'STATIC': SiderealTargetHelper,
+}
