@@ -152,6 +152,10 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             else:
                 expanded_requests.append(req)
 
+        # if we couldn't find any valid cadence requests, return that as an error
+        if not expanded_requests:
+            return Response({'errors': 'No visible requests within cadence window parameters'}, status=400)
+
         # now replace the originally sent requests with the cadence requests and send it back
         ret_data = request.data.copy()
         ret_data['requests'] = expanded_requests
