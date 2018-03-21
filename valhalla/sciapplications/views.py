@@ -11,9 +11,9 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from valhalla.celery import send_mail
-from valhalla.sciapplications.models import Call, ScienceApplication
+from valhalla.sciapplications.models import Call, ScienceApplication, TimeAllocationGroup
 from valhalla.sciapplications.forms import (
-    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, timerequest_formset, ci_formset
+    ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm, SciCollabAppForm, timerequest_formset, ci_formset
 )
 
 FORM_CLASSES = {
@@ -21,6 +21,7 @@ FORM_CLASSES = {
     'DDT': DDTProposalAppForm,
     'KEY': KeyProjectAppForm,
     'NAOC': ScienceProposalAppForm,
+    'COLAB': SciCollabAppForm
 }
 
 
@@ -50,6 +51,9 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
     def get(self, request, *args, **kwargs):
         self.object = None
         self.call = get_object_or_404(Call, pk=kwargs['call'])
+        if self.call.proposal_type == Call.COLLAB_PROPOSAL and \
+                not TimeAllocationGroup.objects.filter(admin=self.request.user).exists():
+                raise Http404
         form = self.get_form()
         timerequest_form = timerequest_formset()
         ci_form = ci_formset()
@@ -62,6 +66,9 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
     def post(self, request, *args, **kwargs):
         self.object = None
         self.call = get_object_or_404(Call, pk=kwargs['call'])
+        if self.call.proposal_type == Call.COLLAB_PROPOSAL and \
+                not TimeAllocationGroup.objects.filter(admin=self.request.user).exists():
+                raise Http404
         form = self.get_form()
         form.instance.submitter = request.user
         timerequest_form = timerequest_formset(self.request.POST)

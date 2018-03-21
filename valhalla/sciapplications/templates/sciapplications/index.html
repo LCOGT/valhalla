@@ -35,7 +35,7 @@
             </thead>
             <tbody>
                 {% for call in calls %}
-                {% if call.proposal_type != 'COLAB' or user.timeallocationgroup_set.exists %}
+                {% if call.proposal_type != 'COLAB' or user.timeallocationgroup %}
                 <tr>
                     <td>{{ call.get_proposal_type_display }}</td>
                     <td>{{ call.semester }}</td>

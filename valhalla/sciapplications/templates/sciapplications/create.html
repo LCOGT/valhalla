@@ -37,8 +37,14 @@
                 {% bootstrap_field form.abstract placeholder='Limit 500 words' %}
             {% endif %}
 
+            {% if form.submitter_rank %}
+                {% bootstrap_label 'Rank' label_for=id_submitter_rank %}
+                {% bootstrap_field form.submitter_rank show_label=False %}
+            {% endif %}
+
             {% if form.pi %}
                 {% bootstrap_label 'Principal Investigator' label_for=id_pi %}
+                {% if call.proposal_type != 'COLAB' %}
                 <div class="help-block">
                     Please ensure the following information is correct and up to date. You can update these
                     details on you <a href="{% url 'profile' %}">profile</a> page.
@@ -58,6 +64,7 @@
                     The first name will be presented to reviewers as an initial. {{ form.pi.value }}
                     {% endblocktrans %}
                 </div>
+                {% endif %}
                 <table class="table">
                   <thead><tr><th>Email</th><th>First Name</th><th>Last Name</th><th>Institution</th></tr></thead>
                   <tr>
