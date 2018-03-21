@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load i18n %}
+{% load i18n sciapp_extras %}
 {% block title %}{% trans 'Submit Proposal' %}{% endblock %}
 {% block content %}
 <div class="row">
@@ -35,7 +35,7 @@
             </thead>
             <tbody>
                 {% for call in calls %}
-                {% if call.proposal_type != 'COLAB' or user.timeallocationgroup %}
+                {% if call.proposal_type != 'COLAB'%}
                 <tr>
                     <td>{{ call.get_proposal_type_display }}</td>
                     <td>{{ call.semester }}</td>
@@ -49,6 +49,113 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if user.timeallocationgroup %}
+        <h1>{{ user.timeallocationgroup }} Proposals</h1>
+        <p>
+            You are the admin of the {{ user.timeallocationgroup }} collaboration group. Here you will be able to review,
+            edit and submit proposals to LCO.
+        </p>
+        <table class="table">
+            <thead>
+                <tr><td>Semester</td><td>1 Meter</td><td>2 Meter</td><td>0.4 Meter</td><td>Deadline</td><td></td></tr>
+            </thead>
+            <tbody>
+                {% for call in calls %}
+                {% if call.proposal_type == 'COLAB'%}
+                {% time_requested_by_tag user.timeallocationgroup call.semester as time_requested %}
+                <tr>
+                    <td>{{ call.semester }}</td>
+                    <td>{{ time_requested.1m0 }}/{{ request.user.timeallocationgroup.one_meter_alloc }}</td>
+                    <td>{{ time_requested.2m0 }}/{{ request.user.timeallocationgroup.two_meter_alloc }}</td>
+                    <td>{{ time_requested.0m4 }}/{{ request.user.timeallocationgroup.four_meter_alloc }}</td>
+                    <td>{{ call.deadline }}</td>
+                    <td><a href="{% url 'sciapplications:create' call=call.id %}" class="btn btn-primary">Add Proposal</a></td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr><td colspan="5">No active calls at this time</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Draft Proposals</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>{% trans 'Title' %}</td>
+                    <td>{% trans 'Rank' %}</td>
+                    <td>{% trans '1m0' %}</td>
+                    <td>{% trans '2m0' %}</td>
+                    <td>{% trans '0m4' %}</td>
+                    <td>{% trans 'Semester' %}</td>
+                    <td>{% trans 'Deadline' %}</td>
+                    <td>{% trans 'Status' %}</td>
+                    <td>{% trans 'Preview' %}</td>
+                    <td>{% trans 'Delete' %}</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in draft_proposals %}
+                {% if app.call.proposal_type == 'COLAB' %}
+                <tr>
+                    <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
+                    <td>{{ app.submitter_rank }}</td>
+                    <td>{{ app.time_requested_by_class.1m0 }}</td>
+                    <td>{{ app.time_requested_by_class.2m0 }}</td>
+                    <td>{{ app.time_requested_by_class.0m4 }}</td>
+                    <td>{{ app.call.semester }}</td>
+                    <td>{{ app.call.deadline }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                        <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                    </td>
+                    <td><a href="{% url 'sciapplications:delete' pk=app.id %}" class="fa fa-trash" title="Delete draft"></a></td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr><td colspan=5>{% trans 'You have not started any proposals.' %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Submitted Proposals</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <td>{% trans 'Title' %}</td>
+                    <td>{% trans 'Rank' %}</td>
+                    <td>{% trans '1m0' %}</td>
+                    <td>{% trans '2m0' %}</td>
+                    <td>{% trans '0m4' %}</td>
+                    <td>{% trans 'Semester' %}</td>
+                    <td>{% trans 'Deadline' %}</td>
+                    <td>{% trans 'Status' %}</td>
+                    <td>{% trans 'View' %}</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in submitted_proposals %}
+                {% if app.call.proposal_type == 'COLAB' %}
+                <tr>
+                    <td>{{ app.title }}</td>
+                    <td>{{ app.submitter_rank }}</td>
+                    <td>{{ app.time_requested_by_class.1m0 }}</td>
+                    <td>{{ app.time_requested_by_class.2m0 }}</td>
+                    <td>{{ app.time_requested_by_class.0m4 }}</td>
+                    <td>{{ app.call.semester }}</td>
+                    <td>{{ app.call.deadline }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{% url 'sciapplications:detail' pk=app.id %}"><i class="fa fa-print"></i></a>
+                        <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <td colspan="5">{% trans 'You have not submitted any proposals.' %}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
         <h1>Your Proposals</h1>
         <p>
             Below is a list of your draft proposals and submitted proposals in LCO's database. Standard and Key Project proposals are reviewed by a
@@ -71,6 +178,7 @@
             </thead>
             <tbody>
                 {% for app in draft_proposals %}
+                {% if app.call.proposal_type != 'COLAB' %}
                 <tr>
                     <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
                     <td>{{ app.call }}</td>
@@ -82,6 +190,7 @@
                     </td>
                     <td><a href="{% url 'sciapplications:delete' pk=app.id %}" class="fa fa-trash" title="Delete draft"></a></td>
                 </tr>
+                {% endif %}
                 {% empty %}
                 <tr><td colspan=5>{% trans 'You have not started any proposals.' %}</td></tr>
                 {% endfor %}
@@ -100,6 +209,7 @@
             </thead>
             <tbody>
                 {% for app in submitted_proposals %}
+                {% if app.call.proposal_type != 'COLAB' %}
                 <tr>
                     <td>{{ app.title }}</td>
                     <td>{{ app.call }}</td>
@@ -110,6 +220,7 @@
                         <a href="{% url 'sciapplications:pdf' pk=app.id %}"><i class="fa fa-file-pdf-o"></i></a>
                     </td>
                 </tr>
+                {% endif %}
                 {% empty %}
                 <td colspan="5">{% trans 'You have not submitted any proposals.' %}</td>
                 {% endfor %}

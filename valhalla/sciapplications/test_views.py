@@ -614,12 +614,29 @@ class TestSciAppIndex(TestCase):
             deadline=timezone.now() + timedelta(days=7),
             opens=timezone.now(),
             proposal_type=Call.COLLAB_PROPOSAL,
-            eligibility_short='For sci collab only'
         )
         tag = mixer.blend(TimeAllocationGroup, admin=self.user)
         response = self.client.get(reverse('sciapplications:index'))
-        self.assertContains(response, call.eligibility_short)
+        self.assertContains(response, tag.id + ' Proposals')
 
+    def test_collab_admin_time_used(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+        )
+        tag = mixer.blend(TimeAllocationGroup, admin=self.user, one_meter_alloc=9)
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=call
+        )
+        instrument = mixer.blend(Instrument, code='1M0-SCICAM-SINISTRO', telescope_class='1m0')
+        tr = mixer.blend(TimeRequest, science_application=app, instrument=instrument, std_time=8)
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, '{0}/{1}'.format(tr.std_time, tag.one_meter_alloc))
 
 class TestSciAppDetail(TestCase):
     def setUp(self):

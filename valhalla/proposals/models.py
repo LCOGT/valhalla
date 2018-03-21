@@ -38,9 +38,24 @@ class TimeAllocationGroup(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=255, blank=True, default='')
     admin = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL)
+    one_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
+    two_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
+    four_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
 
     def __str__(self):
         return self.id
+
+    def time_requested_for_semester(self, semester):
+        allocs = {
+            '1m0': 0,
+            '2m0': 0,
+            '0m4': 0
+        }
+        for sciapp in self.admin.scienceapplication_set.filter(call__semester=semester, call__proposal_type='COLAB'):
+            for k, v in sciapp.time_requested_by_class.items():
+                allocs[k] += v
+
+        return allocs
 
 
 class Proposal(models.Model):

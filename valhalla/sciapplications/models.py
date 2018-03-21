@@ -123,6 +123,23 @@ class ScienceApplication(models.Model):
             proposal_type_to_name[self.call.proposal_type], self.call.semester, str(self.tac_rank).zfill(3)
         )
 
+    @property
+    def time_requested_by_class(self):
+        return {
+            '1m0': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='1m0')
+                    ),
+            '2m0': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='2m0')
+                    ),
+            '0m4': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='0m4')
+                    )
+        }
+
     def get_absolute_url(self):
         return reverse('sciapplications:detail', args=(self.id,))
 
