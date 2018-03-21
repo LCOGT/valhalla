@@ -104,12 +104,20 @@ class ScienceApplication(models.Model):
         return self.title
 
     @property
+    def tag(self):
+        try:
+            return self.submitter.timeallocationgroup
+        except TimeAllocationGroup.DoesNotExist:
+            return TimeAllocationGroup.objects.get_or_create(id='LCO')[0]
+
+    @property
     def proposal_code(self):
         proposal_type_to_name = {
             'SCI': 'LCO',
             'KEY': 'KEY',
             'DDT': 'DDT',
-            'NAOC': 'NAOC'
+            'NAOC': 'NAOC',
+            'COLAB': self.tag.id
         }
         return '{0}{1}-{2}'.format(
             proposal_type_to_name[self.call.proposal_type], self.call.semester, str(self.tac_rank).zfill(3)
@@ -119,7 +127,6 @@ class ScienceApplication(models.Model):
         return reverse('sciapplications:detail', args=(self.id,))
 
     def convert_to_proposal(self):
-        # Create the objects we need
         proposal = Proposal.objects.create(
             id=self.proposal_code,
             title=self.title,
@@ -127,7 +134,7 @@ class ScienceApplication(models.Model):
             tac_priority=self.tac_priority,
             tac_rank=self.tac_rank,
             active=False,
-            tag=TimeAllocationGroup.objects.get_or_create(id='LCOGT')[0],
+            tag=self.tag
         )
 
         for tr in self.timerequest_set.filter(approved=True):
