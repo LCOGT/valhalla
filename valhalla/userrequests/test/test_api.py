@@ -1374,6 +1374,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
 
     def test_get_request_list_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-list'))
         self.assertEqual(result.json()['results'][0]['observation_note'], request.observation_note)
@@ -1386,6 +1387,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
 
     def test_get_request_detail_authenticated(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote')
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEqual(result.json()['observation_note'], request.observation_note)
@@ -1397,6 +1399,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
 
     def test_get_request_list_staff(self):
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.staff_user)
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEqual(result.json()['observation_note'], request.observation_note)
@@ -1406,6 +1409,7 @@ class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
         self.user_request.proposal = proposal
         self.user_request.save()
         request = mixer.blend(Request, user_request=self.user_request, observation_note='testobsnote2')
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         self.client.logout()
         result = self.client.get(reverse('api:requests-detail', args=(request.id,)))
         self.assertEqual(result.json()['observation_note'], request.observation_note)
@@ -1622,6 +1626,8 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_cancel_pending_ur(self, modify_mock):
         userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
         requests = mixer.cycle(3).blend(Request, state='PENDING', user_request=userrequest)
+        for request in requests:
+            mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
 
         response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
         self.assertEqual(response.status_code, 200)
@@ -1632,8 +1638,11 @@ class TestCancelUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_cancel_pending_ur_some_requests_not_pending(self, modify_mock):
         userrequest = mixer.blend(UserRequest, state='PENDING', proposal=self.proposal)
         pending_r = mixer.blend(Request, state='PENDING', user_request=userrequest)
+        mixer.blend(Molecule, request=pending_r, instrument_name='1M0-SCICAM-SBIG')
         completed_r = mixer.blend(Request, state='COMPLETED', user_request=userrequest)
+        mixer.blend(Molecule, request=completed_r, instrument_name='1M0-SCICAM-SBIG')
         we_r = mixer.blend(Request, state='WINDOW_EXPIRED', user_request=userrequest)
+        mixer.blend(Molecule, request=we_r, instrument_name='1M0-SCICAM-SBIG')
         response = self.client.post(reverse('api:user_requests-cancel', kwargs={'pk': userrequest.id}))
 
         self.assertEqual(response.status_code, 200)

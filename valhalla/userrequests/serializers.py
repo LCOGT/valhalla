@@ -12,7 +12,7 @@ from valhalla.proposals.models import TimeAllocation, Membership
 from valhalla.userrequests.models import Request, Target, Window, UserRequest, Location, Molecule, Constraints
 from valhalla.userrequests.models import DraftUserRequest
 from valhalla.userrequests.state_changes import debit_ipp_time, TimeAllocationError, validate_ipp
-from valhalla.userrequests.target_helpers import SiderealTargetHelper, NonSiderealTargetHelper, SatelliteTargetHelper
+from valhalla.userrequests.target_helpers import TARGET_TYPE_HELPER_MAP
 from valhalla.common.configdb import configdb
 from valhalla.userrequests.request_utils import MOLECULE_TYPE_DISPLAY
 from valhalla.userrequests.duration_utils import (get_request_duration, get_request_duration_sum, get_total_duration_dict,
@@ -52,7 +52,7 @@ class ConstraintsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Constraints
-        exclude = ('request', 'id')
+        exclude = Constraints.SERIALIZER_EXCLUDE
 
 
 class MoleculeSerializer(serializers.ModelSerializer):
@@ -60,7 +60,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Molecule
-        exclude = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
+        exclude = Molecule.SERIALIZER_EXCLUDE
         read_only_fields = ('priority',)
 
     def validate_instrument_name(self, value):
@@ -148,7 +148,7 @@ class MoleculeSerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        exclude = ('request', 'id')
+        exclude = Location.SERIALIZER_EXCLUDE
 
     def validate(self, data):
         if 'observatory' in data and 'site' not in data:
@@ -193,7 +193,7 @@ class LocationSerializer(serializers.ModelSerializer):
 class WindowSerializer(serializers.ModelSerializer):
     class Meta:
         model = Window
-        exclude = ('request', 'id')
+        exclude = Window.SERIALIZER_EXCLUDE
 
     def validate(self, data):
         if data['end'] <= data['start']:
@@ -211,16 +211,9 @@ class WindowSerializer(serializers.ModelSerializer):
 
 
 class TargetSerializer(serializers.ModelSerializer):
-    TYPE_HELPER_MAP = {
-        'SIDEREAL': SiderealTargetHelper,
-        'NON_SIDEREAL': NonSiderealTargetHelper,
-        'SATELLITE': SatelliteTargetHelper,
-        'STATIC': SiderealTargetHelper,
-    }
-
     class Meta:
         model = Target
-        exclude = ('request', 'id')
+        exclude = Target.SERIALIZER_EXCLUDE
         extra_kwargs = {
             'name': {'error_messages': {'blank': 'Please provide a name.'}}
         }
@@ -228,11 +221,11 @@ class TargetSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         # Only return data for the speific target type
         data = super().to_representation(instance)
-        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        target_helper = TARGET_TYPE_HELPER_MAP[data['type']](data)
         return {k: data.get(k) for k in target_helper.fields}
 
     def validate(self, data):
-        target_helper = self.TYPE_HELPER_MAP[data['type']](data)
+        target_helper = TARGET_TYPE_HELPER_MAP[data['type']](data)
         if target_helper.is_valid():
             data.update(target_helper.data)
         else:
@@ -254,7 +247,7 @@ class RequestSerializer(serializers.ModelSerializer):
         read_only_fields = (
             'id', 'fail_count', 'scheduled_count', 'created', 'completed', 'duration', 'state',
         )
-        exclude = ('user_request',)
+        exclude = Request.SERIALIZER_EXCLUDE
 
     def validate_molecules(self, value):
         if not value:
