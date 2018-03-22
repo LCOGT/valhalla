@@ -617,7 +617,7 @@ class TestSciAppIndex(TestCase):
         )
         tag = mixer.blend(TimeAllocationGroup, admin=self.user)
         response = self.client.get(reverse('sciapplications:index'))
-        self.assertContains(response, tag.id + ' Proposals')
+        self.assertContains(response, tag.name + ' Proposals')
 
     def test_collab_admin_time_used(self):
         call = mixer.blend(
