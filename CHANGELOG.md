@@ -1,3 +1,9 @@
+## 1.12.0
+2018-03-21
+
+* Ensure proper ordering of timerequests in proposal views
+* use as_dict instead of DRF serializers for scheduler endpoint, for great speeeeed.
+
 ## 1.11.1
 2018-03-19
 
