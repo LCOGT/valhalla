@@ -50,9 +50,9 @@
             </tbody>
         </table>
         {% if user.timeallocationgroup %}
-        <h1>{{ user.timeallocationgroup }} Proposals</h1>
+        <h1>{{ user.timeallocationgroup.name }} Proposals</h1>
         <p>
-            You are the admin of the {{ user.timeallocationgroup }} collaboration group. Here you will be able to review,
+            You are the admin of the {{ user.timeallocationgroup.id }} collaboration group. Here you will be able to review,
             edit and submit proposals to LCO.
         </p>
         <table class="table">
