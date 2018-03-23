@@ -207,12 +207,13 @@ class UserRequestStatusIsDirty(APIView):
         except (TypeError, ValueError):
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
 
-        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=default'.format(last_query_time.strftime('%Y-%m-%dT%H:%M:%S'))
+        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=scheduler'.format(last_query_time.strftime('%Y-%m-%dT%H:%M:%S'))
         now = timezone.now()
         try:
             response = requests.get(url)
             response.raise_for_status()
         except Exception as e:
+            logger.error("Pond connection error: {}".format(repr(e)))
             return HttpResponseServerError({'error': repr(e)})
 
         pond_blocks = response.json()
