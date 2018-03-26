@@ -81,7 +81,8 @@ function formatDate(date){
 
 function julianToModifiedJulian(jd){
   if(jd && jd >= 2400000.5){
-    return parseFloat(jd) - 2400000.5;
+    var precision = (jd + "").split(".")[1].length;
+    return (parseFloat(jd) - 2400000.5).toFixed(precision);
   }
 }
 
