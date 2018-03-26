@@ -234,6 +234,7 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'user': '5000/day',
         'userrequests.cancel': '1000/day',
+        'userrequests.create': '2500/day',
         'userrequests.validate': '10000/day'
     }
 }
