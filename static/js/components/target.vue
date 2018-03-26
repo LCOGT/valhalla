@@ -181,6 +181,12 @@ export default {
         that.target.meandist = _.get(data, ['semimajor_axis'], null);
         that.target.meananom = _.get(data, ['mean_anomaly'], null);
       }).fail(function(_response, status){
+        for (var field in this.sid_target_params) {
+          that.target[field] = null;
+        }
+        for (var field in this.ns_target_params) {
+          that.target[field] = null;
+        }
         if(status !== "abort"){
           that.lookupText = 'Could not find any matching objects';
           that.lookupFail = true;
