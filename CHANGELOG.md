@@ -1,3 +1,8 @@
+## 1.12.1
+2018-03-26
+
+* Order co-I by last name in proposal submissions
+
 ## 1.12.0
 2018-03-21
 
