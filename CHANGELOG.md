@@ -1,3 +1,8 @@
+## 1.12.2
+2018-03-26
+
+* Added integration with simbad2k and auto-filling fields for non-sidereal targets
+
 ## 1.12.1
 2018-03-26
 
