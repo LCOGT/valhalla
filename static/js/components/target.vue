@@ -169,8 +169,8 @@ export default {
           + encodeURIComponent(this.target.type) + '&scheme=' + encodeURIComponent(this.target.scheme)).done(function(data){
         that.target.ra = _.get(data, ['ra_d'], null);
         that.target.dec = _.get(data, ['dec_d'], null);
-        that.target.proper_motion_ra = data.pmra;
-        that.target.proper_motion_dec = data.pmdec;
+        that.target.proper_motion_ra = _.get(data, ['pmra'], null);
+        that.target.proper_motion_dec = _.get(data, ['pmdec'], null);
         that.target.epochofel = julianToModifiedJulian(_.get(data, ['epoch_jd'], null));
         that.target.orbinc = _.get(data, ['inclination'], null);
         that.target.longascnode = _.get(data, ['ascending_node'], null);
