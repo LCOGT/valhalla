@@ -11,6 +11,7 @@ import logging
 
 from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.userrequests.external_serializers import BlockSerializer
+from valhalla.userrequests.target_helpers import TARGET_TYPE_HELPER_MAP
 from valhalla.common.rise_set_utils import get_rise_set_target
 from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration, get_total_duration_dict,
                                                   get_semester_in)
@@ -66,6 +67,8 @@ class UserRequest(models.Model):
     @property
     def as_dict(self):
         ret_dict = model_to_dict(self)
+        ret_dict['submitter'] = self.submitter.username
+        ret_dict['proposal'] = self.proposal.id
         ret_dict['requests'] = [r.as_dict for r in self.requests.all()]
         return ret_dict
 
@@ -104,6 +107,8 @@ class Request(models.Model):
         ('CANCELED', 'CANCELED'),
     )
 
+    SERIALIZER_EXCLUDE = ('user_request',)
+
     user_request = models.ForeignKey(UserRequest, related_name='requests', on_delete=models.CASCADE)
     observation_note = models.CharField(max_length=255, default='', blank=True)
     state = models.CharField(max_length=40, choices=STATE_CHOICES, default=STATE_CHOICES[0][0])
@@ -132,7 +137,8 @@ class Request(models.Model):
 
     @property
     def as_dict(self):
-        ret_dict = model_to_dict(self)
+        ret_dict = model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
+        ret_dict['duration'] = self.duration
         ret_dict['target'] = self.target.as_dict
         ret_dict['molecules'] = [m.as_dict for m in self.molecules.all()]
         ret_dict['location'] = self.location.as_dict
@@ -144,7 +150,7 @@ class Request(models.Model):
     def duration(self):
         cached_duration = cache.get('request_duration_{}'.format(self.id))
         if not cached_duration:
-            duration = get_request_duration(self.as_dict)
+            duration = get_request_duration({'molecules': [m.as_dict for m in self.molecules.all()]})
             cache.set('request_duration_{}'.format(self.id), duration, 86400 * 30 * 6)
             return duration
         else:
@@ -197,6 +203,9 @@ class Location(models.Model):
         ('0m8', '0m8'),
         ('0m4', '0m4'),
     )
+
+    SERIALIZER_EXCLUDE = ('request', 'id')
+
     request = models.OneToOneField(Request, on_delete=models.CASCADE)
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)
     site = models.CharField(max_length=20, default='', blank=True)
@@ -208,7 +217,9 @@ class Location(models.Model):
 
     @property
     def as_dict(self):
-        return model_to_dict(self)
+        ret_dict = model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
+        ret_dict = {field: value for field, value in ret_dict.items() if value}
+        return ret_dict
 
     def __str__(self):
         return '{}.{}.{}'.format(self.site, self.observatory, self.telescope)
@@ -238,6 +249,8 @@ class Target(models.Model):
         ('VERTICAL', 'VERTICAL'),
         ('VFLOAT', 'VFLOAT'),
     )
+
+    SERIALIZER_EXCLUDE = ('request', 'id')
 
     name = models.CharField(max_length=50)
     request = models.OneToOneField(Request, on_delete=models.CASCADE)
@@ -311,7 +324,10 @@ class Target(models.Model):
 
     @property
     def as_dict(self):
-        return model_to_dict(self)
+        ret_dict = model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
+        target_helper = TARGET_TYPE_HELPER_MAP[ret_dict['type'].upper()](ret_dict)
+        ret_dict = {k: ret_dict.get(k) for k in target_helper.fields}
+        return ret_dict
 
     @property
     def rise_set_target(self):
@@ -319,6 +335,8 @@ class Target(models.Model):
 
 
 class Window(models.Model):
+    SERIALIZER_EXCLUDE = ('request', 'id')
+
     request = models.ForeignKey(Request, related_name='windows', on_delete=models.CASCADE)
     start = models.DateTimeField(db_index=True)
     end = models.DateTimeField(db_index=True)
@@ -328,7 +346,7 @@ class Window(models.Model):
 
     @property
     def as_dict(self):
-        return model_to_dict(self)
+        return model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
 
     def __str__(self):
         return 'Window {}: {} to {}'.format(self.id, self.start, self.end)
@@ -363,6 +381,8 @@ class Molecule(models.Model):
         ('WCS', 'WCS'),
         ('BRIGHTEST', 'BRIGHTEST'),
     )
+
+    SERIALIZER_EXCLUDE = ('request', 'id', 'sub_x1', 'sub_x2', 'sub_y1', 'sub_y2')
 
     request = models.ForeignKey(Request, related_name='molecules', on_delete=models.CASCADE)
 
@@ -424,7 +444,7 @@ class Molecule(models.Model):
 
     @property
     def as_dict(self):
-        return model_to_dict(self)
+        return model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
 
     @cached_property
     def duration(self):
@@ -432,6 +452,8 @@ class Molecule(models.Model):
 
 
 class Constraints(models.Model):
+    SERIALIZER_EXCLUDE = ('request', 'id')
+
     request = models.OneToOneField(Request, on_delete=models.CASCADE)
     max_airmass = models.FloatField(default=1.6, validators=[MinValueValidator(1.0), MaxValueValidator(25.0)])
     min_lunar_distance = models.FloatField(default=30.0, validators=[MinValueValidator(0.0), MaxValueValidator(180.0)])
@@ -445,7 +467,7 @@ class Constraints(models.Model):
 
     @property
     def as_dict(self):
-        return model_to_dict(self)
+        return model_to_dict(self, exclude=self.SERIALIZER_EXCLUDE)
 
     def __str__(self):
         return 'Constraints {}: {} max airmass, {} min_lunar_distance'.format(self.id, self.max_airmass,
