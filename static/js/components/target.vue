@@ -158,40 +158,38 @@ export default {
   },
   watch: {
     'target.name': _.debounce(function(name){
-      if(this.target.type === 'SIDEREAL' || this.target.type === 'NON_SIDEREAL'){
-        this.lookingUP = true;
-        this.lookupFail = false;
-        this.lookupText = 'Searching for coordinates...';
-        var that = this;
-        if(this.lookupReq){
-          this.lookupReq.abort();
-        }
-        this.lookupReq = $.getJSON('https://simbad2k.lco.global/' + encodeURIComponent(name) + '?target_type='
-            + encodeURIComponent(this.target.type) + '&scheme=' + encodeURIComponent(this.target.scheme)).done(function(data){
-          that.target.ra = _.get(data, ['ra_d'], null);
-          that.target.dec = _.get(data, ['dec_d'], null);
-          that.target.proper_motion_ra = data.pmra;
-          that.target.proper_motion_dec = data.pmdec;
-          that.target.epochofel = julianToModifiedJulian(_.get(data, ['epoch_jd'], null));
-          that.target.orbinc = _.get(data, ['inclination'], null);
-          that.target.longascnode = _.get(data, ['ascending_node'], null);
-          that.target.argofperih = _.get(data, ['argument_of_perihelion'], null);
-          that.target.eccentricity = _.get(data, ['eccentricity'], null);
-          that.target.perihdist = _.get(data, ['perihelion_distance'], null);
-          that.target.epochofperih = julianToModifiedJulian(_.get(data, ['perihelion_date_jd'], null));
-          that.target.meandist = _.get(data, ['semimajor_axis'], null);
-          that.target.meananom = _.get(data, ['mean_anomaly'], null);
-        }).fail(function(_response, status){
-          if(status !== "abort"){
-            that.lookupText = 'Could not find any matching objects';
-            that.lookupFail = true;
-          }
-        }).always(function(_response, status){
-          if(status !== "abort"){
-            that.lookingUP = false;
-          }
-        });
+      this.lookingUP = true;
+      this.lookupFail = false;
+      this.lookupText = 'Searching for coordinates...';
+      var that = this;
+      if(this.lookupReq){
+        this.lookupReq.abort();
       }
+      this.lookupReq = $.getJSON('https://simbad2k.lco.global/' + encodeURIComponent(name) + '?target_type='
+          + encodeURIComponent(this.target.type) + '&scheme=' + encodeURIComponent(this.target.scheme)).done(function(data){
+        that.target.ra = _.get(data, ['ra_d'], null);
+        that.target.dec = _.get(data, ['dec_d'], null);
+        that.target.proper_motion_ra = data.pmra;
+        that.target.proper_motion_dec = data.pmdec;
+        that.target.epochofel = julianToModifiedJulian(_.get(data, ['epoch_jd'], null));
+        that.target.orbinc = _.get(data, ['inclination'], null);
+        that.target.longascnode = _.get(data, ['ascending_node'], null);
+        that.target.argofperih = _.get(data, ['argument_of_perihelion'], null);
+        that.target.eccentricity = _.get(data, ['eccentricity'], null);
+        that.target.perihdist = _.get(data, ['perihelion_distance'], null);
+        that.target.epochofperih = julianToModifiedJulian(_.get(data, ['perihelion_date_jd'], null));
+        that.target.meandist = _.get(data, ['semimajor_axis'], null);
+        that.target.meananom = _.get(data, ['mean_anomaly'], null);
+      }).fail(function(_response, status){
+        if(status !== "abort"){
+          that.lookupText = 'Could not find any matching objects';
+          that.lookupFail = true;
+        }
+      }).always(function(_response, status){
+        if(status !== "abort"){
+          that.lookingUP = false;
+        }
+      });
     }, 500),
     'datatype': function(value){
       if(value === 'SPECTRA'){
