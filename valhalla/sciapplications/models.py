@@ -181,7 +181,7 @@ class TimeRequest(models.Model):
     approved = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('semester',)
+        ordering = ('semester', 'instrument__display')
 
     def __str__(self):
         return '{} {} TimeRequest'.format(self.science_application, self.instrument)
