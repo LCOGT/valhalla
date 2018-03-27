@@ -44,9 +44,9 @@ class SetTimeMixin(object):
         self.time_patcher.stop()
 
 
-def create_simple_userrequest(user, proposal, request=None, window=None, molecule=None,
+def create_simple_userrequest(user, proposal, state='PENDING', request=None, window=None, molecule=None,
                               constraints=None, target=None, location=None):
-    ur = mixer.blend(UserRequest, submitter=user, proposal=proposal)
+    ur = mixer.blend(UserRequest, state=state, submitter=user, proposal=proposal)
 
     if not request:
         request = mixer.blend(Request, user_request=ur)
