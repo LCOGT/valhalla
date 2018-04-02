@@ -714,6 +714,16 @@ class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid data. Expected a dictionary, but got str.', str(response.content))
 
+    def test_post_cadence_with_no_visible_requests(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['cadence']['end'] = '2016-09-01T21:13:18Z'
+        bad_data['requests'][0]['molecules'][0]['exposure_count'] = 100
+        bad_data['requests'][0]['cadence']['jitter'] = 0.02
+        bad_data['requests'][0]['cadence']['period'] = 0.02
+        response = self.client.post(reverse('api:user_requests-cadence'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('No visible requests within cadence window parameters', str(response.content))
+
 
 class TestSiderealTarget(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def setUp(self):
