@@ -108,7 +108,7 @@ class SciCollabAppForm(BaseProposalAppForm):
         model = ScienceApplication
         fields = (
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-            'abstract', 'submitter_rank'
+            'abstract', 'tac_rank'
         )
         required_fields = set(fields)
 

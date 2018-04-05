@@ -152,7 +152,7 @@ class TestPostCreateSciApp(TestCase):
             'pdf': SimpleUploadedFile('s.pdf', b'ab'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
-            'submitter_rank': 1,
+            'tac_rank': 1,
             'save': 'SAVE',
         }
 

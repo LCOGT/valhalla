@@ -98,7 +98,7 @@
                 {% if app.call.proposal_type == 'COLAB' %}
                 <tr>
                     <td><a href="{% url 'sciapplications:update' pk=app.id %}">{{ app.title }}</a></td>
-                    <td>{{ app.submitter_rank }}</td>
+                    <td>{{ app.tac_rank }}</td>
                     <td>{{ app.time_requested_by_class.1m0 }}</td>
                     <td>{{ app.time_requested_by_class.2m0 }}</td>
                     <td>{{ app.time_requested_by_class.0m4 }}</td>
@@ -137,7 +137,7 @@
                 {% if app.call.proposal_type == 'COLAB' %}
                 <tr>
                     <td>{{ app.title }}</td>
-                    <td>{{ app.submitter_rank }}</td>
+                    <td>{{ app.tac_rank }}</td>
                     <td>{{ app.time_requested_by_class.1m0 }}</td>
                     <td>{{ app.time_requested_by_class.2m0 }}</td>
                     <td>{{ app.time_requested_by_class.0m4 }}</td>

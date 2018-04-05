@@ -86,7 +86,6 @@ class ScienceApplication(models.Model):
     proposal = models.ForeignKey(Proposal, null=True, blank=True, on_delete=models.SET_NULL)
     tac_rank = models.PositiveIntegerField(default=0)
     tac_priority = models.PositiveIntegerField(default=0)
-    submitter_rank = models.PositiveIntegerField(default=0)
     pdf = models.FileField(upload_to=pdf_upload_path, blank=True, null=True)
 
     # Admin only Notes

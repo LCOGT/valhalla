@@ -182,10 +182,10 @@ class SciApplicationIndexView(LoginRequiredMixin, TemplateView):
         calls = Call.open_calls()
         draft_proposals = ScienceApplication.objects.filter(
             submitter=self.request.user, status=ScienceApplication.DRAFT
-        ).order_by('submitter_rank', '-call__semester', 'id')
+        ).order_by('tac_rank', '-call__semester', 'id')
         submitted_proposals = ScienceApplication.objects.filter(
             submitter=self.request.user
-        ).exclude(status=ScienceApplication.DRAFT).order_by('submitter_rank', '-call__semester', 'id')
+        ).exclude(status=ScienceApplication.DRAFT).order_by('tac_rank', '-call__semester', 'id')
 
         return {'calls': calls, 'draft_proposals': draft_proposals, 'submitted_proposals': submitted_proposals}
 
