@@ -1,3 +1,9 @@
+## 1.13.0
+2018-04-05
+
+* Add method for science collaboration partners to enter proposals into the portal
+directly
+
 ## 1.12.3
 2018-03-27
 
