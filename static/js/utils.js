@@ -79,6 +79,13 @@ function formatDate(date){
   }
 }
 
+function julianToModifiedJulian(jd){
+  if(jd && jd >= 2400000.5){
+    var precision = (jd + "").split(".")[1].length;
+    return Number((parseFloat(jd) - 2400000.5).toFixed(precision));
+  }
+}
+
 var apiFieldToReadable = {
   'group_id': 'Title'
 };
@@ -166,5 +173,5 @@ var colorPalette = [  // useful assigning colors to datasets.
 export {
   semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
   formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
-  observatoryCodeToNumber, telescopeCodeToName, colorPalette
+  observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian
 };

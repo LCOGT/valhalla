@@ -33,7 +33,7 @@ class UserRequestViewSet(viewsets.ModelViewSet):
     ordering = ('-id',)
 
     def get_throttles(self):
-        actions_to_throttle = ['cancel', 'validate']
+        actions_to_throttle = ['cancel', 'validate', 'create']
         if self.action in actions_to_throttle:
             self.throttle_scope = 'userrequests.' + self.action
         return super().get_throttles()
@@ -150,6 +150,10 @@ class UserRequestViewSet(viewsets.ModelViewSet):
                     return Response(cadence_request_serializer.errors, status=400)
             else:
                 expanded_requests.append(req)
+
+        # if we couldn't find any valid cadence requests, return that as an error
+        if not expanded_requests:
+            return Response({'errors': 'No visible requests within cadence window parameters'}, status=400)
 
         # now replace the originally sent requests with the cadence requests and send it back
         ret_data = request.data.copy()

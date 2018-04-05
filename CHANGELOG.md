@@ -1,3 +1,20 @@
+## 1.12.3
+2018-03-27
+
+* Fix bug causing user's hours requested to be too large
+* Upgrade django-registration-redus to 2.2
+* Throttle request creation to 2500/day
+
+## 1.12.2
+2018-03-26
+
+* Added integration with simbad2k and auto-filling fields for non-sidereal targets
+
+## 1.12.1
+2018-03-26
+
+* Order co-I by last name in proposal submissions
+
 ## 1.12.0
 2018-03-21
 

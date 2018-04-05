@@ -208,7 +208,7 @@ class TimeRequest(models.Model):
     approved = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('semester',)
+        ordering = ('semester', 'instrument__display')
 
     def __str__(self):
         return '{} {} TimeRequest'.format(self.science_application, self.instrument)
@@ -220,6 +220,9 @@ class CoInvestigator(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     institution = models.CharField(max_length=255)
+
+    class Meta:
+        ordering = ('last_name', 'first_name')
 
     def __str__(self):
         return '{0} {1} <{2}> ({3})'.format(self.first_name, self.last_name, self.email, self.institution)

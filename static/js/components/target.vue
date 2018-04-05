@@ -67,7 +67,7 @@
             </customfield>
           </div>
           <div v-show="target.scheme === 'MPC_MINOR_PLANET' || target.scheme == 'JPL_MAJOR_PLANET'">
-            <customfield v-model="target.meandist" label="Mean Distance (AU)" field="meandist"
+            <customfield v-model="target.meandist" label="Semimajor Axis (AU)" field="meandist"
                          v-on:input="update" :errors="errors.meandist" desc="Astronomical Units">
             </customfield>
             <customfield v-model="target.meananom" label="Mean Anomaly" field="meananom"
@@ -106,7 +106,7 @@
 import _ from 'lodash';
 import $ from 'jquery';
 
-import {collapseMixin, sexagesimalRaToDecimal, sexagesimalDecToDecimal} from '../utils.js';
+import {collapseMixin, sexagesimalRaToDecimal, sexagesimalDecToDecimal, julianToModifiedJulian} from '../utils.js';
 import archive from './archive.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
@@ -158,31 +158,44 @@ export default {
   },
   watch: {
     'target.name': _.debounce(function(name){
-      if(this.target.type === 'SIDEREAL'){
-        this.lookingUP = true;
-        this.lookupFail = false;
-        this.lookupText = 'Searching for coordinates...';
-        var that = this;
-        if(this.lookupReq){
-          this.lookupReq.abort();
-        }
-        this.lookupReq = $.getJSON('https://lco.global/lookUP/json/?name=' + encodeURIComponent(name)).done(function(data){
-          that.target.ra = _.get(data, ['ra', 'decimal'], null);
-          that.target.dec = _.get(data, ['dec', 'decimal'], null);
-          that.target.proper_motion_ra = data.pmra;
-          that.target.proper_motion_dec = data.pmdec;
-          that.update();
-        }).fail(function(_response, status){
-          if(status !== "abort"){
-            that.lookupText = 'Could not find any matching objects';
-            that.lookupFail = true;
-          }
-        }).always(function(_response, status){
-          if(status !== "abort"){
-            that.lookingUP = false;
-          }
-        });
+      this.lookingUP = true;
+      this.lookupFail = false;
+      this.lookupText = 'Searching for coordinates...';
+      var that = this;
+      if(this.lookupReq){
+        this.lookupReq.abort();
       }
+      this.lookupReq = $.getJSON('https://simbad2k.lco.global/' + encodeURIComponent(name) + '?target_type='
+          + encodeURIComponent(this.target.type) + '&scheme=' + encodeURIComponent(this.target.scheme)).done(function(data){
+        that.target.ra = _.get(data, ['ra_d'], null);
+        that.target.dec = _.get(data, ['dec_d'], null);
+        that.target.proper_motion_ra = _.get(data, ['pmra'], null);
+        that.target.proper_motion_dec = _.get(data, ['pmdec'], null);
+        that.target.epochofel = julianToModifiedJulian(_.get(data, ['epoch_jd'], null));
+        that.target.orbinc = _.get(data, ['inclination'], null);
+        that.target.longascnode = _.get(data, ['ascending_node'], null);
+        that.target.argofperih = _.get(data, ['argument_of_perihelion'], null);
+        that.target.eccentricity = _.get(data, ['eccentricity'], null);
+        that.target.perihdist = _.get(data, ['perihelion_distance'], null);
+        that.target.epochofperih = julianToModifiedJulian(_.get(data, ['perihelion_date_jd'], null));
+        that.target.meandist = _.get(data, ['semimajor_axis'], null);
+        that.target.meananom = _.get(data, ['mean_anomaly'], null);
+      }).fail(function(_response, status){
+        for (var field in this.sid_target_params) {
+          that.target[field] = null;
+        }
+        for (var field in this.ns_target_params) {
+          that.target[field] = null;
+        }
+        if(status !== "abort"){
+          that.lookupText = 'Could not find any matching objects';
+          that.lookupFail = true;
+        }
+      }).always(function(_response, status){
+        if(status !== "abort"){
+          that.lookingUP = false;
+        }
+      });
     }, 500),
     'datatype': function(value){
       if(value === 'SPECTRA'){

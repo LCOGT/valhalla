@@ -30,7 +30,7 @@ class Profile(models.Model):
         if not proposal.current_semester:
             return 0
         user_requests = self.user.userrequest_set.filter(
-            proposal=proposal, created__gte=proposal.current_semester.start
+            proposal=proposal, created__gte=proposal.current_semester.start, state__in=['PENDING', 'COMPLETED']
         ).prefetch_related('requests')
         return sum(request.duration for user_request in user_requests for request in user_request.requests.all())
 
