@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from mixer.backend.django import mixer
 
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
-from valhalla.proposals.models import Semester, Membership, ProposalInvite
+from valhalla.proposals.models import Semester, Membership, ProposalInvite, TimeAllocationGroup
 
 
 class TestSciAppToProposal(TestCase):
@@ -86,3 +86,16 @@ class TestSciAppToProposal(TestCase):
 
         self.assertEqual(proposal.timeallocation_set.get(semester=other_semester).std_allocation, tr2.std_time)
         self.assertEqual(proposal.timeallocation_set.get(semester=other_semester).instrument_name, tr2.instrument.code)
+
+    def test_create_collab_proposal(self):
+        pi = mixer.blend(User)
+        submitter = mixer.blend(User)
+        tag = mixer.blend(TimeAllocationGroup, admin=submitter)
+        app = mixer.blend(ScienceApplication, submitter=submitter, pi=pi.email)
+        tr = mixer.blend(TimeRequest, approved=True, science_application=app)
+        proposal = app.convert_to_proposal()
+        self.assertEqual(app.proposal, proposal)
+        self.assertEqual(pi, proposal.membership_set.get(role=Membership.PI).user)
+        self.assertEqual(proposal.tag, tag)
+        self.assertEqual(proposal.timeallocation_set.first().std_allocation, tr.std_time)
+        self.assertFalse(ProposalInvite.objects.filter(proposal=proposal).exists())

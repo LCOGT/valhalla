@@ -55,7 +55,7 @@ class ProposalListView(LoginRequiredMixin, FilterView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['calls'] = Call.open_calls()
+        context['calls'] = Call.open_calls().exclude(proposal_type=Call.COLLAB_PROPOSAL)
         return context
 
 

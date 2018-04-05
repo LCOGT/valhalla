@@ -13,6 +13,10 @@ from valhalla.proposals.models import (
 )
 
 
+class NoTimeAllocatedError(Exception):
+    pass
+
+
 class Instrument(models.Model):
     code = models.CharField(max_length=50)
     telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
@@ -27,12 +31,14 @@ class Call(models.Model):
     DDT_PROPOSAL = 'DDT'
     KEY_PROPOSAL = 'KEY'
     NAOC_PROPOSAL = 'NAOC'
+    COLLAB_PROPOSAL = 'COLAB'
 
     PROPOSAL_TYPE_CHOICES = (
         (SCI_PROPOSAL, 'Science'),
         (DDT_PROPOSAL, 'Director\'s Discretionary Time'),
         (KEY_PROPOSAL, 'Key Project'),
-        (NAOC_PROPOSAL, 'NAOC proposal')
+        (NAOC_PROPOSAL, 'NAOC proposal'),
+        (COLLAB_PROPOSAL, 'Science Collaboration Proposal')
     )
 
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
@@ -101,22 +107,49 @@ class ScienceApplication(models.Model):
         return self.title
 
     @property
+    def tag(self):
+        try:
+            return self.submitter.timeallocationgroup
+        except TimeAllocationGroup.DoesNotExist:
+            return TimeAllocationGroup.objects.get_or_create(id='LCO')[0]
+
+    @property
     def proposal_code(self):
         proposal_type_to_name = {
             'SCI': 'LCO',
             'KEY': 'KEY',
             'DDT': 'DDT',
-            'NAOC': 'NAOC'
+            'NAOC': 'NAOC',
+            'COLAB': self.tag.id
         }
         return '{0}{1}-{2}'.format(
             proposal_type_to_name[self.call.proposal_type], self.call.semester, str(self.tac_rank).zfill(3)
         )
 
+    @property
+    def time_requested_by_class(self):
+        return {
+            '1m0': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='1m0')
+                    ),
+            '2m0': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='2m0')
+                    ),
+            '0m4': sum(
+                    sum([tr.std_time, tr.too_time, tr.crt_time])
+                    for tr in self.timerequest_set.filter(instrument__telescope_class='0m4')
+                    )
+        }
+
     def get_absolute_url(self):
         return reverse('sciapplications:detail', args=(self.id,))
 
     def convert_to_proposal(self):
-        # Create the objects we need
+        if not self.timerequest_set.filter(approved=True).count():
+            raise NoTimeAllocatedError
+
         proposal = Proposal.objects.create(
             id=self.proposal_code,
             title=self.title,
@@ -124,7 +157,7 @@ class ScienceApplication(models.Model):
             tac_priority=self.tac_priority,
             tac_rank=self.tac_rank,
             active=False,
-            tag=TimeAllocationGroup.objects.get_or_create(id='LCOGT')[0],
+            tag=self.tag
         )
 
         for tr in self.timerequest_set.filter(approved=True):

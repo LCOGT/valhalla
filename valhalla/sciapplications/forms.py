@@ -101,6 +101,23 @@ class KeyProjectAppForm(BaseProposalAppForm):
         ))
 
 
+class SciCollabAppForm(BaseProposalAppForm):
+    max_pages = 6
+
+    class Meta:
+        model = ScienceApplication
+        fields = (
+            'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
+            'abstract', 'tac_rank'
+        )
+        required_fields = set(fields)
+
+    def __init__(self, *args, **kwargs):
+        # Need this because base proposal app form has pdf hardcoded as a field
+        super().__init__(*args, **kwargs)
+        self.fields.pop('pdf')
+
+
 class TimeRequestForm(ModelForm):
     semester = forms.ModelChoiceField(queryset=Semester.future_semesters(), required=False)
 

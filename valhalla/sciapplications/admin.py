@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.urls import reverse
 
 
-from .models import Instrument, Call, ScienceApplication, TimeRequest, CoInvestigator
+from .models import Instrument, Call, ScienceApplication, TimeRequest, CoInvestigator, NoTimeAllocatedError
 from valhalla.proposals.models import Proposal
 
 
@@ -75,7 +75,13 @@ class ScienceApplicationAdmin(admin.ModelAdmin):
                     level='ERROR'
                 )
             else:
-                app.convert_to_proposal()
+                try:
+                    app.convert_to_proposal()
+                except NoTimeAllocatedError:
+                    self.message_user(
+                        request, 'Application {} has no approved Time Allocations'.format(app.title), level='ERROR'
+                    )
+                    return
                 self.message_user(request, 'Proposal {} successfully created.'.format(app.proposal))
 
 

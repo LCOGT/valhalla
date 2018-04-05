@@ -11,10 +11,11 @@ from weasyprint import HTML
 from unittest.mock import MagicMock, patch
 
 
-from valhalla.proposals.models import Semester
+from valhalla.proposals.models import Semester, TimeAllocationGroup
 from valhalla.accounts.models import Profile
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
+from valhalla.sciapplications.forms import SciCollabAppForm
 
 
 class MockPDFFileReader:
@@ -30,8 +31,8 @@ class TestGetCreateSciApp(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        user = mixer.blend(User)
-        self.client.force_login(user)
+        self.user = mixer.blend(User)
+        self.client.force_login(self.user)
 
     def test_no_call(self):
         response = self.client.get(
@@ -39,7 +40,7 @@ class TestGetCreateSciApp(TestCase):
         )
         self.assertEqual(response.status_code, 404)
 
-    def test_get_form(self):
+    def test_get_sci_form(self):
         call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
@@ -53,6 +54,7 @@ class TestGetCreateSciApp(TestCase):
         self.assertEqual(response.context['call'].id, call.id)
         self.assertIn('ScienceProposalAppForm', str(response.context['form'].__class__))
 
+    def test_get_key_form(self):
         call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
@@ -66,6 +68,7 @@ class TestGetCreateSciApp(TestCase):
         self.assertEqual(response.context['call'].id, call.id)
         self.assertIn('KeyProjectAppForm', str(response.context['form'].__class__))
 
+    def test_get_ddt_form(self):
         call = mixer.blend(
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
@@ -78,6 +81,31 @@ class TestGetCreateSciApp(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['call'].id, call.id)
         self.assertIn('DDTProposalAppForm', str(response.context['form'].__class__))
+
+    def test_get_collab_form(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            proposal_type=Call.COLLAB_PROPOSAL
+        )
+        mixer.blend(TimeAllocationGroup, admin=self.user)
+        response = self.client.get(
+            reverse('sciapplications:create', kwargs={'call': call.id})
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['call'].id, call.id)
+        self.assertIn('SciCollabAppForm', str(response.context['form'].__class__))
+
+    def test_get_collab_form_normal_user(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            proposal_type=Call.COLLAB_PROPOSAL
+        )
+        response = self.client.get(
+            reverse('sciapplications:create', kwargs={'call': call.id})
+        )
+        self.assertEqual(response.status_code, 404)
 
 
 @patch('valhalla.sciapplications.forms.PdfFileReader', new=MockPDFFileReader)
@@ -107,6 +135,12 @@ class TestPostCreateSciApp(TestCase):
             proposal_type=Call.DDT_PROPOSAL,
             instruments=(self.instrument,)
         )
+        self.collab_call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            proposal_type=Call.COLLAB_PROPOSAL,
+            instruments=(self.instrument,)
+        )
         data = {
             'call': self.call.id,
             'status': 'SUBMITTED',
@@ -118,6 +152,7 @@ class TestPostCreateSciApp(TestCase):
             'pdf': SimpleUploadedFile('s.pdf', b'ab'),
             'budget_details': 'test budget value',
             'abstract': 'test abstract value',
+            'tac_rank': 1,
             'save': 'SAVE',
         }
 
@@ -170,6 +205,12 @@ class TestPostCreateSciApp(TestCase):
         self.ddt_data.update(tr_management_data)
         self.ddt_data.update(ci_data)
         self.ddt_data.update(ci_management_data)
+        self.collab_data = {k: data[k] for k in data if k in SciCollabAppForm.Meta.fields}
+        self.collab_data['call'] = self.collab_call.id
+        self.collab_data.update(timerequest_data)
+        self.collab_data.update(tr_management_data)
+        self.collab_data.update(ci_data)
+        self.collab_data.update(ci_management_data)
 
     def test_post_sci_form(self):
         num_apps = ScienceApplication.objects.count()
@@ -223,6 +264,26 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(num_apps + 1, self.user.scienceapplication_set.count())
         self.assertContains(response, self.sci_data['title'])
+
+    def test_post_collab_form(self):
+        mixer.blend(TimeAllocationGroup, admin=self.user)
+        num_apps = ScienceApplication.objects.count()
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.collab_call.id}),
+            data=self.collab_data,
+            follow=True
+        )
+        self.assertEqual(num_apps + 1, self.user.scienceapplication_set.count())
+        self.assertContains(response, self.collab_data['title'])
+
+    def test_normal_user_post_collab_form(self):
+        num_apps = ScienceApplication.objects.count()
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.collab_call.id}),
+            data=self.collab_data,
+        )
+        self.assertEqual(num_apps, self.user.scienceapplication_set.count())
+        self.assertEqual(response.status_code, 404)
 
     def test_can_save_incomplete(self):
         data = self.sci_data.copy()
@@ -511,7 +572,8 @@ class TestSciAppIndex(TestCase):
             Call, semester=self.semester,
             deadline=timezone.now() + timedelta(days=7),
             opens=timezone.now(),
-            proposal_type=Call.SCI_PROPOSAL
+            proposal_type=Call.SCI_PROPOSAL,
+            eligibility_short='Short Eligibility'
         )
         mixer.blend(Instrument, call=self.call)
 
@@ -535,6 +597,46 @@ class TestSciAppIndex(TestCase):
         self.assertContains(response, self.call.eligibility_short)
         self.assertContains(response, app.title)
 
+    def test_normal_users_no_collab_calls(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+            eligibility_short='For sci collab only'
+        )
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertNotContains(response, call.eligibility_short)
+
+    def test_collab_admin_collab_calls(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+        )
+        tag = mixer.blend(TimeAllocationGroup, admin=self.user)
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, tag.name + ' Proposals')
+
+    def test_collab_admin_time_used(self):
+        call = mixer.blend(
+            Call, semester=self.semester,
+            deadline=timezone.now() + timedelta(days=7),
+            opens=timezone.now(),
+            proposal_type=Call.COLLAB_PROPOSAL,
+        )
+        tag = mixer.blend(TimeAllocationGroup, admin=self.user, one_meter_alloc=9)
+        app = mixer.blend(
+            ScienceApplication,
+            status=ScienceApplication.DRAFT,
+            submitter=self.user,
+            call=call
+        )
+        instrument = mixer.blend(Instrument, code='1M0-SCICAM-SINISTRO', telescope_class='1m0')
+        tr = mixer.blend(TimeRequest, science_application=app, instrument=instrument, std_time=8)
+        response = self.client.get(reverse('sciapplications:index'))
+        self.assertContains(response, '{0}/{1}'.format(tr.std_time, tag.one_meter_alloc))
 
 class TestSciAppDetail(TestCase):
     def setUp(self):
