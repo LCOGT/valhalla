@@ -40,7 +40,7 @@ class TimeAllocationGroup(models.Model):
     admin = models.OneToOneField(User, null=True, blank=True, on_delete=models.SET_NULL)
     one_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
     two_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
-    four_meter_alloc = models.PositiveIntegerField(default=0, blank=True)
+    four_meter_alloc = models.PositiveIntegerField(verbose_name='0.4 Meter Alloc', default=0, blank=True)
 
     def __str__(self):
         return self.id

@@ -13,6 +13,10 @@ from valhalla.proposals.models import (
 )
 
 
+class NoTimeAllocatedError(Exception):
+    pass
+
+
 class Instrument(models.Model):
     code = models.CharField(max_length=50)
     telescope_class = models.CharField(max_length=20, choices=TimeAllocation.TELESCOPE_CLASSES)
@@ -143,6 +147,9 @@ class ScienceApplication(models.Model):
         return reverse('sciapplications:detail', args=(self.id,))
 
     def convert_to_proposal(self):
+        if not self.timerequest_set.filter(approved=True).count():
+            raise NoTimeAllocatedError
+
         proposal = Proposal.objects.create(
             id=self.proposal_code,
             title=self.title,

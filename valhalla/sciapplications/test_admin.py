@@ -6,8 +6,8 @@ from datetime import timedelta
 from mixer.backend.django import mixer
 
 
-from valhalla.proposals.models import Semester
-from valhalla.sciapplications.models import ScienceApplication, Call, Instrument
+from valhalla.proposals.models import Semester, Proposal
+from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest
 
 
 class TestSciAppAdmin(TestCase):
@@ -29,6 +29,11 @@ class TestSciAppAdmin(TestCase):
             submitter=self.user,
             call=self.call,
             tac_rank=(x for x in range(3))
+        )
+        mixer.cycle(3).blend(
+            TimeRequest,
+            science_application=(app for app in self.apps),
+            approved=True
         )
 
     def test_accept(self):
@@ -58,6 +63,28 @@ class TestSciAppAdmin(TestCase):
         )
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.PORTED)
+
+    def test_port_not_accepted(self):
+        self.client.post(
+            reverse('admin:sciapplications_scienceapplication_changelist'),
+            data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
+            follow=True
+        )
+        self.assertFalse(Proposal.objects.exists())
+        for app in self.apps:
+            self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.SUBMITTED)
+
+    def test_port_no_approved_requests(self):
+        ScienceApplication.objects.update(status=ScienceApplication.ACCEPTED)
+        TimeRequest.objects.update(approved=False)
+        response = self.client.post(
+            reverse('admin:sciapplications_scienceapplication_changelist'),
+            data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
+            follow=True
+        )
+        for app in self.apps:
+            self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.ACCEPTED)
+        self.assertContains(response, 'no approved Time Allocations')
 
     def test_port_duplicate_tac_rank(self):
         ScienceApplication.objects.update(status=ScienceApplication.ACCEPTED, tac_rank=0)
