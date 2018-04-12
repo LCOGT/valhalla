@@ -129,7 +129,9 @@ export default {
     }).done(function(){
       $.getJSON('/api/instruments/', function(data){
         for(var ai in allowed_instruments){
-          allowed_instruments[ai] = data[ai];
+          if(data[ai]){
+            allowed_instruments[ai] = data[ai];
+          }
         }
         that.available_instruments = allowed_instruments;
         that.update();

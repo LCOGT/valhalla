@@ -1,3 +1,8 @@
+## 1.13.1
+2018-04-12
+
+* Fix bug where users profile listed instruments that were no longer available
+
 ## 1.13.0
 2018-04-05
 
