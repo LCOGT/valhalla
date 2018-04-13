@@ -1,3 +1,8 @@
+## 1.13.2
+2018-04-13
+
+* Fix bug where target values clear if lookup fails
+
 ## 1.13.1
 2018-04-12
 
