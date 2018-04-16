@@ -6,7 +6,7 @@ Thank you for submitting your request for discretionary time:
 
 You will be contacted in due course once we have reached a decision.
 
-You may view your propsal here:
+You may view your proposal here:
 
 https://observe.lco.global{{ ddt.get_absolute_url }}
 
