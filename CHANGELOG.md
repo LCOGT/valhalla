@@ -1,3 +1,8 @@
+## 1.13.3
+2018-04-25
+
+* Enable gzip compression for non static reponses
+
 ## 1.13.2
 2018-04-13
 
