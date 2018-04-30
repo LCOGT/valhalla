@@ -1699,7 +1699,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
 
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
         one_week_ahead = timezone.now() + timedelta(weeks=1)
         response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
@@ -1721,7 +1721,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
         one_week_ahead = timezone.now() + timedelta(weeks=1)
@@ -1749,7 +1749,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
                       body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
 
         response = self.client.get(reverse('api:isDirty'))
@@ -1766,7 +1766,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
 
     @responses.activate
     def test_bad_data_from_pond(self, modify_mock):
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
                       body='Internal Server Error', status=500, content_type='application/json')
 
         response = self.client.get(reverse('api:isDirty'))

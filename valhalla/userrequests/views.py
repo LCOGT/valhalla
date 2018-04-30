@@ -207,7 +207,7 @@ class UserRequestStatusIsDirty(APIView):
         except (TypeError, ValueError):
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
 
-        url = settings.POND_URL + '/pond/pond/blocks/new/?since={}&using=default'.format(last_query_time.strftime('%Y-%m-%dT%H:%M:%S'))
+        url = settings.POND_URL + '/blocks/?modified_after={0}'.format(last_query_time)
         now = timezone.now()
         try:
             response = requests.get(url)
