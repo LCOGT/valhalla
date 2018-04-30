@@ -14,39 +14,29 @@ class EventSerializer(serializers.Serializer):
 
 
 class BlockMoleculeSerializer(serializers.Serializer):
-    event = EventSerializer(many=True, read_only=True)
-    id = serializers.IntegerField()
-    acquire_mode = serializers.CharField()
-    sub_y1 = serializers.CharField()
-    sub_y2 = serializers.CharField()
+    event_set = EventSerializer(many=True, read_only=True)
+    acquire_mode = serializers.CharField(required=False)
     mtype = serializers.CharField()
     filters = serializers.CharField()
     ag_filter = serializers.CharField()
     ag_name = serializers.CharField()
     user_id = serializers.CharField()
     defocus = serializers.CharField()
-    spectra_slit = serializers.CharField()
+    spectra_slit = serializers.CharField(required=False)
     priority = serializers.IntegerField()
     failed = serializers.BooleanField()
     inst_name = serializers.CharField()
     attempted = serializers.BooleanField()
     exp_time = serializers.FloatField()
     completed = serializers.BooleanField()
-    margs = serializers.CharField()
     bin_y = serializers.IntegerField()
     bin_x = serializers.IntegerField()
-    sub_x2 = serializers.CharField()
-    sub_x1 = serializers.CharField()
     ag_exp_time = serializers.CharField()
-    expose_at = serializers.CharField()
     tag_id = serializers.CharField()
     group = serializers.CharField()
     exp_cnt = serializers.IntegerField()
-    required = serializers.BooleanField()
-    spectra_lamp = serializers.CharField()
-    acquire_radius_arcsec = serializers.CharField()
+    acquire_radius_arcsec = serializers.CharField(required=False)
     ag_mode = serializers.CharField()
-    readout_mode = serializers.CharField()
 
 
 class BlockSerializer(serializers.Serializer):
@@ -109,6 +99,6 @@ class BlockSerializer(serializers.Serializer):
     def get_fail_reason(self, obj):
         for molecule in obj['molecules']:
             if molecule['failed']:
-                for event in molecule['event']:
+                for event in molecule['event_set']:
                     return '{0}: {1}'.format(event['state'], event['reason'])
         return ''

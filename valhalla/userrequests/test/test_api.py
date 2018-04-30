@@ -1440,10 +1440,10 @@ class TestBlocksApi(APITestCase):
     def test_empty_blocks(self):
         responses.add(
             responses.GET,
-            '{0}/pond/pond/block/request/{1}.json'.format(
+            '{0}/blocks/?request_num={1}'.format(
                 settings.POND_URL, self.request.get_id_display().zfill(10)
             ),
-            body='[]',
+            body='{"results":[]}',
             status=200
         )
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
@@ -1454,7 +1454,7 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/pond/pond/block/request/{1}.json'.format(
+                '{0}/blocks/?request_num={1}'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
                 body=f.read(),
@@ -1468,7 +1468,7 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/pond/pond/block/request/{1}.json'.format(
+                '{0}/blocks/?request_num={1}'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
                 body=f.read(),
@@ -1713,11 +1713,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
@@ -1741,11 +1741,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now - timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=True, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, event_set=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]

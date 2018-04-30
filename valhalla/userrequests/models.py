@@ -185,12 +185,12 @@ class Request(models.Model):
     def blocks(self):
         try:
             response = requests.get(
-                '{0}/pond/pond/block/request/{1}.json'.format(
+                '{0}/blocks/?request_num={1}'.format(
                     settings.POND_URL, self.get_id_display().zfill(10)  # the pond hardcodes 0 padded strings... awesome
                 )
             )
             response.raise_for_status()
-            return BlockSerializer(response.json(), many=True).data
+            return BlockSerializer(response.json()['results'], many=True).data
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data
