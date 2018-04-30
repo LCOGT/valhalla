@@ -36,9 +36,9 @@ def get_time_totals_from_pond(timeallocation, start, end, too, recur=0):
 
 def query_pond(proposal_id, start, end, telescope_class, instrument_class, too):
     logger.info('Attempting to get time used for %s from %s to %s', proposal_id, start, end)
-    url = '{0}/pond/pond/accounting/summary?proposal_id={1}&start={2}&end={3}&telescope_class={4}&instrument_class={5}&too_time={6}'.format(
-        settings.POND_URL, proposal_id, start.strftime('%Y-%m-%d %H:%M:%S'), end.strftime('%Y-%m-%d %H:%M:%S'),
-        telescope_class, instrument_class, too
+    time_type = 'TOO' if too else 'NORMAL'
+    url = '{0}/accounting/{1}/?proposal_id={2}&start={3}&end={4}&telescope_class={5}&instrument_class={6}'.format(
+        settings.POND_URL, time_type, proposal_id, start, end, telescope_class, instrument_class
     )
     response = requests.get(url)
     response.raise_for_status()
