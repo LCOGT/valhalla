@@ -197,7 +197,7 @@ class WindowSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['end'] <= data['start']:
-            msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
+            msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['end'], data['start'])
             raise serializers.ValidationError(msg)
 
         if not get_semester_in(data['start'], data['end']):
@@ -445,7 +445,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                     for request in data['requests']:
                         windows = request.get('windows')
                         for window in windows:
-                            if window.get('end') - datetime.now(timezone.utc) > timedelta(seconds=(duration + 21600)):
+                            if window.get('end') - timezone.now() > timedelta(seconds=(duration + 21600)):
                                 raise serializers.ValidationError(
                                     _("The Rapid Response observation window must be within the next six hours.")
                                 )
