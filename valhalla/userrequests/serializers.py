@@ -399,7 +399,6 @@ class UserRequestSerializer(serializers.ModelSerializer):
         return user_request
 
     def validate(self, data):
-
         # check that the user belongs to the supplied proposal
         if data['proposal'] not in data['submitter'].proposal_set.all():
             raise serializers.ValidationError(
