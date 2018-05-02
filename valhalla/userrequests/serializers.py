@@ -17,7 +17,7 @@ from valhalla.common.configdb import configdb
 from valhalla.userrequests.request_utils import MOLECULE_TYPE_DISPLAY
 from valhalla.userrequests.duration_utils import (get_request_duration, get_request_duration_sum, get_total_duration_dict,
                                                   OVERHEAD_ALLOWANCE, get_molecule_duration, get_num_exposures, get_semester_in)
-from datetime import timedelta, datetime
+from datetime import timedelta
 from valhalla.common.rise_set_utils import get_rise_set_intervals
 
 
@@ -197,7 +197,7 @@ class WindowSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['end'] <= data['start']:
-            msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['end'], data['start'])
+            msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['start'], data['end'])
             raise serializers.ValidationError(msg)
 
         if not get_semester_in(data['start'], data['end']):
@@ -440,15 +440,6 @@ class UserRequestSerializer(serializers.ModelSerializer):
                     time_available = time_allocation.std_allocation - time_allocation.std_time_used
                 elif data['observation_type'] == UserRequest.TOO:
                     time_available = time_allocation.too_allocation - time_allocation.too_time_used
-                    # For Rapid Response observations, check if the end time of the window is within
-                    # six hours + the duration of the observation
-                    for request in data['requests']:
-                        windows = request.get('windows')
-                        for window in windows:
-                            if window.get('end') - timezone.now() > timedelta(seconds=(duration + 21600)):
-                                raise serializers.ValidationError(
-                                    _("The Rapid Response observation window must be within the next six hours.")
-                                )
 
                 if time_available <= 0.0:
                     raise serializers.ValidationError(
