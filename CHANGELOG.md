@@ -1,3 +1,8 @@
+## 1.13.4
+2018-05-02
+
+* Restrict TOO request end times to within 6 hours of current time
+
 ## 1.13.3
 2018-04-25
 
