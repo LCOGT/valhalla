@@ -1,3 +1,8 @@
+## 1.14.0
+2018-05-02
+
+* Use gunicorn for deployment instead of uwsgi
+
 ## 1.13.4
 2018-05-02
 
