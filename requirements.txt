@@ -15,6 +15,8 @@ celery[redis]>=4.0.<4.1
 django-redis-cache>=1.7,<1.8
 psycopg2>=2.7,<2.8
 django-extensions>=1.9,<1.10
+gunicorn[gevent]>=19,<20
+whitenoise>=3.3,<3.4
 rise-set==0.4.9
 lcogt-logging
 
