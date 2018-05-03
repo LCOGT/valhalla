@@ -11,7 +11,7 @@ WeasyPrint>=0.42<0.43
 PyPDF2>=1.26,<1.27
 elasticsearch>=6.0,<6.1
 numpy>=1.14, <1.15
-celery[redis]>=4.0.<4.1
+celery==4.1.0
 django-redis-cache>=1.7,<1.8
 psycopg2>=2.7,<2.8
 django-extensions>=1.9,<1.10
@@ -19,6 +19,7 @@ gunicorn[gevent]>=19,<20
 whitenoise>=3.3,<3.4
 rise-set==0.4.9
 lcogt-logging
+redis
 
 ipython
 responses

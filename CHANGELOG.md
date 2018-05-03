@@ -1,3 +1,8 @@
+## 1.43.3
+2018-05-3
+
+* Fix broken celery version pinning
+
 ## 1.14.2
 2018-05-3
 
