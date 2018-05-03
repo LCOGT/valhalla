@@ -14,7 +14,7 @@ class EventSerializer(serializers.Serializer):
 
 
 class BlockMoleculeSerializer(serializers.Serializer):
-    event_set = EventSerializer(many=True, read_only=True)
+    events = EventSerializer(many=True, read_only=True)
     acquire_mode = serializers.CharField(required=False)
     mtype = serializers.CharField()
     filters = serializers.CharField()
@@ -99,6 +99,6 @@ class BlockSerializer(serializers.Serializer):
     def get_fail_reason(self, obj):
         for molecule in obj['molecules']:
             if molecule['failed']:
-                for event in molecule['event_set']:
+                for event in molecule['events']:
                     return '{0}: {1}'.format(event['state'], event['reason'])
         return ''

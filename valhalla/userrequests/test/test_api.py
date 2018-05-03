@@ -1713,11 +1713,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
@@ -1741,11 +1741,11 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now - timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=True, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event_set=[])
+                                                tracking_num=self.ur.id, events=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
