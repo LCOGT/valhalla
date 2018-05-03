@@ -1,3 +1,8 @@
+## 1.14.2
+2018-05-3
+
+* Include babel-polyfill for JS support in very old browsers
+
 ## 1.14.1
 2018-05-2
 
