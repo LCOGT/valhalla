@@ -195,6 +195,7 @@ export default {
         if(status !== "abort"){
           that.lookingUP = false;
         }
+        that.update();
       });
     }, 500),
     'datatype': function(value){

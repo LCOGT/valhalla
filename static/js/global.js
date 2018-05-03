@@ -1,9 +1,10 @@
-import {archiveAjaxSetup} from './archive.js';
-
+import 'babel-polyfill';
 import $ from 'jquery';
 import 'bootstrap';
 import 'eonasdan-bootstrap-datetimepicker';
 import 'eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.css';
+
+import {archiveAjaxSetup} from './archive.js';
 
 // Make sure ajax POSTs get CSRF protection
 function getCookie(name) {
