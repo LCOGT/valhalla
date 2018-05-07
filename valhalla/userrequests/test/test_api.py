@@ -209,6 +209,15 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have enough time allocated', str(response.content))
 
+    def test_post_userrequest_too_future_start_time(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['observation_type'] = UserRequest.TOO
+        bad_data['requests'][0]['windows'][0]['start'] = timezone.now() + timedelta(0, 60)
+        bad_data['requests'][0]['windows'][0]['end'] = timezone.now() + timedelta(0, 18000)
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('must begin immediately.', str(response.content))
+
     def test_post_userrequest_too_within_six_hours(self):
         data = self.generic_payload.copy()
         data['observation_type'] = UserRequest.TOO

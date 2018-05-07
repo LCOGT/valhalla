@@ -398,6 +398,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         return user_request
 
+
     def validate(self, data):
         # check that the user belongs to the supplied proposal
         if data['proposal'] not in data['submitter'].proposal_set.all():
@@ -445,6 +446,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
                     for request in data['requests']:
                         windows = request.get('windows')
                         for window in windows:
+                            if window.get('start') - timezone.now() > timedelta(seconds=0):
+                                raise serializers.ValidationError(
+                                    _("Rapid Response observations must begin immediately.")
+                                )
                             if window.get('end') - timezone.now() > timedelta(seconds=(duration + 21600)):
                                 raise serializers.ValidationError(
                                     _("The Rapid Response observation window must be within the next six hours.")

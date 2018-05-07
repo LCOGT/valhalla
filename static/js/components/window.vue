@@ -24,8 +24,8 @@
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal" >
           <customfield v-model="window.start" type="datetime" label="Start (UT)" field="start" v-on:input="update"
-                       :errors="errors.start" desc="Time when the observing window opens." v-show="
-                       observation_type != 'TARGET_OF_OPPORTUNITY'">
+                       :errors="errors.start" desc="Time when the observing window opens."
+                       v-show="observation_type != 'TARGET_OF_OPPORTUNITY'">
           </customfield>
           <customfield v-model="window.end" type="datetime" label="End (UT)" field="end" v-on:input="update"
                       :errors="errors.end" desc="Time when the observing window closes.">
