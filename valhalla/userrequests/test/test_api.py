@@ -201,11 +201,39 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
     def test_post_userrequest_not_enough_too_time_allocation_for_instrument(self):
         bad_data = self.generic_payload.copy()
         bad_data['observation_type'] = UserRequest.TOO
+        bad_data['requests'][0]['windows'][0]['start'] = '2016-09-01T00:00:00Z'
+        bad_data['requests'][0]['windows'][0]['end'] = '2016-09-01T05:59:59Z'
         self.time_allocation_1m0_sbig.too_time_used = 9.99
         self.time_allocation_1m0_sbig.save()
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('does not have enough time allocated', str(response.content))
+
+    def test_post_userrequest_too_future_start_time(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['observation_type'] = UserRequest.TOO
+        bad_data['requests'][0]['windows'][0]['start'] = timezone.now() + timedelta(0, 60)
+        bad_data['requests'][0]['windows'][0]['end'] = timezone.now() + timedelta(0, 18000)
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('must begin immediately.', str(response.content))
+
+    def test_post_userrequest_too_within_six_hours(self):
+        data = self.generic_payload.copy()
+        data['observation_type'] = UserRequest.TOO
+        data['requests'][0]['windows'][0]['start'] = timezone.now() + timedelta(0)
+        data['requests'][0]['windows'][0]['end'] = timezone.now() + timedelta(0, 18000)
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 201)
+
+    def test_post_userrequest_too_not_within_six_hours(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['observation_type'] = UserRequest.TOO
+        bad_data['requests'][0]['windows'][0]['start'] = timezone.now() + timedelta(0)
+        bad_data['requests'][0]['windows'][0]['end'] = timezone.now() + timedelta(0, 25200)
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('must be within the next six hours.', str(response.content))
 
     def test_post_userrequest_not_have_any_time_left(self):
         bad_data = self.generic_payload.copy()
