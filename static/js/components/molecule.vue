@@ -55,14 +55,14 @@
           <customfield v-model="molecule.defocus" v-if="datatype != 'SPECTRA' && !simple_interface" label="Defocus" field="defocus" v-on:input="update"
                        :errors="errors.defocus" desc="Observations may be defocused to prevent the CCD from saturating on bright targets. This term describes the offset (in mm) of the secondary mirror from its default (focused) position. The limits are ± 3mm.">
           </customfield>
-          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface && showAgMode"
+          <customselect v-model="molecule.ag_mode" label="Guiding" field="ag_mode" v-on:input="update" v-if="!simple_interface && datatype !='SPECTRA'"
                         :errors="errors.ag_mode" desc="Guiding keeps the field stable during long exposures. If OPTIONAL is selected, then guiding is attempted, but the observations will be carried out even if guiding fails. If ON is selected, then if guiding fails, the observations will be aborted."
                         :options="[{value: 'OPTIONAL', text: 'Optional'},
                                    {value: 'OFF', text: 'Off'},
                                    {value: 'ON', text: 'On'}]">
           </customselect>
           <div class="spectra" v-if="datatype === 'SPECTRA' && !simple_interface">
-            <customselect v-model="molecule.type" v-if="molecule.type === 'SPECTRUM'" label="Type" v-on:input="update"
+            <customselect v-model="molecule.type" v-if="selectedinstrument === '2M0-FLOYDS-SCICAM'" label="Type" v-on:input="update"
                           :errors="errors.type" desc="The type of exposure (allows for calibrations)."
                           :options="[{value: 'SPECTRUM', text: 'Spectrum'},
                                       {value: 'LAMP_FLAT', text: 'Lamp Flat'},
@@ -97,7 +97,6 @@ export default {
   data: function(){
     return {
       show: true,
-      showAgMode: true,
       acquire_params: {
         acquire_mode: 'WCS',
         acquire_radius_arcsec: null
@@ -151,7 +150,6 @@ export default {
     setupImager: function(){
       this.molecule.type = 'EXPOSE';
       this.molecule.spectra_slit = undefined;
-      this.showAgMode = true;
       this.acquire_params.acquire_mode = this.molecule.acquire_mode;
       this.molecule.acquire_mode = undefined;
       this.molecule.acquire_radius_arcsec = undefined;
@@ -159,7 +157,6 @@ export default {
     setupSpectrograph: function(){
       this.molecule.ag_mode = 'ON';
       this.molecule.filter = undefined;
-      this.showAgMode = false;
     },
     setupNRES: function(){
       this.molecule.type = 'NRES_SPECTRUM';
@@ -220,6 +217,14 @@ export default {
           this.acquire_params.acquire_radius_arcsec = this.molecule.acquire_radius_arcsec;
           this.molecule.acquire_radius_arcsec = undefined;
         }
+      }
+    },
+    'molecule.type': function(value){
+      if(value === 'SPECTRUM' || value === 'NRES_SPECTRUM'){
+        this.molecule.ag_mode = 'ON';
+      }
+      else{
+        this.molecule.ag_mode = 'OPTIONAL';
       }
     }
   }
