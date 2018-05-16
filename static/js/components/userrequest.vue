@@ -62,7 +62,6 @@
         <request :index="idx" :request="request" :available_instruments="available_instruments" :parentshow="show"
                  v-on:requestupdate="requestUpdated" v-on:cadence="expandCadence"
                  :simple_interface="simple_interface"
-                 :observation_type="userrequest.observation_type"
                  :errors="_.get(errors, ['requests', idx], {})"
                  :duration_data="_.get(duration_data, ['requests', idx], {'duration': 0})"
                  v-on:remove="removeRequest(idx)" v-on:copy="addRequest(idx)">
