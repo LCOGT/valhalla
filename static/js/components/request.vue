@@ -45,7 +45,6 @@
     <div v-for="(window, idx) in request.windows">
       <window ref="window" :index="idx" :window="window" v-on:windowupdate="windowUpdated" v-on:cadence="cadence"
               :errors="_.get(errors, ['windows', idx], {})" :parentshow="show" :simple_interface="simple_interface"
-              :observation_type="observation_type"
               v-on:remove="removeWindow(idx)" v-on:copy="addWindow(idx)">
       </window>
     </div>
@@ -66,7 +65,7 @@ import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 
 export default {
-  props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data', 'simple_interface', 'observation_type'],
+  props: ['request', 'index', 'errors', 'available_instruments', 'parentshow', 'duration_data', 'simple_interface'],
   components: {target, molecule, window, constraints, customfield, customselect, panel},
   mixins: [collapseMixin],
   data: function(){

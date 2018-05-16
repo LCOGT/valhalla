@@ -14,9 +14,6 @@
               Target Visibility Calculator.
             </a>
           </li>
-          <li v-show="observation_type === 'TARGET_OF_OPPORTUNITY'">
-            A start time cannot be selected for a Rapid Response observation--it will be scheduled as soon as possible.
-          </li>
         </ul>
         <h4 v-show="showAirmass" class="text-center">Visibility</h4>
         <airmass v-show="showAirmass" :data="airmassData" :showZoomControls="true"></airmass>
@@ -24,8 +21,7 @@
       <div :class="show ? 'col-md-6' : 'col-md-12'">
         <form class="form-horizontal" >
           <customfield v-model="window.start" type="datetime" label="Start (UT)" field="start" v-on:input="update"
-                       :errors="errors.start" desc="Time when the observing window opens."
-                       v-show="observation_type != 'TARGET_OF_OPPORTUNITY'">
+                       :errors="errors.start" desc="Time when the observing window opens.">
           </customfield>
           <customfield v-model="window.end" type="datetime" label="End (UT)" field="end" v-on:input="update"
                       :errors="errors.end" desc="Time when the observing window closes.">
@@ -58,7 +54,7 @@ import customselect from './util/customselect.vue';
 import airmass from './airmass.vue';
 
 export default {
-  props: ['window', 'index', 'errors', 'parentshow', 'simple_interface', 'observation_type'],
+  props: ['window', 'index', 'errors', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, airmass},
   mixins: [collapseMixin],
   data: function(){
