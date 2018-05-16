@@ -1,3 +1,11 @@
+## 1.14.5
+2018-05-16
+
+* Reverted restrict TOO request until end of semester
+* removed showAgMode and just use the type
+* fixed some spectra compose page inconsistencies
+* set isdirty method to use scheduler pond credentials
+
 ## 1.14.4
 2018-05-07
 
