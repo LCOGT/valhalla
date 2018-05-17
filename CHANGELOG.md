@@ -1,3 +1,9 @@
+## 1.15.0
+2018-05-17
+
+* Adjust user quota calculation
+* Revert fix/pond_isdirty
+
 ## 1.14.5
 2018-05-16
 
