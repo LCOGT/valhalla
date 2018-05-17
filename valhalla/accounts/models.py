@@ -32,7 +32,9 @@ class Profile(models.Model):
         user_requests = self.user.userrequest_set.filter(
             proposal=proposal, created__gte=proposal.current_semester.start, state__in=['PENDING', 'COMPLETED']
         ).prefetch_related('requests')
-        return sum(request.duration for user_request in user_requests for request in user_request.requests.all())
+        return sum(
+            request.duration for user_request in user_requests for request in user_request.requests.filter(state__in=['PENDING', 'COMPLETED'])
+        )
 
     @property
     def archive_bearer_token(self):
