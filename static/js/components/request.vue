@@ -130,8 +130,9 @@ export default {
     instrumentToDataType: function(value){
       if (value.includes('NRES') || value.includes('FLOYDS')) {
         return 'SPECTRA';
+      } else {
+        return 'IMAGE';
       }
-      return 'IMAGE';
     },
     moleculeFillWindow: function(molecule_id){
       console.log('moleculefillwindow');
