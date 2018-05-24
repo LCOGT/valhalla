@@ -1,3 +1,10 @@
+## 1.15.1
+2018-05-24
+
+* Allow setting ID of proposal if it is created manually
+* Fixed cloning spectroscopic requests
+* Add links to new terms of service and privacy policy
+
 ## 1.15.0
 2018-05-17
 
