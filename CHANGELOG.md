@@ -1,3 +1,8 @@
+## 1.15.2
+2018-05-24
+
+* Update celery version to get a celery bug fix
+
 ## 1.15.1
 2018-05-24
 
