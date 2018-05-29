@@ -1,5 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
+const { VueLoaderPlugin } = require('vue-loader')
 
 module.exports = {
   entry: {
@@ -60,6 +61,7 @@ module.exports = {
   },
 
   plugins: [
+    new VueLoaderPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'common',
       filename: 'common.js'

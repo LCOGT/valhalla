@@ -1,3 +1,60 @@
+## 1.15.2
+2018-05-24
+
+* Update celery version to get a celery bug fix
+
+## 1.15.1
+2018-05-24
+
+* Allow setting ID of proposal if it is created manually
+* Fixed cloning spectroscopic requests
+* Add links to new terms of service and privacy policy
+
+## 1.15.0
+2018-05-17
+
+* Adjust user quota calculation
+* Revert fix/pond_isdirty
+
+## 1.14.5
+2018-05-16
+
+* Reverted restrict TOO request until end of semester
+* removed showAgMode and just use the type
+* fixed some spectra compose page inconsistencies
+* set isdirty method to use scheduler pond credentials
+
+## 1.14.4
+2018-05-07
+
+* Re-added restriction on TOO request to within 6  hours of current time
+* Removed start time input for TOO requests
+
+## 1.14.3
+2018-05-3
+
+* Fix broken celery version pinning
+
+## 1.14.2
+2018-05-3
+
+* Include babel-polyfill for JS support in very old browsers
+
+## 1.14.1
+2018-05-2
+
+* Revert Restrict TOO request end times to within 6 hours of current time
+
+## 1.14.0
+2018-05-02
+
+* Use gunicorn for deployment instead of uwsgi
+
+## 1.13.4
+2018-05-02
+
+* Restrict TOO request end times to within 6 hours of current time
+
 ## 1.13.3
 2018-04-25
 

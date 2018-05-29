@@ -3,19 +3,18 @@ MAINTAINER Austin Riba <ariba@lco.global>
 
 EXPOSE 80
 ENV NODE_ENV production
+ENV STATIC_STORAGE whitenoise.storage.CompressedManifestStaticFilesStorage
 WORKDIR /valhalla
-CMD uwsgi --ini /etc/uwsgi.ini
+CMD gunicorn valhalla.wsgi -w 4 -k gevent -b 0.0.0.0:80 --timeout=300
 
 RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
 RUN apt-get install -y gfortran nodejs
 
 COPY requirements.txt .
-RUN pip install numpy && pip install uwsgi -r requirements.txt
+RUN pip install numpy && pip install -r requirements.txt
 
 COPY package.json package-lock.json ./
 RUN npm install && npm install --only=dev
-
-COPY docker/uwsgi.ini /etc/
 
 COPY . /valhalla
 RUN npm run build

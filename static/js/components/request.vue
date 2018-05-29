@@ -128,10 +128,11 @@ export default {
       }
     }, 300),
     instrumentToDataType: function(value){
-      if(!_.isEmpty(this.available_instruments) && value) {
-        return this.available_instruments[value].type;
+      if (value.includes('NRES') || value.includes('FLOYDS')) {
+        return 'SPECTRA';
+      } else {
+        return 'IMAGE';
       }
-      return 'IMAGE';
     },
     moleculeFillWindow: function(molecule_id){
       console.log('moleculefillwindow');

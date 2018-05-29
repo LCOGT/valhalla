@@ -81,12 +81,13 @@
       </div>
       <div class="footer">
         Copyright © 2017 Las Cumbres Observatory. All rights reserved. <br/>
+        <a href="https://lco.global/privacy-policy/">Privacy Policy</a>&nbsp;
         <a href="https://github.com/LCOGT/valhalla"><i class="fa fa-github"></i> View on Github</a>
       </div>
     </body>
     {% block javascript %}
-    <script type="text/javascript" src="{% static '/bundles/common.js' %}"></script>
-    <script type="text/javascript" src="{% static '/bundles/global.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bundles/common.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bundles/global.js' %}"></script>
     {% endblock %}
     {% block extra_javascript %}
     {% endblock %}
