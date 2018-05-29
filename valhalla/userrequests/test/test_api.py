@@ -1440,10 +1440,10 @@ class TestBlocksApi(APITestCase):
     def test_empty_blocks(self):
         responses.add(
             responses.GET,
-            '{0}/blocks/?request_num={1}'.format(
+            '{0}/blocks/?request_num={1}&limit=1000'.format(
                 settings.POND_URL, self.request.get_id_display().zfill(10)
             ),
-            body='{"results":[]}',
+            json={'next': None, 'results': []},
             status=200
         )
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
@@ -1454,10 +1454,10 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/blocks/?request_num={1}'.format(
+                '{0}/blocks/?request_num={1}&limit=1000'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
-                body=f.read(),
+                json=json.loads(f.read()),
                 status=200
             )
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
@@ -1468,10 +1468,10 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/blocks/?request_num={1}'.format(
+                '{0}/blocks/?request_num={1}&limit=1000'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
-                body=f.read(),
+                json=json.loads(f.read()),
                 status=200
             )
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
@@ -1700,7 +1700,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
                              end=now + timedelta(days=1))
 
         responses.add(responses.GET, settings.POND_URL + '/blocks/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+                json={'next': None, 'results': pond_blocks}, status=200)
         one_week_ahead = timezone.now() + timedelta(weeks=1)
         response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
@@ -1722,7 +1722,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
                                                  start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/blocks/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+                json={'next': None, 'results': pond_blocks}, status=200)
 
         one_week_ahead = timezone.now() + timedelta(weeks=1)
         response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
@@ -1750,7 +1750,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
                                                  start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
         responses.add(responses.GET, settings.POND_URL + '/blocks/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+                json={'next': None, 'results': pond_blocks}, status=200)
 
         response = self.client.get(reverse('api:isDirty'))
         response_json = response.json()

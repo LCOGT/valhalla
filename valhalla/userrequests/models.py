@@ -13,6 +13,7 @@ from valhalla.proposals.models import Proposal, TimeAllocationKey
 from valhalla.userrequests.external_serializers import BlockSerializer
 from valhalla.userrequests.target_helpers import TARGET_TYPE_HELPER_MAP
 from valhalla.common.rise_set_utils import get_rise_set_target
+from valhalla.userrequests.request_utils import return_paginated_results
 from valhalla.userrequests.duration_utils import (get_request_duration, get_molecule_duration, get_total_duration_dict,
                                                   get_semester_in)
 
@@ -183,14 +184,11 @@ class Request(models.Model):
 
     @cached_property
     def blocks(self):
+        blocks = []
+        url = '{0}/blocks/?request_num={1}&limit=1000'.format(settings.POND_URL, self.get_id_display().zfill(10))
         try:
-            response = requests.get(
-                '{0}/blocks/?request_num={1}'.format(
-                    settings.POND_URL, self.get_id_display().zfill(10)  # the pond hardcodes 0 padded strings... awesome
-                )
-            )
-            response.raise_for_status()
-            return BlockSerializer(response.json()['results'], many=True).data
+            blocks = return_paginated_results(blocks, url)
+            return BlockSerializer(blocks, many=True).data
         except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError):
             logger.error('Could not connect to the pond.')
             return BlockSerializer([], many=True).data

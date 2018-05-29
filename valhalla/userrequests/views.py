@@ -12,7 +12,6 @@ from django.urls import reverse
 from django.core.cache import cache
 from dateutil.parser import parse
 from datetime import timedelta
-import requests
 from rest_framework.views import APIView
 import logging
 
@@ -20,7 +19,7 @@ from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import (TelescopeStates, get_telescope_availability_per_day,
                                               combine_telescope_availabilities_by_site_and_class,
                                               ElasticSearchException)
-from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites
+from valhalla.userrequests.request_utils import get_airmasses_for_request_at_sites, return_paginated_results
 from valhalla.userrequests.models import UserRequest, Request
 from valhalla.userrequests.serializers import RequestSerializer
 from valhalla.userrequests.filters import UserRequestFilter
@@ -207,15 +206,14 @@ class UserRequestStatusIsDirty(APIView):
         except (TypeError, ValueError):
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
 
-        url = settings.POND_URL + '/blocks/?modified_after={0}'.format(last_query_time)
+        url = settings.POND_URL + '/blocks/?modified_after={0}&limit=1000'.format(last_query_time)
         now = timezone.now()
+        pond_blocks = []
         try:
-            response = requests.get(url)
-            response.raise_for_status()
+            pond_blocks = return_paginated_results(pond_blocks, url)
         except Exception as e:
             return HttpResponseServerError({'error': repr(e)})
 
-        pond_blocks = response.json()
         is_dirty = update_request_states_from_pond_blocks(pond_blocks)
         cache.set('isDirty_query_time', now, None)
 

@@ -1,6 +1,7 @@
 from datetime import timedelta
 from rise_set.angle import Angle
 from rise_set.astrometry import calculate_airmass_at_times
+import requests
 
 from valhalla.common.configdb import configdb
 from valhalla.common.telescope_states import TelescopeStates, filter_telescope_states_by_intervals
@@ -121,3 +122,13 @@ def exposure_completion_percentage_from_pond_block(pond_block):
         return 100.0
 
     return (completed_exposure_time / total_exposure_time) * 100.0
+
+
+def return_paginated_results(collection, url):
+    response = requests.get(url)
+    response.raise_for_status()
+    collection += response.json()['results']
+    if not response.json()['next']:
+        return collection
+    else:
+        return return_paginated_results(collection, response.json()['next'])
