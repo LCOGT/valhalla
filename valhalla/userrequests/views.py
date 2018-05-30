@@ -206,7 +206,7 @@ class UserRequestStatusIsDirty(APIView):
         except (TypeError, ValueError):
             last_query_time = cache.get('isDirty_query_time', (timezone.now() - timedelta(days=7)))
 
-        url = settings.POND_URL + '/blocks/?modified_after={0}&limit=1000'.format(last_query_time)
+        url = settings.POND_URL + '/blocks/?modified_after={0}&limit=1000'.format(last_query_time.strftime('%Y-%m-%dT%H:%M:%S.%f'))
         now = timezone.now()
         pond_blocks = []
         try:

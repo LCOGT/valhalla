@@ -1,3 +1,8 @@
+## 1.16.1
+2018-05-30
+
+* Lake compat fixes: date formats and required block fields
+
 ## 1.16.0
 2018-05-30
 
