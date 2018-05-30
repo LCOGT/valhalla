@@ -1440,10 +1440,10 @@ class TestBlocksApi(APITestCase):
     def test_empty_blocks(self):
         responses.add(
             responses.GET,
-            '{0}/pond/pond/block/request/{1}.json'.format(
+            '{0}/blocks/?request_num={1}&limit=1000'.format(
                 settings.POND_URL, self.request.get_id_display().zfill(10)
             ),
-            body='[]',
+            json={'next': None, 'results': []},
             status=200
         )
         result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
@@ -1454,10 +1454,10 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/pond/pond/block/request/{1}.json'.format(
+                '{0}/blocks/?request_num={1}&limit=1000'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
-                body=f.read(),
+                json=json.loads(f.read()),
                 status=200
             )
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)))
@@ -1468,10 +1468,10 @@ class TestBlocksApi(APITestCase):
         with open(self.TESTDATA) as f:
             responses.add(
                 responses.GET,
-                '{0}/pond/pond/block/request/{1}.json'.format(
+                '{0}/blocks/?request_num={1}&limit=1000'.format(
                     settings.POND_URL, self.request.get_id_display().zfill(10)
                 ),
-                body=f.read(),
+                json=json.loads(f.read()),
                 status=200
             )
             result = self.client.get(reverse('api:requests-blocks', args=(self.request.id,)) + '?canceled=false')
@@ -1699,8 +1699,8 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
 
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
+                json={'next': None, 'results': pond_blocks}, status=200)
         one_week_ahead = timezone.now() + timedelta(weeks=1)
         response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
         response_json = response.json()
@@ -1713,16 +1713,16 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now + timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now + timedelta(minutes=30), end=now + timedelta(minutes=40))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
+                json={'next': None, 'results': pond_blocks}, status=200)
 
         one_week_ahead = timezone.now() + timedelta(weeks=1)
         response = self.client.get(reverse('api:isDirty') + '?last_query_time=' + parse.quote(one_week_ahead.isoformat()))
@@ -1741,16 +1741,16 @@ class TestUpdateRequestStatesAPI(APITestCase):
         mixer.cycle(3).blend(Window, request=(r for r in self.requests), start=now - timedelta(days=2),
                              end=now - timedelta(days=1))
         molecules1 = basic_mixer.cycle(3).blend(PondMolecule, completed=True, failed=False, request_num=self.requests[0].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules2 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[1].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         molecules3 = basic_mixer.cycle(3).blend(PondMolecule, completed=False, failed=False, request_num=self.requests[2].id,
-                                                tracking_num=self.ur.id, event=[])
+                                                tracking_num=self.ur.id, events=[])
         pond_blocks = basic_mixer.cycle(3).blend(PondBlock, molecules=(m for m in [molecules1, molecules2, molecules3]),
                                                  start=now - timedelta(minutes=30), end=now - timedelta(minutes=20))
         pond_blocks = [pb._to_dict() for pb in pond_blocks]
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
-                      body=json.dumps(pond_blocks, cls=DjangoJSONEncoder), status=200, content_type='application/json')
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
+                json={'next': None, 'results': pond_blocks}, status=200)
 
         response = self.client.get(reverse('api:isDirty'))
         response_json = response.json()
@@ -1766,7 +1766,7 @@ class TestUpdateRequestStatesAPI(APITestCase):
 
     @responses.activate
     def test_bad_data_from_pond(self, modify_mock):
-        responses.add(responses.GET, settings.POND_URL + '/pond/pond/blocks/new/',
+        responses.add(responses.GET, settings.POND_URL + '/blocks/',
                       body='Internal Server Error', status=500, content_type='application/json')
 
         response = self.client.get(reverse('api:isDirty'))

@@ -173,7 +173,13 @@ class TestAccounting(TestCase):
     def test_query_pond(self):
         responses.add(
             responses.GET,
-            '{}/pond/pond/accounting/summary'.format(settings.POND_URL),
+            '{0}/accounting/{1}/'.format(settings.POND_URL, 'NORMAL'),
+            body='{ "block_bounded_attempted_hours": 1, "attempted_hours": 2 }',
+            content_type='application/json'
+        )
+        responses.add(
+            responses.GET,
+            '{0}/accounting/{1}/'.format(settings.POND_URL, 'TOO'),
             body='{ "block_bounded_attempted_hours": 1, "attempted_hours": 2 }',
             content_type='application/json'
         )
