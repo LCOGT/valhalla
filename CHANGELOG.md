@@ -1,3 +1,8 @@
+## 1.16.2
+2018-05-31
+
+* Re-added restriction on TOO requests to within 6 hours of current time
+
 ## 1.16.1
 2018-05-30
 
