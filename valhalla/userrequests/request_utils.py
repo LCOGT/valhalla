@@ -111,8 +111,8 @@ def exposure_completion_percentage_from_pond_block(pond_block):
         exp_cnt = molecule['exposure_count']
         if molecule['completed']:
             completed_exp_cnt = exp_cnt
-        elif 'completedExposures' in event:
-            completed_exp_cnt = event['completedExposures']
+        elif 'completed_exposures' in event:
+            completed_exp_cnt = event['completed_exposures']
         else:
             completed_exp_cnt = 0
         total_exposure_time += exp_time * exp_cnt

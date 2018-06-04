@@ -94,7 +94,7 @@ class TestStateFromPondBlocks(TestCase):
 
     def test_pond_blocks_failed_but_threshold_complete(self):
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 9,}],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 9,}],
                                          exposure_time=100, exposure_count=10)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, canceled=False, start=now - timedelta(minutes=30),
                                    end=now + timedelta(minutes=20))._to_dict()]
@@ -105,7 +105,7 @@ class TestStateFromPondBlocks(TestCase):
 
     def test_pond_blocks_failed_and_threshold_failed(self):
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 9,}],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 9,}],
                                          exposure_time=100, exposure_count=10)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, canceled=False, start=now - timedelta(minutes=30),
                                    end=now + timedelta(minutes=20))._to_dict()]
@@ -116,9 +116,9 @@ class TestStateFromPondBlocks(TestCase):
 
     def test_pond_blocks_failed_but_threshold_complete_multi(self):
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 0,}],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 0,}],
                                          exposure_time=10, exposure_count=1)
-        molecules.append(mixer.blend(PondMolecule, completed=True, failed=False, events=[{'completedExposures': 10,}],
+        molecules.append(mixer.blend(PondMolecule, completed=True, failed=False, events=[{'completed_exposures': 10,}],
                                      exposure_time=100, exposure_count=10))
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, canceled=False, start=now - timedelta(minutes=30),
                                    end=now + timedelta(minutes=20))._to_dict()]
@@ -267,7 +267,7 @@ class TestRequestState(TestCase):
         request = dmixer.blend(Request, state='PENDING', acceptability_threshold=90.0)
 
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 9},],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 9},],
                                          exposure_time=100, exposure_count=10)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
@@ -282,9 +282,9 @@ class TestRequestState(TestCase):
         request = dmixer.blend(Request, state='PENDING', acceptability_threshold=70.0)
 
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 0},],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 0},],
                                          exposure_time=100, exposure_count=1)
-        molecules.append(mixer.blend(PondMolecule, completed=True, failed=False, events=[{'completedExposures': 10,}],
+        molecules.append(mixer.blend(PondMolecule, completed=True, failed=False, events=[{'completed_exposures': 10,}],
                                      exposure_time=100, exposure_count=10))
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]
@@ -300,7 +300,7 @@ class TestRequestState(TestCase):
         fail_count = request.fail_count
 
         now = timezone.now()
-        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completedExposures': 9},],
+        molecules = mixer.cycle(4).blend(PondMolecule, completed=False, failed=True, events=[{'completed_exposures': 9},],
                                          exposure_time=100, exposure_count=10)
         pond_blocks = [mixer.blend(PondBlock, molecules=molecules, start=now - timedelta(minutes=30), end=now + timedelta(minutes=30))._to_dict(),
                        mixer.blend(PondBlock, molecules=molecules)._to_dict()]

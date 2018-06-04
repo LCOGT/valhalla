@@ -10,7 +10,7 @@ class EventSerializer(serializers.Serializer):
     end = serializers.CharField()
     state = serializers.CharField()
     reason = serializers.CharField()
-    completedExposures = serializers.IntegerField(required=False)
+    completed_exposures = serializers.IntegerField(required=False)
 
 
 class BlockMoleculeSerializer(serializers.Serializer):
