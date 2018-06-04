@@ -1,3 +1,8 @@
+## 1.16.3
+2018-06-04
+
+* Fix attribute naming and isdirty filtering
+
 ## 1.16.2
 2018-05-31
 
