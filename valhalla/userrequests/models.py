@@ -185,7 +185,7 @@ class Request(models.Model):
     @cached_property
     def blocks(self):
         blocks = []
-        url = '{0}/blocks/?request_num={1}&limit=1000'.format(settings.POND_URL, self.get_id_display().zfill(10))
+        url = '{0}/blocks/?request_num={1}&ordering=-id&limit=1000'.format(settings.POND_URL, self.get_id_display().zfill(10))
         try:
             blocks = return_paginated_results(blocks, url)
             return BlockSerializer(blocks, many=True).data
