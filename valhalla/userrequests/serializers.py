@@ -448,7 +448,7 @@ class UserRequestSerializer(serializers.ModelSerializer):
                         for window in windows:
                             if window.get('start') - timezone.now() > timedelta(seconds=0):
                                 raise serializers.ValidationError(
-                                    _("Rapid Response observations must begin immediately.")
+                                    _("The Rapid Response observation window start time cannot be in the future.")
                                 )
                             if window.get('end') - timezone.now() > timedelta(seconds=(duration + 21600)):
                                 raise serializers.ValidationError(
