@@ -1,3 +1,9 @@
+## 1.16.4
+2018-06-18
+
+* Change RR window start time error message for more clarity
+* Change ordering of /blocks/ endpoint back to natural id order
+
 ## 1.16.3
 2018-06-04
 
