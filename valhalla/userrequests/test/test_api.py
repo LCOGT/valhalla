@@ -216,7 +216,7 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['windows'][0]['end'] = timezone.now() + timedelta(0, 18000)
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
-        self.assertIn('must begin immediately.', str(response.content))
+        self.assertIn('cannot be in the future.', str(response.content))
 
     def test_post_userrequest_too_within_six_hours(self):
         data = self.generic_payload.copy()
