@@ -4,6 +4,7 @@ from registration.forms import RegistrationFormTermsOfService, RegistrationFormU
 
 from valhalla.accounts.models import Profile
 from valhalla.proposals.models import ProposalInvite
+from valhalla.celery import send_mail
 
 
 class CustomRegistrationForm(RegistrationFormTermsOfService, RegistrationFormUniqueEmail):
@@ -85,3 +86,15 @@ class ProfileForm(forms.ModelForm):
             ),
             'view_authored_requests_only': 'Only requests that were authored by you will be visible.',
         }
+
+
+class AccountRemovalForm(forms.Form):
+    reason = forms.CharField(widget=forms.Textarea)
+
+    def send_email(self, user):
+        message = 'User {0} would like their account removed.\nReason:\n {1}'.format(
+            user.email, self.cleaned_data['reason']
+        )
+        send_mail.delay(
+           'Account removal request submitted', message, 'portal@lco.global', ['science-support@lco.global']
+        )

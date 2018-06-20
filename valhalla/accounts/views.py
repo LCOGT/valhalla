@@ -1,13 +1,14 @@
 from django.views.generic.base import TemplateView, View
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
 from django.contrib import messages
+from django.views.generic.edit import FormView
 
-from valhalla.accounts.forms import UserForm, ProfileForm
+from valhalla.accounts.forms import UserForm, ProfileForm, AccountRemovalForm
 from valhalla.accounts.serializers import UserSerializer
 
 
@@ -50,3 +51,14 @@ class RevokeAPITokenView(LoginRequiredMixin, View):
         Token.objects.create(user=request.user)
         messages.success(request, 'API token revoked.')
         return redirect(reverse('profile'))
+
+
+class AccountRemovalRequestView(LoginRequiredMixin, FormView):
+    template_name = 'auth/account_removal.html'
+    form_class = AccountRemovalForm
+    success_url = reverse_lazy('profile')
+
+    def form_valid(self, form):
+        form.send_email(self.request.user)
+        messages.success(self.request, 'Account removal request successfully submitted')
+        return super().form_valid(form)
