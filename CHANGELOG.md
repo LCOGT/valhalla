@@ -1,3 +1,8 @@
+## 1.16.5
+2018-06-21
+
+* Change some date stuff to use moment.utc in compose page
+
 ## 1.16.4
 2018-06-18
 
