@@ -163,7 +163,7 @@
             }],
             windows:[{
               start: moment.utc().format(datetimeFormat),
-              end: moment.utc().format(datetimeFormat)
+              end: moment.utc().add("days", 1).format(datetimeFormat)
             }],
             location:{
               telescope_class: ''
@@ -199,14 +199,6 @@
         });
       }, 200),
       submit: function(){
-        if (this.userrequest.observation_type === 'TARGET_OF_OPPORTUNITY'){
-          for (var index = 0; index < this.userrequest.requests.length; ++index) {
-            for (var windowIndex = 0; windowIndex < this.userrequest.requests[index].windows.length; ++windowIndex) {
-              this.userrequest.requests[index].windows[windowIndex].start = moment.utc().format(datetimeFormat);
-            }
-          }
-        }
-
         var duration = moment.duration(this.duration_data.duration, 'seconds');
         var duration_string = '';
         if(duration.hours() > 0){
