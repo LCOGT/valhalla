@@ -162,8 +162,8 @@
               ag_mode: 'OPTIONAL'
             }],
             windows:[{
-              start: moment().format(datetimeFormat),
-              end: moment().format(datetimeFormat)
+              start: moment.utc().format(datetimeFormat),
+              end: moment.utc().format(datetimeFormat)
             }],
             location:{
               telescope_class: ''
@@ -202,7 +202,7 @@
         if (this.userrequest.observation_type === 'TARGET_OF_OPPORTUNITY'){
           for (var index = 0; index < this.userrequest.requests.length; ++index) {
             for (var windowIndex = 0; windowIndex < this.userrequest.requests[index].windows.length; ++windowIndex) {
-              this.userrequest.requests[index].windows[windowIndex].start = new Date($.now());
+              this.userrequest.requests[index].windows[windowIndex].start = moment.utc().format(datetimeFormat);
             }
           }
         }
