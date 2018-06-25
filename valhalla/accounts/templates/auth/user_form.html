@@ -37,6 +37,9 @@
         other clients.</p>
         <p>The rate limit is applied on a 24 hour rolling window. Your current quota is:</p>
         <p><strong>{{ user.profile.api_quota.used }} out of {{ user.profile.api_quota.allowed }}</strong></p>
+        <h2>Account Removal</h2>
+        <p>You may request that your account be deleted.<p>
+        <a href="{% url 'account-removal' %}" title="Request account removal">Request account removal</a>
     </div>
 </div>
 {% endblock %}

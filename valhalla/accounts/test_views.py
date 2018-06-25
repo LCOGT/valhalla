@@ -4,6 +4,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.contrib import auth
 from mixer.backend.django import mixer
+from django.core import mail
 
 from valhalla.common.test_helpers import ConfigDBTestMixin
 from valhalla.accounts.models import Profile
@@ -226,3 +227,17 @@ class TestToken(TestCase):
         token_key = self.user.profile.api_token.key
         self.client.post(reverse('revoke-api-token'))
         self.assertNotEqual(token_key, self.user.profile.api_token.key)
+
+
+class TestAccountRemovalRequest(TestCase):
+    def setUp(self):
+        self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
+        self.client.force_login(self.user)
+
+    def test_request_sends_email(self):
+        form_data = {'reason': 'Because I hate Astronomy'}
+        response = self.client.post(reverse('account-removal'), form_data, follow=True)
+        self.assertContains(response, 'Account removal request successfully submitted')
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(form_data['reason'], str(mail.outbox[0].message()))
