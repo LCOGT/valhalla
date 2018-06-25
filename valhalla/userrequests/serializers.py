@@ -191,11 +191,15 @@ class LocationSerializer(serializers.ModelSerializer):
 
 
 class WindowSerializer(serializers.ModelSerializer):
+    start = serializers.DateTimeField(required=False)
+
     class Meta:
         model = Window
         exclude = Window.SERIALIZER_EXCLUDE
 
     def validate(self, data):
+        if 'start' not in data:
+            data['start'] = timezone.now()
         if data['end'] <= data['start']:
             msg = _("Window end '{}' cannot be earlier than window start '{}'.").format(data['end'], data['start'])
             raise serializers.ValidationError(msg)

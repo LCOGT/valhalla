@@ -96,6 +96,7 @@ import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
 import {QueryString} from '../utils.js';
+import {datetimeFormat} from '../utils.js';
 
 export default {
   props: ['errors', 'userrequest', 'duration_data'],
@@ -172,6 +173,19 @@ export default {
   watch: {
     'userrequest.requests.length': function(value){
       this.userrequest.operator = value > 1 ? 'MANY' : 'SINGLE';
+    },
+    'userrequest.observation_type': function(value){
+      for (var index = 0; index < this.userrequest.requests.length; ++index) {
+        for (var windowIndex = 0; windowIndex < this.userrequest.requests[index].windows.length; ++windowIndex) {
+          if (value === 'TARGET_OF_OPPORTUNITY'){
+            delete this.userrequest.requests[index].windows[windowIndex].start;
+            this.userrequest.requests[index].windows[windowIndex].end = moment.utc().add('hours', 6).format(datetimeFormat);
+          }
+          else{
+            this.userrequest.requests[index].windows[windowIndex].start = moment.utc().format(datetimeFormat);
+          }
+        }
+      }
     }
   },
   methods: {
