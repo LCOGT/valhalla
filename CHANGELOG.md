@@ -1,3 +1,9 @@
+## 1.16.6
+2018-06-25
+
+* Fix RR timing issues by moving logic server side
+* Add an account removal request form
+
 ## 1.16.5
 2018-06-21
 
