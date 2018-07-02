@@ -2198,6 +2198,18 @@ class TestMaxIppUserrequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
         self.assertEqual(1.649, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value'])
 
+    def test_get_max_ipp_rounds_down(self):
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['exposure_time'] = 90.0 * 60.0  # 90 minute exposure (1.0 ipp available)
+        self.time_allocation_1m0_sbig.ipp_time_available = 1.33
+        self.time_allocation_1m0_sbig.save()
+        response = self.client.post(reverse('api:user_requests-max-allowable-ipp'), good_data)
+        self.assertEqual(response.status_code, 200)
+        ipp_dict = response.json()
+        self.assertIn(self.semester.id, ipp_dict)
+        # max ipp allowable is close to 1.0 ipp_available / 1.5 ~duration + 1.
+        self.assertEqual(1.863, ipp_dict[self.semester.id]['1m0']['1M0-SCICAM-SBIG']['max_allowable_ipp_value'])
+
     def test_get_max_ipp_no_ipp_available(self):
         good_data = self.generic_payload.copy()
         good_data['ipp_value'] = 2.0

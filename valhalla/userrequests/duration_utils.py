@@ -1,6 +1,6 @@
 import itertools
 from django.utils.translation import ugettext as _
-from math import ceil
+from math import ceil, floor
 import logging
 
 from valhalla.proposals.models import TimeAllocationKey, Proposal, Semester
@@ -81,7 +81,7 @@ def get_max_ipp_for_userrequest(userrequest_dict):
         duration_hours = duration / 3600.0
         ipp_available = time_allocation.ipp_time_available
         max_ipp_allowable = min((ipp_available / duration_hours) + 1.0, MAX_IPP_LIMIT)
-        truncated_max_ipp_allowable = ((max_ipp_allowable * 1000.0) // 1) / 1000.0
+        truncated_max_ipp_allowable = floor(max_ipp_allowable * 1000.0) / 1000.0
         if tak.semester not in ipp_dict:
             ipp_dict[tak.semester] = {}
         if tak.telescope_class not in ipp_dict[tak.semester]:

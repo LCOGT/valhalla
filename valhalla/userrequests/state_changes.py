@@ -9,7 +9,7 @@ from valhalla.userrequests.models import UserRequest, Request
 import itertools
 import logging
 import dateutil.parser
-from math import isclose
+from math import isclose, floor
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ def validate_ipp(ur_dict, total_duration_dict):
         duration_hours = duration / 3600.0
         if time_allocations_dict[tak] < (duration_hours * ipp_value):
             max_ipp_allowable = (time_allocations_dict[tak] / duration_hours) + 1.0
-            truncated_max_ipp_allowable = ((max_ipp_allowable * 1000.0) // 1) / 1000.0
+            truncated_max_ipp_allowable = floor(max_ipp_allowable * 1000.0) / 1000.0
             msg = _(("{}-{}'{}' ipp_value of {} requires more ipp_time then is available. "
                      "Please lower your ipp_value to <= {} and submit again.")).format(
                 tak.telescope_class,
