@@ -1,3 +1,8 @@
+## 1.16.7
+2018-07-05
+
+* Fix IPP rounding error on max_allowable_ipp endpoint
+
 ## 1.16.6
 2018-06-25
 
