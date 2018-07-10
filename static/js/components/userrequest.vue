@@ -182,7 +182,9 @@ export default {
             this.userrequest.requests[index].windows[windowIndex].end = moment.utc().add('hours', 6).format(datetimeFormat);
           }
           else{
-            this.userrequest.requests[index].windows[windowIndex].start = moment.utc().format(datetimeFormat);
+            if (!('start' in this.userrequest.requests[index].windows[windowIndex])) {
+              this.userrequest.requests[index].windows[windowIndex].start = moment.utc().format(datetimeFormat);
+            }
           }
         }
       }
