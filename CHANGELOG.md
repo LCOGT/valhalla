@@ -1,3 +1,8 @@
+## 1.16.8
+2018-07-10
+
+* Fix bug in replacing start times of loaded draft requests
+
 ## 1.16.7
 2018-07-05
 
