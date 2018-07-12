@@ -103,7 +103,7 @@ class TelescopeStates(object):
             events_read += len(data['hits']['hits'])
         return event_data
 
-    def _belongs_in_lump(self, event_source, lump_data, dt=60):
+    def _belongs_in_lump(self, event_source, lump_data, dt=5):
         if str(lump_data['telescope']) != str(self._telescope(event_source)):
             return False
 
