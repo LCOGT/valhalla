@@ -1,3 +1,8 @@
+## 1.16.9
+2018-07-12
+
+* Fix a bug in telescope states merging states too permissively 
+
 ## 1.16.8
 2018-07-10
 
