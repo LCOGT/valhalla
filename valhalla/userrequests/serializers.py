@@ -267,7 +267,8 @@ class RequestSerializer(serializers.ModelSerializer):
 
         # Validate autoguiders - empty string for default behavior, or match with instrument name for self guiding
         for molecule in value:
-            if str(molecule['ag_name']).lower() not in ['', str(molecule['instrument_name']).lower()]:
+            allowed_autoguiders = ['', str(molecule['instrument_name']).lower()]
+            if 'ag_name' in molecule and str(molecule['ag_name']).lower() not in allowed_autoguiders:
                 raise serializers.ValidationError(_('Molecule `ag_name` must be blank or same as `instrument_name`'))
 
         if sum([mol.get('fill_window', False) for mol in value]) > 1:
