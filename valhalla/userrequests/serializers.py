@@ -265,6 +265,11 @@ class RequestSerializer(serializers.ModelSerializer):
         if len(set(molecule['instrument_name'] for molecule in value)) > 1:
             raise serializers.ValidationError(_('Each Molecule must specify the same instrument name'))
 
+        # Validate autoguiders - empty string for default behavior, or match with instrument name for self guiding
+        for molecule in value:
+            if str(molecule['ag_name']).lower() not in ['', str(molecule['instrument_name']).lower()]:
+                raise serializers.ValidationError(_('Molecule `ag_name` must be blank or same as `instrument_name`'))
+
         if sum([mol.get('fill_window', False) for mol in value]) > 1:
             raise serializers.ValidationError(_('Only one molecule can have `fill_window` set'))
 
