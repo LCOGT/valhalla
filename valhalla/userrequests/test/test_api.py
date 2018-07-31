@@ -46,6 +46,7 @@ generic_payload = {
             'exposure_count': 1,
             'bin_x': 1,
             'bin_y': 1,
+            'ag_name': '',
         }],
         'windows': [{
             'start': '2016-09-29T21:12:18Z',
@@ -172,6 +173,21 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         bad_data['requests'][0]['molecules'] = []
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
+
+    def test_post_userrequest_validate_autoguider(self):
+        data = self.generic_payload.copy()
+        # Verify invalid autoguider string fails validation
+        data['requests'][0]['molecules'][0]['ag_name'] = 'invalidAutoguider'
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 400)
+        # Verify empty string passes validation and creates UR
+        data['requests'][0]['molecules'][0]['ag_name'] = ''
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 201)
+        # Verify instrument_name as ag_name passes validation and creates UR
+        data['requests'][0]['molecules'][0]['ag_name'] = data['requests'][0]['molecules'][0]['instrument_name']
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 201)
 
     def test_post_userrequest_no_requests(self):
         bad_data = self.generic_payload.copy()
@@ -1630,6 +1646,7 @@ class TestAirmassApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
                 'exposure_count': 1,
                 'bin_x': 1,
                 'bin_y': 1,
+                'ag_name': ''
             }],
             'windows': [{
                 'start': '2016-09-29T21:12:18Z',
