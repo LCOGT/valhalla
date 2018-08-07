@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core import mail
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
 from mixer.backend.django import mixer
@@ -224,3 +225,19 @@ class TestDefaultIPP(TestCase):
         ta.ipp_time_available = 0
         ta.save()
         self.assertEqual(ta.ipp_time_available, 0)
+
+
+class TestProposalAdmin(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'password')
+        self.client.force_login(self.admin_user)
+        self.proposals = mixer.cycle(3).blend(Proposal, active=False)
+
+    def test_activate_selected(self):
+        self.client.post(
+            reverse('admin:proposals_proposal_changelist'),
+            data={'action': 'activate_selected', '_selected_action': [str(proposal.pk) for proposal in self.proposals]},
+            follow=True
+        )
+        for proposal in self.proposals:
+            self.assertEqual(Proposal.objects.get(pk=proposal.id).active, True)
