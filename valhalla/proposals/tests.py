@@ -12,7 +12,6 @@ import responses
 import datetime
 
 from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification, TimeAllocation, Semester
-from valhalla.proposals.admin import ProposalAdmin
 from valhalla.userrequests.models import UserRequest, Molecule
 from valhalla.accounts.models import Profile
 from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
