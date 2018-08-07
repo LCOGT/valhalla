@@ -235,9 +235,6 @@ class TestProposalAdmin(TestCase):
         self.proposals = mixer.cycle(3).blend(Proposal, active=False)
 
     def test_activate_selected(self):
-        for proposal in self.proposals:
-            self.assertEqual(Proposal.objects.get(pk=proposal.id).active, False)
-
         self.client.post(
             reverse('admin:proposals_proposal_changelist'),
             data={'action': 'activate_selected', '_selected_action': [str(proposal.pk) for proposal in self.proposals]},
