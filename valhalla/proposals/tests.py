@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.core import mail
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.urls import reverse
 from django.conf import settings
 from django.utils import timezone
 from mixer.backend.django import mixer
@@ -11,6 +12,7 @@ import responses
 import datetime
 
 from valhalla.proposals.models import ProposalInvite, Proposal, Membership, ProposalNotification, TimeAllocation, Semester
+from valhalla.proposals.admin import ProposalAdmin
 from valhalla.userrequests.models import UserRequest, Molecule
 from valhalla.accounts.models import Profile
 from valhalla.proposals.accounting import split_time, get_time_totals_from_pond, query_pond
@@ -224,3 +226,22 @@ class TestDefaultIPP(TestCase):
         ta.ipp_time_available = 0
         ta.save()
         self.assertEqual(ta.ipp_time_available, 0)
+
+
+class TestProposalAdmin(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser('admin', 'admin@example.com', 'password')
+        self.client.force_login(self.admin_user)
+        self.proposals = mixer.cycle(3).blend(Proposal, active=False)
+
+    def test_activate_selected(self):
+        for proposal in self.proposals:
+            self.assertEqual(Proposal.objects.get(pk=proposal.id).active, False)
+
+        self.client.post(
+            reverse('admin:proposals_proposal_changelist'),
+            data={'action': 'activate_selected', '_selected_action': [str(proposal.pk) for proposal in self.proposals]},
+            follow=True
+        )
+        for proposal in self.proposals:
+            self.assertEqual(Proposal.objects.get(pk=proposal.id).active, True)
