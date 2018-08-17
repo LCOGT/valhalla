@@ -137,8 +137,8 @@ export default {
       }
     },
     updateAcceptabilityThreshold: function(instrument) {
-      var floydsDefaultAcceptability = 100;
-      var otherDefaultAcceptability = 90;
+      const floydsDefaultAcceptability = 100;
+      const otherDefaultAcceptability = 90;
       var currentAcceptability = this.request.acceptability_threshold;
       if (instrument === '2M0-FLOYDS-SCICAM') {
         if (currentAcceptability === '' || Number(currentAcceptability) === otherDefaultAcceptability) {
