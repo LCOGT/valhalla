@@ -240,5 +240,9 @@ class ConfigDB(object):
     def is_nres(instrument_type):
         return 'NRES' in instrument_type.upper()
 
+    @staticmethod
+    def is_floyds(instrument_type):
+        return 'FLOYDS' in instrument_type.upper()
+
 
 configdb = ConfigDB()

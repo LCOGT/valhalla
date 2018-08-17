@@ -358,6 +358,21 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('the target is visible for a maximum of', str(response.content))
 
+    def test_post_userrequest_default_acceptability_threshold(self):
+        data = self.generic_payload.copy()
+        # Test that default threshold for non-floyds is 90
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['requests'][0]['acceptability_threshold'], 90)
+        # Test that default threshold for floyds is 100
+        data['requests'][0]['location']['telescope_class'] = '2m0'
+        data['requests'][0]['molecules'][0]['instrument_name'] = '2M0-FLOYDS-SCICAM'
+        data['requests'][0]['molecules'][0]['type'] = 'SPECTRUM'
+        data['requests'][0]['molecules'][0]['spectra_slit'] = 'slit_6.0as'
+        response = self.client.post(reverse('api:user_requests-list'), data=data)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()['requests'][0]['acceptability_threshold'], 100)
+
 
 class TestDisallowedMethods(APITestCase):
     def setUp(self):
