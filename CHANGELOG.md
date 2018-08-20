@@ -1,3 +1,6 @@
+## 1.16.11
+* Set the default acceptability threshold for FLOYDS to 100, other instruments remain at 90.
+
 ## 1.16.10
 2018-08-07
 
