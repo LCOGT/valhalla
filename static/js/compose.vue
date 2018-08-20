@@ -139,7 +139,7 @@
           operator: 'SINGLE',
           observation_type: 'NORMAL',
           requests: [{
-            acceptability_threshold: 90.0,
+            acceptability_threshold: '',
             target: {
               name: '',
               type: 'SIDEREAL',

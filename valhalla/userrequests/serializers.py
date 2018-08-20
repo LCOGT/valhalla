@@ -290,7 +290,11 @@ class RequestSerializer(serializers.ModelSerializer):
     def validate(self, data):
         # Target special validation
         if configdb.is_spectrograph(data['molecules'][0]['instrument_name']) and 'rot_mode' not in data['target']:
-                data['target']['rot_mode'] = 'VFLOAT'
+            data['target']['rot_mode'] = 'VFLOAT'
+
+        # Set special acceptability threshold default for floyds
+        if configdb.is_floyds(data['molecules'][0]['instrument_name']) and 'acceptability_threshold' not in data:
+            data['acceptability_threshold'] = 100
 
         # check if the instrument specified is allowed
         valid_instruments = configdb.get_active_instrument_types(data['location'])

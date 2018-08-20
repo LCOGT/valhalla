@@ -104,6 +104,7 @@ export default {
     },
     instrument_name: function(value){
       if(value){
+        this.updateAcceptabilityThreshold(value);
         this.request.location.telescope_class = this.available_instruments[value].class.toLowerCase();
       }
     },
@@ -133,6 +134,23 @@ export default {
         return 'SPECTRA';
       } else {
         return 'IMAGE';
+      }
+    },
+    updateAcceptabilityThreshold: function(instrument) {
+      const floydsDefaultAcceptability = 100;
+      const otherDefaultAcceptability = 90;
+      var currentAcceptability = this.request.acceptability_threshold;
+      if (instrument === '2M0-FLOYDS-SCICAM') {
+        if (currentAcceptability === '' || Number(currentAcceptability) === otherDefaultAcceptability) {
+          // Initialize default value, or update the value if it was the non-floyds default - this means that the user
+          // probably didn't modify the threshold (If they did modify it, it should probably stay at what they set).
+          this.request.acceptability_threshold = floydsDefaultAcceptability;
+        }
+      } else {
+        if (currentAcceptability === '' || Number(currentAcceptability) === floydsDefaultAcceptability) {
+          // Initialize default value, or update accordingly.
+          this.request.acceptability_threshold = otherDefaultAcceptability;
+        }
       }
     },
     moleculeFillWindow: function(molecule_id){
