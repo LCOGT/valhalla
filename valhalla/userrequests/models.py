@@ -365,7 +365,8 @@ class Molecule(models.Model):
         ('NRES_TEST', 'NRES_TEST'),
         ('NRES_SPECTRUM', 'NRES_SPECTRUM'),
         ('NRES_EXPOSE', 'NRES_EXPOSE'),
-        ('ENGINEERING', 'ENGINEERING')
+        ('ENGINEERING', 'ENGINEERING'),
+        ('SCRIPT', 'SCRIPT')
     )
 
     AG_MODES = (
