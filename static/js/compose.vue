@@ -140,16 +140,7 @@
           observation_type: 'NORMAL',
           requests: [{
             acceptability_threshold: '',
-            target: {
-              name: '',
-              type: 'SIDEREAL',
-              ra: null,
-              dec: null,
-              proper_motion_ra: 0.0,
-              proper_motion_dec: 0.0,
-              epoch: 2000,
-              parallax: 0,
-            },
+            target: this.initializeTarget(),
             molecules:[{
               type: 'EXPOSE',
               instrument_name: '',
@@ -185,6 +176,28 @@
       }
     },
     methods: {
+      initializeTarget: function () {
+        // All query parameters besides redirect_url are assumed to be target fields
+        let targetParameters = _.clone(this.$route.query);
+
+        delete targetParameters.redirect_url;
+
+        if ($.isEmptyObject(targetParameters)) {
+          // If there are no target parameters supplied, fill in some defaults
+          return {
+            name: '',
+            type: 'SIDEREAL',
+            ra: null,
+            dec: null,
+            proper_motion_ra: 0.0,
+            proper_motion_dec: 0.0,
+            epoch: 2000,
+            parallax: 0,
+          };
+        } else {
+            return targetParameters;
+        }
+      },
       validate: _.debounce(function(){
         var that = this;
         $.ajax({
@@ -213,9 +226,18 @@
             data: JSON.stringify(that.userrequest),
             contentType: 'application/json',
             success: function(data){
-              window.location = '/userrequests/' + data.id;
+              window.location = that.redirectUrl(data.id);
             }
           });
+        }
+      },
+      redirectUrl: function (userrequestId) {
+        if (this.$route.query.redirect_url) {
+          let url = this.$route.query.redirect_url;
+          if (!_.endsWith(url, '/')) { url = url.concat('/'); }
+          return url.concat('?', $.param({ userrequestId: userrequestId }, true));
+        } else {
+          return '/userrequests/' + userrequestId;
         }
       },
       userrequestUpdated: function(){
