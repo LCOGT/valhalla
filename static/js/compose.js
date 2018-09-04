@@ -4,7 +4,6 @@ import $ from 'jquery';
 import {formatDate} from './utils.js';
 import App from './compose.vue';
 
-
 Vue.mixin({
   computed: {
     _: function(){
