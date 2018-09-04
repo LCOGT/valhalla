@@ -124,7 +124,7 @@
   import drafts from './components/drafts.vue';
   import sidenav from './components/sidenav.vue';
   import alert from './components/util/alert.vue';
-  import {datetimeFormat} from './utils.js';
+  import {datetimeFormat, QueryString} from './utils.js';
   export default {
     name: 'app',
     components: {userrequest, drafts, sidenav, alert},
@@ -177,8 +177,8 @@
     },
     methods: {
       initializeTarget: function () {
-        // All query parameters besides redirect_url are assumed to be target fields
-        let targetParameters = _.clone(this.$route.query);
+        // All query parameters besides redirect_url are assumed to be valid target fields
+        let targetParameters = QueryString();
 
         delete targetParameters.redirect_url;
 
@@ -232,9 +232,11 @@
         }
       },
       redirectUrl: function (userrequestId) {
-        if (this.$route.query.redirect_url) {
-          let url = this.$route.query.redirect_url;
-          if (!_.endsWith(url, '/')) { url = url.concat('/'); }
+        if (QueryString().redirect_url) {
+          let url = QueryString().redirect_url;
+          if (!_.endsWith(url, '/')) {
+            url = url.concat('/');
+          }
           return url.concat('?', $.param({ userrequestId: userrequestId }, true));
         } else {
           return '/userrequests/' + userrequestId;
