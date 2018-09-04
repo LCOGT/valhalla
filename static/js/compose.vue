@@ -177,13 +177,12 @@
     },
     methods: {
       initializeTarget: function () {
-        // All query parameters besides redirect_url are assumed to be valid target fields
+        // If they exist, any query parameters besides redirect_url are assumed target fields per the API.
         let targetParameters = QueryString();
-
         delete targetParameters.redirect_url;
-
-        if ($.isEmptyObject(targetParameters)) {
-          // If there are no target parameters supplied, fill in some defaults
+        if (!$.isEmptyObject(targetParameters)) {
+          return targetParameters;
+        } else {
           return {
             name: '',
             type: 'SIDEREAL',
@@ -194,8 +193,6 @@
             epoch: 2000,
             parallax: 0,
           };
-        } else {
-            return targetParameters;
         }
       },
       validate: _.debounce(function(){
