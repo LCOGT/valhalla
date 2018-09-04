@@ -178,7 +178,7 @@
     methods: {
       initializeTarget: function () {
         // If they exist, any query parameters besides redirect_url are assumed target fields per the API.
-        let targetParameters = QueryString();
+        var targetParameters = QueryString();
         delete targetParameters.redirect_url;
         if (!$.isEmptyObject(targetParameters)) {
           return targetParameters;
@@ -230,7 +230,7 @@
       },
       redirectUrl: function (userrequestId) {
         if (QueryString().redirect_url) {
-          let url = QueryString().redirect_url;
+          var url = QueryString().redirect_url;
           if (!_.endsWith(url, '/')) {
             url = url.concat('/');
           }
