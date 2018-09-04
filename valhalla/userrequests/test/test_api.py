@@ -1211,6 +1211,19 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=good_data)
         self.assertEqual(response.status_code, 201)
 
+    def test_args_required_for_script_type(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['type'] = 'SCRIPT'
+        bad_data['requests'][0]['molecules'][0]['args'] = ''
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertIn('must supply script name', str(response.content))
+        self.assertEqual(response.status_code, 400)
+
+        good_data = bad_data
+        good_data['requests'][0]['molecules'][0]['args'] = 'auto_focus'
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        self.assertEqual(response.status_code, 201)
+
     def test_zero_length_exposure_not_allowed(self):
         bad_data = self.generic_payload.copy()
         bad_data['requests'][0]['molecules'][0]['exposure_time'] = 0

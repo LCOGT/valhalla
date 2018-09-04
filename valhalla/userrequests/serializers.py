@@ -92,6 +92,11 @@ class MoleculeSerializer(serializers.ModelSerializer):
             if data['ag_mode'] is not 'ON':
                 raise serializers.ValidationError({'ag_mode': _('Autoguiding must be on for {} observations.'.format(data['type']))})
 
+        # Check if type is script, then args field is not blank
+        if data['type'].lower() == 'script':
+            if 'args' not in data or not data['args']:
+                raise serializers.ValidationError({'args': _('Script type molecules must supply script name as args')})
+
         # check that the filter is available in the instrument type specified
         available_filters = configdb.get_filters(data['instrument_name'])
         if configdb.is_spectrograph(data['instrument_name']):

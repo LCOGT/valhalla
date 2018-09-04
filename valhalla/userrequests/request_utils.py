@@ -19,7 +19,8 @@ MOLECULE_TYPE_DISPLAY = {
   'NRES_TEST': 'NRES Test',
   'NRES_SPECTRUM': 'NRES Spectrum',
   'NRES_EXPOSE': 'NRES Expose',
-  'ENGINEERING': 'Engineering'
+  'ENGINEERING': 'Engineering',
+  'SCRIPT': 'Script'
 }
 
 
