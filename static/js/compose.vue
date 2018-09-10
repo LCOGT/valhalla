@@ -234,7 +234,7 @@
           if (!_.endsWith(url, '/')) {
             url = url.concat('/');
           }
-          return url.concat('?', $.param({ userrequestId: userrequestId }, true));
+          return url.concat('?', $.param({ userrequest_id: userrequestId }, true));
         } else {
           return '/userrequests/' + userrequestId;
         }
