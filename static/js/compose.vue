@@ -231,10 +231,12 @@
       redirectUrl: function (userrequestId) {
         if (QueryString().redirect_url) {
           var url = QueryString().redirect_url;
+          var facility = QueryString().facility;
+          var target_id = QueryString().target_id;
           if (!_.endsWith(url, '/')) {
             url = url.concat('/');
           }
-          return url.concat('?', $.param({ userrequest_id: userrequestId }, true));
+          return url.concat('?', $.param({ userrequest_id: userrequestId, facility: facility, target_id: target_id}, true));
         } else {
           return '/userrequests/' + userrequestId;
         }
