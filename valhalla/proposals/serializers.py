@@ -19,8 +19,7 @@ class ProposalSerializer(serializers.ModelSerializer):
             mem.user.username: {
                 'first_name': mem.user.first_name,
                 'last_name': mem.user.last_name,
-                'time_limit': mem.time_limit,
-                'time_requested': mem.user.profile.time_used_in_proposal(obj)
+                'time_limit': mem.time_limit
             } for mem in obj.membership_set.all()
         }
 
