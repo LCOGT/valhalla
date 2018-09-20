@@ -1,3 +1,8 @@
+## 1.16.13
+2018-09-19
+
+* Remove time_requested field from users in proposals for efficiency
+
 ## 1.16.12
 2018-09-04
 
