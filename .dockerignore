@@ -1,4 +1,5 @@
 celerybeat-schedule
+celerybeat.pid
 static/bundles/
 node_modules/
 local_settings.py
