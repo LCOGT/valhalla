@@ -19,6 +19,7 @@ class RequestLogMiddleware(object):
             username = 'anonymous'
 
         tags = {
+            'ip_address': request.META.get('REMOTE_ADDR'),
             'uri': request.path,
             'status': response.status_code,
             'method': request.method,
