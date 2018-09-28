@@ -18,8 +18,14 @@ class RequestLogMiddleware(object):
             simple_interface = False
             username = 'anonymous'
 
+        forwarded_ip = request.META.get('HTTP_X_FORWARDED_FOR')
+        if forwarded_ip:
+            ip_address = forwarded_ip.split(',')[0].strip()
+        else:
+            ip_address = request.META.get('REMOTE_ADDR')
+
         tags = {
-            'ip_address': request.META.get('REMOTE_ADDR'),
+            'ip_address': ip_address,
             'uri': request.path,
             'status': response.status_code,
             'method': request.method,
