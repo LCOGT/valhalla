@@ -1,3 +1,8 @@
+## 1.16.14
+2018-09-27
+
+* Added ip address logging to the request logger
+
 ## 1.16.13
 2018-09-19
 
