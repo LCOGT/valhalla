@@ -124,7 +124,7 @@
   import drafts from './components/drafts.vue';
   import sidenav from './components/sidenav.vue';
   import alert from './components/util/alert.vue';
-  import {datetimeFormat} from './utils.js';
+  import {datetimeFormat, QueryString} from './utils.js';
   export default {
     name: 'app',
     components: {userrequest, drafts, sidenav, alert},
@@ -140,16 +140,7 @@
           observation_type: 'NORMAL',
           requests: [{
             acceptability_threshold: '',
-            target: {
-              name: '',
-              type: 'SIDEREAL',
-              ra: null,
-              dec: null,
-              proper_motion_ra: 0.0,
-              proper_motion_dec: 0.0,
-              epoch: 2000,
-              parallax: 0,
-            },
+            target: this.initializeTarget(),
             molecules:[{
               type: 'EXPOSE',
               instrument_name: '',
@@ -185,6 +176,25 @@
       }
     },
     methods: {
+      initializeTarget: function () {
+        // If they exist, any query parameters besides redirect_url are assumed target fields per the API.
+        var targetParameters = QueryString();
+        delete targetParameters.redirect_url;
+        if (!$.isEmptyObject(targetParameters)) {
+          return targetParameters;
+        } else {
+          return {
+            name: '',
+            type: 'SIDEREAL',
+            ra: null,
+            dec: null,
+            proper_motion_ra: 0.0,
+            proper_motion_dec: 0.0,
+            epoch: 2000,
+            parallax: 0,
+          };
+        }
+      },
       validate: _.debounce(function(){
         var that = this;
         $.ajax({
@@ -213,9 +223,22 @@
             data: JSON.stringify(that.userrequest),
             contentType: 'application/json',
             success: function(data){
-              window.location = '/userrequests/' + data.id;
+              window.location = that.redirectUrl(data.id);
             }
           });
+        }
+      },
+      redirectUrl: function (userrequestId) {
+        if (QueryString().redirect_url) {
+          var url = QueryString().redirect_url;
+          var facility = QueryString().facility;
+          var target_id = QueryString().target_id;
+          if (!_.endsWith(url, '/')) {
+            url = url.concat('/');
+          }
+          return url.concat('?', $.param({ userrequest_id: userrequestId, facility: facility, target_id: target_id}, true));
+        } else {
+          return '/userrequests/' + userrequestId;
         }
       },
       userrequestUpdated: function(){
