@@ -1,3 +1,8 @@
+## 1.16.15
+2018-10-01
+
+* Fix bug preventing creation of new time allocation groups.
+
 ## 1.16.14
 2018-09-27
 
@@ -26,7 +31,7 @@
 ## 1.16.9
 2018-07-12
 
-* Fix a bug in telescope states merging states too permissively 
+* Fix a bug in telescope states merging states too permissively
 
 ## 1.16.8
 2018-07-10
