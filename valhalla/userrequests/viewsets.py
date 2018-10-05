@@ -52,6 +52,9 @@ class UserRequestViewSet(viewsets.ModelViewSet):
             'requests__target', 'requests__location'
         )
 
+    def perform_create(self, serializer):
+        serializer.save(submitter=self.request.user)
+
     @list_route(methods=['get'], permission_classes=(IsAdminUser,))
     def schedulable_requests(self, request):
         '''
@@ -210,6 +213,9 @@ class RequestViewSet(viewsets.ReadOnlyModelViewSet):
 class DraftUserRequestViewSet(viewsets.ModelViewSet):
     serializer_class = DraftUserRequestSerializer
     ordering = ('-modified',)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_queryset(self):
         if self.request.user.is_authenticated:

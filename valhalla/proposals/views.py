@@ -1,4 +1,5 @@
 from django.views import View
+from django.conf import settings
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -49,6 +50,7 @@ class ProposalListView(LoginRequiredMixin, FilterView):
     filterset_class = ProposalFilter
     template_name = 'proposals/proposal_list.html'
     model = Proposal
+    strict = False  # TODO remove when https://github.com/carltongibson/django-filter/issues/930 is fixed
 
     def get_queryset(self):
         return self.request.user.proposal_set.all()

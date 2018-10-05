@@ -205,14 +205,14 @@ class TestProposalList(TestCase):
 
     def test_no_proposals_for_semester(self):
         user = mixer.blend(User)
-        semester = mixer.blend(Semester, code='2016A')
-        other_semester = mixer.blend(Semester, code='2017A')
+        semester = mixer.blend(Semester, id='2016A')
+        other_semester = mixer.blend(Semester, id='2017A')
         proposal = mixer.blend(Proposal)
         mixer.blend(TimeAllocation, semester=semester)
         mixer.blend(Membership, user=user, proposal=proposal)
         self.client.force_login(user)
 
-        response = self.client.get(reverse('proposals:list') + '?semester={}'.format(other_semester.code))
+        response = self.client.get(reverse('proposals:list') + '?semester={}'.format(other_semester.id))
         self.assertContains(response, 'No proposals for this semester.')
 
     def test_proposals_show_in_list(self):
@@ -321,7 +321,7 @@ class TestSemesterAdmin(TestCase):
         response = self.client.get(
             reverse('proposals:semester-admin', kwargs={'pk': self.semester.id})
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
 
 class TestSemesterDetail(TestCase):
