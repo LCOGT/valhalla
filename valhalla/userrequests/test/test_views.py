@@ -145,7 +145,7 @@ class TestUserrequestDetail(ConfigDBTestMixin, TestCase):
         self.assertRedirects(response, reverse('userrequests:request-detail', args=(request.id,)))
 
 
-class TestRequestDetail(TestCase):
+class TestRequestDetail(ConfigDBTestMixin, TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         mixer.blend(Profile, user=self.user)
@@ -155,6 +155,7 @@ class TestRequestDetail(TestCase):
         self.request = mixer.blend(Request, user_request=self.userrequest)
         mixer.blend(Molecule, request=self.request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
+        super().setUp()
 
     def test_request_detail(self):
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
