@@ -17,92 +17,74 @@ class TelescopeStatesFakeInput(ConfigDBTestMixin, TestCase):
         self.es_output = [
             {
                 '_source': {
-                    'type': 'AVAILABLE',
                     'timestamp': '2016-10-01 18:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Available for scheduling',
-                    'enclosure': 'doma',
+                    'value_string': "",
+                    'observatory': 'doma',
                 }
             },
             {
                 '_source': {
-                    'type': 'AVAILABLE',
                     'timestamp': '2016-10-01 19:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Available for scheduling',
-                    'enclosure': 'doma',
+                    'value_string': "",
+                    'observatory': 'doma',
                 }
             },
             {
                 '_source': {
-                    'type': 'AVAILABLE',
                     'timestamp': '2016-10-01 20:24:58',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Available for scheduling',
-                    'enclosure': 'doma',
+                    'value_string': "",
+                    'observatory': 'doma',
                 }
             },
             {
                 '_source': {
-                    'type': 'BUG',
                     'timestamp': '2016-10-01 20:44:58',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Bad bug ruins everything',
-                    'enclosure': 'doma',
+                    'value_string': "Site Agent: Bad Bug",
+                    'observatory': 'doma',
                 }
             },
             {
                 '_source': {
-                    'type': 'AVAILABLE',
                     'timestamp': '2016-10-01 18:30:00',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Available for scheduling',
-                    'enclosure': 'domb',
+                    'value_string': "",
+                    'observatory': 'domb',
                 }
             },
             {
                 '_source': {
-                    'type': 'SEQUENCER_UNAVAILABLE',
                     'timestamp': '2016-10-01 19:24:59',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'It is broken',
-                    'enclosure': 'domb',
+                    'value_string': "Sequencer: Unavailable. Enclosure: Interlocked (Power)",
+                    'observatory': 'domb',
                 }
             },
             {
                 '_source': {
-                    'type': 'ENCLOSURE_INTERLOCK',
-                    'timestamp': '2016-10-01 19:24:59',
-                    'site': 'tst',
-                    'telescope': '1m0a',
-                    'reason': 'It is locked',
-                    'enclosure': 'domb',
-                }
-            },
-            {
-                '_source': {
-                    'type': 'AVAILABLE',
                     'timestamp': '2016-10-01 20:24:59',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Available for scheduling',
-                    'enclosure': 'domb',
+                    'value_string': "",
+                    'observatory': 'domb',
                 }
             },
             {
                 '_source': {
-                    'type': 'BUG',
                     'timestamp': '2016-10-01 20:44:58',
                     'site': 'tst',
                     'telescope': '1m0a',
-                    'reason': 'Bad bug ruins everything',
-                    'enclosure': 'domb',
+                    'value_string': "Site Agent: Bad Bug",
+                    'observatory': 'domb',
                 }
             },
         ]
@@ -288,11 +270,11 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
         expected_events = [{'end': datetime(2016, 10, 3, 10, 25, 5, tzinfo=timezone.utc),
                             'event_reason': 'Available for scheduling',
                             'event_type': 'AVAILABLE',
-                            'start': datetime(2016, 10, 1, 0, 0, 0, tzinfo=timezone.utc),
+                            'start': datetime(2016, 10, 1, 0, 0, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 10, 31, 20, tzinfo=timezone.utc),
-                            'event_reason': 'Sequencer unavailable for scheduling',
-                            'event_type': 'SEQUENCER_UNAVAILABLE',
+                            'event_reason': 'Sequencer: Sequencer unavailable for scheduling',
+                            'event_type': 'SEQUENCER_DISABLED',
                             'start': datetime(2016, 10, 3, 10, 25, 5, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 16, 47, 42, tzinfo=timezone.utc),
@@ -301,7 +283,7 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 3, 10, 31, 20, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 3, 17, 7, 49, tzinfo=timezone.utc),
-                            'event_reason': 'No update since 2016-10-03T16:37:35',
+                            'event_reason': 'Site Agent: No update since 2016-10-03T16:37:35',
                             'event_type': 'SITE_AGENT_UNRESPONSIVE',
                             'start': datetime(2016, 10, 3, 16, 47, 42, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
@@ -311,7 +293,7 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 3, 17, 7, 49, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 1, 3, tzinfo=timezone.utc),
-                            'event_reason': 'Sky transparency too low',
+                            'event_reason': 'Weather: Sky transparency too low',
                             'event_type': 'NOT_OK_TO_OPEN',
                             'start': datetime(2016, 10, 3, 23, 35, 58, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
@@ -321,7 +303,7 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 4, 1, 3, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 4, 10, 30, 55, tzinfo=timezone.utc),
-                            'event_reason': 'Sky transparency too low',
+                            'event_reason': 'Weather: Sky transparency too low',
                             'event_type': 'NOT_OK_TO_OPEN',
                             'start': datetime(2016, 10, 4, 1, 20, 46, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
@@ -331,7 +313,7 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 4, 10, 30, 55, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 5, 0, 58, 26, tzinfo=timezone.utc),
-                            'event_reason': 'Sequencer in MANUAL state',
+                            'event_reason': 'Sequencer: Sequencer in MANUAL state',
                             'event_type': 'SEQUENCER_DISABLED',
                             'start': datetime(2016, 10, 4, 21, 47, 6, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
@@ -341,7 +323,7 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 5, 0, 58, 26, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 6, 16, 57, 19, tzinfo=timezone.utc),
-                            'event_reason': 'No update since 2016-10-06T16:12:10',
+                            'event_reason': 'Site Agent: No update since 2016-10-06T16:12:10',
                             'event_type': 'SITE_AGENT_UNRESPONSIVE',
                             'start': datetime(2016, 10, 6, 16, 48, 6, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
@@ -351,8 +333,8 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 6, 16, 57, 19, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 7, 10, 28, 58, tzinfo=timezone.utc),
-                            'event_reason': 'Sequencer unavailable for scheduling',
-                            'event_type': 'SEQUENCER_UNAVAILABLE',
+                            'event_reason': 'Sequencer: Sequencer unavailable for scheduling',
+                            'event_type': 'SEQUENCER_DISABLED',
                             'start': datetime(2016, 10, 7, 10, 20, 44, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 8, 10, 20, 25, tzinfo=timezone.utc),
@@ -361,8 +343,8 @@ class TestTelescopeStatesFromFile(TelescopeStatesFromFile):
                             'start': datetime(2016, 10, 7, 10, 28, 58, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 8, 10, 28, 36, tzinfo=timezone.utc),
-                            'event_reason': 'Sequencer unavailable for scheduling',
-                            'event_type': 'SEQUENCER_UNAVAILABLE',
+                            'event_reason': 'Sequencer: Sequencer unavailable for scheduling',
+                            'event_type': 'SEQUENCER_DISABLED',
                             'start': datetime(2016, 10, 8, 10, 20, 25, tzinfo=timezone.utc),
                             'telescope': 'lsc.domb.1m0a'},
                            {'end': datetime(2016, 10, 10, 0, 0, tzinfo=timezone.utc),
