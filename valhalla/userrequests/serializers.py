@@ -417,10 +417,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
 
         return user_request
 
-
     def validate(self, data):
         # check that the user belongs to the supplied proposal
-        if data['proposal'] not in data['submitter'].proposal_set.all():
+        user = self.context['request'].user
+        if data['proposal'] not in user.proposal_set.all():
             raise serializers.ValidationError(
                 _('You do not belong to the proposal you are trying to submit')
             )
@@ -437,10 +437,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
             )
 
         # Check that the user has not exceeded the time limit on this membership
-        membership = Membership.objects.get(user=data['submitter'], proposal=data['proposal'])
+        membership = Membership.objects.get(user=user, proposal=data['proposal'])
         if membership.time_limit >= 0:
             duration = sum(d for _, d in get_request_duration_sum(data).items())
-            time_to_be_used = data['submitter'].profile.time_used_in_proposal(data['proposal']) + duration
+            time_to_be_used = user.profile.time_used_in_proposal(data['proposal']) + duration
             if membership.time_limit < time_to_be_used:
                 raise serializers.ValidationError(
                     _('This request\'s duration will exceed the time limit set for your account on this proposal.')
@@ -514,7 +514,7 @@ class DraftUserRequestSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
 
     def validate(self, data):
-        if data['proposal'] not in data['author'].proposal_set.all():
+        if data['proposal'] not in self.context['request'].user.proposal_set.all():
             raise serializers.ValidationError('You are not a member of that proposal')
         return data
 

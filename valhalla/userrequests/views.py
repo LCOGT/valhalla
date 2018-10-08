@@ -60,6 +60,7 @@ def userrequest_queryset(request):
 class UserRequestListView(FilterView):
     filterset_class = UserRequestFilter
     template_name = 'userrequests/userrequest_list.html'
+    strict = False  # TODO remove when https://github.com/carltongibson/django-filter/issues/930 is fixed
 
     def get_queryset(self):
         return userrequest_queryset(self.request)
