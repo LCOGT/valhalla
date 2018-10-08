@@ -1,3 +1,8 @@
+## 1.16.16
+2018-10-08
+
+* Upgrade various dependencies
+
 ## 1.16.15
 2018-10-01
 
