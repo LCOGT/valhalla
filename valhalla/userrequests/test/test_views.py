@@ -140,11 +140,12 @@ class TestUserrequestDetail(ConfigDBTestMixin, TestCase):
     def test_single_request_redirect(self):
         userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
         request = mixer.blend(Request, user_request=userrequest)
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         response = self.client.get(reverse('userrequests:detail', kwargs={'pk': userrequest.id}))
         self.assertRedirects(response, reverse('userrequests:request-detail', args=(request.id,)))
 
 
-class TestRequestDetail(TestCase):
+class TestRequestDetail(ConfigDBTestMixin, TestCase):
     def setUp(self):
         self.user = mixer.blend(User)
         mixer.blend(Profile, user=self.user)
@@ -152,7 +153,9 @@ class TestRequestDetail(TestCase):
         mixer.blend(Membership, proposal=self.proposal, user=self.user)
         self.userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM)
         self.request = mixer.blend(Request, user_request=self.userrequest)
+        mixer.blend(Molecule, request=self.request, instrument_name='1M0-SCICAM-SBIG')
         self.client.force_login(self.user)
+        super().setUp()
 
     def test_request_detail(self):
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
@@ -182,6 +185,7 @@ class TestRequestDetail(TestCase):
         self.user.profile.save()
         userrequest = mixer.blend(UserRequest, proposal=self.proposal, group_id=mixer.RANDOM, submitter=self.user)
         request = mixer.blend(Request, user_request=userrequest)
+        mixer.blend(Molecule, request=request, instrument_name='1M0-SCICAM-SBIG')
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': self.request.id}))
         self.assertEqual(response.status_code, 404)
         response = self.client.get(reverse('userrequests:request-detail', kwargs={'pk': request.id}))
