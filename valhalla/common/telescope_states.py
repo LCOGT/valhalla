@@ -15,12 +15,13 @@ from valhalla.common.rise_set_utils import get_site_rise_set_intervals
 logger = logging.getLogger(__name__)
 
 ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
+ES_STRING_UNFORMATTER = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class ElasticSearchException(Exception):
     pass
 
-def string_to_datetime(timestamp, time_format=ES_STRING_FORMATTER):
+def string_to_datetime(timestamp, time_format=ES_STRING_UNFORMATTER):
     return datetime.strptime(timestamp, time_format).replace(tzinfo=timezone.utc)
 
 
