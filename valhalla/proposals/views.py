@@ -15,7 +15,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 
 from valhalla.sciapplications.models import Call
 from valhalla.proposals.forms import ProposalNotificationForm
-from valhalla.proposals.models import Proposal, Membership, ProposalNotification, Semester
+from valhalla.proposals.models import Proposal, Membership, ProposalNotification, Semester, ProposalInvite
 from valhalla.proposals.filters import ProposalFilter
 
 
@@ -109,6 +109,17 @@ class InviteCreateView(LoginRequiredMixin, View):
             proposal.add_users(emails, Membership.CI)
             messages.success(request, _('Co Investigator(s) invited'))
         return HttpResponseRedirect(reverse('proposals:detail', kwargs={'pk': proposal.id}))
+
+
+class ProposalInviteDeleteView(LoginRequiredMixin, DeleteView):
+    model = ProposalInvite
+
+    def get_success_url(self):
+        return reverse_lazy('proposals:detail', kwargs={'pk': self.get_object().proposal.id})
+
+    def get_queryset(self):
+        proposals = self.request.user.proposal_set.filter(membership__role=Membership.PI)
+        return ProposalInvite.objects.filter(proposal__in=proposals)
 
 
 class MembershipDeleteView(LoginRequiredMixin, DeleteView):
