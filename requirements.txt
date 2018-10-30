@@ -19,8 +19,8 @@ gunicorn[gevent]>=19,<20
 whitenoise>=4.1,<4.2
 rise-set==0.4.9
 lcogt-logging
-redis
+redis==2.10.6
 
 ipython
-responses
-mixer
+responses==0.9.0
+mixer==6.1.3
