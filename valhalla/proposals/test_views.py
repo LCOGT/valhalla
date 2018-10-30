@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
+from django.utils import timezone
 
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
 from valhalla.proposals.models import Semester, TimeAllocation, TimeAllocationGroup
@@ -227,6 +228,47 @@ class TestProposalList(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(reverse('proposals:list'))
         self.assertContains(response, 'Admin only')
+
+
+class TestProposalInviteDelete(TestCase):
+    def setUp(self):
+        self.pi_user = mixer.blend(User)
+        self.ci_user = mixer.blend(User)
+        proposal = mixer.blend(Proposal)
+        mixer.blend(Profile, user=self.pi_user)
+        mixer.blend(Profile, user=self.ci_user)
+        Membership.objects.create(user=self.pi_user, proposal=proposal, role=Membership.PI)
+        Membership.objects.create(user=self.ci_user, proposal=proposal, role=Membership.CI)
+        self.proposal_invite = ProposalInvite.objects.create(
+            proposal=proposal,
+            role=Membership.CI,
+            email='inviteme@example.com',
+            sent=timezone.now(),
+            used=None
+        )
+
+    def test_delete_proposal_invite_pi(self):
+        self.client.force_login(self.pi_user)
+
+        response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal_invite.proposal.id}))
+        self.assertContains(response, self.proposal_invite.email)
+
+        response = self.client.post(
+            reverse('proposals:proposalinvite-delete', kwargs={'pk': self.proposal_invite.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, self.proposal_invite.email)
+
+    def test_ci_cannot_delete_invitation(self):
+        self.client.force_login(self.ci_user)
+        response = self.client.post(
+            reverse('proposals:proposalinvite-delete', kwargs={'pk': self.proposal_invite.id}),
+            data={'submit': 'Confirm'},
+            follow=True
+        )
+        self.assertEqual(response.status_code, 404)
 
 
 class TestMembershipDelete(TestCase):
