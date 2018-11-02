@@ -22,7 +22,7 @@ pipeline {
     }
     stages {
         stage('Set Environment') {
-            when( buildingTag())
+            when{ buildingTag() }
             steps {
                 script {
                     DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
