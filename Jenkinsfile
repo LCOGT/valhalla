@@ -22,14 +22,11 @@ pipeline {
     }
     stages {
         stage('Set Environment') {
+            when( buildingTag())
             steps {
-                sh "echo $TAG"
                 script {
-                    if(TAG){
-                        DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
-                    }
+                    DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
                 }
-                echo TAG
                 echo DOCKER_IMG
             }
         }
@@ -53,7 +50,7 @@ pipeline {
         stage('Deploy') {
             when {
                 branch 'master'
-                expression { "${TAG}" }
+                buildingTag()
             }
             // push the current tagged docker image
             environment {
