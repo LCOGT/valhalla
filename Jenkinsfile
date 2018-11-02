@@ -49,6 +49,7 @@ pipeline {
         stage('Deploy') {
             when {
                 allOf {
+                    branch 'master';
                     buildingTag()
                 }
             }
