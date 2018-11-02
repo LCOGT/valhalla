@@ -203,16 +203,6 @@ class ScienceApplication(models.Model):
         fileobj.close()
         return pdf
 
-    def get_pdf(self):
-        fileobj = io.BytesIO()
-        merger = PdfFileMerger()
-        if self.pdf:
-            merger.append(self.pdf.file)
-        merger.write(fileobj)
-        pdf = fileobj.getvalue()
-        fileobj.close()
-        return pdf
-
 
 class TimeRequest(models.Model):
     science_application = models.ForeignKey(ScienceApplication, on_delete=models.CASCADE)
