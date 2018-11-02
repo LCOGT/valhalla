@@ -18,7 +18,6 @@ django-storages<2.0
 psycopg2>=2.7,<2.8
 django-extensions>=2.1,<2.2
 gunicorn[gevent]>=19,<20
-whitenoise>=4.1,<4.2
 rise-set==0.4.9
 lcogt-logging
 redis==2.10.6
