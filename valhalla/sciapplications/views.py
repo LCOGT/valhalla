@@ -207,10 +207,34 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
         response = super().render_to_response(context, **kwargs)
         response.render()
         try:
-            pdf = self.object.generate_pdf()
+            pdf = self.object.generate_combined_pdf()
             pdf_response.write(pdf)
         except Exception as exc:
             error = 'There was an error generating your pdf. {}'
+            messages.error(self.request, error.format(str(exc)))
+            return HttpResponseRedirect(reverse('sciapplications:index'))
+        return pdf_response
+
+
+class SciApplicationGetPDFView(LoginRequiredMixin, DetailView):
+    model = ScienceApplication
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return ScienceApplication.objects.all()
+        else:
+            return ScienceApplication.objects.filter(submitter=self.request.user)
+
+    def render_to_response(self, context, **kwargs):
+        context['pdf'] = True
+        pdf_response = HttpResponse(content_type='application/pdf')
+        response = super().render_to_response(context, **kwargs)
+        response.render()
+        try:
+            pdf = self.object.get_pdf()
+            pdf_response.write(pdf)
+        except Exception as exc:
+            error = 'There was an error getting your pdf. {}'
             messages.error(self.request, error.format(str(exc)))
             return HttpResponseRedirect(reverse('sciapplications:index'))
         return pdf_response

@@ -94,7 +94,7 @@
 
     {% if object.pdf and not pdf %}
         <h2>Uploaded PDF</h2>
-        <p><a href="{{ object.pdf.url }}">Download</a></p>
+        <p><a href="{% url 'sciapplications:getpdf' pk=object.id %}">Download</a></p>
     {% endif %}
 </body>
 </html>
