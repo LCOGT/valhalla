@@ -32,6 +32,8 @@ that should be set for deployment or customization.
 ### General
 `SECRET_KEY` The secret key used for sessions. Default: random characters
 
+`DEBUG` Whether the application should run in djangos debug mode or not. Default: `False`
+
 ### Database
 `DB_ENGINE` The database engine to use. Default: `django.db.backends.sqlite3`
 
@@ -46,11 +48,15 @@ that should be set for deployment or customization.
 `DB_PORT` The database port. Default: blank
 
 ### Cache
-`CACHE_BACKEND` The django cache backend to use. Default: `django.core.cache.backends.locmem.LocMemCache`
+`CACHE_BACKEND` The remote django cache backend to use. Default: `django.core.cache.backends.locmem.LocMemCache`
 
 `CACHE_LOCATION` The cache location (or connection string). Default: `unique-snowflake`
 
+`LOCAL_CACHE_BACKEND` The local django cache backend to use. Default: `django.core.cache.backends.locmem.LocMemCache`
+
 ### Email
+`EMAIL_BACKEND` The django SMTP backend to use. Default: `django.core.mail.backends.console.EmailBackend`
+
 `EMAIL_HOST` The SMTP host. Default: `localhost`
 
 `EMAIL_HOST_USER` SMTP user. Default: blank
@@ -65,6 +71,19 @@ that should be set for deployment or customization.
 `POND_URL` The url to the pond (http). Default: `http://localhost`
 
 `CONFIGDB_URL` The url to configdb3. Default: `http://localhost`
+
+`DOWNTIMEDB_URL` The url to downtimedb. Default: `http://localhost`
+
+### Static and Media Files
+`STATIC_STORAGE` The django staticfiles storage backend. Default: `django.contrib.staticfiles.storage.StaticFilesStorage`
+
+`MEDIA_STORAGE` The django media files storage backend. Default: `django.core.files.storage.FileSystemStorage`
+
+`AWS_ACCESS_KEY_ID` The AWS user access key with read/write/permissions priveleges on the s3 bucket. Default: None
+
+`AWS_SECRET_ACCESS_KEY` The AWS user secret key to use with the access key. Default: None
+
+`AWS_BUCKET_NAME` The name of the AWS bucket to store static and media files. Default: `observe.lco.global`
 
 ### Celery
 `CELERY_ENABLED` Whether or not to execute celery tasks asynchronously. Default: `False`
