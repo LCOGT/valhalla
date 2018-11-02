@@ -50,8 +50,8 @@ pipeline {
             environment {
                 AWS_ACCESS_KEY_ID = credentials('valhalla-aws-access-key')
                 AWS_SECRET_ACCESS_KEY = credentials('valhalla-aws-secret-key')
-                MEDIA_STORAGE = split_storage.MediaStorage
-                STATIC_STORAGE = split_storage.StaticStorage
+                MEDIA_STORAGE = 'split_storage.MediaStorage'
+                STATIC_STORAGE = 'split_storage.StaticStorage'
             }
             steps {
                 script {
