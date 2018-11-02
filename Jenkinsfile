@@ -18,17 +18,15 @@ pipeline {
         PROJ_NAME = projName()
         //
         TAG = sh(returnStdout: true, script: "git tag --contains | head -1").trim()
+        DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${GIT_DESCRIPTION}")
     }
     stages {
         stage('Build Docker Image') {
             steps {
-                if(TAG){
-                    DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
-                }
-                else{
-                    DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${GIT_DESCRIPTION}")
-                }
                 script {
+                    if(TAG){
+                        DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
+                    }
                     dockerImage = docker.build("$DOCKER_IMG")
                 }
             }
