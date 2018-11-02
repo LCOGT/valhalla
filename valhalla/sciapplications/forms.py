@@ -6,10 +6,8 @@ from django.conf import settings
 from PyPDF2 import PdfFileReader
 import os
 
-from boto3 import client
-from botocore.client import Config
-
 from valhalla.sciapplications.models import ScienceApplication, Call, TimeRequest, CoInvestigator
+from valhalla.sciapplications.templatetags.sciapp_extras import file_to_s3_url
 from valhalla.proposals.models import Semester
 
 
@@ -27,13 +25,7 @@ class PdfFileInput(forms.ClearableFileInput):
         formatted_value = super().format_value(value)
         if formatted_value and getattr(formatted_value, 'url'):
             if settings.AWS_ACCESS_KEY_ID:
-                boto_client = client('s3', settings.AWS_REGION, config=Config(signature_version='s3v4'))
-                url = boto_client.generate_presigned_url('get_object',
-                                                         Params={
-                                                             'Bucket': settings.AWS_STORAGE_BUCKET_NAME,
-                                                             'Key': settings.MEDIAFILES_DIR + '/' + str(formatted_value)
-                                                         }
-                                                         )
+                url = file_to_s3_url(formatted_value)
                 new_formatted_value = FakeFieldFile(str(formatted_value), url)
                 return new_formatted_value
         return formatted_value

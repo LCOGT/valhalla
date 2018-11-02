@@ -1,5 +1,5 @@
 <!doctype html>
-{% load static i18n %}
+{% load static i18n sciapp_extras %}
 <html class="no-js" lang="en">
 <head>
     <meta charset="utf-8">
@@ -94,7 +94,7 @@
 
     {% if object.pdf and not pdf %}
         <h2>Uploaded PDF</h2>
-        <p><a href="{% url 'sciapplications:getpdf' pk=object.id %}">Download</a></p>
+        <p><a href="{% file_to_s3_url object.pdf %}">Download</a></p>
     {% endif %}
 </body>
 </html>
