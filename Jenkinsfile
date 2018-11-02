@@ -42,25 +42,23 @@ pipeline {
             }
         }
         stage('Deploy') {
-            if (TAG) {
-                stage('Prod') {
-                    when {
-                        branch 'master'
-                        expression { TAG }
+            stage('Prod') {
+                when {
+                    branch 'master'
+                    expression { TAG }
+                }
+                // push the current tagged docker image
+                environment {
+                    AWS_ACCESS_KEY_ID = credentials('valhalla-aws-access-key')
+                    AWS_SECRET_ACCESS_KEY = credentials('valhalla-aws-secret-key')
+                    MEDIA_STORAGE = split_storage.MediaStorage
+                    STATIC_STORAGE = split_storage.StaticStorage
+                }
+                steps {
+                    script {
+                        dockerImage.push()
                     }
-                    // push the current tagged docker image
-                    environment {
-                        AWS_ACCESS_KEY_ID = credentials('valhalla-aws-access-key')
-                        AWS_SECRET_ACCESS_KEY = credentials('valhalla-aws-secret-key')
-                        MEDIA_STORAGE = split_storage.MediaStorage
-                        STATIC_STORAGE = split_storage.StaticStorage
-                    }
-                    steps {
-                        script {
-                            dockerImage.push()
-                        }
-                        sh 'docker run --rm -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} -e MEDIA_STORAGE=${MEDIA_STORAGE} -e STATIC_STORAGE=${STATIC_STORAGE} "${DOCKER_IMG}" /bin/bash -c "./manage.py collectstatic --noinput"'
-                    }
+                    sh 'docker run --rm -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} -e MEDIA_STORAGE=${MEDIA_STORAGE} -e STATIC_STORAGE=${STATIC_STORAGE} "${DOCKER_IMG}" /bin/bash -c "./manage.py collectstatic --noinput"'
                 }
             }
         }
