@@ -24,7 +24,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    if(${TAG}){
+                    if("${TAG}"){
                         DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
                     }
                     dockerImage = docker.build("$DOCKER_IMG")
@@ -44,7 +44,7 @@ pipeline {
         stage('Deploy') {
             when {
                 branch 'master'
-                expression { ${TAG} }
+                expression { "${TAG}" }
             }
             // push the current tagged docker image
             environment {
