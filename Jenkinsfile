@@ -27,7 +27,6 @@ pipeline {
                 script {
                     DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
                 }
-                echo DOCKER_IMG
             }
         }
         stage('Build Docker Image') {
@@ -49,8 +48,10 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                branch 'master'
-                buildingTag()
+                allOf {
+                    branch 'master';
+                    buildingTag()
+                }
             }
             // push the current tagged docker image
             environment {
