@@ -89,3 +89,5 @@ that should be set for deployment or customization.
 `CELERY_ENABLED` Whether or not to execute celery tasks asynchronously. Default: `False`
 
 `CELERY_BROKER_URL` The broker url for celery. Default: `memory://localhost`
+
+To run valhalla with local staticfiles, simply omit settings the `AWS_*` env variables and set `DEBUG` to `True`.  
