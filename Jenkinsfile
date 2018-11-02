@@ -21,13 +21,13 @@ pipeline {
     }
     stages {
         stage('Build Docker Image') {
-            if(TAG){
-                DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
-            }
-            else{
-                DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${GIT_DESCRIPTION}")
-            }
             steps {
+                if(TAG){
+                    DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
+                }
+                else{
+                    DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${GIT_DESCRIPTION}")
+                }
                 script {
                     dockerImage = docker.build("$DOCKER_IMG")
                 }
