@@ -24,7 +24,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    if("${TAG}"){
+                    echo $TAG
+                    if($TAG){
                         DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
                     }
                     dockerImage = docker.build("$DOCKER_IMG")
