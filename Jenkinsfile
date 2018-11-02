@@ -42,7 +42,7 @@ pipeline {
             }
         }
         stage('Deploy') {
-            if (tag) {
+            if (TAG) {
                 stage('Prod') {
                     when { branch 'master' }
                     // push the current tagged docker image
