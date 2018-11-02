@@ -44,7 +44,10 @@ pipeline {
         stage('Deploy') {
             if (TAG) {
                 stage('Prod') {
-                    when { branch 'master' }
+                    when {
+                        branch 'master'
+                        expression { TAG }
+                    }
                     // push the current tagged docker image
                     environment {
                         AWS_ACCESS_KEY_ID = credentials('valhalla-aws-access-key')
