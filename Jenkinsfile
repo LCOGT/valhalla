@@ -21,13 +21,21 @@ pipeline {
         DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${GIT_DESCRIPTION}")
     }
     stages {
+        stage('Set Environment') {
+            steps {
+                sh "echo $TAG"
+                script {
+                    if(TAG){
+                        DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
+                    }
+                }
+                echo TAG
+                echo DOCKER_IMG
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo \$TAG
-                    if(\$TAG){
-                        DOCKER_IMG = dockerImageName("${LCO_DOCK_REG}", "${PROJ_NAME}", "${TAG}")
-                    }
                     dockerImage = docker.build("$DOCKER_IMG")
                 }
             }
