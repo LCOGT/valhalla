@@ -48,10 +48,7 @@ pipeline {
         }
         stage('Deploy') {
             when {
-                allOf {
-                    branch 'master';
-                    buildingTag()
-                }
+                buildingTag()
             }
             // push the current tagged docker image
             environment {
