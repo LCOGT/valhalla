@@ -130,10 +130,10 @@ TimeAllocationKey = namedtuple('TimeAllocationKey', ['semester', 'telescope_clas
 
 class TimeAllocation(models.Model):
     TELESCOPE_CLASSES = (
-        ('2m0', '2m0'),
-        ('1m0', '1m0'),
-        ('0m8', '0m8'),
         ('0m4', '0m4'),
+        ('0m8', '0m8'),
+        ('1m0', '1m0'),
+        ('2m0', '2m0'),
     )
 
     INSTRUMENT_NAMES = (

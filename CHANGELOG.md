@@ -1,3 +1,15 @@
+## 1.18.2
+2018-11-05
+
+* Switched static and media files to use s3 storage
+
+## 1.17.0
+2018-10-30
+
+* Add ability to delete proposal invitations
+* Fix telescope class ordering in admin
+* Lock test dependencies
+
 ## 1.16.16
 2018-10-08
 

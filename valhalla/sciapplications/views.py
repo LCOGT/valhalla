@@ -207,7 +207,7 @@ class SciApplicationPDFView(LoginRequiredMixin, DetailView):
         response = super().render_to_response(context, **kwargs)
         response.render()
         try:
-            pdf = self.object.generate_pdf()
+            pdf = self.object.generate_combined_pdf()
             pdf_response.write(pdf)
         except Exception as exc:
             error = 'There was an error generating your pdf. {}'
