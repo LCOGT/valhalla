@@ -1,4 +1,4 @@
-## 1.18.0
+## 1.18.2
 2018-11-05
 
 * Switched static and media files to use s3 storage
