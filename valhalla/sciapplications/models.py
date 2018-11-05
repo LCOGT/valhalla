@@ -60,7 +60,7 @@ class Call(models.Model):
 
 def pdf_upload_path(instance, filename):
     # PDFs will be uploaded to MEDIA_ROOT/sciapps/<semester>/
-    return 'sciapps/{0}/{1}'.format(instance.call.semester.id, filename)
+    return 'sciapps/{0}/{1}/{2}'.format(instance.call.semester.id, instance.id, filename)
 
 
 class ScienceApplication(models.Model):
@@ -183,7 +183,7 @@ class ScienceApplication(models.Model):
         self.save()
         return proposal
 
-    def generate_pdf(self):
+    def generate_combined_pdf(self):
         context = {
             'object': self,
             'pdf': True

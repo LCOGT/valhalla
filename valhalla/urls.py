@@ -5,6 +5,8 @@ from django.views.generic import TemplateView
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+
 
 from valhalla.userrequests.viewsets import RequestViewSet, UserRequestViewSet, DraftUserRequestViewSet
 from valhalla.userrequests.views import TelescopeStatesView, TelescopeAvailabilityView, AirmassView
@@ -49,3 +51,6 @@ urlpatterns = [
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^health/', UserRequestListView.as_view(), name='health'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # Only available if debug is enabled
+
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
