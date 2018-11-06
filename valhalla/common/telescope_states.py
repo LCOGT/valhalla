@@ -75,7 +75,7 @@ class TelescopeStates(object):
                         {
                             "range": {
                                 "timestamp": {
-                                    # Retrieve documents 1 hour back to capture the telescope state at the start.
+                                    # Retrieve documents 1 day back to ensure you get at least one datum per telescope.
                                     "gte": (self.start - timedelta(days=1)).strftime(ES_STRING_FORMATTER),
                                     "lte": self.end.strftime(ES_STRING_FORMATTER),
                                     "format": "yyyy-MM-dd HH:mm:ss"
@@ -169,12 +169,12 @@ class TelescopeStates(object):
         return telescope_states
 
     @staticmethod
-    def _create_lump(telcode, type, reason, start):
+    def _create_lump(telcode, event_type, event_reason, event_start):
         return {
             'telescope': telcode,
-            'event_type': type,
-            'event_reason': reason,
-            'start': start,
+            'event_type': event_type,
+            'event_reason': event_reason,
+            'start': event_start,
         }
 
     def _categorize(self, event):
