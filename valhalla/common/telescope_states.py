@@ -1,7 +1,7 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 from copy import deepcopy
 from collections import OrderedDict
