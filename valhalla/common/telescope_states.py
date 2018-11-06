@@ -8,6 +8,7 @@ from collections import OrderedDict
 from urllib3.exceptions import LocationValueError
 from django.core.exceptions import ImproperlyConfigured
 import logging
+from dateutil.parser import parse
 
 from valhalla.common.configdb import configdb, TelescopeKey
 from valhalla.common.rise_set_utils import get_site_rise_set_intervals
@@ -15,14 +16,14 @@ from valhalla.common.rise_set_utils import get_site_rise_set_intervals
 logger = logging.getLogger(__name__)
 
 ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
-ES_STRING_UNFORMATTER = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class ElasticSearchException(Exception):
     pass
 
-def string_to_datetime(timestamp, time_format=ES_STRING_UNFORMATTER):
-    return datetime.strptime(timestamp, time_format).replace(tzinfo=timezone.utc)
+
+def string_to_datetime(timestamp):
+    return parse(timestamp).replace(tzinfo=timezone.utc)
 
 
 class TelescopeStates(object):
