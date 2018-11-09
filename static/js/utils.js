@@ -102,6 +102,34 @@ function formatField(value){
   }
 }
 
+function chunkTextAsHtml(text, chunkSize){
+    // Chunks up a large string to be used in an html rendered label. Chunksize ~150 works pretty well on my vertical
+    // monitor so it should work for most monitors.
+    var chunkedText = '';
+    var lastChunkStart = 0;
+    var lastChunkEnd = chunkSize;
+    while (lastChunkStart < text.length)
+    {
+        chunkedText += '<br/>';
+        if (lastChunkStart == 0){
+            chunkedText += 'reason: '
+        }
+        else{
+            chunkedText += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'
+        }
+        var chunkText = text.substr(lastChunkStart, chunkSize);
+        if (chunkText.length == chunkSize){
+            lastChunkEnd = chunkText.lastIndexOf(" ");
+        }
+        if (lastChunkEnd == -1){
+            lastChunkEnd = chunkSize;
+        }
+        chunkedText += chunkText.substr(0, lastChunkEnd);
+        lastChunkStart += lastChunkEnd;
+    }
+    return chunkedText;
+}
+
 var datetimeFormat = 'YYYY-MM-DD HH:mm:ss';
 
 var collapseMixin = {
@@ -172,6 +200,6 @@ var colorPalette = [  // useful assigning colors to datasets.
 
 export {
   semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
-  formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
+  formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName, chunkTextAsHtml,
   observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian
 };

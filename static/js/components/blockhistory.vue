@@ -33,6 +33,7 @@ import 'vue-style-loader!vis/dist/vis.css';
 import 'vue-style-loader!../../css/plot_style.css';
 import plot_controls from './util/plot_controls.vue';
 import {plotZoomMixin} from './util/plot_mixins.js';
+import {chunkTextAsHtml} from '../utils.js';
 
 export default {
   props: ['data', 'showZoomControls'],
@@ -79,7 +80,8 @@ export default {
           block.start += 'Z';
           block.end += 'Z';
           if (block.failed) {
-            block.fail_reason = '<br/>reason: ' + block.fail_reason;
+            const chunkSize = 150;
+            block.fail_reason = chunkTextAsHtml(block.fail_reason, chunkSize);
           }
 
           if (block.percent_completed > 0) {
