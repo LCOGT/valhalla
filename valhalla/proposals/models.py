@@ -145,7 +145,8 @@ class TimeAllocation(models.Model):
         ('1M0-SCICAM-SBIG', '1M0-SCICAM-SBIG'),
         ('1M0-NRES-COMMISSIONING', '1M0-NRES-COMMISSIONING'),
         ('2M0-FLOYDS-SCICAM', '2M0-FLOYDS-SCICAM'),
-        ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL')
+        ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL'),
+        ('2M0-SCICAM-SBIG', '2M0-SCICAM-SBIG')
     )
 
     std_allocation = models.FloatField(default=0)
