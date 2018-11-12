@@ -6,7 +6,7 @@ ENV NODE_ENV production
 WORKDIR /valhalla
 CMD gunicorn valhalla.wsgi -w 4 -k gevent -b 0.0.0.0:80 --timeout=300
 
-RUN curl -sL https://deb.nodesource.com/setup_9.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y gfortran nodejs
 
 COPY requirements.txt .
