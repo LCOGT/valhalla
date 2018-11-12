@@ -158,15 +158,12 @@ export default {
     },
   },
   computed: {
-    targetCategories() {
-      this.target.name;
-      this.target.type;
-      this.target.scheme;
+    targetCategories: function() {
       return this.target.name + this.target.type + this.target.scheme;
     }
   },
   watch: {
-    'targetCategories': _.debounce(function() {
+    targetCategories: _.debounce(function() {
       this.lookingUP = true;
       this.lookupFail = false;
       this.lookupText = 'Searching for coordinates...';
