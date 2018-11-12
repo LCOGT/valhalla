@@ -131,6 +131,7 @@ export default {
     var sid_target_params = _.cloneDeep(this.target);
     delete sid_target_params['name'];
     delete sid_target_params['type'];
+    this.$set(this.target, 'scheme', 'MPC_MINOR_PLANET')
     return {
       show: true,
       showSlitPosition: false,
@@ -154,10 +155,18 @@ export default {
     updateDec: function(){
       this.target.dec = sexagesimalDecToDecimal(this.target.dec);
       this.update();
+    },
+  },
+  computed: {
+    targetCategories() {
+      this.target.name;
+      this.target.type;
+      this.target.scheme;
+      return this.target.name + this.target.type + this.target.scheme;
     }
   },
   watch: {
-    'target.name': _.debounce(function(name){
+    'targetCategories': _.debounce(function() {
       this.lookingUP = true;
       this.lookupFail = false;
       this.lookupText = 'Searching for coordinates...';
@@ -165,7 +174,7 @@ export default {
       if(this.lookupReq){
         this.lookupReq.abort();
       }
-      this.lookupReq = $.getJSON('https://simbad2k.lco.global/' + encodeURIComponent(name) + '?target_type='
+      this.lookupReq = $.getJSON('https://simbad2k.lco.global/' + encodeURIComponent(this.target.name) + '?target_type='
           + encodeURIComponent(this.target.type) + '&scheme=' + encodeURIComponent(this.target.scheme)).done(function(data){
         if(_.get(data, ['error'], null) == null){
           that.target.ra = _.get(data, ['ra_d'], null);
@@ -185,6 +194,16 @@ export default {
         } else {
           that.lookupText = 'Could not find any matching objects';
           that.lookupFail = true;
+          for (var x in that.ns_target_params){
+            if (x !== 'scheme') {
+              that.ns_target_params[x] = that.target[x];
+              that.target[x] = undefined;
+            }
+          }
+          for (var x in that.sid_target_params){
+            that.sid_target_params[x] = that.target[x];
+            that.target[x] = undefined;
+          }
         }
       }).fail(function(_response, status){
         if(status !== "abort"){
