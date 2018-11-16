@@ -1,3 +1,11 @@
+## 1.18.4
+2018-11-16
+
+* Wrap long error reason in the scheduling history view for a block
+* Update headings in the admin interface from TOO to Rapid Response
+* Upgrade Node to 10.x LTS
+* Validate request windows to make sure all windows fall within the same semester
+
 ## 1.18.3
 2018-11-09
 
