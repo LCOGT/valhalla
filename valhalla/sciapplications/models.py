@@ -170,7 +170,8 @@ class ScienceApplication(models.Model):
                 proposal=proposal
             )
 
-        # Send invitations if necessary
+        # Send invitations if necessary. The check is done because the pi field may not be set at this point,
+        # making the submitter the PI on the proposal by default.
         if self.pi:
             proposal.add_users([self.pi], Membership.PI)
         else:

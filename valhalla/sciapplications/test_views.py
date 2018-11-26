@@ -32,6 +32,7 @@ class TestGetCreateSciApp(TestCase):
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
 
     def test_no_call(self):
@@ -115,6 +116,7 @@ class TestPostCreateSciApp(TestCase):
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
         self.user = mixer.blend(User)
+        mixer.blend(Profile, user=self.user)
         self.client.force_login(self.user)
         self.instrument = mixer.blend(Instrument)
         self.call = mixer.blend(
@@ -342,16 +344,16 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(self.user.scienceapplication_set.last().coinvestigator_set.count(), 2)
 
-    def test_cannot_post_own_email(self):
+    def test_can_post_own_email(self):
         data = self.sci_data.copy()
         data['pi'] = self.user.email
-        response = self.client.post(
+        self.client.post(
             reverse('sciapplications:create', kwargs={'call': self.call.id}),
             data=data,
             follow=True
         )
-        self.assertContains(response, 'There was an error with your submission')
-        self.assertContains(response, 'if you are the PI')
+        self.assertEqual(self.user.scienceapplication_set.last().pi, self.user.email)
+        self.assertEqual(self.user.scienceapplication_set.last().status, ScienceApplication.SUBMITTED)
 
     def test_extra_pi_data_required(self):
         bad_data = self.sci_data.copy()
@@ -365,8 +367,9 @@ class TestPostCreateSciApp(TestCase):
         self.assertContains(response, 'There was an error with your submission')
         self.assertContains(response, 'Pi first name: This field is required')
 
-    def test_can_leave_out_pi(self):
+    def test_can_leave_out_pi_in_draft(self):
         data = self.sci_data.copy()
+        data['status'] = 'DRAFT'
         del data['pi']
         del data['pi_first_name']
         del data['pi_last_name']
@@ -378,6 +381,21 @@ class TestPostCreateSciApp(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.user.scienceapplication_set.last().pi, '')
+
+    def test_cannot_leave_out_pi_in_submission(self):
+        data = self.sci_data.copy()
+        del data['pi']
+        del data['pi_first_name']
+        del data['pi_last_name']
+        del data['pi_institution']
+        response = self.client.post(
+            reverse('sciapplications:create', kwargs={'call': self.call.id}),
+            data=data,
+            follow=True
+        )
+        self.assertFalse(self.user.scienceapplication_set.all())
+        self.assertContains(response, 'There was an error with your submission')
+        self.assertContains(response, 'Pi: This field is required')
 
     def test_cannot_upload_silly_files(self):
         data = self.sci_data.copy()

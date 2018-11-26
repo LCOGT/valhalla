@@ -46,7 +46,13 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
             return reverse('sciapplications:index')
 
     def get_initial(self):
-        return {'call': self.call}
+        initial = {'call': self.call}
+        if self.call.proposal_type != Call.COLLAB_PROPOSAL:
+            initial['pi'] = self.request.user.email
+            initial['pi_first_name'] = self.request.user.first_name
+            initial['pi_last_name'] = self.request.user.last_name
+            initial['pi_institution'] = self.request.user.profile.institution
+        return initial
 
     def get(self, request, *args, **kwargs):
         self.object = None
