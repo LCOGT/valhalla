@@ -1,3 +1,11 @@
+## 1.18.5
+2018-11-27
+
+* Require all PI fields for all science application form submissions
+* Initialize PI fields with submitter details on all science application forms besides science collaboration form
+* Allow science collaboration admins to be PIs of their own proposals
+* Fix bug that displayed a science application form status as submitted when it was still a draft
+
 ## 1.18.4
 2018-11-16
 
