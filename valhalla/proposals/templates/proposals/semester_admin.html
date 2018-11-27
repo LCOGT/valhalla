@@ -6,6 +6,9 @@
     font-family: monospace;
     font-size: 12px;
   }
+  .text-cell {
+    
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -47,6 +50,7 @@
           <th>IPP Limit</th>
           <th>IPP Avail</th>
           <th># Users</th>
+          <th>Notes</th>
           <th>completed</th>
         </tr>
       </thead>
@@ -56,7 +60,7 @@
         <td><a href="{% url 'proposals:detail' ta.proposal.id %}">{{ ta.proposal.id }}</a></td>
         <td>{{ ta.proposal.pi.first_name }} {{ ta.proposal.pi.last_name }}</td>
         <td>{{ ta.proposal.tac_priority }}</td>
-        <td>{{ ta.telescope_class }}</td>
+        <td>{{ ta.instrument_name }}</td>
         <td>{{ ta.std_allocation|floatformat }}</td>
         <td {% if ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %} class="bg-danger" {% endif %}>
           {{ ta.std_time_used|floatformat }}
@@ -68,6 +72,7 @@
         <td>{{ ta.ipp_limit|floatformat }}</td>
         <td>{{ ta.ipp_time_available|floatformat }}</td>
         <td>{{ ta.proposal.users.count }}</td>
+        <td>{{ ta.proposal.notes }}</td>
         <td>
           {% if ta.too_allocation > 0 and ta.too_time_used >= ta.too_allocation or ta.std_allocation > 0 and ta.std_time_used >= ta.std_allocation %}
             isComplete
@@ -155,6 +160,15 @@ $('#semester-table').bootstrapTable({
       field: 'num_users',
       title: '# Users',
       sortable: true,
+    },
+    {
+      field: 'notes',
+      title: 'Notes',
+      cellStyle: function(value, row, index, field) {
+        return {
+          classes: ''
+        };
+      }
     },
     {
       field: 'completed',

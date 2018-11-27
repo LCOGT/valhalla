@@ -70,6 +70,13 @@ class Proposal(models.Model):
     non_science = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
+    # Admin only notes
+    notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
+
+    # Misc
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         ordering = ('title',)
 
