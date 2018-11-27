@@ -158,6 +158,10 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
+        # The status is still DRAFT since the form is invalid
+        data = forms['main'].data.copy()
+        data['status'] = ScienceApplication.DRAFT
+        forms['main'].data = data
         return self.render_to_response(
             self.get_context_data(
                 form=forms['main'], timerequest_form=forms['tr'], ci_form=forms['ci'], call=self.object.call
