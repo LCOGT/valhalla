@@ -47,6 +47,8 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = {'call': self.call}
+        # Fill in pi fields with submitter details since that is the most common use case for all forms,
+        # except scicollab forms
         if self.call.proposal_type != Call.COLLAB_PROPOSAL:
             initial['pi'] = self.request.user.email
             initial['pi_first_name'] = self.request.user.first_name
