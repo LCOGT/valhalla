@@ -47,23 +47,11 @@ class BaseProposalAppForm(ModelForm):
 
     def clean(self):
         super().clean()
-        if self.cleaned_data.get('pi'):
-            self.Meta.required_fields.update(['pi_first_name', 'pi_last_name', 'pi_institution'])
-        else:
-            for field in ['pi_first_name', 'pi_last_name', 'pi_institution']:
-                if field in self.Meta.required_fields:
-                    self.Meta.required_fields.remove(field)
         for field in self.Meta.required_fields:
             if not self.cleaned_data.get(field) and self.cleaned_data.get('status') == 'SUBMITTED':
                 self.add_error(field, _('{}: This field is required'.format(self.fields[field].label)))
         if self.errors:
             self.add_error(None, _('There was an error with your submission.'))
-
-    def clean_pi(self):
-        email = self.cleaned_data.get('pi')
-        if email and email.strip() == self.instance.submitter.email:
-            raise forms.ValidationError(_('Leave these fields blank if you are the PI'))
-        return email
 
     def clean_pdf(self):
         pdf = self.cleaned_data.get('pdf')
@@ -99,9 +87,7 @@ class ScienceProposalAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
             'abstract', 'pdf'
         )
-        required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
-        ))
+        required_fields = set(fields)
 
 
 class DDTProposalAppForm(BaseProposalAppForm):
@@ -113,9 +99,7 @@ class DDTProposalAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
             'pdf',
         )
-        required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution'
-        ))
+        required_fields = set(fields)
 
 
 class KeyProjectAppForm(BaseProposalAppForm):
@@ -127,9 +111,7 @@ class KeyProjectAppForm(BaseProposalAppForm):
             'call', 'status', 'title', 'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
             'abstract', 'pdf'
         )
-        required_fields = set(fields) - set((
-            'pi', 'pi_first_name', 'pi_last_name', 'pi_institution',
-        ))
+        required_fields = set(fields)
 
 
 class SciCollabAppForm(BaseProposalAppForm):
