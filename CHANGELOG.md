@@ -1,3 +1,9 @@
+## 1.18.6
+2018-11-30
+
+* Add created, modified, and notes fields to proposals
+* Add proposal notes and display instrument class instead of telescope class on semester admin table
+
 ## 1.18.5
 2018-11-27
 
