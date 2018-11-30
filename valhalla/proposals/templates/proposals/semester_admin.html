@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.2/bootstrap-table.min.css" />
 <style type="text/css">
   .table {
     font-family: monospace;
@@ -9,6 +9,14 @@
   .text-cell {
     min-width: 300px;
     max-width: 300px;
+  }
+
+  /*
+   * Unset the width of the enclosing container (from base.html) to make it fluid, which makes the table more
+   * readable. This layout modification is an exception for this one page.
+   */
+  .container {
+    width: unset;
   }
 </style>
 {% endblock %}
@@ -87,10 +95,10 @@
 </div>
 {% endblock %}
 {% block extra_javascript %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.2/bootstrap-table.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.3/FileSaver.min.js"></script>
 <script src="https://cdn.lco.global/script/tableExport.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/extensions/export/bootstrap-table-export.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.2/extensions/export/bootstrap-table-export.min.js"></script>
 <script type="text/javascript">
 $('#semester-table').bootstrapTable({
   sortName: 'proposal',
