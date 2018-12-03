@@ -1,3 +1,30 @@
+## 1.18.6
+2018-11-30
+
+* Add created, modified, and notes fields to proposals
+* Add proposal notes and display instrument class instead of telescope class on semester admin table
+
+## 1.18.5
+2018-11-27
+
+* Require all PI fields for all science application form submissions
+* Initialize PI fields with submitter details on all science application forms besides science collaboration form
+* Allow science collaboration admins to be PIs of their own proposals
+* Fix bug that displayed a science application form status as submitted when it was still a draft
+
+## 1.18.4
+2018-11-16
+
+* Wrap long error reason in the scheduling history view for a block
+* Update headings in the admin interface from TOO to Rapid Response
+* Upgrade Node to 10.x LTS
+* Validate request windows to make sure all windows fall within the same semester
+
+## 1.18.3
+2018-11-09
+
+* Added CometCam support
+
 ## 1.18.2
 2018-11-05
 

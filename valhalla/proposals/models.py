@@ -70,6 +70,13 @@ class Proposal(models.Model):
     non_science = models.BooleanField(default=False)
     users = models.ManyToManyField(User, through='Membership')
 
+    # Admin only notes
+    notes = models.TextField(blank=True, default='', help_text='Add notes here. Not visible to users.')
+
+    # Misc
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
     class Meta:
         ordering = ('title',)
 
@@ -145,15 +152,16 @@ class TimeAllocation(models.Model):
         ('1M0-SCICAM-SBIG', '1M0-SCICAM-SBIG'),
         ('1M0-NRES-COMMISSIONING', '1M0-NRES-COMMISSIONING'),
         ('2M0-FLOYDS-SCICAM', '2M0-FLOYDS-SCICAM'),
-        ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL')
+        ('2M0-SCICAM-SPECTRAL', '2M0-SCICAM-SPECTRAL'),
+        ('2M0-SCICAM-SBIG', '2M0-SCICAM-SBIG')
     )
 
     std_allocation = models.FloatField(default=0)
     std_time_used = models.FloatField(default=0)
     ipp_limit = models.FloatField(default=0)
     ipp_time_available = models.FloatField(default=0)
-    too_allocation = models.FloatField(default=0)
-    too_time_used = models.FloatField(default=0)
+    too_allocation = models.FloatField(default=0, verbose_name='Rapid Response Allocation')
+    too_time_used = models.FloatField(default=0, verbose_name='Rapid Response Time Used')
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE)
     telescope_class = models.CharField(max_length=20, choices=TELESCOPE_CLASSES)

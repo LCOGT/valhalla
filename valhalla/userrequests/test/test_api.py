@@ -627,15 +627,14 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
 
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
 
-        semester = mixer.blend(
+        self.semester = mixer.blend(
             Semester,
             id='2016B',
             start=datetime(2016, 9, 1, tzinfo=timezone.utc),
             end=datetime(2016, 12, 31, tzinfo=timezone.utc),
         )
-
         self.time_allocation_1m0 = mixer.blend(
-            TimeAllocation, proposal=self.proposal, semester=semester,
+            TimeAllocation, proposal=self.proposal, semester=self.semester,
             telescope_class='1m0', std_allocation=100.0, std_time_used=0.0,
             too_allocation=10, too_time_used=0.0, ipp_limit=10.0,
             ipp_time_available=5.0
@@ -670,6 +669,24 @@ class TestWindowApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('The observation window does not fit within any defined semester', str(response.content))
+
+    @patch('valhalla.userrequests.duration_utils.get_semesters')
+    def test_request_windows_are_in_different_semesters(self, mock_get_semesters):
+        # Patch get_semesters so that we can add on a window that is in a different valid semester, and still ensure
+        # that the semesters that are returned are predictable in this test - the semesters variable used in
+        # get_semesters in duration_utils is a global, so it can cause unpredictable results across tests
+        another_semester = mixer.blend(
+            Semester,
+            id='2017A',
+            start=datetime(2017, 1, 1, tzinfo=timezone.utc),
+            end=datetime(2017, 6, 30, tzinfo=timezone.utc),
+        )
+        mock_get_semesters.return_value = [self.semester, another_semester]
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['windows'].append({'start': '2017-02-01 00:00:00', 'end': '2017-02-02 00:00:00'})
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('The observation windows must all be in the same semester', str(response.content))
 
 
 class TestCadenceApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):

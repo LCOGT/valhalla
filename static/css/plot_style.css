@@ -11,6 +11,12 @@
 	border-radius: 0px;
 }
 
+div.vis-tooltip{
+    word-wrap: break-word;
+    max-width: 80em;
+    white-space: normal;
+}
+
 .AVAILABLE {
 	background-color: deepskyblue;
 	border-color: deepskyblue;

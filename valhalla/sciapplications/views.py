@@ -46,7 +46,15 @@ class SciApplicationCreateView(LoginRequiredMixin, CreateView):
             return reverse('sciapplications:index')
 
     def get_initial(self):
-        return {'call': self.call}
+        initial = {'call': self.call}
+        # Fill in pi fields with submitter details since that is the most common use case for all forms,
+        # except scicollab forms
+        if self.call.proposal_type != Call.COLLAB_PROPOSAL:
+            initial['pi'] = self.request.user.email
+            initial['pi_first_name'] = self.request.user.first_name
+            initial['pi_last_name'] = self.request.user.last_name
+            initial['pi_institution'] = self.request.user.profile.institution
+        return initial
 
     def get(self, request, *args, **kwargs):
         self.object = None
@@ -150,6 +158,10 @@ class SciApplicationUpdateView(LoginRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
     def forms_invalid(self, forms):
+        # The status is still DRAFT since the form is invalid
+        data = forms['main'].data.copy()
+        data['status'] = ScienceApplication.DRAFT
+        forms['main'].data = data
         return self.render_to_response(
             self.get_context_data(
                 form=forms['main'], timerequest_form=forms['tr'], ci_form=forms['ci'], call=self.object.call

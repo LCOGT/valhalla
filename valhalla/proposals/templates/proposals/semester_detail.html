@@ -37,6 +37,7 @@
           <th>NRES (1m)</th>
           <th>Sinistro (1m)</th>
           <th>SBIG (0.4m)</th>
+          <th>SBIG (2.0m)</th>
         </tr></thead>
         <tbody>
           {% for proposal in tag.list %}
@@ -65,6 +66,9 @@
             </td>
             <td>
               {{ proposal.current_allocation.0M4SCICAMSBIG.std|floatformat:0 }}
+            </td>
+            <td>
+              {{ proposal.current_allocation.2M0SCICAMSBIG.std|floatformat:0 }}
             </td>
           </tr>
           {% endfor %}
