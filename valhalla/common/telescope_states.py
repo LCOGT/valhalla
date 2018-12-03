@@ -8,6 +8,7 @@ from collections import OrderedDict
 from urllib3.exceptions import LocationValueError
 from django.core.exceptions import ImproperlyConfigured
 import logging
+from datetime import datetime
 from dateutil.parser import parse
 
 from valhalla.common.configdb import configdb, TelescopeKey
@@ -63,6 +64,7 @@ class TelescopeStates(object):
         return available_telescopes
 
     def _get_es_data(self, sites, telescopes):
+        lower_query_time = min(self.start, datetime.utcnow())
         datum_query = {
             "query": {
                 "bool": {
@@ -76,7 +78,7 @@ class TelescopeStates(object):
                             "range": {
                                 "timestamp": {
                                     # Retrieve documents 1 day back to ensure you get at least one datum per telescope.
-                                    "gte": (self.start - timedelta(days=1)).strftime(ES_STRING_FORMATTER),
+                                    "gte": (lower_query_time - timedelta(days=1)).strftime(ES_STRING_FORMATTER),
                                     "lte": self.end.strftime(ES_STRING_FORMATTER),
                                     "format": "yyyy-MM-dd HH:mm:ss"
                                 }
