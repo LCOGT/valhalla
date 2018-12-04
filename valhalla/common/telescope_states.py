@@ -1,12 +1,15 @@
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
 from copy import deepcopy
+from collections import OrderedDict
 from urllib3.exceptions import LocationValueError
 from django.core.exceptions import ImproperlyConfigured
 import logging
+from datetime import datetime
+from dateutil.parser import parse
 
 from valhalla.common.configdb import configdb, TelescopeKey
 from valhalla.common.rise_set_utils import get_site_rise_set_intervals
@@ -19,11 +22,20 @@ ES_STRING_FORMATTER = "%Y-%m-%d %H:%M:%S"
 class ElasticSearchException(Exception):
     pass
 
-def string_to_datetime(timestamp, time_format=ES_STRING_FORMATTER):
-    return datetime.strptime(timestamp, time_format).replace(tzinfo=timezone.utc)
+
+def string_to_datetime(timestamp):
+    return parse(timestamp).replace(tzinfo=timezone.utc)
 
 
 class TelescopeStates(object):
+    EVENT_CATEGORIES = OrderedDict([
+        ('Site Agent: ', 'SITE_AGENT_UNRESPONSIVE'),
+        ('Weather: ', 'NOT_OK_TO_OPEN'),
+        ('Sequencer: ', 'SEQUENCER_DISABLED'),
+        ('Enclosure: ', 'ENCLOSURE_INTERLOCK'),
+        ('Enclosure Shutter Mode: ', 'ENCLOSURE_DISABLED')
+    ])
+
     def __init__(self, start, end, telescopes=None, sites=None, instrument_types=None):
         try:
             self.es = Elasticsearch([settings.ELASTICSEARCH_URL])
@@ -52,15 +64,21 @@ class TelescopeStates(object):
         return available_telescopes
 
     def _get_es_data(self, sites, telescopes):
-        date_range_query = {
+        lower_query_time = min(self.start, datetime.utcnow())
+        datum_query = {
             "query": {
                 "bool": {
                     "filter": [
                         {
+                            "match": {
+                                "datumname": "Available For Scheduling Reason"
+                            }
+                        },
+                        {
                             "range": {
                                 "timestamp": {
-                                    # Retrieve documents 1 hour back to capture the telescope state at the start.
-                                    "gte": (self.start - timedelta(hours=1)).strftime(ES_STRING_FORMATTER),
+                                    # Retrieve documents 1 day back to ensure you get at least one datum per telescope.
+                                    "gte": (lower_query_time - timedelta(days=1)).strftime(ES_STRING_FORMATTER),
                                     "lte": self.end.strftime(ES_STRING_FORMATTER),
                                     "format": "yyyy-MM-dd HH:mm:ss"
                                 }
@@ -85,9 +103,9 @@ class TelescopeStates(object):
 
         try:
             data = self.es.search(
-                index="telescope_events", body=date_range_query, size=query_size, scroll='1m',  # noqa
-                _source=['timestamp', 'telescope', 'enclosure', 'site', 'type', 'reason'],
-                sort=['site', 'enclosure', 'telescope', 'timestamp']
+                index="mysql-telemetry-*", body=datum_query, size=query_size, scroll='1m',  # noqa
+                _source=['timestamp', 'telescope', 'observatory', 'site', 'value_string'],
+                sort=['site', 'observatory', 'telescope', 'timestamp']
             )
         except ConnectionError:
             raise ElasticSearchException
@@ -103,108 +121,83 @@ class TelescopeStates(object):
             events_read += len(data['hits']['hits'])
         return event_data
 
-    def _belongs_in_lump(self, event_source, lump_data, dt=5):
-        if str(lump_data['telescope']) != str(self._telescope(event_source)):
-            return False
-
-        time_diff = (string_to_datetime(event_source['timestamp']) - lump_data['latest_timestamp']).total_seconds()
-
-        # If the event is close enough to the latest timestamp in the lump, it belongs in that lump.
-        if time_diff < dt:
-            return True
-
-        # If the event is far in time from the lump, but has the same reason, that means it came from the same
-        # scheduling run as that timestamp and belongs in the lump.
-        if time_diff >= dt and event_source['reason'] in lump_data['reasons']:
-            return True
-
-        # If the event is an ENCLOSURE_INTERLOCK, and the lump includes a SEQUENCER_UNAVAILABLE, it is part of the
-        # lump. This is because the two states are redundant.
-        if event_source['type'] == 'ENCLOSURE_INTERLOCK' and 'SEQUENCER_UNAVAILABLE' in lump_data['types']:
-            return True
-
-        return False
-
-    @staticmethod
-    def _categorize(lump):
-        # TODO: Categorize each lump in a useful way for network users.
-        event_type, event_reason = lump['types'][0], lump['reasons'][0]
-        for this_type, this_reason in zip(lump['types'], lump['reasons']):
-            # If the state in ENCLOSURE INTERLOCK, wait to instead categorize as SEQUENCER_UNAVAILABLE.
-            if this_type.upper() != 'ENCLOSURE_INTERLOCK':
-                event_type, event_reason = this_type, this_reason
-                break
-        return event_type, event_reason
-
-    def _lump_end(self, lump, next_event=None):
-        if not next_event or str(lump['telescope']) != str(self._telescope(next_event)):
-            return self.end
-        return string_to_datetime(next_event['timestamp'])
-
-    def _set_lump(self, event):
-        return {
-            'reasons': [event['_source']['reason']],
-            'types': [event['_source']['type']],
-            'start': string_to_datetime(event['_source']['timestamp']),
-            'telescope': self._telescope(event['_source']),
-            'latest_timestamp': string_to_datetime(event['_source']['timestamp'])
-        }
-
-    @staticmethod
-    def _update_lump(lump, event):
-        if event['_source']['type'] not in lump['types'] or event['_source']['reason'] not in lump['reasons']:
-            lump['reasons'].append(event['_source']['reason'])
-            lump['types'].append(event['_source']['type'])
-        lump['latest_timestamp'] = string_to_datetime(event['_source']['timestamp'])
-        return lump
-
     def get(self):
         telescope_states = {}
-        current_lump = dict(reasons=None, types=None, start=None)
+        current_lump = {'telescope': None}
 
         for event in self.event_data:
-            if self._telescope(event['_source']) not in self.available_telescopes:
+            telcode = self._telescope(event['_source'])
+            if telcode not in self.available_telescopes:
+                if current_lump['telescope']:
+                    self._save_lump(telescope_states, current_lump, self.end)
+                    current_lump = {'telescope': None}
                 continue
 
-            if current_lump['start'] is None:
-                current_lump = self._set_lump(event)
-                continue
+            event_start = string_to_datetime(event['_source']['timestamp'])
+            event_type, event_reason = self._categorize(event['_source'])
 
-            if self._belongs_in_lump(event['_source'], current_lump):
-                current_lump = self._update_lump(current_lump, event)
+            if current_lump['telescope'] and telcode != current_lump['telescope']:
+                telescope_states = self._save_lump(telescope_states, current_lump, self.end)
+                current_lump = self._create_lump(telcode, event_type, event_reason, event_start)
+            elif event_start > self.end:
+                if current_lump['telescope']:
+                    telescope_states = self._save_lump(telescope_states, current_lump, self.end)
+                    current_lump = {'telescope': None}
+            elif event_start < self.start:
+                current_lump = self._create_lump(telcode, event_type, event_reason, event_start)
             else:
-                lump_end = self._lump_end(current_lump, event['_source'])
-                if lump_end >= self.start:
-                    telescope_states = self._update_states(telescope_states, current_lump, lump_end)
-                    current_lump = self._set_lump(event)
+                if current_lump['telescope']:
+                    if event_type != current_lump['event_type'] or event_reason != current_lump['event_reason']:
+                        telescope_states = self._save_lump(telescope_states, current_lump, min(self.end, event_start))
+                        current_lump = self._create_lump(telcode, event_type, event_reason, event_start)
+                else:
+                    current_lump = self._create_lump(telcode, event_type, event_reason, event_start)
 
-        if current_lump['start']:
-            lump_end = self._lump_end(current_lump)
-            telescope_states = self._update_states(telescope_states, current_lump, lump_end)
+        if current_lump['telescope']:
+            # We have a final current lump we were in, so save it
+            self._save_lump(telescope_states, current_lump, self.end)
 
         return telescope_states
 
-    def _update_states(self, states, lump, lump_end):
-        if lump['telescope'] not in states:
-            states[lump['telescope']] = []
+    def _save_lump(self, telescope_states, lump, end):
+        lump['end'] = min(self.end, end)
+        lump['start'] = max(self.start, lump['start'])
+        telkey = lump['telescope']
+        lump['telescope'] = str(lump['telescope'])
+        if telkey not in telescope_states:
+            telescope_states[telkey] = []
+        telescope_states[telkey].append(lump)
 
-        event_type, event_reason = self._categorize(lump)
-        states[lump['telescope']].append(
-            {
-                'telescope': str(lump['telescope']),
-                'event_type': event_type,
-                'event_reason': event_reason,
-                'start': max(self.start, lump['start']),
-                'end': lump_end
-            }
-        )
-        return states
+        return telescope_states
+
+    @staticmethod
+    def _create_lump(telcode, event_type, event_reason, event_start):
+        return {
+            'telescope': telcode,
+            'event_type': event_type,
+            'event_reason': event_reason,
+            'start': event_start,
+        }
+
+    def _categorize(self, event):
+        # TODO: Categorize each lump in a useful way for network users.
+        reason = event['value_string']
+        if not reason:
+            return "AVAILABLE", "Available for scheduling"
+
+        reasons = reason.split('.')
+        for key in self.EVENT_CATEGORIES.keys():
+            for r in reasons:
+                if key in r:
+                    return self.EVENT_CATEGORIES[key], reason
+
+        return "NOT_AVAILABLE", "Unknown"
 
     @staticmethod
     def _telescope(event_source):
         return TelescopeKey(
             site=event_source['site'],
-            observatory=event_source['enclosure'],
+            observatory=event_source['observatory'],
             telescope=event_source['telescope']
         )
 

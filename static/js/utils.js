@@ -119,7 +119,8 @@ var siteToColor = {
   'cpt': '#004f00',
   'coj': '#fac900',
   'ogg': '#3366dd',
-  'sqa': '#009d00'
+  'sqa': '#009d00',
+  'tlv': '#8150d7'
 };
 
 var siteCodeToName = {
@@ -130,7 +131,8 @@ var siteCodeToName = {
   'coj': 'Siding Spring',
   'ogg': 'Haleakala',
   'sqa': 'Sedgwick',
-  'ngq': 'Ali'
+  'ngq': 'Ali',
+  'tlv': 'Wise'
 };
 
 var observatoryCodeToNumber = {
