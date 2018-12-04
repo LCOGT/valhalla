@@ -1,3 +1,8 @@
+## 1.18.7
+2018-12-04
+
+* Switched telescope events to use telemetry backend
+
 ## 1.18.6
 2018-11-30
 
