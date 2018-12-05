@@ -136,6 +136,21 @@ export default {
         return 'IMAGE';
       }
     },
+    slitWidthToExposureTime: function(slitWidth){
+      if(slitWidth.includes('1.2')){
+        return 70;
+      }
+      else if(slitWidth.includes('1.6')){
+        return 50;
+      }
+      else if(slitWidth.includes('2.0')){
+        return 40;
+      }
+      else if(slitWidth.includes('6.0')){
+        return 15;
+      }
+      return 60;
+    },
     updateAcceptabilityThreshold: function(instrument) {
       const floydsDefaultAcceptability = 100;
       const otherDefaultAcceptability = 90;
@@ -173,9 +188,11 @@ export default {
       }
       calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
       calibs[0].ag_mode = 'OPTIONAL'; calibs[1].ag_mode = 'OPTIONAL';
+      calibs[0].exposure_time = this.slitWidthToExposureTime(calibs[0].spectra_slit);
       request.molecules.unshift(calibs[0], calibs[1]);
       calibs[2].type = 'ARC'; calibs[3].type = 'LAMP_FLAT';
       calibs[2].ag_mode = 'OPTIONAL'; calibs[3].ag_mode = 'OPTIONAL';
+      calibs[3].exposure_time = this.slitWidthToExposureTime(calibs[3].spectra_slit);
       request.molecules.push(calibs[2], calibs[3]);
       this.update();
     },
