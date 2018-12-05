@@ -38,7 +38,7 @@
           <customselect v-if="molecule.type === 'EXPOSE'" v-model="molecule.filter" label="Filter" v-on:input="update"
                          :errors="errors.filter" :options="filterOptions" desc="The filter to be used with this instrument">
           </customselect>
-          <customselect v-if="molecule.type === 'SPECTRUM'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
+          <customselect v-if="molecule.type === 'SPECTRUM' || molecule.type === 'LAMP_FLAT' || molecule.type === 'ARC'" v-model="molecule.spectra_slit" label="Slit Width" v-on:input="update"
                          :errors="errors.spectra_slit" :options="filterOptions" desc="The width the of the slit to be used.">
           </customselect>
           <customfield v-model="molecule.exposure_count" label="Exposure Count" field="exposure_count" v-on:input="update"
@@ -86,7 +86,7 @@
 <script>
 import _ from 'lodash';
 
-import {collapseMixin} from '../utils.js';
+import {collapseMixin, slitWidthToExposureTime} from '../utils.js';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
@@ -217,6 +217,11 @@ export default {
           this.acquire_params.acquire_radius_arcsec = this.molecule.acquire_radius_arcsec;
           this.molecule.acquire_radius_arcsec = undefined;
         }
+      }
+    },
+    'molecule.spectra_slit': function(value){
+      if(this.molecule.type === 'LAMP_FLAT'){
+        this.molecule.exposure_time = slitWidthToExposureTime(value);
       }
     },
     'molecule.type': function(value){
