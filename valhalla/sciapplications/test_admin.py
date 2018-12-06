@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core import mail
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -61,8 +62,22 @@ class TestSciAppAdmin(TestCase):
             data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
             follow=True
         )
+        self.assertEqual(len(mail.outbox), 3)
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.PORTED)
+
+    def test_email_pi_on_successful_port(self):
+        app_id_to_port = self.apps[0].id
+        ScienceApplication.objects.filter(pk=app_id_to_port).update(status=ScienceApplication.ACCEPTED)
+        self.client.post(
+            reverse('admin:sciapplications_scienceapplication_changelist'),
+            data={'action': 'port', '_selected_action': [str(app.pk) for app in self.apps]},
+            follow=True
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual([ScienceApplication.objects.get(pk=app_id_to_port).proposal.pi.email], mail.outbox[0].to)
+        self.assertIn(ScienceApplication.objects.get(pk=app_id_to_port).proposal.id, str(mail.outbox[0].message()))
+        self.assertIn(ScienceApplication.objects.get(pk=app_id_to_port).call.semester.id, str(mail.outbox[0].message()))
 
     def test_port_not_accepted(self):
         self.client.post(
@@ -71,6 +86,7 @@ class TestSciAppAdmin(TestCase):
             follow=True
         )
         self.assertFalse(Proposal.objects.exists())
+        self.assertEqual(len(mail.outbox), 0)
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.SUBMITTED)
 
@@ -85,6 +101,7 @@ class TestSciAppAdmin(TestCase):
         for app in self.apps:
             self.assertEqual(ScienceApplication.objects.get(pk=app.id).status, ScienceApplication.ACCEPTED)
         self.assertContains(response, 'no approved Time Allocations')
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_port_duplicate_tac_rank(self):
         ScienceApplication.objects.update(status=ScienceApplication.ACCEPTED, tac_rank=0)
@@ -94,3 +111,5 @@ class TestSciAppAdmin(TestCase):
             follow=True
         )
         self.assertContains(response, 'A proposal named LCO{}-000 already exists.'.format(self.semester))
+        # One application out of the bunch was successfully ported, so only one email was sent
+        self.assertEqual(len(mail.outbox), 1)

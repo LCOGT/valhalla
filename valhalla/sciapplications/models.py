@@ -2,12 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils.translation import ugettext as _
 from django.template.loader import render_to_string
 from django.contrib.staticfiles import finders
 from weasyprint import HTML, CSS
 from PyPDF2 import PdfFileMerger
 import io
 
+from valhalla.celery import send_mail
 from valhalla.proposals.models import (
     Semester, TimeAllocation, Proposal, TimeAllocationGroup, Membership
 )
@@ -203,6 +205,18 @@ class ScienceApplication(models.Model):
         pdf = fileobj.getvalue()
         fileobj.close()
         return pdf
+
+    def send_approved_notification(self):
+        subject = _('Your proposal at LCO.global has been approved')
+        message = render_to_string(
+            'sciapplications/approved.txt',
+            {
+                'proposal': self.proposal,
+                'semester': self.call.semester,
+                'semester_already_started': self.call.semester.start < timezone.now(),
+            }
+        )
+        send_mail.delay(subject, message, 'portal@lco.global', [self.proposal.pi.email])
 
 
 class TimeRequest(models.Model):
