@@ -33,7 +33,9 @@ class ProposalAdmin(admin.ModelAdmin):
         'tag',
         'public',
         'semesters',
-        'pi'
+        'pi',
+        'created',
+        'modified'
     )
 
     list_filter = ('active', 'tag', 'public')

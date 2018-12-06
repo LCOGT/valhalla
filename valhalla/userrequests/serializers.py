@@ -285,6 +285,9 @@ class RequestSerializer(serializers.ModelSerializer):
         if not value:
             raise serializers.ValidationError(_('You must specify at least 1 window'))
 
+        if len(set([get_semester_in(window['start'], window['end']) for window in value])) > 1:
+            raise serializers.ValidationError(_('The observation windows must all be in the same semester'))
+
         return value
 
     def validate_cadence(self, value):

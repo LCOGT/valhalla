@@ -21,12 +21,12 @@ export default {
   data: function () {
     var event_types = {
       'AVAILABLE': 'Available',
-      'NOT_OK_TO_OPEN': 'Weather',
+      'NOT_OK_TO_OPEN': '',
       'SEQUENCER_DISABLED': 'Manually Disabled',
       'SITE_AGENT_UNRESPONSIVE': 'No Connection to Telescope',
       'OFFLINE': 'Manually Disabled',
-      'ENCLOSURE_INTERLOCK': 'Weather',
-      'SEQUENCER_UNAVAILABLE': 'Weather'
+      'ENCLOSURE_INTERLOCK': '',
+      'SEQUENCER_UNAVAILABLE': ''
     };
 
     var options = {
@@ -87,7 +87,7 @@ export default {
             var event = this.data[sorted_telescopes[telescope]][index];
             var reason = '';
             if (event['event_type'] == 'NOT_OK_TO_OPEN' || event['event_type'] == 'ENCLOSURE_INTERLOCK') {
-              reason = ': ' + event['event_reason'];
+              reason = event['event_reason'];
             }
             else if (event['event_type'] == 'SEQUENCER_UNAVAILABLE') {
               reason = ': Telescope initializing';
