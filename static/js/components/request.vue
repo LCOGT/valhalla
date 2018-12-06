@@ -56,7 +56,7 @@
 <script>
 import _ from 'lodash';
 
-import {collapseMixin} from '../utils.js';
+import {collapseMixin, slitWidthToExposureTime} from '../utils.js';
 import target from './target.vue';
 import molecule from './molecule.vue';
 import window from './window.vue';
@@ -173,9 +173,11 @@ export default {
       }
       calibs[0].type = 'LAMP_FLAT'; calibs[1].type = 'ARC';
       calibs[0].ag_mode = 'OPTIONAL'; calibs[1].ag_mode = 'OPTIONAL';
+      calibs[0].exposure_time = slitWidthToExposureTime(calibs[0].spectra_slit);
       request.molecules.unshift(calibs[0], calibs[1]);
       calibs[2].type = 'ARC'; calibs[3].type = 'LAMP_FLAT';
       calibs[2].ag_mode = 'OPTIONAL'; calibs[3].ag_mode = 'OPTIONAL';
+      calibs[3].exposure_time = slitWidthToExposureTime(calibs[3].spectra_slit);
       request.molecules.push(calibs[2], calibs[3]);
       this.update();
     },

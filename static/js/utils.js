@@ -1,5 +1,22 @@
 import moment from 'moment';
 
+function slitWidthToExposureTime(slitWidth){
+  // Lamp flats are affected by the slit width, so exposure time needs to scale with it
+  if(slitWidth.includes('1.2')){
+    return 70;
+  }
+  else if(slitWidth.includes('1.6')){
+    return 50;
+  }
+  else if(slitWidth.includes('2.0')){
+    return 40;
+  }
+  else if(slitWidth.includes('6.0')){
+    return 15;
+  }
+  return 60;
+}
+
 function semesterStart(datetime){
   if(datetime.month() < 3 ){
     return datetime.subtract(1, 'years').month(9).date(1);
@@ -174,6 +191,6 @@ var colorPalette = [  // useful assigning colors to datasets.
 
 export {
   semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
-  formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName,
+  formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName, slitWidthToExposureTime,
   observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian
 };
