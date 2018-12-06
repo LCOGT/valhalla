@@ -1,3 +1,9 @@
+## 1.18.8
+2018-12-06
+
+* Spectrum generated lamp_flats have exposure time automatically set based on slit width
+* Automatically send emails to PI when proposals are approved and given time
+
 ## 1.18.7
 2018-12-04
 
