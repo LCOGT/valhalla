@@ -111,6 +111,7 @@ import archive from './archive.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
 import customselect from './util/customselect.vue';
+
 export default {
   props: ['target', 'errors', 'datatype', 'selectedinstrument', 'parentshow', 'simple_interface'],
   components: {customfield, customselect, panel, archive},
@@ -131,7 +132,6 @@ export default {
     var sid_target_params = _.cloneDeep(this.target);
     delete sid_target_params['name'];
     delete sid_target_params['type'];
-    this.$set(this.target, 'scheme', 'MPC_MINOR_PLANET')
     return {
       show: true,
       showSlitPosition: false,
@@ -235,22 +235,21 @@ export default {
       }
     },
     'target.type': function(value){
-      var that = this;
       if(value === 'SIDEREAL'){
-        for(var x in that.ns_target_params){
-          that.ns_target_params[x] = that.target[x];
-          that.target[x] = undefined;
+        for(var x in this.ns_target_params){
+          this.ns_target_params[x] = this.target[x];
+          this.target[x] = undefined;
         }
-        for(var y in that.sid_target_params){
-          that.target[y] = that.sid_target_params[y];
+        for(var y in this.sid_target_params){
+          this.$set(this.target, y, tthis.sid_target_params[y]);
         }
       }else if(value === 'NON_SIDEREAL'){
         for(var z in this.sid_target_params){
-          that.sid_target_params[z] = that.target[z];
-          that.target[z] = undefined;
+          this.sid_target_params[z] = this.target[z];
+          this.target[z] = undefined;
         }
-        for(var a in that.ns_target_params){
-          that.target[a] = that.ns_target_params[a];
+        for(var a in this.ns_target_params){
+          this.$set(this.target, a, this.ns_target_params[a]);
         }
       }
     }
