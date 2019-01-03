@@ -1,3 +1,8 @@
+## 1.18.9
+2019-01-03
+
+* Update various dependencies
+
 ## 1.18.8
 2018-12-06
 
