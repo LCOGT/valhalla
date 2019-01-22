@@ -50,7 +50,7 @@ def get_molecule_duration_per_exposure(molecule_dict, window_dicts):
     # hack that will be removed after the transition date.
     readout_switch_dt = datetime(year=2019, month=2, day=5, hour=0, minute=0, second=0, tzinfo=timezone.utc)
 
-    if any(['start' in w for w in window_dicts]):
+    if any(['start' in w for w in window_dicts]): 
         earliest_window_start = min([w['start'].replace(tzinfo=timezone.utc) for w in window_dicts if 'start' in w])
     else:
         earliest_window_start = timezone.now()
