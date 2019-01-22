@@ -135,6 +135,34 @@
                 },
                 {
                   "state": "SCHEDULABLE",
+                  "code": "xx07",
+                  "science_camera": {
+                    "camera_type": {
+                      "code": "1M0-SCICAM-SINISTRO",
+                      "name": "1M0-SCICAM-SINISTRO",
+                      "default_mode": {
+                        "binning": 1,
+                        "readout": 37.0
+                      },
+                      "config_change_time": 2,
+                      "acquire_processing_time": 0,
+                      "acquire_exposure_time": 0,
+                      "front_padding": 90,
+                      "filter_change_time": 2,
+                      "fixed_overhead_per_exposure": 1,
+                      "mode_set": [
+                        {
+                          "binning": 1,
+                          "readout": 37.0
+                        }
+                      ]
+                    },
+                    "filters": "air"
+                  },
+                  "__str__": "tst.domb.1m0a.xx07-xx07"
+                },
+                {
+                  "state": "SCHEDULABLE",
                   "code": "nresXX",
                   "science_camera": {
                     "camera_type": {
