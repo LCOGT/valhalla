@@ -151,7 +151,8 @@ class Request(models.Model):
     def duration(self):
         cached_duration = cache.get('request_duration_{}'.format(self.id))
         if not cached_duration:
-            duration = get_request_duration({'molecules': [m.as_dict for m in self.molecules.all()]})
+            duration = get_request_duration({'molecules': [m.as_dict for m in self.molecules.all()],
+                                             'windows': [w.as_dict for w in self.windows.all()]})
             cache.set('request_duration_{}'.format(self.id), duration, 86400 * 30 * 6)
             return duration
         else:
@@ -447,7 +448,7 @@ class Molecule(models.Model):
 
     @cached_property
     def duration(self):
-        return get_molecule_duration(self.as_dict)
+        return get_molecule_duration(self.as_dict, [w.as_dict for w in self.request.windows.all()])
 
 
 class Constraints(models.Model):
