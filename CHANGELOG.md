@@ -1,3 +1,9 @@
+## 1.18.10
+2019-01-23
+
+* Add archon sinistro hack
+* Retrieve parallax from simbad2k during compose page lookups
+
 ## 1.18.9
 2019-01-03
 
