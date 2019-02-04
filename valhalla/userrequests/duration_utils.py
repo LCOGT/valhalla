@@ -1,8 +1,6 @@
 import itertools
 from django.utils.translation import ugettext as _
 from math import ceil, floor
-from datetime import datetime
-from django.utils import timezone
 import logging
 
 from valhalla.proposals.models import TimeAllocationKey, Proposal, Semester
@@ -44,28 +42,14 @@ def get_num_filter_changes(molecules):
     return len(list(itertools.groupby([mol.get('filter', '') for mol in molecules])))
 
 
-def get_molecule_duration_per_exposure(molecule_dict, window_dicts):
-    # The artificial delay for sinistro imaging readout will be removed on UT Feb 5 00:00. Use the real (lower) readout
-    # time of 26 seconds for sinistro imager requests whose earliest window starts after this date. This is a
-    # hack that will be removed after the transition date.
-    readout_switch_dt = datetime(year=2019, month=2, day=5, hour=0, minute=0, second=0, tzinfo=timezone.utc)
-
-    if any(['start' in w for w in window_dicts]): 
-        earliest_window_start = min([w['start'].replace(tzinfo=timezone.utc) for w in window_dicts if 'start' in w])
-    else:
-        earliest_window_start = timezone.now()
-
-    if molecule_dict['instrument_name'].upper() == '1M0-SCICAM-SINISTRO' and earliest_window_start >= readout_switch_dt:
-        # The get_exposure_overhead method returns the readout time + fixed_overhead_per_exposure (in this case 1s)
-        total_overhead_per_exp = 26 + 1
-    else:
-        total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
+def get_molecule_duration_per_exposure(molecule_dict):
+    total_overhead_per_exp = configdb.get_exposure_overhead(molecule_dict['instrument_name'], molecule_dict['bin_x'])
     mol_duration_per_exp = molecule_dict['exposure_time'] + total_overhead_per_exp
     return mol_duration_per_exp
 
 
-def get_molecule_duration(molecule_dict, window_dicts):
-    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict, window_dicts)
+def get_molecule_duration(molecule_dict):
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
     mol_duration = molecule_dict['exposure_count'] * mol_duration_per_exp
     duration = mol_duration + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME
 
@@ -76,7 +60,7 @@ def get_request_duration_dict(request_dict):
     req_durations = {'requests': []}
     for req in request_dict:
         req_info = {'duration': get_request_duration(req)}
-        mol_durations = [{'duration': get_molecule_duration_per_exposure(mol, req['windows'])} for mol in req['molecules']]
+        mol_durations = [{'duration': get_molecule_duration_per_exposure(mol)} for mol in req['molecules']]
         req_info['molecules'] = mol_durations
         req_info['largest_interval'] = get_largest_interval(get_rise_set_intervals(req)).total_seconds()
         req_info['largest_interval'] -= (PER_MOLECULE_STARTUP_TIME + PER_MOLECULE_GAP)
@@ -128,8 +112,8 @@ def get_request_duration_sum(userrequest_dict):
     return duration_sum
 
 
-def get_num_exposures(molecule_dict, time_available, window_dicts):
-    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict, window_dicts)
+def get_num_exposures(molecule_dict, time_available):
+    mol_duration_per_exp = get_molecule_duration_per_exposure(molecule_dict)
     exposure_time = time_available.total_seconds() - PER_MOLECULE_GAP - PER_MOLECULE_STARTUP_TIME
     num_exposures = exposure_time // mol_duration_per_exp
 
@@ -139,8 +123,7 @@ def get_num_exposures(molecule_dict, time_available, window_dicts):
 def get_request_duration(request_dict):
     # calculate the total time needed by the request, based on its instrument and exposures
     request_overheads = configdb.get_request_overheads(request_dict['molecules'][0]['instrument_name'])
-    window_dicts = request_dict['windows'] if 'windows' in request_dict else []
-    duration = sum([get_molecule_duration(m, window_dicts) for m in request_dict['molecules']])
+    duration = sum([get_molecule_duration(m) for m in request_dict['molecules']])
     if configdb.is_spectrograph(request_dict['molecules'][0]['instrument_name']):
         duration += get_num_mol_changes(request_dict['molecules']) * request_overheads['config_change_time']
 

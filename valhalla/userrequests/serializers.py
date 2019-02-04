@@ -326,9 +326,9 @@ class RequestSerializer(serializers.ModelSerializer):
 
             for molecule in data['molecules']:
                 if molecule.get('fill_window'):
-                    molecule_duration = get_molecule_duration(molecule_dict=molecule, window_dicts=data['windows'])
+                    molecule_duration = get_molecule_duration(molecule_dict=molecule)
                     num_exposures = get_num_exposures(
-                        molecule, largest_interval - timedelta(seconds=duration - molecule_duration), data['windows']
+                        molecule, largest_interval - timedelta(seconds=duration - molecule_duration)
                     )
                     molecule['exposure_count'] = num_exposures
                     duration = get_request_duration(data)
