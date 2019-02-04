@@ -373,50 +373,6 @@ class TestUserPostRequestApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()['requests'][0]['acceptability_threshold'], 100)
 
-    @patch('valhalla.userrequests.duration_utils.get_semesters')
-    def test_post_userrequest_sinistro_archon_readout_hack(self, mock_get_semesters):
-        # Add the semester in which the hack applies
-        another_semester = mixer.blend(
-            Semester,
-            id='2019A',
-            start=datetime(2018, 12, 1, tzinfo=timezone.utc),
-            end=datetime(2019, 6, 30, tzinfo=timezone.utc),
-        )
-        mock_get_semesters.return_value = [self.semester, another_semester]
-        # Need some time allocations for the new semester
-        mixer.blend(
-            TimeAllocation, proposal=self.proposal, semester=another_semester,
-            telescope_class='1m0', instrument_name='1M0-SCICAM-SBIG', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
-        )
-        mixer.blend(
-            TimeAllocation, proposal=self.proposal, semester=another_semester,
-            telescope_class='1m0', instrument_name='1M0-SCICAM-SINISTRO', std_allocation=100.0, std_time_used=0.0,
-            too_allocation=10, too_time_used=0.0, ipp_limit=10.0, ipp_time_available=5.0
-        )
-        data = self.generic_payload.copy()
-        # Data mods that are used in all subsequent checks
-        data['requests'][0]['windows'][0]['end'] = '2019-06-07T21:12:18Z'
-        data['requests'][0]['target']['ra'] = 187
-        data['requests'][0]['target']['dec'] = 14
-        # Test that the duration remains the same for an SBIG before and after the transition date
-        data['requests'][0]['windows'][0]['start'] = '2019-01-25T21:12:18Z'
-        sbig_response_before = self.client.post(reverse('api:user_requests-list'), data=data)
-        data['requests'][0]['windows'][0]['start'] = '2019-02-05T00:00:00Z'
-        sbig_response_after = self.client.post(reverse('api:user_requests-list'), data=data)
-        self.assertEqual(sbig_response_before.status_code, 201)
-        self.assertEqual(sbig_response_after.status_code, 201)
-        self.assertEqual(sbig_response_before.json()['requests'][0]['duration'], sbig_response_after.json()['requests'][0]['duration'])
-        # Test that the duration decreases for a sinistro after the transition date
-        data['requests'][0]['molecules'][0]['instrument_name'] = '1M0-SCICAM-SINISTRO'
-        data['requests'][0]['windows'][0]['start'] = '2019-01-25T21:12:18Z'
-        sinistro_response_before = self.client.post(reverse('api:user_requests-list'), data=data)
-        data['requests'][0]['windows'][0]['start'] = '2019-02-05T00:00:00Z'
-        sinistro_response_after = self.client.post(reverse('api:user_requests-list'), data=data)
-        self.assertEqual(sinistro_response_after.status_code, 201)
-        self.assertEqual(sinistro_response_before.status_code, 201)
-        self.assertTrue(sinistro_response_before.json()['requests'][0]['duration'] > sinistro_response_after.json()['requests'][0]['duration'])
-
 
 class TestDisallowedMethods(APITestCase):
     def setUp(self):
