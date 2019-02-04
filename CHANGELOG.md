@@ -1,3 +1,8 @@
+## 1.19.0
+2019-02-04
+
+* Revert sinistro hack for new archon readout times
+
 ## 1.18.10
 2019-01-23
 
