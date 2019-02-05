@@ -72,6 +72,38 @@ function sexagesimalDecToDecimal(dec){
   return dec;
 }
 
+function decimalRaToSexigesimal(deg){
+  var rs = 1;
+  if(deg < 0){
+    rs = -1;
+    var ra = Math.abs(deg);
+  } else {
+    var ra = deg
+  }
+  var raH = Math.floor(ra / 15)
+  var raM = Math.floor(((ra / 15) - raH) * 60)
+  var raS = ((((ra / 15 ) - raH ) * 60) - raM) * 60
+  return {
+    'h': raH * rs, 'm': raM, 's': raS, 'str': (rs > 0 ? '' : '-') + raH + ':' + raM + ':' + raS.toFixed(4)
+  }
+}
+
+function decimalDecToSexigesimal(deg){
+  var ds = 1;
+  if(deg < 0){
+    ds = -1;
+    dec = Math.abs(deg);
+  } else {
+    dec = deg;
+  }
+  deg = Math.floor(dec)
+  decM = Math.abs(Math.floor((dec - deg) * 60));
+  decS = (Math.abs((dec - deg) * 60) - decM) * 60
+  return {
+    'deg': deg * ds, 'm': decM, 's': decS, 'str': (ds > 0 ? '' : '-') + deg + ':' + decM + ':' + decS.toFixed(4)
+  }
+}
+
 function QueryString() {
   var qString = {};
   var query = window.location.search.substring(1);
@@ -192,5 +224,6 @@ var colorPalette = [  // useful assigning colors to datasets.
 export {
   semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
   formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName, slitWidthToExposureTime,
-  observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian
+  observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian,
+  degreesToHMS
 };
