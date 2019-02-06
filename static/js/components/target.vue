@@ -146,10 +146,10 @@ export default {
       ns_target_params: ns_target_params,
       sid_target_params: sid_target_params,
       rot_target_params: rot_target_params,
-      ra_display: '',
-      dec_display: '',
-      ra_help_text: '',
-      dec_help_text: ''
+      ra_display: this.target.ra,
+      dec_display: this.target.dec,
+      ra_help_text: this.raHelp(this.target.ra),
+      dec_help_text: this.decHelp(this.target.dec)
     };
   },
   methods: {
@@ -158,21 +158,27 @@ export default {
     },
     updateRA: function(){
       this.target.ra = sexagesimalRaToDecimal(this.ra_display);
-      if(isNaN(Number(this.ra_display))) {
-        this.ra_help_text = 'Decimal: ' + Number(sexagesimalRaToDecimal(this.ra_display));
-      } else {
-        this.ra_help_text = 'Sexigesimal: ' + decimalRaToSexigesimal(this.ra_display).str;
-      }
+      this.ra_help_text = this.raHelp(this.ra_display);
       this.update();
     },
     updateDec: function(){
       this.target.dec = sexagesimalDecToDecimal(this.dec_display);
-      if(isNaN(Number(this.dec_display))) {
-        this.dec_help_text = 'Decimal: ' + Number(sexagesimalDecToDecimal(this.dec_display));
-      } else {
-        this.dec_help_text = 'Sexigesimal: ' + decimalDecToSexigesimal(this.dec_display).str;
-      }
+      this.dec_help_text = this.decHelp(this.dec_display);
       this.update();
+    },
+    raHelp: function(ra){
+      if(isNaN(Number(ra))) {
+        return 'Decimal: ' + Number(sexagesimalRaToDecimal(ra));
+      } else {
+        return 'Sexigesimal: ' + decimalRaToSexigesimal(ra).str;
+      }
+    },
+    decHelp: function(dec){
+      if(isNaN(Number(dec))) {
+        return 'Decimal: ' + Number(sexagesimalDecToDecimal(dec));
+      } else {
+        return 'Sexigesimal: ' + decimalDecToSexigesimal(dec).str;
+      }
     }
   },
   watch: {
