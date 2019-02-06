@@ -84,7 +84,10 @@ function decimalRaToSexigesimal(deg){
   var raM = Math.floor(((ra / 15) - raH) * 60)
   var raS = ((((ra / 15 ) - raH ) * 60) - raM) * 60
   return {
-    'h': raH * rs, 'm': raM, 's': raS, 'str': (rs > 0 ? '' : '-') + raH + ':' + raM + ':' + raS.toFixed(4)
+    'h': raH * rs,
+    'm': raM,
+    's': raS,
+    'str': (rs > 0 ? '' : '-') + zPadFloat(raH) + ':' + zPadFloat(raM) + ':' + zPadFloat(raS)
   }
 }
 
@@ -92,15 +95,18 @@ function decimalDecToSexigesimal(deg){
   var ds = 1;
   if(deg < 0){
     ds = -1;
-    dec = Math.abs(deg);
+    var dec = Math.abs(deg);
   } else {
-    dec = deg;
+    var dec = deg;
   }
-  deg = Math.floor(dec)
-  decM = Math.abs(Math.floor((dec - deg) * 60));
-  decS = (Math.abs((dec - deg) * 60) - decM) * 60
+  var deg = Math.floor(dec)
+  var decM = Math.abs(Math.floor((dec - deg) * 60));
+  var decS = (Math.abs((dec - deg) * 60) - decM) * 60
   return {
-    'deg': deg * ds, 'm': decM, 's': decS, 'str': (ds > 0 ? '' : '-') + deg + ':' + decM + ':' + decS.toFixed(4)
+    'deg': deg * ds,
+    'm': decM,
+    's': decS,
+    'str': (ds > 0 ? '' : '-') + zPadFloat(deg) + ':' + zPadFloat(decM) + ':' + zPadFloat(decS)
   }
 }
 
@@ -120,6 +126,10 @@ function QueryString() {
     }
   }
   return qString;
+}
+
+function zPadFloat(num){
+  return num.toLocaleString(undefined, {'minimumIntegerDigits': 2, 'maximumFractionDigits': 4})
 }
 
 function formatDate(date){
@@ -225,5 +235,5 @@ export {
   semesterStart, semesterEnd, sexagesimalRaToDecimal, sexagesimalDecToDecimal, QueryString,
   formatDate, formatField, datetimeFormat, collapseMixin, siteToColor, siteCodeToName, slitWidthToExposureTime,
   observatoryCodeToNumber, telescopeCodeToName, colorPalette, julianToModifiedJulian,
-  degreesToHMS
+  decimalRaToSexigesimal, decimalDecToSexigesimal
 };

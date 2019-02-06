@@ -22,12 +22,14 @@
                         :options="[{value: 'SIDEREAL',text: 'Sidereal'}, {value: 'NON_SIDEREAL',text:'Non-Sidereal'}]">
           </customselect>
           <div class="sidereal" v-show="target.type === 'SIDEREAL'">
-            <customfield v-model="target.ra" label="Right Ascension" type="sex" field="ra" v-on:blur="updateRA" :errors="errors.ra"
+            <customfield v-model="ra_display" label="Right Ascension" type="sex" field="ra" v-on:blur="updateRA" :errors="errors.ra"
                          desc="Decimal degrees or HH:MM:SS.S">
             </customfield>
-            <customfield v-model="target.dec" label="Declination" type="sex" field="dec" v-on:blur="updateDec" :errors="errors.dec"
+            <p class="help-block coord-help">&nbsp;{{ ra_help_text }}</p>
+            <customfield v-model="dec_display" label="Declination" type="sex" field="dec" v-on:blur="updateDec" :errors="errors.dec"
                          desc="Decimal degrees of DD:MM:SS.S">
             </customfield>
+            <p class="help-block coord-help">&nbsp;{{ dec_help_text }}</p>
             <customfield v-model="target.proper_motion_ra" label="Proper Motion: RA" field="proper_motion_ra"
                          v-on:input="update" :errors="errors.proper_motion_ra" desc="Units are milliarcseconds per year. Max 20000."
 			                   v-if="!simple_interface">
@@ -106,7 +108,10 @@
 import _ from 'lodash';
 import $ from 'jquery';
 
-import {collapseMixin, sexagesimalRaToDecimal, sexagesimalDecToDecimal, julianToModifiedJulian} from '../utils.js';
+import {
+  collapseMixin, sexagesimalRaToDecimal, sexagesimalDecToDecimal, julianToModifiedJulian,
+  decimalRaToSexigesimal, decimalDecToSexigesimal
+} from '../utils.js';
 import archive from './archive.vue';
 import panel from './util/panel.vue';
 import customfield from './util/customfield.vue';
@@ -140,7 +145,11 @@ export default {
       lookupReq: undefined,
       ns_target_params: ns_target_params,
       sid_target_params: sid_target_params,
-      rot_target_params: rot_target_params
+      rot_target_params: rot_target_params,
+      ra_display: '',
+      dec_display: '',
+      ra_help_text: '',
+      dec_help_text: ''
     };
   },
   methods: {
@@ -148,11 +157,21 @@ export default {
       this.$emit('targetupdate', {});
     },
     updateRA: function(){
-      this.target.ra = sexagesimalRaToDecimal(this.target.ra);
+      this.target.ra = sexagesimalRaToDecimal(this.ra_display);
+      if(isNaN(Number(this.ra_display))) {
+        this.ra_help_text = 'Decimal: ' + Number(sexagesimalRaToDecimal(this.ra_display));
+      } else {
+        this.ra_help_text = 'Sexigesimal: ' + decimalRaToSexigesimal(this.ra_display).str;
+      }
       this.update();
     },
     updateDec: function(){
-      this.target.dec = sexagesimalDecToDecimal(this.target.dec);
+      this.target.dec = sexagesimalDecToDecimal(this.dec_display);
+      if(isNaN(Number(this.dec_display))) {
+        this.dec_help_text = 'Decimal: ' + Number(sexagesimalDecToDecimal(this.dec_display));
+      } else {
+        this.dec_help_text = 'Sexigesimal: ' + decimalDecToSexigesimal(this.dec_display).str;
+      }
       this.update();
     }
   },
@@ -170,6 +189,8 @@ export default {
         if(_.get(data, ['error'], null) == null){
           that.target.ra = _.get(data, ['ra_d'], null);
           that.target.dec = _.get(data, ['dec_d'], null);
+          that.ra_display = _.get(data, ['ra_d'], null);
+          that.dec_display = _.get(data, ['dec_d'], null);
           that.target.proper_motion_ra = _.get(data, ['pmra'], null);
           that.target.proper_motion_dec = _.get(data, ['pmdec'], null);
           that.target.parallax = _.get(data, ['plx_value'], null);
@@ -183,6 +204,8 @@ export default {
           that.target.meandist = _.get(data, ['semimajor_axis'], null);
           that.target.meananom = _.get(data, ['mean_anomaly'], null);
           that.target.dailymot = _.get(data, ['mean_daily_motion'], null);
+          that.updateRA();
+          that.updateDec();
         } else {
           that.lookupText = 'Could not find any matching objects';
           that.lookupFail = true;
@@ -242,3 +265,8 @@ export default {
   },
 };
 </script>
+<style>
+.coord-help {
+  text-align: right;
+}
+</style>
