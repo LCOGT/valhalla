@@ -55,11 +55,13 @@
           <div class="col-md-6">
             <h4>Target</h4>
             <dl class="twocol dl-horizontal">
-              <span v-for="x, idx in request.target">
+              <span class="nobreak" v-for="x, idx in request.target">
               <dt v-if="request.target[idx]">{{ idx | formatField }}</dt>
               <dd v-if="x">
                 <span v-if="idx === 'name'">{{ x }}</span>
                 <span v-else>{{ x | formatValue }}</span>
+                <em v-if="idx === 'ra'" class="text-muted">{{ x | rAAsSexigesimal }}</em>
+                <em v-if="idx === 'dec'" class="text-muted">{{ x | decAsSexigesimal }}</em>
               </dd>
               </span>
             </dl>
@@ -115,7 +117,7 @@ import thumbnail from './components/thumbnail.vue';
 import archivetable from './components/archivetable.vue';
 import blockhistory from './components/blockhistory.vue';
 import airmass_telescope_states from './components/airmass_telescope_states.vue';
-import {formatDate, formatField} from './utils.js';
+import {formatDate, formatField, decimalDecToSexigesimal, decimalRaToSexigesimal} from './utils.js';
 import {login, getLatestFrame} from './archive.js';
 
 Vue.filter('formatDate', function(value){
@@ -131,6 +133,14 @@ Vue.filter('formatValue', function(value){
     return Number(value).toFixed(4);
   }
   return value;
+});
+
+Vue.filter('rAAsSexigesimal', function(ra){
+  return decimalRaToSexigesimal(ra).str
+});
+
+Vue.filter('decAsSexigesimal', function(dec){
+  return decimalDecToSexigesimal(dec).str
 });
 
 export default {
@@ -275,5 +285,8 @@ dl.twocol dd {
 }
 .tab-pane {
   padding-top: 5px;
+}
+.nobreak{
+ display: inline-block;
 }
 </style>
