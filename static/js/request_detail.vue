@@ -60,7 +60,7 @@
               <dd v-if="x">
                 <span v-if="idx === 'name'">{{ x }}</span>
                 <span v-else>{{ x | formatValue }}</span>
-                <em v-if="idx === 'ra'" class="text-muted">{{ x | rAAsSexigesimal }}</em>
+                <em v-if="idx === 'ra'" class="text-muted">{{ x | raAsSexigesimal }}</em>
                 <em v-if="idx === 'dec'" class="text-muted">{{ x | decAsSexigesimal }}</em>
               </dd>
               </span>
@@ -135,7 +135,7 @@ Vue.filter('formatValue', function(value){
   return value;
 });
 
-Vue.filter('rAAsSexigesimal', function(ra){
+Vue.filter('raAsSexigesimal', function(ra){
   return decimalRaToSexigesimal(ra).str
 });
 
