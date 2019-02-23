@@ -98,3 +98,8 @@ class AccountRemovalForm(forms.Form):
         send_mail.delay(
            'Account removal request submitted', message, 'portal@lco.global', ['science-support@lco.global']
         )
+
+
+class AcceptTermsForm(forms.Form):
+    accept_1 = forms.BooleanField(label='Accept this', required=True)
+    accept_2 = forms.BooleanField(label='Accept this too', required=True)

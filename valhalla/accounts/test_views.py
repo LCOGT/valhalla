@@ -8,6 +8,7 @@ from django.core import mail
 
 from valhalla.common.test_helpers import ConfigDBTestMixin
 from valhalla.accounts.models import Profile
+from valhalla.accounts.test_utils import blend_user
 from valhalla.proposals.models import ProposalInvite, Membership, Proposal, TimeAllocation
 
 
@@ -241,3 +242,49 @@ class TestAccountRemovalRequest(TestCase):
         self.assertContains(response, 'Account removal request successfully submitted')
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(form_data['reason'], str(mail.outbox[0].message()))
+
+
+class TestAcceptTerms(TestCase):
+    def test_user_has_not_accepted_terms(self):
+        user = blend_user(profile_params={'terms_accepted': None})
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('userrequests:list'))
+        self.assertRedirects(response, reverse('accept-terms'))
+
+    def test_user_has_accepted_terms(self):
+        user = blend_user()
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('userrequests:list'))
+        self.assertContains(response, 'Submitted Requests')
+
+    def test_terms_accepted(self):
+        user = blend_user(profile_params={'terms_accepted': None})
+        self.client.force_login(user)
+
+        form_data = {'accept_1': True, 'accept_2': True}
+        response = self.client.post(reverse('accept-terms'), data=form_data, follow=True)
+        self.assertRedirects(response, reverse('userrequests:list'))
+        user.profile.refresh_from_db()
+        self.assertTrue(user.profile.terms_accepted)
+
+    def test_terms_not_accepted(self):
+        user = blend_user(profile_params={'terms_accepted': None})
+        self.client.force_login(user)
+
+        form_data = {'accept_1': False, 'accept_2': True}
+        response = self.client.post(reverse('accept-terms'), data=form_data, follow=True)
+        self.assertContains(response, 'Accept Terms')
+        user.profile.refresh_from_db()
+        self.assertFalse(user.profile.terms_accepted)
+
+    def test_staff_dont_need_to_accept(self):
+        user = blend_user(
+            user_params={'is_staff': True, 'is_superuser': True},
+            profile_params={'terms_accepted': None}
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('userrequests:list'))
+        self.assertContains(response, 'Submitted Requests')
