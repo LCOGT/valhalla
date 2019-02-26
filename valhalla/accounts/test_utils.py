@@ -11,7 +11,7 @@ def blend_user(user_params=None, profile_params=None):
         user = mixer.blend(User, is_staff=False, is_superuser=False)
 
     if profile_params:
-        mixer.blend(Profile, user=user, **profile_params)
+        mixer.blend(Profile, user=user, terms_accepted=timezone.now(), **profile_params)
     else:
         mixer.blend(Profile, user=user, terms_accepted=timezone.now())
 

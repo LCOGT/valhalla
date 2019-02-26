@@ -14,11 +14,12 @@ from valhalla.proposals.models import ProposalInvite, Membership, Proposal, Time
 
 class TestIndex(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = blend_user(user_params=dict(
             username='doge',
-            password='sopassword',
             email='doge@dog.com'
-        )
+        ))
+        self.user.set_password('sopassword')
+        self.user.save()
 
     def test_index_page(self):
         response = self.client.get(reverse('userrequests:list'))
@@ -144,7 +145,7 @@ class TestRegistration(TestCase):
 class TestProfile(ConfigDBTestMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.profile = mixer.blend(Profile, notifications_enabled=True)
+        self.profile = blend_user(profile_params={'notifications_enabled': True}).profile
         self.data = {
             'first_name': self.profile.user.first_name,
             'last_name': self.profile.user.last_name,
@@ -214,8 +215,7 @@ class TestProfile(ConfigDBTestMixin, TestCase):
 
 class TestToken(TestCase):
     def setUp(self):
-        self.user = mixer.blend(User)
-        mixer.blend(Profile, user=self.user)
+        self.user = blend_user()
         self.client.force_login(self.user)
 
     def test_user_gets_api_token(self):
@@ -232,8 +232,7 @@ class TestToken(TestCase):
 
 class TestAccountRemovalRequest(TestCase):
     def setUp(self):
-        self.user = mixer.blend(User)
-        mixer.blend(Profile, user=self.user)
+        self.user = blend_user()
         self.client.force_login(self.user)
 
     def test_request_sends_email(self):
@@ -246,7 +245,9 @@ class TestAccountRemovalRequest(TestCase):
 
 class TestAcceptTerms(TestCase):
     def test_user_has_not_accepted_terms(self):
-        user = blend_user(profile_params={'terms_accepted': None})
+        user = blend_user()
+        user.profile.terms_accepted = None
+        user.profile.save()
         self.client.force_login(user)
 
         response = self.client.get(reverse('userrequests:list'))
@@ -260,7 +261,9 @@ class TestAcceptTerms(TestCase):
         self.assertContains(response, 'Submitted Requests')
 
     def test_terms_accepted(self):
-        user = blend_user(profile_params={'terms_accepted': None})
+        user = blend_user()
+        user.profile.terms_accepted = None
+        user.profile.save()
         self.client.force_login(user)
 
         form_data = {'accept_1': True, 'accept_2': True}
@@ -270,7 +273,9 @@ class TestAcceptTerms(TestCase):
         self.assertTrue(user.profile.terms_accepted)
 
     def test_terms_not_accepted(self):
-        user = blend_user(profile_params={'terms_accepted': None})
+        user = blend_user()
+        user.profile.terms_accepted = None
+        user.profile.save()
         self.client.force_login(user)
 
         form_data = {'accept_1': False, 'accept_2': True}
@@ -280,10 +285,9 @@ class TestAcceptTerms(TestCase):
         self.assertFalse(user.profile.terms_accepted)
 
     def test_staff_dont_need_to_accept(self):
-        user = blend_user(
-            user_params={'is_staff': True, 'is_superuser': True},
-            profile_params={'terms_accepted': None}
-        )
+        user = blend_user(user_params={'is_staff': True, 'is_superuser': True})
+        user.profile.terms_accepted = None
+        user.profile.save()
         self.client.force_login(user)
 
         response = self.client.get(reverse('userrequests:list'))
