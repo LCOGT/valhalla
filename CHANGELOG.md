@@ -1,3 +1,9 @@
+## 1.20.0
+2019-02-26
+
+* Accept and display both sexigesimal and decimal ra/dec formats.
+* Hide CoI information from other CoIs.
+
 ## 1.19.0
 2019-02-04
 
