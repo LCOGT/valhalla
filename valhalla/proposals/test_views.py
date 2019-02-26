@@ -29,6 +29,15 @@ class TestProposalDetail(TestCase):
         self.assertContains(response, self.proposal.id)
         self.assertNotContains(response, 'Pending Invitations')
 
+    def test_proposal_as_ci_cant_see_cis(self):
+        other_ci_user = mixer.blend(User)
+        mixer.blend(Profile, user=other_ci_user)
+        Membership.objects.create(user=other_ci_user, proposal=self.proposal, role=Membership.CI)
+
+        self.client.force_login(self.ci_user)
+        response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
+        self.assertNotContains(response, other_ci_user.email)
+
     def test_proposal_detail_as_staff(self):
         user = blend_user(user_params={'is_staff': True})
         self.client.force_login(user)
