@@ -52,7 +52,8 @@ class AcceptTermsMiddlware(object):
     def __call__(self, request):
         response = self.get_response(request)
 
-        if request.user.is_authenticated and not (request.user.is_staff or request.user.is_superuser):
+        if request.user.is_authenticated and \
+                not (request.user.is_staff or request.user.is_superuser or 'api' in request.path):
             try:
                 profile = request.user.profile
             except Profile.DoesNotExist:
