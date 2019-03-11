@@ -202,7 +202,7 @@
         var duration = moment.duration(this.duration_data.duration, 'seconds');
         var duration_string = '';
         if(duration.days() > 0){
-            duration_string = duration.days() + ' days ' + duration_string;
+            duration_string = duration.days() + ' days, ' + duration_string;
         }
         if(duration.hours() > 0){
           duration_string += duration.hours() + ' hours, ';
