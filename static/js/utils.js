@@ -146,7 +146,8 @@ function julianToModifiedJulian(jd){
 }
 
 var apiFieldToReadable = {
-  'group_id': 'Title'
+  'group_id': 'Title',
+  'ra': 'RA'
 };
 
 function formatField(value){
