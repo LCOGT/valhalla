@@ -7,15 +7,14 @@ from django.utils import timezone
 from valhalla.proposals.models import Membership, Proposal, ProposalInvite, ProposalNotification
 from valhalla.proposals.models import Semester, TimeAllocation, TimeAllocationGroup
 from valhalla.accounts.models import Profile
+from valhalla.accounts.test_utils import blend_user
 
 
 class TestProposalDetail(TestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
-        self.pi_user = mixer.blend(User)
-        self.ci_user = mixer.blend(User)
-        mixer.blend(Profile, user=self.pi_user)
-        mixer.blend(Profile, user=self.ci_user)
+        self.pi_user = blend_user()
+        self.ci_user = blend_user()
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 
@@ -40,7 +39,7 @@ class TestProposalDetail(TestCase):
         self.assertNotContains(response, other_ci_user.email)
 
     def test_proposal_detail_as_staff(self):
-        user = mixer.blend(User, is_staff=True)
+        user = blend_user(user_params={'is_staff': True})
         self.client.force_login(user)
         response = self.client.get(reverse('proposals:detail', kwargs={'pk': self.proposal.id}))
         self.assertContains(response, self.proposal.id)
@@ -59,10 +58,8 @@ class TestProposalDetail(TestCase):
 class TestMembershipLimit(TestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
-        self.pi_user = mixer.blend(User)
-        self.ci_user = mixer.blend(User)
-        mixer.blend(Profile, user=self.pi_user)
-        mixer.blend(Profile, user=self.ci_user)
+        self.pi_user = blend_user()
+        self.ci_user = blend_user()
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI, time_limit=0)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI, time_limit=0)
 
@@ -79,7 +76,7 @@ class TestMembershipLimit(TestCase):
 
     def test_cannot_set_others_limit(self):
         self.client.force_login(self.pi_user)
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         other_proposal = mixer.blend(Proposal)
         membership = Membership.objects.create(user=other_user, proposal=other_proposal)
         response = self.client.post(
@@ -93,7 +90,7 @@ class TestMembershipLimit(TestCase):
     def test_set_global_limit(self):
         self.client.force_login(self.pi_user)
         ci_users = mixer.cycle(5).blend(User)
-        mixer.cycle(5).blend(Profile, user=(ci_user for ci_user in ci_users))
+        mixer.cycle(5).blend(Profile, user=(ci_user for ci_user in ci_users), terms_accepted=timezone.now())
         memberships = mixer.cycle(5).blend(
             Membership, user=(c for c in ci_users), proposal=self.proposal, role=Membership.CI
         )
@@ -108,7 +105,7 @@ class TestMembershipLimit(TestCase):
 
     def test_cannot_set_global_limit_other_proposal(self):
         self.client.force_login(self.pi_user)
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         other_proposal = mixer.blend(Proposal)
         membership = mixer.blend(Membership, user=other_user, proposal=other_proposal)
         response = self.client.post(
@@ -134,10 +131,8 @@ class TestMembershipLimit(TestCase):
 class TestProposalInvite(TestCase):
     def setUp(self):
         self.proposal = mixer.blend(Proposal)
-        self.pi_user = mixer.blend(User)
-        self.ci_user = mixer.blend(User)
-        mixer.blend(Profile, user=self.pi_user)
-        mixer.blend(Profile, user=self.ci_user)
+        self.pi_user = blend_user()
+        self.ci_user = blend_user()
         Membership.objects.create(user=self.pi_user, proposal=self.proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=self.proposal, role=Membership.CI)
 
@@ -168,7 +163,7 @@ class TestProposalInvite(TestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_cannot_invite_to_other_proposal(self):
-        self.client.force_login(mixer.blend(User))
+        self.client.force_login(blend_user())
         response = self.client.post(
             reverse('proposals:invite', kwargs={'pk': self.proposal.id}),
             data={'email': 'nefarious@evil.com'},
@@ -201,20 +196,20 @@ class TestProposalInvite(TestCase):
 
 class TestProposalList(TestCase):
     def setUp(self):
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.proposals = mixer.cycle(5).blend(Proposal)
         for proposal in self.proposals:
             mixer.blend(Membership, user=self.user, proposal=proposal)
 
     def test_no_proposals(self):
-        user = mixer.blend(User)
+        user = blend_user()
         self.client.force_login(user)
         response = self.client.get(reverse('proposals:list'))
         self.assertContains(response, 'You are not a member of any proposals')
         self.assertNotContains(response, 'Admin only')
 
     def test_no_proposals_for_semester(self):
-        user = mixer.blend(User)
+        user = blend_user()
         semester = mixer.blend(Semester, id='2016A')
         other_semester = mixer.blend(Semester, id='2017A')
         proposal = mixer.blend(Proposal)
@@ -241,11 +236,9 @@ class TestProposalList(TestCase):
 
 class TestProposalInviteDelete(TestCase):
     def setUp(self):
-        self.pi_user = mixer.blend(User)
-        self.ci_user = mixer.blend(User)
+        self.pi_user = blend_user()
+        self.ci_user = blend_user()
         proposal = mixer.blend(Proposal)
-        mixer.blend(Profile, user=self.pi_user)
-        mixer.blend(Profile, user=self.ci_user)
         Membership.objects.create(user=self.pi_user, proposal=proposal, role=Membership.PI)
         Membership.objects.create(user=self.ci_user, proposal=proposal, role=Membership.CI)
         self.proposal_invite = ProposalInvite.objects.create(
@@ -282,8 +275,8 @@ class TestProposalInviteDelete(TestCase):
 
 class TestMembershipDelete(TestCase):
     def setUp(self):
-        self.pi_user = mixer.blend(User)
-        self.ci_user = mixer.blend(User)
+        self.pi_user = blend_user()
+        self.ci_user = blend_user()
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.pi_user, role=Membership.PI, proposal=self.proposal)
         self.cim = mixer.blend(Membership, user=self.ci_user, role=Membership.CI, proposal=self.proposal)
@@ -301,7 +294,7 @@ class TestMembershipDelete(TestCase):
         self.assertEqual(self.proposal.membership_set.count(), 1)
 
     def test_ci_cannot_remove_ci(self):
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         other_cim = mixer.blend(Membership, user=other_user, proposal=self.proposal)
 
         self.client.force_login(self.ci_user)
@@ -331,7 +324,7 @@ class TestMembershipDelete(TestCase):
 
 class TestNotificationsEnabled(TestCase):
     def setUp(self):
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.proposal = mixer.blend(Proposal)
         mixer.blend(Membership, user=self.user, proposal=self.proposal)
         self.client.force_login(self.user)
@@ -354,7 +347,7 @@ class TestNotificationsEnabled(TestCase):
 
 class TestSemesterAdmin(TestCase):
     def setUp(self):
-        self.user = mixer.blend(User, is_staff=True)
+        self.user = blend_user(user_params={'is_staff': True})
         self.proposal = mixer.blend(Proposal)
         self.semester = mixer.blend(Semester)
         self.ta = mixer.blend(TimeAllocation, semester=self.semester, proposal=self.proposal)
@@ -367,7 +360,7 @@ class TestSemesterAdmin(TestCase):
         self.assertContains(response, self.proposal.id)
 
     def test_proposal_table_not_staff(self):
-        user = mixer.blend(User)
+        user = blend_user()
         self.client.force_login(user)
         response = self.client.get(
             reverse('proposals:semester-admin', kwargs={'pk': self.semester.id})

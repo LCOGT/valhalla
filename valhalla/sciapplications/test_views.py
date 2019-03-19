@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 
 from valhalla.proposals.models import Semester, TimeAllocationGroup
 from valhalla.accounts.models import Profile
+from valhalla.accounts.test_utils import blend_user
 from valhalla.sciapplications.models import ScienceApplication, Call, Instrument, TimeRequest, CoInvestigator
 from valhalla.sciapplications.forms import ScienceProposalAppForm, DDTProposalAppForm, KeyProjectAppForm
 from valhalla.sciapplications.forms import SciCollabAppForm
@@ -31,8 +32,7 @@ class TestGetCreateSciApp(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
-        mixer.blend(Profile, user=self.user)
+        self.user = blend_user()
         self.client.force_login(self.user)
 
     def test_no_call(self):
@@ -115,8 +115,7 @@ class TestPostCreateSciApp(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
-        mixer.blend(Profile, user=self.user)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.instrument = mixer.blend(Instrument)
         self.call = mixer.blend(
@@ -460,7 +459,7 @@ class TestGetUpdateSciApp(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -480,7 +479,7 @@ class TestGetUpdateSciApp(TestCase):
         self.assertContains(response, app.title)
 
     def test_cannot_view_other_apps(self):
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,
@@ -507,7 +506,7 @@ class TestPostUpdateSciApp(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -584,7 +583,7 @@ class TestSciAppIndex(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -661,8 +660,7 @@ class TestSciAppDetail(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
-        mixer.blend(Profile, user=self.user)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -683,7 +681,7 @@ class TestSciAppDetail(TestCase):
         self.assertContains(response, app.title)
 
     def test_cannot_view_others_details(self):
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,
@@ -694,7 +692,7 @@ class TestSciAppDetail(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_staff_can_view_details(self):
-        staff_user = mixer.blend(User, is_staff=True)
+        staff_user = blend_user(user_params={'is_staff': True})
         self.client.force_login(staff_user)
         app = mixer.blend(
             ScienceApplication,
@@ -723,7 +721,8 @@ class TestSciAppDetail(TestCase):
     def test_staff_can_view_pdf(self):
         PdfFileMerger.merge = MagicMock
         HTML.write_pdf = MagicMock
-        staff_user = mixer.blend(User, is_staff=True)
+        staff_user = blend_user(user_params={'is_staff': True})
+        self.client.force_login(staff_user)
         self.client.force_login(staff_user)
         app = mixer.blend(
             ScienceApplication,
@@ -742,7 +741,7 @@ class TestSciAppDelete(TestCase):
         self.semester = mixer.blend(
             Semester, start=timezone.now() + timedelta(days=1), end=timezone.now() + timedelta(days=365)
         )
-        self.user = mixer.blend(User)
+        self.user = blend_user()
         self.client.force_login(self.user)
         self.call = mixer.blend(
             Call, semester=self.semester,
@@ -784,7 +783,7 @@ class TestSciAppDelete(TestCase):
         self.assertTrue(ScienceApplication.objects.filter(pk=app.id).exists())
 
     def test_cannot_delete_others(self):
-        other_user = mixer.blend(User)
+        other_user = blend_user()
         app = mixer.blend(
             ScienceApplication,
             status=ScienceApplication.DRAFT,

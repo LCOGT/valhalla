@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'valhalla.common.middleware.RequestLogMiddleware',
+    'valhalla.common.middleware.AcceptTermsMiddlware',
 ]
 
 ROOT_URLCONF = 'valhalla.urls'
