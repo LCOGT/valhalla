@@ -413,6 +413,9 @@ class Molecule(models.Model):
     acquire_mode = models.CharField(max_length=50, choices=ACQUIRE_MODES, default=ACQUIRE_MODES[0][0], blank=True)
     acquire_radius_arcsec = models.FloatField(default=0.0, blank=True)
     acquire_strategy = models.CharField(max_length=55, default='', blank=True)
+    acquire_exp_time = models.FloatField(
+        null=True, blank=True, validators=[MinValueValidator(0.0), MaxValueValidator(30.0)]
+    )
     expmeter_mode = models.CharField(max_length=12, default='OFF', blank=True)
     expmeter_snr = models.FloatField(null=True, blank=True)
 

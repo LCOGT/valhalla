@@ -129,7 +129,11 @@ def get_request_duration(request_dict):
 
         for molecule in request_dict['molecules']:
             if molecule['acquire_mode'].upper() != 'OFF' and molecule['type'].upper() in ['SPECTRUM', 'NRES_SPECTRUM']:
-                duration += request_overheads['acquire_exposure_time'] + request_overheads['acquire_processing_time']
+                if molecule.get('acquire_exp_time') is not None:
+                    acquire_exp_time = molecule['acquire_exp_time']
+                else:
+                    acquire_exp_time = request_overheads['acquire_exposure_time']
+                duration += acquire_exp_time + request_overheads['acquire_processing_time']
     else:
         duration += get_num_filter_changes(request_dict['molecules']) * request_overheads['filter_change_time']
 

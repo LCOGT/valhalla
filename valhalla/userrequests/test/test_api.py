@@ -1461,6 +1461,23 @@ class TestMoleculeApi(ConfigDBTestMixin, SetTimeMixin, APITestCase):
         self.assertIn('Invalid type EXPOSE for a spectrograph', str(response.content))
         self.assertEqual(response.status_code, 400)
 
+    def test_acquire_exp_time_limits(self):
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['acquire_exp_time'] = -1
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+        bad_data = self.generic_payload.copy()
+        bad_data['requests'][0]['molecules'][0]['acquire_exp_time'] = 65
+        response = self.client.post(reverse('api:user_requests-list'), data=bad_data)
+        self.assertEqual(response.status_code, 400)
+
+        good_data = self.generic_payload.copy()
+        good_data['requests'][0]['molecules'][0]['acquire_exp_time'] = 20
+        response = self.client.post(reverse('api:user_requests-list'), data=good_data)
+        ur = response.json()
+        self.assertEqual(ur['requests'][0]['molecules'][0]['acquire_exp_time'], 20)
+        self.assertEqual(response.status_code, 201)
 
 class TestGetRequestApi(ConfigDBTestMixin, APITestCase):
     def setUp(self):
