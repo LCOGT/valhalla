@@ -4,13 +4,30 @@
 {% block content %}
 <form method="POST" action="{% url 'accept-terms' %}">
   {% csrf_token %}
-  <h1>Accept LCO Terms of Agreement</h1>
-  <p>Yo. If you're gonna use LCO, you have to agree that we need to keep some information in our systems about
-  you. Nothing more than we need. Just to be able to provide service to you. By checking the following, you
-  accept these terms. And promise not to sue us or anything like that.</p>
-  {% bootstrap_field form.accept_1 %}
-  <p>Also, by checking the following, you agree to leave us a positive review on Yelp.</p>
-  {% bootstrap_field form.accept_2 %}
-  {% buttons submit="Accept" %}{% endbuttons %}
+  <h1>Terms of Service</h1>
+  <ul>
+    <li>
+      I agree for my name, institution and email address to be stored by LCO. I understand LCO will take all reasonable measures
+      to secure this data. I understand I may withdraw consent at any time by contacting LCO, at which time my account and
+      all personal data will be deleted.
+    </li>
+    <li>
+      For those proposals on which I am a Co-Investigator (Co-I), I agree to the sharing of my name, institution and email
+      address with the Principal Investigator (PI) for that proposal.
+    </li>
+    <li>
+      For those proposals on which I am a Co-I or PI, I agree to the sharing of my name and institution with the
+      Time Allocation Committee (TAC), which evaluates proposals and awards observing time.
+    </li>
+    <li>
+      For those proposals on which I am the PI, I agree to share my name and email address with the Co-Is for that proposal.
+    </li>
+    <li>
+      I acknowledge that as PI, I will have access to Co-I information and agree to use it in a way which is acceptable
+      to Co-Is and that is compliant with the law.
+    </li>
+  </ul>
+  {% bootstrap_field form.accept %}
+  {% buttons submit="Proceed" %}{% endbuttons %}
 </form>
 {% endblock %}

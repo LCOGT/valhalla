@@ -266,7 +266,7 @@ class TestAcceptTerms(TestCase):
         user.profile.save()
         self.client.force_login(user)
 
-        form_data = {'accept_1': True, 'accept_2': True}
+        form_data = {'accept': True}
         response = self.client.post(reverse('accept-terms'), data=form_data, follow=True)
         self.assertRedirects(response, reverse('userrequests:list'))
         user.profile.refresh_from_db()
@@ -278,7 +278,7 @@ class TestAcceptTerms(TestCase):
         user.profile.save()
         self.client.force_login(user)
 
-        form_data = {'accept_1': False, 'accept_2': True}
+        form_data = {'accept': False}
         response = self.client.post(reverse('accept-terms'), data=form_data, follow=True)
         self.assertContains(response, 'Accept Terms')
         user.profile.refresh_from_db()
