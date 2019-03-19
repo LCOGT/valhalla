@@ -1,3 +1,12 @@
+## 1.21.0
+2019-03-19
+
+* All users must accept terms and conditions
+
+## 1.20.1
+
+* Update bootstrap
+
 ## 1.20.0
 2019-02-26
 
