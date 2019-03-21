@@ -1,3 +1,8 @@
+## 1.22.0
+2019-03-21
+
+* Allow AUTO_FOCUS molecules for sprectrographs
+
 ## 1.21.0
 2019-03-19
 
