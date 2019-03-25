@@ -230,6 +230,20 @@ class TestRequestDuration(ConfigDBTestMixin, SetTimeMixin, TestCase):
 
         self.assertEqual(duration, math.ceil(exp_count*(exp_time + self.floyds_readout_time1 + self.floyds_fixed_overhead_per_exposure) + self.floyds_front_padding + self.floyds_config_change_time + self.floyds_acquire_exposure_time + self.floyds_acquire_processing_time + PER_MOLECULE_GAP + PER_MOLECULE_STARTUP_TIME))
 
+    def test_floyds_uses_supplied_acquire_exp_time(self):
+        self.molecule_spectrum.request = self.request
+        self.molecule_spectrum.acquire_mode = 'WCS'
+        self.molecule_spectrum.save()
+
+        duration = self.request.duration
+
+        self.molecule_spectrum.acquire_exp_time = 20.0  # Default for test floyds is 30sec
+        self.molecule_spectrum.save()
+        del self.request.duration
+        new_duration = self.request.duration
+
+        self.assertEqual(new_duration, duration - 10)
+
     def test_floyds_multiple_spectrum_molecule_request_duration_with_acquire_on(self):
         self.molecule_spectrum.request = self.request
         self.molecule_spectrum.acquire_mode = 'WCS'
