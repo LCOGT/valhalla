@@ -1,3 +1,8 @@
+## 1.23.1
+2019-04-09
+
+* Increase API token expire time to 2 years
+
 ## 1.23.0
 2019-03-25
 
