@@ -1,3 +1,8 @@
+## 1.23.2
+2019-04-15
+
+* Fix link to LCO getting started guide
+
 ## 1.23.1
 2019-04-09
 
