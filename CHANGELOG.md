@@ -1,3 +1,8 @@
+## 1.23.3
+2019-04-15
+
+* Upgrade numpy to latest (fixes build error)
+
 ## 1.23.2
 2019-04-15
 
