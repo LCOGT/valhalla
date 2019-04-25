@@ -247,10 +247,10 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ),
     'DEFAULT_THROTTLE_RATES': {
-        'user': '5000/day',
-        'userrequests.cancel': '1000/day',
-        'userrequests.create': '2500/day',
-        'userrequests.validate': '10000/day'
+        'user': '10000/day',
+        'userrequests.cancel': '2000/day',
+        'userrequests.create': '5000/day',
+        'userrequests.validate': '20000/day'
     }
 }
 
