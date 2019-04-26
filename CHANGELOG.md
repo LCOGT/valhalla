@@ -1,3 +1,9 @@
+## 1.23.8
+2019-04-26
+
+* Throttling disabled for now. Old classes left in place in case futre policy
+  necessitates useing them again.
+
 ## 1.23.7
 2019-04-25
 
