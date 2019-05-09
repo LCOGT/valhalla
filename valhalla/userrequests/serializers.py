@@ -474,7 +474,10 @@ class UserRequestSerializer(serializers.ModelSerializer):
                                 )
                             if window.get('end') - timezone.now() > timedelta(seconds=(duration + 86400)):
                                 raise serializers.ValidationError(
-                                    _("The Rapid Response observation window must be within the next 24 hours.")
+                                    _(
+                                        "A Rapid Response observation must start within the next 24 hours, so the "
+                                        "window end time must be within the next (24 hours + the observation duration)"
+                                    )
                                 )
 
                 if time_available <= 0.0:
