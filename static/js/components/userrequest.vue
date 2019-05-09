@@ -179,7 +179,7 @@ export default {
         for (var windowIndex = 0; windowIndex < this.userrequest.requests[index].windows.length; ++windowIndex) {
           if (value === 'TARGET_OF_OPPORTUNITY'){
             delete this.userrequest.requests[index].windows[windowIndex].start;
-            this.userrequest.requests[index].windows[windowIndex].end = moment.utc().add('hours', 6).format(datetimeFormat);
+            this.userrequest.requests[index].windows[windowIndex].end = moment.utc().add('hours', 24).format(datetimeFormat);
           }
           else{
             if (!('start' in this.userrequest.requests[index].windows[windowIndex])) {
