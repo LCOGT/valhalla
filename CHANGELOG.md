@@ -1,3 +1,8 @@
+## 1.24.1
+2019-06-24
+
+* Add downtime announcement for observation portal upgrade
+
 ## 1.24.0
 2019-05-16
 
