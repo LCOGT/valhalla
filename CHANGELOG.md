@@ -1,3 +1,13 @@
+## 1.24.1
+2019-06-24
+
+* Add downtime announcement for observation portal upgrade
+
+## 1.24.0
+2019-05-16
+
+* Increase rapid response lifetime from 6 hours to 24 hours
+
 ## 1.23.8
 2019-04-26
 
